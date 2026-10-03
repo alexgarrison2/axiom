@@ -208,12 +208,14 @@ def live_table(pack: Pack, inputs_cur: "V.SeasonInputs | None", box_cur: pd.Data
     at = asof if asof is not None else np.datetime64("1970-01-01")
     df = P3.ratings_table(eng, S, at, pr, fin_pre, pack.toi, pack.pos_means, pack.rec, pack.sh, pack.prior_xg,
                           pack.toi_h)
+    intercept = P3._intercept(df)
     box_now = V4.add_box(pr.box, eng.box_in(S, at, pack.rec) if S in eng.box else None)
     df = spm_columns(eng, df, pr, box_now, pack.pen_t0)
     meta = {"season": S, "asof": None if asof is None else str(np.datetime64(asof, "D")),
             "max_source_date": None if last is None else str(last), "g": round(float(g), 3),
             "goals_per_xg": pack.goals_per_xg, "pen_value": pack.pen_value, "pen_t0": pack.pen_t0,
-            "recency": pack.rec.as_dict(), "shrink": pack.sh.as_dict(), "prior_xg": pack.prior_xg}
+            "recency": pack.rec.as_dict(), "shrink": pack.sh.as_dict(), "prior_xg": pack.prior_xg,
+            "intercept": intercept}
     return df[LIVE_COLUMNS].sort_values("player_id").reset_index(drop=True), meta, pr
 
 

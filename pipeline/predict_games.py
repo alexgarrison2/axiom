@@ -552,7 +552,8 @@ def sim_lineup(game, inp, bf):
     """The lineup term with FIN for the simulator: the live model's own ``bf`` when the simulator's
     lineup source (``bu/sim/lineup_source.py``) is the game model's serving bundle, else that
     source's bundle read directly (a model without the term still gets simulated); the bundle's
-    intercept is added (the term's 5v5 xGF/60 = intercept + OFF + opposing DEF)."""
+    intercept (``LiveLineupTerm.intercept``: the source table's own) is added (the term's 5v5
+    xGF/60 = intercept + OFF + opposing DEF)."""
     ml = inp.ml
     term = getattr(ml, "bu_term", None) if ml is not None else None
     if inp.sim is not None and hasattr(inp.sim, "lineup_term"):
@@ -571,8 +572,10 @@ def sim_lineup(game, inp, bf):
             bf = None
     if bf is None or term is None:
         return bf
-    cov = (term.b.get("covariates") or {}) if hasattr(term, "b") else {}
-    return dict(bf, c_intercept=cov.get("intercept"))
+    c0 = getattr(term, "intercept", None)     # the term's ratings table's own intercept (v2: the covariate)
+    if c0 is None:
+        c0 = ((term.b.get("covariates") or {}) if hasattr(term, "b") else {}).get("intercept")
+    return dict(bf, c_intercept=c0)
 
 
 def _sim_rest(ctx):

@@ -323,6 +323,12 @@ class LiveLineupTerm:
         if rt is not None and "fin" in rt["columns"] and "bu_d_fin" in (bundle.get("columns") or []):
             jf = rt["columns"].index("fin")       # v3 / v4: FIN at the player's own position group
             self.fin = {int(r[0]): (float(r[jf]), float(r[jf])) for r in rt["rows"]}
+        # the lineup term's intercept c0 (league 5v5 xGF/60 of an average lineup; the game simulator's
+        # log((c0 + OFF + DEF) / c0)): the ratings table's own EV intercept when it records one, else
+        # the bundle's RAPM v2 covariate
+        cov0 = (bundle.get("covariates") or {}).get("intercept")
+        ti = ((rt or {}).get("meta") or {}).get("intercept")
+        self.intercept = float(ti) if ti is not None else (float(cov0) if cov0 is not None else None)
         cw = bundle.get("crosswalk")
         self.resolver = Resolver(pd.DataFrame(cw["rows"], columns=cw["columns"])) if cw else None
 

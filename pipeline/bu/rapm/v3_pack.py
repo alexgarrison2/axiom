@@ -180,8 +180,14 @@ def ratings_table(engine: V.Engine, S: str, asof, pr: V.Prior, fin_pre: pd.DataF
         rows[p] = {"o": e[0], "d": e[1], "o_var": e[2], "d_var": e[3], "od_cov": e[4], "role": e[5], "rated": True}
     for p, e in pr.st.items():
         rows.setdefault(p, {"rated": False}).update({"pp": e[0], "pk": e[1], "pp_var": e[2], "pk_var": e[3]})
+    from .design import COVARIATES
+    ic = COVARIATES.index("intercept")
+    # the EV fit's intercept (league 5v5 xGF/60 of an average lineup at this date): the prior's
+    # before the season's first game, else the in-season fit's (as ``asof_backfill`` records it)
+    intercept = float(pr.cov_ev[ic]) if pr.cov_ev is not None else float("nan")
     if x is not None and len(x.ev.dates):
         res = engine.stage2(S, asof, rec, sh, pr, want_sd=True)
+        intercept = float(res["beta_ev"][2 * len(res["ev"]) + ic])
         cur_s = x.toi[x.toi["d"] <= cutoff].groupby("player_id")["ev_s"].sum()
         for r in res["ev"].itertuples(index=False):
             p = int(r.player_id)
@@ -233,7 +239,9 @@ def ratings_table(engine: V.Engine, S: str, asof, pr: V.Prior, fin_pre: pd.DataF
     et = V.expected_toi(tst.reindex(df["player_id"]).fillna(0.0), engine.bio.group, pos_means)
     for s in V.TOI_STATES:
         df[f"toi_{s}"] = et[f"toi_{s}"].to_numpy()
-    return df[LIVE_COLUMNS].sort_values("player_id").reset_index(drop=True)
+    out = df[LIVE_COLUMNS].sort_values("player_id").reset_index(drop=True)
+    out.attrs["intercept"] = intercept
+    return out
 
 
 def live_table(pack: Pack, inputs_cur: "V.SeasonInputs | None", games_cur: pd.DataFrame,
@@ -261,8 +269,15 @@ def live_table(pack: Pack, inputs_cur: "V.SeasonInputs | None", games_cur: pd.Da
     meta = {"season": S, "asof": None if asof is None else str(np.datetime64(asof, "D")),
             "max_source_date": None if last is None else str(last), "g": round(float(g), 3),
             "goals_per_xg": pack.goals_per_xg, "recency": pack.rec.as_dict(), "shrink": pack.sh.as_dict(),
-            "prior_xg": pack.prior_xg}
+            "prior_xg": pack.prior_xg, "intercept": _intercept(df)}
     return df, meta
+
+
+def _intercept(df) -> float | None:
+    """``ratings_table``'s EV intercept (``meta.intercept``: the lineup term's c0 for the game
+    simulator, on the same scale as the point-in-time table's ``c_intercept``), None if unknown."""
+    v = (getattr(df, "attrs", None) or {}).get("intercept")
+    return round(float(v), 6) if v is not None and np.isfinite(v) else None
 
 
 # ----------------------------------------------------------------------- point-in-time backfill (feature table)
