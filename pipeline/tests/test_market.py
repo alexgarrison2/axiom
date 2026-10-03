@@ -66,8 +66,21 @@ def test_gate_open_only_with_all_conditions():
     assert market.gate(0.05, 40, 40, state=_state(0.001, 0.01, model_ll=0.68))[0] is False
 
 
-def test_pickem_units_empty_unless_gate_open():
+def test_owner_weight_and_fitted_override(monkeypatch):
+    """The published weight is the owner's 0.80 every game; PONYXG_MODEL_WEIGHT overrides it."""
+    monkeypatch.delenv(market.WEIGHT_ENV, raising=False)
+    assert market.effective_weight(0.74, 0, 0) == market.OWNER_MODEL_WEIGHT == 0.80
+    assert market.effective_weight(0.2, 40, 40) == 0.80
+    monkeypatch.setenv(market.WEIGHT_ENV, "0.5")
+    assert market.effective_weight(0.74, 0, 0) == 0.5
+    monkeypatch.setenv(market.WEIGHT_ENV, "fitted")
+    assert abs(market.effective_weight(0.74, 0, 0) - 0.2) < 1e-12        # ramp start
+    assert abs(market.effective_weight(0.74, 20, 30) - 0.74) < 1e-12     # fitted after 20 GP
+
+
+def test_pickem_units_empty_unless_gate_open(monkeypatch):
     """-110/-120 pick'em with a bullish model: EV from the BLENDED prob, no units while closed."""
+    monkeypatch.setenv(market.WEIGHT_ENV, "fitted")
     closed = _state(-0.09, -0.05)
     g = market.price_game(0.631, -110, -120, 0, 0, state=closed, w=0.74)
     q = market.devig([-110, -120])[0]

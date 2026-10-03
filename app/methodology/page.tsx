@@ -342,8 +342,7 @@ export default function MethodologyPage() {
                             <p>
                                 The market probability comes from the moneyline odds with the bookmaker&apos;s margin (the &ldquo;vig&rdquo;, about 4%)
                                 removed, so the two sides add up to 100%. The published forecast (the bar&apos;s fill) is the model blended with that
-                                de-vigged market: early in the season the market carries <strong>80%</strong> of the weight and the model 20%, and the
-                                model&apos;s share grows as teams play more games. The <strong>model diamond</strong> shows the unblended model, so you can
+                                de-vigged market: the model carries <strong>80%</strong> of the weight and the market 20%, every game. The <strong>model diamond</strong> shows the unblended model, so you can
                                 see where it disagrees. <strong>Fair odds</strong> is the moneyline that matches the published forecast exactly.
                             </p>
                             <p>

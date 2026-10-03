@@ -9,9 +9,13 @@ So the number we publish is a blend anchored to the market:
     q      = devig(home_price, away_price, method='power')
     p_live = sigmoid(w * logit(p_model) + (1 - w) * logit(q))
 
-w is fitted walk-forward on live snapshots (``run_backtest``) and stored in
-scoring_coefficients.json as ``market_blend_weight``.  Without odds the model
-probability is used as is.
+The owner sets w = OWNER_MODEL_WEIGHT (0.80: mostly model, every game, all
+season; decided 2026-10-03).  The repository variable PONYXG_MODEL_WEIGHT
+overrides it: a number in [0, 1], or 'fitted' for the evidence-based weight,
+which is fitted walk-forward on live snapshots (``run_backtest``), stored in
+scoring_coefficients.json as ``market_blend_weight`` and ramped up from
+DEFAULT_BLEND_WEIGHT over the first EARLY_WEIGHT_GP games.  Without odds the
+model probability is used as is.
 
 EV is always a FRACTION (0.051 == 5.1%), computed from the blended
 probability and the actual price.  ``gate`` decides whether a bet is shown:
@@ -60,6 +64,8 @@ ROI_CI_FLOOR = -0.02
 DEFAULT_BLEND_WEIGHT = 0.2
 BLEND_PRIOR_GAMES = 200
 EARLY_WEIGHT_GP = 20     # model weight ramps linearly from the prior to the fitted value over 20 GP
+OWNER_MODEL_WEIGHT = 0.80   # owner's choice: the published % is 80% model, 20% market
+WEIGHT_ENV = "PONYXG_MODEL_WEIGHT"   # rollback / override: a number, or 'fitted'
 
 
 # ─── Pricing ──────────────────────────────────────────────────────────────────
@@ -126,13 +132,30 @@ def _sigmoid(z):
     return 1 / (1 + math.exp(-z))
 
 
+def owner_weight():
+    """The published model weight unless PONYXG_MODEL_WEIGHT=fitted (then None)."""
+    v = (os.environ.get(WEIGHT_ENV) or "").strip().lower()
+    if v == "fitted":
+        return None
+    if v:
+        try:
+            return min(1.0, max(0.0, float(v)))
+        except ValueError:
+            print(f"[market] ignoring {WEIGHT_ENV}={v!r}; using {OWNER_MODEL_WEIGHT}")
+    return OWNER_MODEL_WEIGHT
+
+
 def effective_weight(w=None, home_gp=None, away_gp=None):
-    """Model weight for a game.  The fitted weight comes from in-season games;
+    """Model weight for a game: the owner's weight (owner_weight) unless
+    PONYXG_MODEL_WEIGHT=fitted.  The fitted weight comes from in-season games;
     early in a season the model runs on regressed priors while the market
     already prices roster changes, so the weight starts at the prior
     (DEFAULT_BLEND_WEIGHT) and ramps linearly to the fitted value: at min GP g,
     w = w0 + (w_fit - w0) * min(1, g / EARLY_WEIGHT_GP).  The fit sample (March
     onward) is entirely past that ramp.  Without GP info the fitted value is used."""
+    o = owner_weight()
+    if o is not None:
+        return o
     w = blend_weight() if w is None else w
     if home_gp is None or away_gp is None:
         return w

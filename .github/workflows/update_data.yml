@@ -83,6 +83,8 @@ jobs:
           #   PONYXG_XG=v1|shadow  publish xG v1 again (pipeline/bu/xg/README.md "Rollback")
           #   PONYXG_BU=off        publish the F1 rollback model (no RAPM lineup term); the joint
           #                        model stays logged in bu_shadow_home_win_pct (pipeline/bu/README.md)
+          #   PONYXG_MODEL_WEIGHT=<0..1>|fitted  published model weight vs the market (default 0.80,
+          #                        the owner's choice; 'fitted' = the backtested weight and early ramp)
           #   PONYXG_WINPCT=logit  publish the logit game model's win % instead of the game
           #                        simulator's; the simulator still prices the derivative markets
           #                        and the logit stays logged in logit_* (pipeline/bu/sim/README.md)
@@ -96,6 +98,7 @@ jobs:
           PONYXG_BU: ${{ vars.PONYXG_BU }}
           PONYXG_WINPCT: ${{ vars.PONYXG_WINPCT }}
           PONYXG_SIM_INPUTS: ${{ vars.PONYXG_SIM_INPUTS }}
+          PONYXG_MODEL_WEIGHT: ${{ vars.PONYXG_MODEL_WEIGHT }}
           PONYXG_SEASON_SIM: ${{ vars.PONYXG_SEASON_SIM }}
         run: python pipeline/refresh_pipeline.py --mode "$MODE"
 
@@ -106,6 +109,7 @@ jobs:
           PONYXG_VALIDATE_ALLOW: ${{ vars.VALIDATE_ALLOW }}
           # the same switches as the pipeline step (sim_inputs / season_projections read them)
           PONYXG_SIM_INPUTS: ${{ vars.PONYXG_SIM_INPUTS }}
+          PONYXG_MODEL_WEIGHT: ${{ vars.PONYXG_MODEL_WEIGHT }}
           PONYXG_SEASON_SIM: ${{ vars.PONYXG_SEASON_SIM }}
         run: python pipeline/validate_outputs.py
 
