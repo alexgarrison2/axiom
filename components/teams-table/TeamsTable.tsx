@@ -30,6 +30,9 @@ import { HeaderCell, type SortDir } from './HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from './table-style';
 import { TableScroller } from './TableScroller';
 
+/** Column groups left out of the server HTML; revealed one per idle task after hydration. */
+const DEFERRED_GROUPS = COLUMN_GROUPS.filter(g => !SSR_GROUPS.includes(g.name));
+
 const STORAGE_KEY = 'ponyxg:teams-table:v3';
 
 interface Persisted {
@@ -75,7 +78,9 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const [filters, setFilters] = React.useState<TableFilters>(DEFAULT_FILTERS);
     const [hidden, setHidden] = React.useState<string[]>(DEFAULT_HIDDEN);
     // The server HTML carries only SSR_GROUPS; the other default columns are added once the page is idle.
-    const [expanded, setExpanded] = React.useState(false);
+    const [revealed, setRevealed] = React.useState(0);
+    const hiddenRef = React.useRef(hidden);
+    hiddenRef.current = hidden;
     const [perGameOpen, setPerGameOpen] = React.useState(false);
     const [sort, setSort] = React.useState<{ key: string; dir: SortDir }>({ key: 'points', dir: 'desc' });
     const [games, setGames] = React.useState<Record<string, GameRow[]>>({});
@@ -99,12 +104,32 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         if (saved.sort?.key && COLUMN_BY_KEY.has(saved.sort.key)) setSort({ key: saved.sort.key, dir: saved.sort.dir === 'asc' ? 'asc' : 'desc' });
         if (saved.filters) setFilters(sanitizeFilters(saved.filters, { playoffs: true, bracket: true }));
         setHydrated(true);
-        if ('requestIdleCallback' in window) {
-            const id = window.requestIdleCallback(() => setExpanded(true));
-            return () => window.cancelIdleCallback(id);
-        }
-        const id = globalThis.setTimeout(() => setExpanded(true), 0);
-        return () => globalThis.clearTimeout(id);
+        // One column group per idle task, so no single render is a long task on a slow phone.
+        let n = 0;
+        let cancelled = false;
+        const later = (cb: () => void) => {
+            if ('requestIdleCallback' in window) {
+                const id = window.requestIdleCallback(cb, { timeout: 300 });
+                return () => window.cancelIdleCallback(id);
+            }
+            const id = globalThis.setTimeout(cb, 16);
+            return () => globalThis.clearTimeout(id);
+        };
+        let cancel = () => {};
+        const step = () => {
+            if (cancelled) return;
+            // Groups with every column off cost nothing to show, so skip them.
+            while (n < DEFERRED_GROUPS.length && DEFERRED_GROUPS[n].cols.every(k => hiddenRef.current.includes(k))) n++;
+            if (n >= DEFERRED_GROUPS.length) return setRevealed(DEFERRED_GROUPS.length);
+            n++;
+            setRevealed(n);
+            cancel = later(step);
+        };
+        cancel = later(step);
+        return () => {
+            cancelled = true;
+            cancel();
+        };
     }, []);
 
     // Re-validate filters whenever the season (and what it allows) changes.
@@ -225,13 +250,13 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     // Every group in order; a column shows unless the user hid it (rating columns need the ratings file).
     const columns: { col: StatColumn; groupEnd: boolean; group: string }[] = React.useMemo(
         () =>
-            COLUMN_GROUPS.filter(g => expanded || SSR_GROUPS.includes(g.name)).flatMap(g => {
+            COLUMN_GROUPS.filter(g => SSR_GROUPS.includes(g.name) || DEFERRED_GROUPS.indexOf(g) < revealed).flatMap(g => {
                 const cols = g.cols
                     .map(k => COLUMN_BY_KEY.get(k))
                     .filter((c): c is StatColumn => !!c && !hiddenSet.has(c.key) && !(c.rating && ratingsMissing));
                 return cols.map((col, i) => ({ col, groupEnd: i === cols.length - 1, group: g.name }));
             }),
-        [hiddenSet, ratingsMissing, expanded],
+        [hiddenSet, ratingsMissing, revealed],
     );
     const groupSpans = React.useMemo(() => {
         const out: { name: string; n: number }[] = [];
@@ -262,7 +287,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
 
     // A sort key from another section (sessions persist it) falls back to points.
     // Until the idle expansion the column set is partial, so a sort on a column that is only not rendered yet still holds.
-    const sortable = columns.some(c => c.col.key === sort.key) || (!expanded && COLUMN_BY_KEY.has(sort.key) && !hiddenSet.has(sort.key));
+    const sortable = columns.some(c => c.col.key === sort.key) || (revealed < DEFERRED_GROUPS.length && COLUMN_BY_KEY.has(sort.key) && !hiddenSet.has(sort.key));
     const activeSort = sortable ? sort : { key: 'points', dir: 'desc' as SortDir };
 
     const sorted = React.useMemo(() => {
