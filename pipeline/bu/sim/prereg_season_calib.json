@@ -1,0 +1,46 @@
+{
+ "title": "Calibrated season projections on the game simulator (pre-declared tuning, backtest and promotion rule)",
+ "declared_at": "2026-10-03T18:00:00Z",
+ "declared_before": "any tuning, dev or holdout scoring of a calibrated simulator. The code that applies the calibration and runs the tuning (bu/sim/season_calib.py) is written after this file is committed. Public before this file: the season_sim dev result (bu/sim/out/validation.json season_sim_dev: uncalibrated SIM vs walk-forward LOGIT at the dev points below) and the 2026-27 preseason spread of both engines. No season projection of any tuning season below has been made with either engine.",
+ "question": "season_sim_calib: once its season-level calibration is tuned on seasons it does not report on, should season_simulator.py (season_projections.json; game_implications.py reuses its engine) take each remaining game's outcome probabilities from the M5 game simulator instead of the logit game model + goal_model split?",
+ "why": "season_sim (prereg_season_sim.json) was not promoted: dev points MAE better (5.27 vs 5.64) but dev playoff log loss worse (+0.0053, SE 0.015), and the uncalibrated simulator is over-dispersed preseason (2026-27 opening week: 61 to 117 projected points vs 82 to 104 for the logit). It projects every future game with today's typical lineup and the logit's strength-uncertainty sigma (SIGMA0 0.20 logit, SIGMA_GP 40), neither tuned for the simulator; a fixed lineup cannot carry injuries, call-ups, trades and regression to the mean over months.",
+ "arms": {
+  "LOGIT": "unchanged from prereg_season_sim.json: walk-forward logit (train_game_model.fit_logit on the usable games of seasons < S, live feature set, C by tune_C in those seasons), MLPredictor(games = archive games before D), goal_model split with TIE_SCALE 1.38, Engine sigma SIGMA0 0.20 / SIGMA_GP 40.",
+  "CAL": "the season_sim SIM arm (live simulator parameters bu/sim/out/sim_params.json sim-m5-v4-20261002, raw, 4,000 runs a game, seed SHA-256(20261002, game id), typical lineup of the last 10 dressed games, goalie start shares of the last 20 starts, everything as of D) with the calibration chosen on the tuning seasons below.",
+  "SIM_raw": "the uncalibrated season_sim SIM arm (the calibration's identity point k_inf 1, w_inf 1, sigma0 0.20). Scored on the tuning and dev seasons for reference only; NOT scored on 2025-26 (see holdout_look)."
+ },
+ "calibration_family": {
+  "notation": "d = days from the as-of date D to the game's date (0 for a game on D); z = logit P(home win) of a game from the simulator; z0 = mean of z over every remaining regular-season game of the table (the home-ice baseline at league-average strength).",
+  "A_game_logit_shrink": "z' = z0 + k(d) (z - z0), k(d) = k_inf + (1 - k_inf) exp(-d / tau) (tau = 0 means k(d) = k_inf for every game). P(tie after 60) is kept, the home share of OT / SO wins moves with P(home win) as in Engine.season (q' = clip(q + 0.5 (p' - p), 0.05, 0.95)) and the tie probability is capped so both regulation-win probabilities stay >= 0. Grid: k_inf in {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}, tau in {0, 30, 60, 120} days (k_inf 1.0 is one point whatever tau).",
+  "B_strength_sigma": "the Engine's per-season team random effect re-estimated for the simulator: sigma(GP) = sigma0 sqrt(40 / (40 + GP)) (the existing decrease with games played, SIGMA_GP 40 kept), sigma0 in {0.0, 0.1, 0.2, 0.3}.",
+  "C_lineup_regression": "the future-game lineup term regressed toward the league-average lineup as days-ahead grows: the typical lineup's OFF and DEF (bu_{h,a}_{off,def}, so 5v5 xGF = c0 + w OFF_X + w DEF_Y) multiplied by w(d) = w_inf + (1 - w_inf) exp(-d / 60); FIN, team / goalie state unchanged; each w_inf needs its own simulation of every remaining game. Grid: w_inf in {1.0, 0.75, 0.5}.",
+  "grid": "the full product A x B x C: 29 x 4 x 3 = 348 candidates, each scored at every tuning point with the same simulator runs (one per w_inf) and the same Engine seed (common random numbers)."
+ },
+ "tuning": {
+  "seasons_and_points": {"20172018": ["2017-11-01", "2018-01-01", "2018-03-01"], "20182019": ["2018-11-01", "2019-01-01", "2019-03-01"], "20212022": ["2021-11-01", "2022-01-01", "2022-03-01"], "20222023": ["2022-11-01", "2023-01-01", "2023-03-01"]},
+  "excluded": "2019-20 (regular season stopped on 2020-03-11 after ~1,082 of 1,271 games; the 24-team return-to-play field is not the bracket rule) and 2020-21 (56-game season in four realigned one-off divisions with no conferences or wild cards: the Engine's bracket does not apply). 2017-18 (VGK) and 2021-22 (SEA) have an expansion team; by Nov 1 it has 11+ games, so its typical lineup and goalie shares exist.",
+  "caveat": "the simulator's game-level parameters were fitted on 2017-18 .. 2022-23, so the tuning seasons are in-sample for the game model (not for the calibration, which none of the fits saw); this is why the choice is checked on dev and holdout. There is no LOGIT on the tuning seasons (the logit's archive, nhl_historical_gamestats.csv, starts in 2022-23); the tuning compares CAL candidates only.",
+  "monte_carlo": "Engine with 3,000 seasons per candidate per point, seed 20262027 + 10 x year + k (as season_backtest), playoffs not simulated",
+  "objective": "J = points MAE + 25 x playoff log loss, pooled over all tuning team x as-of points (378 rows: 31 + 31 + 32 + 32 teams x 3 points). The weight 25 makes +0.25 points of MAE and +0.010 of playoff log loss (the holdout margins below, and of prereg_season_sim.json) count equally. Playoff Brier, mean signed points error and 80% interval coverage are reported, not optimised.",
+  "selection": "the candidate with the lowest J; when several are within 0.02 of the lowest J, the one with the fewest knobs away from the identity (k_inf < 1, tau > 0, sigma0 != 0.20, w_inf < 1 each count one), then the lowest J. The chosen point is written to bu/sim/out/validation.json section season_calib_tune (with the whole grid's J) before dev is scored; dev and holdout use it unchanged."
+ },
+ "as_of_points": {
+  "dev": {"20232024": ["2023-11-01", "2024-01-01", "2024-03-01"], "20242025": ["2025-01-01", "2025-03-01"]},
+  "holdout": {"20252026": ["2025-11-01", "2026-01-01", "2026-03-01"]},
+  "note": "the same points as prereg_season_sim.json (2024-11-01 excluded: no 2024-25 logit archive before 2024-11-05)"
+ },
+ "common": "season_simulator.Engine (NHL tiebreak order points, RW, ROW, W; bracket; 5,000 seasons on dev / holdout, the same seed per (season, as-of point) for both arms); standings at D and remaining schedule from the lake; divisions / conferences and the actual playoff field from the NHL standings of that season (clinch indicators, cross-checked with the bracket rule).",
+ "metrics": {
+  "points_mae": "mean over teams x as-of points of |mean simulated final points - actual final points|",
+  "playoff_ll": "mean log loss of P(makes the playoffs), clipped to [0.001, 0.999]",
+  "se": "paired CAL - LOGIT differences with SEs clustered by team (bu.sim.season_backtest.summarize)",
+  "reported": "playoff Brier, mean signed points error, 80% interval coverage; reliability of P(playoffs) by decile (dev pooled, holdout); spread of the 2026-27 preseason projection (range of projected points, max / min playoff odds) for LOGIT, SIM_raw and CAL"
+ },
+ "promotion_rule": {
+  "pass": "CAL replaces LOGIT iff (1) dev pooled points MAE CAL <= LOGIT, AND (2) dev pooled playoff log loss CAL - LOGIT <= 1 x its team-clustered SE, AND (3) holdout 2025-26 points MAE CAL - LOGIT <= +0.25, AND (4) holdout 2025-26 playoff log loss CAL - LOGIT <= +0.010.",
+  "holdout_look": "one look at 2025-26, only after the tuning choice and the dev result are written to bu/sim/out/validation.json (sections season_calib_tune, season_calib_dev); logged in bu/sim/out/look_log.jsonl with question = 'season_sim_calib'; refused a second time. Only CAL and LOGIT are scored on 2025-26: the uncalibrated SIM's 2025-26 look (question season_sim) stays unspent, though CAL's holdout result is informative about it. The holdout look is taken even if dev already fails (the owner asked for it), and the rule above decides.",
+  "if_pass": "sim_params.json season_sim.engine = 'sim' with season_sim.calibration = the chosen point; season_simulator / game_implications use CAL (per-game logit fallback when the simulator cannot run a game); repository variable PONYXG_SEASON_SIM=logit rolls back.",
+  "if_fail": "season_simulator keeps LOGIT; the calibrated simulator (season_sim.calibration) is what PONYXG_SEASON_SIM=sim runs."
+ },
+ "amendments": []
+}
