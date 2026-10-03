@@ -112,6 +112,10 @@ test.describe('/accuracy', () => {
             }),
         );
         for (const t of visible) expect(t.split(/\s+/).length, t).toBeLessThanOrEqual(4);
+        // Audit from the top: goBack restores a scroll offset that can park the game-list
+        // select under the sticky app bar, which axe's target-size rule counts as obscured
+        // (focus itself clears the bar via scroll-padding-top).
+        await page.evaluate(() => window.scrollTo(0, 0));
         const axe = await blockingAxeViolations(page);
         expect(axe, formatAxe(axe)).toEqual([]);
     });

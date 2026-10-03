@@ -367,12 +367,19 @@ test.describe('home slate', () => {
             // Tapping the bar still expands the card.
             const first = page.locator('article[id]').filter({ has: page.locator('h2 button[aria-expanded]') }).first();
             if (!(await first.count())) continue;   // a slate of finals
-            const bar = (await first.locator('[role="img"][aria-label*="win probability"]').first().boundingBox())!;
+            // goBack restores the scroll position of the link above, so the first card can be
+            // off-screen: a tap at off-screen coordinates lands on nothing.
+            const barEl = first.locator('[role="img"][aria-label*="win probability"]').first();
+            await barEl.scrollIntoViewIfNeeded();
+            const bar = (await barEl.boundingBox())!;
             if (info.project.name === 'mobile') await page.touchscreen.tap(bar.x + bar.width / 2, bar.y + bar.height / 2);
             else await page.mouse.click(bar.x + bar.width / 2, bar.y + bar.height / 2);
             await expect(first.locator('h2 button[aria-expanded]')).toHaveAttribute('aria-expanded', 'true');
         }
-        // Odds tab: FORECAST → the forecast entry, NO BET → the edge section.
+        // Odds tab: FORECAST → the forecast entry, NO BET → the edge section. On a pregame
+        // slate (the last loop date can be an archive of finals with no market).
+        await page.goto(pregameSlate());
+        await settle(page, 300);
         const card = page.locator('article').filter({ has: page.locator('[role="img"][aria-label*="Market:"]') }).first();
         test.skip((await card.count()) === 0, 'no priced game');
         const toggle = card.locator('h2 button[aria-expanded]');
@@ -389,11 +396,13 @@ test.describe('home slate', () => {
 
     test('expanded cards never scroll sideways: 10 expand/collapse cycles on every tab (fix4 F4-5)', async ({ page }, info) => {
         test.skip(info.project.name !== 'desktop', '1440px check');
-        test.setTimeout(180_000);
         await page.goto('/');
         await settle(page, 300);
         const arts = page.locator('article[id]');
         const n = await arts.count();
+        // ~40 toggles and tab switches per card: the budget follows the slate size
+        // (a flat 3 min ran out at card 12 of a 13-game slate on the CI runner).
+        test.setTimeout(60_000 + n * 30_000);
         for (let i = 0; i < n; i++) {
             const art = arts.nth(i);
             const toggle = art.locator('h2 button[aria-expanded]');
@@ -586,16 +595,44 @@ test.describe('game lifecycle', () => {
 test.describe('URL state and routes', () => {
     test('?date= opens that day and survives a reload', async ({ page }) => {
         await page.goto('/');
-        const tabs = page.getByRole('navigation', { name: 'Game day' }).getByRole('link');
-        const last = tabs.last();
-        const href = await last.getAttribute('href');
-        await last.click();
-        await expect(page).toHaveURL(new RegExp(`\\${href!.replace('/', '')}`));
-        await expect(last).toHaveAttribute('aria-current', 'date');
+        await settle(page);
+        const nav = page.getByRole('navigation', { name: 'Game day' });
+        // The last day that isn't already showing: after midnight ET (before the
+        // morning rebuild drops yesterday) the default slate is the last chip, and
+        // clicking the current chip is a no-op that leaves the URL at "/".
+        const others = nav.locator('a:not([aria-current])');
+        test.skip((await others.count()) === 0, 'a single game day');
+        const href = (await others.last().getAttribute('href'))!;
+        const tab = nav.locator(`a[href="${href}"]`);
+        await tab.click();
+        await expect(page).toHaveURL(new RegExp(`\\${href.replace('/', '')}$`));
+        await expect(tab).toHaveAttribute('aria-current', 'date');
         await page.reload();
-        await expect(page.getByRole('navigation', { name: 'Game day' }).getByRole('link').last()).toHaveAttribute('aria-current', 'date');
-        await page.goto(href!);
-        await expect(page.getByRole('navigation', { name: 'Game day' }).getByRole('link').last()).toHaveAttribute('aria-current', 'date');
+        await expect(tab).toHaveAttribute('aria-current', 'date');
+        await page.goto(href);
+        await expect(tab).toHaveAttribute('aria-current', 'date');
+        await expect(nav.locator('a[aria-current]')).toHaveCount(1);
+    });
+
+    test('just after midnight ET the last game day is the default and other days still open by URL', async ({ page }) => {
+        // 00:30 ET on the last slate's day: the window between midnight and the morning rebuild.
+        const last = pregameSlate().split('=')[1];
+        await page.clock.setFixedTime(new Date(`${last}T04:30:00Z`));
+        await page.goto('/');
+        await settle(page);
+        const nav = page.getByRole('navigation', { name: 'Game day' });
+        await expect(nav.getByRole('link').last()).toHaveAttribute('aria-current', 'date');
+        await expect(nav.locator('a[aria-current]')).toHaveCount(1);
+        const others = nav.locator('a:not([aria-current])');
+        test.skip((await others.count()) === 0, 'a single game day');
+        const href = (await others.last().getAttribute('href'))!;
+        await nav.locator(`a[href="${href}"]`).click();
+        await expect(page).toHaveURL(new RegExp(`\\${href.replace('/', '')}$`));
+        await page.reload();
+        await settle(page);
+        await expect(page).toHaveURL(new RegExp(`\\${href.replace('/', '')}$`));
+        await expect(nav.locator(`a[href="${href}"]`)).toHaveAttribute('aria-current', 'date');
+        await expect(nav.locator('a[aria-current]')).toHaveCount(1);
     });
 
     test('an off day shows the next game day', async ({ page }) => {
