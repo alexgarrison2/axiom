@@ -504,7 +504,9 @@ by the win %, the breakdown's five 3,000-run counterfactuals, anchoring and pric
 (sim-m5-v4): lite run of 2026-10-03 03:06Z, 13 pregame games in 4.9 s (0.38 s a game), the whole
 lite run 31 s.  Validation: ~1 min per season on 8 workers.  Season projections on the simulator
 (opt-in): 1,323 remaining games x 4,000 runs in 16 s on 4 workers (laptop), 0.2 s from the day's
-cache; the Monte Carlo of 5,000 seasons over the table ~7 s.  The season backtest (5 as-of points,
+cache; the Monte Carlo of 5,000 seasons over the table ~7 s.  Full refresh of 2026-10-03 with
+`PONYXG_SEASON_SIM=sim` on a laptop: `season_simulator` stage 26.5 s (11.8 s simulating 1,323
+games on 8 workers).  The season backtest (5 as-of points,
 both arms) ~100 s on 8 workers.
 
 ## Weaknesses (what is still heuristic)
