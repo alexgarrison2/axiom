@@ -39,13 +39,20 @@ export default defineConfig({
             use: { ...devices['Desktop Chrome'] },
         },
         {
+            // Laptop/tablet width, below the rail + pane layout (xl, 1280px): the card grid with inline expansion.
             name: 'desktop',
-            testIgnore: /gate-selftest\.spec\.ts/,
-            use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+            testIgnore: /gate-selftest\.spec\.ts|slate-pane\.spec\.ts/,
+            use: { ...devices['Desktop Chrome'], viewport: { width: 1200, height: 900 } },
+        },
+        {
+            // Wide desktop: the rail of games and the pane beside it.
+            name: 'desktop-wide',
+            testMatch: /slate-pane\.spec\.ts/,
+            use: { ...devices['Desktop Chrome'], viewport: { width: 1600, height: 900 } },
         },
         {
             name: 'mobile',
-            testIgnore: /gate-selftest\.spec\.ts/,
+            testIgnore: /gate-selftest\.spec\.ts|slate-pane\.spec\.ts/,
             // Pixel 7 runs on Chromium (390-412px class phone, touch, DPR 2.6).
             use: { ...devices['Pixel 7'] },
         },

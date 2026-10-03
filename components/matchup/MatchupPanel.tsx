@@ -60,8 +60,6 @@ interface RowModel {
     adv: Side | null;
 }
 
-const HATCH = 'repeating-linear-gradient(135deg, rgb(var(--text-3-rgb) / 0.55) 0 2px, transparent 2px 5px)';
-
 /**
  * One half of a row: the value sits in a fixed column at the outer edge and
  * the bar grows outward from the axis inside its own track, so nothing can
@@ -76,7 +74,7 @@ function Bar({ side, cell, color, state, fmt }: { side: Side; cell: Cell; color:
             className={cn(
                 'whitespace-nowrap text-caption tabular-nums',
                 away ? 'text-left' : 'text-right',
-                state === 'adv' ? 'font-bold text-fg-1' : state === 'small' || missing ? 'text-fg-3' : 'text-fg-2',
+                state === 'adv' ? 'font-bold text-fg-1' : missing ? 'text-fg-3' : 'text-fg-2',
             )}
         >
             {missing ? '—' : fmt(cell.value!)}
@@ -90,8 +88,8 @@ function Bar({ side, cell, color, state, fmt }: { side: Side; cell: Cell; color:
                     className={cn('absolute top-1/2 h-2.5 -translate-y-1/2', away ? 'right-0 rounded-l-full' : 'left-0 rounded-r-full')}
                     style={{
                         width: `${w}%`,
-                        background: state === 'small' ? HATCH : color,
-                        opacity: state === 'adv' || state === 'small' ? 1 : state === 'even' ? 0.55 : 0.28,
+                        background: color,
+                        opacity: state === 'adv' ? 1 : state === 'even' ? 0.55 : 0.28,
                     }}
                 />
             )}
@@ -105,10 +103,9 @@ function Bar({ side, cell, color, state, fmt }: { side: Side; cell: Cell; color:
     );
 }
 
-type BarState = 'adv' | 'dim' | 'even' | 'small';
+type BarState = 'adv' | 'dim' | 'even';
 
 function barState(row: RowModel, side: Side): BarState {
-    if (smallSample(row.cells[side])) return 'small';
     if (!row.adv) return 'even';
     return row.adv === side ? 'adv' : 'dim';
 }
@@ -155,7 +152,7 @@ function GroupTag({ children, extra, first }: { children: React.ReactNode; extra
     );
 }
 
-function TeamHead({ side, tri, gp, tags }: { side: Side; tri: string; gp: number; tags: string[] }) {
+function TeamHead({ side, tri, gp, pending, tags }: { side: Side; tri: string; gp: number; pending: number; tags: string[] }) {
     const away = side === 'away';
     return (
         <div className={cn('flex min-w-0 items-center gap-2', !away && 'flex-row-reverse text-right')}>
@@ -165,6 +162,11 @@ function TeamHead({ side, tri, gp, tags }: { side: Side; tri: string; gp: number
                 <span className={cn('mt-1 text-micro uppercase tracking-wide tabular-nums', gp < MIN_GP ? 'text-warn' : 'text-fg-3')}>
                     GP <span className="font-bold">{gp}</span>
                 </span>
+                {pending > 0 ? (
+                    <span className="mt-0.5 text-micro uppercase tracking-wide text-amber" title="Played, but not in these numbers yet: the game log updates after the nightly ingest.">
+                        +{pending} pending
+                    </span>
+                ) : null}
                 {tags.length ? (
                     <span className="mt-0.5 flex flex-wrap gap-x-1.5 text-micro uppercase tracking-wide text-brand" data-situation>
                         {tags.map(t => (
@@ -217,6 +219,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
         const rest = {} as Record<Side, ReturnType<typeof tonightRest>>;
         const values = {} as Record<Side, ReturnType<typeof sideValues>>;
         const gp = {} as Record<Side, number>;
+        const pending = {} as Record<Side, number>;
         for (const side of SIDES) {
             rest[side] = tonightRest(games[side], p.date, p[side].restDays, p.id);
             filters[side] = {
@@ -227,6 +230,9 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
             };
             const sel = filterGames(games[side], filters[side], p.id);
             gp[side] = sel.length;
+            // Games the schedule feed (hourly) says were played that the game log (daily) does not hold yet.
+            const logged = games[side].filter(g => g.row.type === 2 && g.row.id !== p.id && g.row.date < p.date).length;
+            pending[side] = Math.max(0, (p[side].gp ?? 0) - logged);
             values[side] = sideValues(t[side], sel);
         }
         const details: Record<Side, SideDetails | null> | null = state.status === 'ready' && state.data ? { away: state.data.away, home: state.data.home } : null;
@@ -244,7 +250,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
             }
             return { stat, cells, adv: advantage(cells.away, cells.home) };
         });
-        return { rows, gp, rest, filters, seasons: league.seasons };
+        return { rows, gp, pending, rest, filters, seasons: league.seasons };
     }, [load, state, useLoc, useRest, useStarter, last, p]);
 
     if (load.status === 'loading') {
@@ -275,8 +281,8 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
     return (
         <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between gap-2">
-                <TeamHead side="away" tri={tris.away} gp={model.gp.away} tags={tags('away')} />
-                <TeamHead side="home" tri={tris.home} gp={model.gp.home} tags={tags('home')} />
+                <TeamHead side="away" tri={tris.away} gp={model.gp.away} pending={model.pending.away} tags={tags('away')} />
+                <TeamHead side="home" tri={tris.home} gp={model.gp.home} pending={model.pending.home} tags={tags('home')} />
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-1.5" role="group" aria-label="Filter each team by its own situation tonight">

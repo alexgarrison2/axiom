@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { Prediction } from '@/types/prediction';
 import { biggestGames, findImplication, type GameImplicationsData } from '@/utils/implications';
 import { MatchupCard } from '@/components/matchup/MatchupCard';
+import { SlatePane } from '@/components/matchup/SlatePane';
 import { ArchiveCard } from '@/components/matchup/ArchiveCard';
 import { BiggestGames } from '@/components/matchup/SlateStrips';
 import { useLiveScores } from '@/hooks/useLiveScores';
@@ -198,20 +199,25 @@ export default function PredictionsViewer({
                         ))}
                     </ul>
                 ) : slate.length ? (
-                    <ul className="grid grid-cols-1 items-start gap-3 lg:grid-cols-2 lg:gap-4" aria-label={`Games, ${weekdayDate(headDate)}`}>
-                        {slate.map((p, i) => (
-                            <li key={p.id} className={styles.rise} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
-                                <MatchupCard
-                                    p={p}
-                                    live={live[p.id] ?? null}
-                                    implication={findImplication(implications, p.home.team.triCode, p.away.team.triCode)}
-                                    playoffOdds={playoffOdds}
-                                    highlighted={target === cardAnchor(p)}
-                                    seriesScore={series?.[`${p.away.team.triCode}|${p.home.team.triCode}`] ?? null}
-                                />
-                            </li>
-                        ))}
-                    </ul>
+                    <>
+                        <ul className="grid grid-cols-1 items-start gap-3 lg:grid-cols-2 lg:gap-4 xl:hidden" aria-label={`Games, ${weekdayDate(headDate)}`}>
+                            {slate.map((p, i) => (
+                                <li key={p.id} className={styles.rise} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
+                                    <MatchupCard
+                                        p={p}
+                                        live={live[p.id] ?? null}
+                                        implication={findImplication(implications, p.home.team.triCode, p.away.team.triCode)}
+                                        playoffOdds={playoffOdds}
+                                        highlighted={target === cardAnchor(p)}
+                                        seriesScore={series?.[`${p.away.team.triCode}|${p.home.team.triCode}`] ?? null}
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="hidden xl:block">
+                            <SlatePane slate={slate} live={live} implications={implications} playoffOdds={playoffOdds} series={series} focusAnchor={target} heading={weekdayDate(headDate)} />
+                        </div>
+                    </>
                 ) : (
                     <div className="panel flex flex-col items-center gap-2 border-dashed px-6 py-10 text-center">
                         <p className="heading-section">{offFile && !offFile.scheduleKnown ? 'Schedule unavailable' : 'No games'}</p>

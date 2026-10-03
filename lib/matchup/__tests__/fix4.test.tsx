@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MatchupCard } from '../../../components/matchup/MatchupCard';
 import { OddsPanel } from '../../../components/matchup/OddsPanel';
+import { GoalsBar } from '../../../components/matchup/GoalsBar';
 import { WhyThisPick } from '../../../components/matchup/WhyThisPick';
 import OddsHistoryModal from '../../../components/OddsHistoryModal';
 import type { OddsEntry } from '../../../app/api/odds-history/route';
@@ -159,8 +160,9 @@ describe('F4-3 card symbols open the glossary without toggling the card', () => 
         const { container } = render(<OddsPanel p={p} phase="pre" />);
         const forecast = [...container.querySelectorAll('a')].find(a => a.textContent?.startsWith('Forecast'));
         expect(forecast?.getAttribute('href')).toBe('/methodology#term-model-pct');
-        const xg = [...container.querySelectorAll('a')].find(a => a.textContent?.startsWith('xG'));
-        if (p.away.xg != null) expect(xg?.getAttribute('href')).toBe('/methodology#term-projected-goals');
+        const goals = render(<GoalsBar away="CHI" home="VGK" ax={2.5} hx={3.1} line="6" colors={{ away: '#c00', home: '#cc9' }} />).container;
+        const xg = [...goals.querySelectorAll('a')].find(a => a.textContent?.startsWith('xG'));
+        expect(xg?.getAttribute('href')).toBe('/methodology#term-projected-goals');
         const noBet = [...container.querySelectorAll('a')].find(a => a.textContent?.startsWith('No bet'));
         if (noBet) expect(noBet.getAttribute('href')).toBe('/methodology#edge');
     });

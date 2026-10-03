@@ -9,6 +9,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { SEASON_ID } from '@/lib/season';
 import { DetailsLoading, type DetailsState } from './DetailsLoading';
+import { GoalieSection } from './GoaliesPanel';
 import { cn } from '@/lib/utils';
 
 /**
@@ -31,7 +32,7 @@ function impactTag(season: string | null | undefined, home: boolean) {
 function TeamNews({ news, tri }: { news: PlayerNewsItem[]; tri: string }) {
     if (!news.length) return null;
     return (
-        <details open className="group mt-2.5 rounded-[10px] border border-line px-3 py-1.5">
+        <details open className="group rounded-[10px] border border-line px-3 py-1.5">
             <summary className="flex min-h-7 cursor-pointer list-none items-center justify-between coarse:min-h-11">
                 <span className="label">
                     News <span className="text-fg-2">{news.length}</span>
@@ -54,7 +55,7 @@ function Logo({ src, on }: { src: string; on: boolean }) {
 }
 
 /**
- * Both projected lineups, injuries and player news. A phone-width card
+ * Both projected lineups, each team's goalies, injuries and player news. A phone-width card
  * switches between the teams with a crest toggle (news follows the team);
  * a wide card shows them side by side, each with its own news.
  */
@@ -79,15 +80,21 @@ export function LineupsPanel({ p, state }: { p: Prediction; state: DetailsState 
                             ]}
                         />
                     </div>
-                    <div className="grid min-w-0 grid-cols-1 gap-3 cq-lg:grid-cols-2">
-                        <div className={cn('min-w-0', side !== 'away' && 'hidden cq-lg:block')}>
-                            <LineupGrid team={p.away.team} d={d.away} now={now} seasonTag={impactTag(d.impactSeason, false)} titleWideOnly />
-                            <TeamNews news={d.away.news} tri={p.away.team.triCode} />
-                        </div>
-                        <div className={cn('min-w-0', side !== 'home' && 'hidden cq-lg:block')}>
-                            <LineupGrid team={p.home.team} d={d.home} now={now} seasonTag={impactTag(d.impactSeason, true)} titleWideOnly />
-                            <TeamNews news={d.home.news} tri={p.home.team.triCode} />
-                        </div>
+                    {/* Wide card: both teams share three rows (lineup, goalies, news), so each section starts at the same height. */}
+                    <div className="grid min-w-0 grid-cols-1 gap-3 cq-lg:grid-cols-2 cq-lg:grid-rows-[auto_auto_auto]">
+                        {(['away', 'home'] as const).map(sd => (
+                            <div key={sd} className={cn('flex min-w-0 flex-col gap-3 cq-lg:row-span-3 cq-lg:grid cq-lg:grid-rows-subgrid', side !== sd && 'hidden cq-lg:grid')}>
+                                <div className="min-w-0">
+                                    <LineupGrid team={p[sd].team} d={d[sd]} now={now} seasonTag={impactTag(d.impactSeason, sd === 'home')} titleWideOnly />
+                                </div>
+                                <div className="min-w-0">
+                                    <GoalieSection p={p} state={state} side={sd} />
+                                </div>
+                                <div className="min-w-0">
+                                    <TeamNews news={d[sd].news} tri={p[sd].team.triCode} />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}

@@ -15,7 +15,10 @@ import { cn } from '@/lib/utils';
 import { StatusLine } from './StatusLine';
 import { TeamSide, washVars } from './TeamSide';
 import { ShareButton } from './ShareButton';
+import { GoalsBar } from './GoalsBar';
+import { fmtLine } from '@/lib/matchup/markets';
 import { CHIP, OVER_TOGGLE } from './chip-styles';
+import type { Tab } from './Details';
 
 const Details = dynamic(() => import('./Details'), {
     loading: () => (
@@ -33,6 +36,12 @@ export interface MatchupCardProps {
     playoffOdds: Record<string, number>;
     highlighted?: boolean;
     seriesScore?: { away: number; home: number } | null;
+    /** Rail + pane layout: always open, no toggle, no collapse button. */
+    pinned?: boolean;
+    /** The card is a second copy of a game (the pane): no element id, so anchors stay unique. */
+    noAnchor?: boolean;
+    detailTab?: Tab;
+    onDetailTab?: (t: Tab) => void;
 }
 
 /** A final whose pregame forecast sat within 1 pt of 50: no lean, never graded. */
@@ -41,7 +50,7 @@ export function coinFlipFinal(p: Prediction, phase: Phase): boolean {
 }
 
 /** Centre of the footer: the result flag on finals, else the gated edge or the model lean. */
-function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame | null }) {
+export function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame | null }) {
     if (phase === 'final') {
         if (coinFlipFinal(p, phase)) {
             return (
@@ -95,7 +104,9 @@ function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame 
                 className={cn(OVER_TOGGLE, 'glow-magenta text-caption font-bold uppercase tracking-[0.12em]')}
                 title={`Model ${lean.pct}% ${lean.tri}, ${lean.gap.toFixed(1)} pts off the market`}
             >
-                <span aria-hidden="true">◆ {lean.pct} {lean.tri}</span>
+                <span aria-hidden="true">
+                    ◆ {lean.pct} {lean.tri}
+                </span>
                 <span className="sr-only">
                     Model lean: {lean.tri} {lean.pct}%, {lean.gap.toFixed(1)} points off the market
                 </span>
@@ -147,8 +158,9 @@ function FooterSide({ p, side, phase }: { p: Prediction; side: 'away' | 'home'; 
     );
 }
 
-export function MatchupCard({ p, live, implication, playoffOdds, highlighted, seriesScore }: MatchupCardProps) {
-    const [open, setOpen] = useState(false);
+export function MatchupCard({ p, live, implication, playoffOdds, highlighted, seriesScore, pinned = false, noAnchor = false, detailTab, onDetailTab }: MatchupCardProps) {
+    const [openState, setOpen] = useState(false);
+    const open = pinned || openState;
     const ref = useRef<HTMLElement>(null);
     const toggleRef = useRef<HTMLButtonElement>(null);
     const uid = useId();
@@ -175,7 +187,13 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
         setOpen(false);
         toggleRef.current?.focus({ preventScroll: true });
         const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-        requestAnimationFrame(() => ref.current?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduce ? 'auto' : 'smooth' }));
+        requestAnimationFrame(() =>
+            ref.current?.scrollIntoView({
+                block: 'nearest',
+                inline: 'nearest',
+                behavior: reduce ? 'auto' : 'smooth',
+            }),
+        );
     }, []);
 
     let finalText: string | null = null;
@@ -191,7 +209,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
     return (
         <article
             ref={ref}
-            id={anchor}
+            id={noAnchor ? undefined : anchor}
             aria-labelledby={finalText ? `${titleId} ${resultId}` : titleId}
             data-phase={phase}
             className={cn(
@@ -211,9 +229,11 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                             </span>
                         ) : null}
                         <ShareButton p={p} title={title} anchor={anchor} />
-                        <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-3 transition-transform', open && 'rotate-180')}>
-                            <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                        {pinned ? null : (
+                            <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-3 transition-transform', open && 'rotate-180')}>
+                                <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        )}
                     </div>
                 </div>
 
@@ -226,29 +246,46 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                         </span>
                     ) : null}
                     <h2 className="flex justify-center">
-                        <button
-                            ref={toggleRef}
-                            type="button"
-                            aria-expanded={open}
-                            aria-controls={detailsId}
-                            onClick={() => setOpen(o => !o)}
-                            className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
-                        >
-                            <span id={titleId} className="sr-only">
-                                {title}
-                            </span>
-                            {scored ? (
-                                <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
-                                    <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
-                                    <span className="text-[0.7em] text-fg-disabled">-</span>
-                                    <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                        {pinned ? (
+                            <span className="min-h-6 min-w-4 px-0.5 text-center">
+                                <span id={titleId} className="sr-only">
+                                    {title}
                                 </span>
-                            ) : (
-                                // Drawn by CSS so the heading's text (and any name built from it) never holds "@".
-                                <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
-                            )}
-                            <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
-                        </button>
+                                {scored ? (
+                                    <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
+                                        <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
+                                        <span className="text-[0.7em] text-fg-disabled">-</span>
+                                        <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                                    </span>
+                                ) : (
+                                    <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
+                                )}
+                            </span>
+                        ) : (
+                            <button
+                                ref={toggleRef}
+                                type="button"
+                                aria-expanded={open}
+                                aria-controls={detailsId}
+                                onClick={() => setOpen(o => !o)}
+                                className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                            >
+                                <span id={titleId} className="sr-only">
+                                    {title}
+                                </span>
+                                {scored ? (
+                                    <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
+                                        <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
+                                        <span className="text-[0.7em] text-fg-disabled">-</span>
+                                        <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                                    </span>
+                                ) : (
+                                    // Drawn by CSS so the heading's text (and any name built from it) never holds "@".
+                                    <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
+                                )}
+                                <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
+                            </button>
+                        )}
                     </h2>
                     <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!scored} chip={homeChip} />
                 </div>
@@ -282,10 +319,13 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                     </span>
                     <FooterSide p={p} side="home" phase={phase} />
                 </div>
+                {open && phase !== 'final' && hasPrediction(p) && p.away.xg != null && p.home.xg != null ? (
+                    <GoalsBar away={a} home={h} ax={p.away.xg} hx={p.home.xg} line={fmtLine(p.markets?.total?.line ?? p.totalLine)} colors={colors} />
+                ) : null}
             </div>
 
             <div id={detailsId} hidden={!open}>
-                {open ? <Details p={p} phase={phase} implication={implication} playoffOdds={playoffOdds} onCollapse={collapse} /> : null}
+                {open ? <Details p={p} phase={phase} implication={implication} playoffOdds={playoffOdds} onCollapse={pinned ? undefined : collapse} tab={detailTab} onTab={onDetailTab} /> : null}
             </div>
         </article>
     );

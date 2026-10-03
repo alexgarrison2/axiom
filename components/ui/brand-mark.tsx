@@ -84,24 +84,31 @@ export interface BrandMarkProps {
   animate?: boolean;
   /** Accessible name; omit when the parent link is already named. */
   title?: string;
+  /** Just the LED "pony xG" wordmark and goal light, no horse (inline labels). */
+  wordmarkOnly?: boolean;
 }
 
 export function BrandMark({
   className,
   animate = true,
   title,
+  wordmarkOnly = false,
 }: BrandMarkProps) {
   return (
     <svg
-      viewBox="10 4 700 168"
+      viewBox={wordmarkOnly ? "255 12 448 150" : "10 4 700 168"}
       className={cn("h-8 w-auto overflow-visible", className)}
       role={title ? "img" : undefined}
       aria-hidden={title ? undefined : true}
       aria-label={title}
       focusable="false"
     >
-      <path d={HORSE} fill="#4FF5F7" />
-      <path d={EYE} fill="#4FF5F7" />
+      {wordmarkOnly ? null : (
+        <>
+          <path d={HORSE} fill="#4FF5F7" />
+          <path d={EYE} fill="#4FF5F7" />
+        </>
+      )}
       {/* Wordmark is scaled up 1.45× from the full logo so it stays legible at 32px */}
       <g transform="translate(259 160) scale(1.45) translate(-259 -160)">
         <g>

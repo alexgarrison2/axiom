@@ -11,8 +11,8 @@ import { fairLine } from '@/lib/matchup/parse';
 import { hasMarket, hasPrediction, recommendedBet } from '@/lib/matchup/edge';
 import { cn } from '@/lib/utils';
 import { GlossLink } from '@/components/ui/gloss-link';
-import { clashSafePair } from '@/components/ui/team-color';
-import { readableTextOn } from '@/components/ui/color';
+import { BrandMark } from '@/components/ui/brand-mark';
+import { WinBar } from '@/components/ui/win-bar';
 import { useHydrated } from './GameTime';
 import { MarketsTable } from './MarketsTable';
 import { hasInfoOnlyEv, marketRows } from '@/lib/matchup/markets';
@@ -24,48 +24,48 @@ export function oddsHistoryUrl(p: Prediction): string {
     return `/api/odds-history?${q.toString()}`;
 }
 
-/** One view of the win probability as a split bar: each team's share and its moneyline on its own side. */
-function ProbRow({
+const pct1 = (n: number) => `${n.toFixed(1)}%`;
+
+/** One line of the readout: each side's number and price on its own side, the label between. */
+function ReadRow({
     label,
+    mark,
     pair,
     odds,
-    colors,
-    a,
-    h,
+    strong,
     magenta,
 }: {
     label: React.ReactNode;
+    mark?: React.ReactNode;
     pair: { away: number; home: number };
     odds: [string | null, string | null];
-    colors: { away: string; home: string };
-    a: string;
-    h: string;
+    strong?: boolean;
     magenta?: boolean;
 }) {
-    const seg = (side: 'away' | 'home') => {
-        const win = pair[side];
-        const fill = colors[side];
-        return (
-            <div
-                className={cn('flex h-11 min-w-0 items-center px-2.5', side === 'away' ? 'justify-start' : 'justify-end text-right')}
-                style={{ width: `${win}%`, background: fill, color: readableTextOn(fill), opacity: win >= 50 ? 1 : 0.62 }}
-            >
-                <span className="flex flex-col leading-tight">
-                    <span className="font-display text-title font-bold tabular-nums">{win.toFixed(1)}%</span>
-                    <span className="text-micro tabular-nums opacity-80">{odds[side === 'away' ? 0 : 1] ?? '—'}</span>
-                </span>
-            </div>
-        );
-    };
+    const side = (win: number, price: string | null, right?: boolean) => (
+        <span className={cn('flex min-w-0 items-baseline gap-2 tabular-nums', right && 'flex-row-reverse')}>
+            <span className={cn('font-display font-bold', strong ? 'text-title text-fg-1' : 'text-body text-fg-1')}>{pct1(win)}</span>
+            <span className="text-micro text-fg-3">{price ?? '—'}</span>
+        </span>
+    );
     return (
-        <div className="flex flex-col gap-1" role="group" aria-label={`${a} ${pair.away.toFixed(1)}%, ${h} ${pair.home.toFixed(1)}%`}>
-            <span className={cn('text-micro font-medium uppercase tracking-wide', magenta ? 'text-magenta' : 'text-fg-3')}>{label}</span>
-            <div className="flex overflow-hidden rounded-control">
-                {seg('away')}
-                {seg('home')}
-            </div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-baseline gap-3 py-1.5">
+            {side(pair.away, odds[0])}
+            <span className={cn('inline-flex items-center gap-1.5 text-micro font-medium uppercase tracking-wide', magenta ? 'text-magenta' : 'text-fg-3')}>
+                {mark}
+                {label}
+            </span>
+            {side(pair.home, odds[1], true)}
         </div>
     );
+}
+
+/** Where the pure model and the de-vigged market disagree, in points on the home side. */
+function gapNote(model: { home: number } | null, market: { home: number } | null, a: string, h: string): { text: string; side: 'away' | 'home' | null } | null {
+    if (!model || !market) return null;
+    const d = model.home - market.home;
+    if (Math.abs(d) < 0.5) return { text: 'Model agrees with market', side: null };
+    return { text: `Model ${Math.abs(d).toFixed(1)} pts higher on ${d > 0 ? h : a}`, side: d > 0 ? 'home' : 'away' };
 }
 
 /** A probability pair to one decimal that sums to 100 (null when neither side is known). */
@@ -109,75 +109,99 @@ export function OddsPanel({ p, phase }: { p: Prediction; phase: Phase }) {
     const at = atTime && notToday && fetched ? `${fetched.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${atTime}` : atTime;
     const a = p.away.team.triCode;
     const h = p.home.team.triCode;
-    const colors = clashSafePair(a, h);
+
+    const gap = gapNote(pure, market, a, h);
+    const showBar = forecast != null;
 
     return (
-        <div className="flex flex-col gap-2.5">
-            <div className="flex items-baseline justify-between gap-2 text-micro uppercase tracking-label text-fg-3">
-                <span className="font-bold text-fg-1">{a}</span>
-                <span className="text-center font-medium">
-                    {[src, at].filter(Boolean).join(' · ') || (priced ? 'Market' : 'No line')}
-                    {phase !== 'pre' && priced ? ' · pregame' : ''}
-                </span>
-                <span className="font-bold text-fg-1">{h}</span>
-            </div>
-            <div className="flex flex-col gap-2.5">
-                {forecast ? (
-                    <ProbRow label={<GlossLink term="model-pct">Forecast</GlossLink>} pair={forecast} odds={[fmtOdds(p.away.fairOdds), fmtOdds(p.home.fairOdds)]} colors={colors} a={a} h={h} />
-                ) : null}
-                {pure ? (
-                    <ProbRow
-                        label={<GlossLink term="model-only">Model</GlossLink>}
-                        pair={pure}
-                        odds={[fmtOdds(fairLine(pure.away)), fmtOdds(fairLine(pure.home))]}
-                        colors={colors}
-                        a={a}
-                        h={h}
-                        magenta
-                    />
-                ) : null}
-                {market ? (
-                    <ProbRow label={<GlossLink term="market-pct">Market</GlossLink>} pair={market} odds={[fmtOdds(p.away.marketOdds), fmtOdds(p.home.marketOdds)]} colors={colors} a={a} h={h} />
-                ) : null}
-                {p.away.xg != null && p.home.xg != null ? (
-                    <div className="flex items-baseline justify-between gap-2 border-t border-line pt-2 tabular-nums">
-                        <span className="font-display text-title font-bold text-fg-1">{p.away.xg.toFixed(2)}</span>
-                        <span className="text-micro font-medium uppercase tracking-wide text-fg-3">
-                            <GlossLink term="projected-goals">xG</GlossLink>
-                        </span>
-                        <span className="font-display text-title font-bold text-fg-1">{p.home.xg.toFixed(2)}</span>
-                    </div>
-                ) : null}
-            </div>
-
-            <MarketsTable p={p} />
-
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                {edge ? (
-                    <span className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-chip border border-pos/40 px-2 py-0.5 text-micro font-bold uppercase tracking-chip text-pos">
-                            +EV {edge.evPct.toFixed(1)}% {edge.tri}
-                            {edge.units != null ? ` · ${edge.units.toFixed(1)}u` : ''}
-                        </span>
-                        {edge.official ? null : (
-                            <GlossLink href="/methodology#edge" desc={p.gateReason ?? undefined} className="label">
-                                Unofficial · gate closed
+        <div className="flex flex-col gap-3">
+            {/* Wide card: the model-vs-market read on the left, the full market board beside it. */}
+            <div className="grid grid-cols-1 gap-x-8 gap-y-3 cq-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] cq-lg:items-start">
+                <div className="flex min-w-0 flex-col gap-3">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        {edge ? (
+                            <span className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-chip border border-pos/40 bg-pos/10 px-2 py-0.5 text-micro font-bold uppercase tracking-chip text-pos">
+                                    +EV {edge.evPct.toFixed(1)}% {edge.tri}
+                                    {edge.units != null ? ` · ${edge.units.toFixed(1)}u` : ''}
+                                </span>
+                                {edge.official ? null : (
+                                    <GlossLink href="/methodology#edge" desc={p.gateReason ?? undefined} className="label">
+                                        Unofficial · gate closed
+                                    </GlossLink>
+                                )}
+                            </span>
+                        ) : phase === 'pre' && priced ? (
+                            <GlossLink href="/methodology#edge" desc="No side clears +3% EV with a stake of 0.5u or more." className="label">
+                                No bet
                             </GlossLink>
-                        )}
-                    </span>
-                ) : phase === 'pre' && priced ? (
-                    <GlossLink href="/methodology#edge" desc="No side clears +3% EV with a stake of 0.5u or more." className="label">
-                        No bet
-                    </GlossLink>
-                ) : null}
-                {infoOnly ? (
-                    <GlossLink term="sim-edge" desc={p.markets?.gateReason ?? undefined} className="label">
-                        Info only
-                    </GlossLink>
-                ) : null}
-                <span className="flex-1" />
-                {history && history.length > 1 ? <OddsHistoryModal entries={history} away={p.away.team} home={p.home.team} started={phase !== 'pre'} /> : null}
+                        ) : null}
+                        {infoOnly ? (
+                            <GlossLink term="sim-edge" desc={p.markets?.gateReason ?? undefined} className="label">
+                                Info only
+                            </GlossLink>
+                        ) : null}
+                        <span className="flex-1" />
+                        {history && history.length > 1 ? <OddsHistoryModal entries={history} away={p.away.team} home={p.home.team} started={phase !== 'pre'} /> : null}
+                    </div>
+
+                    {showBar ? (
+                        <div className="flex flex-col gap-1">
+                            <WinBar
+                                away={a}
+                                home={h}
+                                pAway={forecast.away / 100}
+                                market={market ? market.away / 100 : null}
+                                model={pure ? pure.away / 100 : null}
+                                size="md"
+                                digits={1}
+                                showCodes
+                                animate={false}
+                                label="Forecast win probability"
+                            />
+                            {gap ? (
+                                <span className={cn('text-center text-micro font-medium uppercase tracking-wide', gap.side ? 'text-magenta' : 'text-fg-3')} data-gap>
+                                    {gap.text}
+                                </span>
+                            ) : null}
+                        </div>
+                    ) : null}
+
+                    <div className="flex flex-col divide-y divide-line border-y border-line">
+                        {forecast ? <ReadRow label={<GlossLink term="model-pct">Forecast</GlossLink>} pair={forecast} odds={[fmtOdds(p.away.fairOdds), fmtOdds(p.home.fairOdds)]} strong /> : null}
+                        {pure ? (
+                            <ReadRow
+                                label={
+                                    <GlossLink term="model-only">
+                                        <BrandMark wordmarkOnly animate={false} className="h-8" />
+                                        <span className="sr-only">Model</span>
+                                    </GlossLink>
+                                }
+                                mark={<i aria-hidden="true" className="inline-block h-2 w-2 rotate-45 bg-magenta" />}
+                                pair={pure}
+                                odds={[fmtOdds(fairLine(pure.away)), fmtOdds(fairLine(pure.home))]}
+                                magenta
+                            />
+                        ) : null}
+                        {market ? (
+                            <ReadRow
+                                label={<GlossLink term="market-pct">Market</GlossLink>}
+                                mark={<i aria-hidden="true" className="inline-block h-3 w-0.5 bg-white" />}
+                                pair={market}
+                                odds={[fmtOdds(p.away.marketOdds), fmtOdds(p.home.marketOdds)]}
+                            />
+                        ) : null}
+                    </div>
+                </div>
+                <div className="min-w-0">
+                    <MarketsTable p={p} />
+                </div>
             </div>
+
+            <p className="text-center text-micro uppercase tracking-label text-fg-3">
+                {[src, at].filter(Boolean).join(' · ') || (priced ? 'Market' : 'No line')}
+                {phase !== 'pre' && priced ? ' · pregame' : ''}
+            </p>
         </div>
     );
 }

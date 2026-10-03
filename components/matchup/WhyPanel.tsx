@@ -4,7 +4,6 @@ import type { PickSummaries, Prediction, SideData } from '@/types/prediction';
 import type { GameImplication } from '@/utils/implications';
 import type { Phase } from '@/lib/matchup/lifecycle';
 import { modelWeight, pickForm } from '@/lib/matchup/edge';
-import RecentGamesList from '@/components/RecentGamesList';
 import { WhyThisPick } from './WhyThisPick';
 import { ContextChips } from './ContextChips';
 import { termHref } from '@/lib/matchup/glossary-links';
@@ -91,57 +90,59 @@ export function WhyPanel({ p, phase, state, implication }: { p: Prediction; phas
     const conf = p.confidenceGrade ? (CONF_WORD[p.confidenceGrade] ?? p.confidenceGrade) : null;
     const blend = w != null && w < 0.999 ? `Forecast = model ${Math.round(w * 100)}% + market ${100 - Math.round(w * 100)}%` : null;
     return (
-        <div className="flex flex-col gap-3.5">
-            {p.pickSummary ? <p className="text-caption text-fg-2">{p.pickSummary}</p> : null}
+        <div className="grid grid-cols-1 gap-x-10 gap-y-3.5 cq-lg:grid-cols-2 cq-lg:items-start">
+            <div className="flex min-w-0 flex-col gap-3.5">
+                {p.pickSummary ? <p className="text-caption text-fg-2">{p.pickSummary}</p> : null}
 
-            {p.breakdown.length ? <WhyThisPick p={p} /> : phase === 'pre' ? <p className="label">No breakdown</p> : null}
-
-            <section aria-label="Rest and confidence" className="flex flex-col">
-                <Fact label="Rest" term="rest" away={restWords(a)} home={restWords(h)} />
-                {conf ? (
-                    <div className="flex flex-col gap-0.5 border-t border-line py-1.5">
-                        <span className="flex items-baseline justify-between gap-2 text-caption">
-                            <a href={termHref('conf') ?? undefined} className="text-micro font-medium uppercase tracking-wide text-fg-3 underline decoration-dotted underline-offset-4 hover:text-fg-1">
-                                Confidence
-                            </a>
-                            <span className="font-bold text-fg-1">{conf}</span>
-                        </span>
-                        {p.confidenceNote ? <span className="text-micro text-fg-3">{p.confidenceNote}</span> : null}
-                        {blend ? <span className="text-micro text-fg-3">{blend}</span> : null}
-                    </div>
-                ) : blend ? (
-                    <p className="border-t border-line py-1.5 text-micro text-fg-3">{blend}</p>
-                ) : null}
-            </section>
-            <ContextChips p={p} />
-            {implication ? <Stakes p={p} imp={implication} /> : null}
-
-            <DetailsLoading state={state}>
-                {d => (
-                    <div className="flex flex-col gap-3.5">
-                        <div className="grid grid-cols-1 gap-3 cq-sm:grid-cols-2">
-                            <RecentGamesList team={a.team} gp={a.gp} games={d.away.recent} starter={a.goalie} />
-                            <RecentGamesList team={h.team} gp={h.gp} games={d.home.recent} starter={h.goalie} />
+                {p.breakdown.length ? <WhyThisPick p={p} /> : phase === 'pre' ? <p className="label">No breakdown</p> : null}
+            </div>
+            <div className="flex min-w-0 flex-col gap-3.5">
+                <section aria-label="Rest and confidence" className="flex flex-col">
+                    <Fact label="Rest" term="rest" away={restWords(a)} home={restWords(h)} />
+                    {conf ? (
+                        <div className="flex flex-col gap-0.5 border-t border-line py-1.5">
+                            <span className="flex items-baseline justify-between gap-2 text-caption">
+                                <a
+                                    href={termHref('conf') ?? undefined}
+                                    className="text-micro font-medium uppercase tracking-wide text-fg-3 underline decoration-dotted underline-offset-4 hover:text-fg-1"
+                                >
+                                    Confidence
+                                </a>
+                                <span className="font-bold text-fg-1">{conf}</span>
+                            </span>
+                            {p.confidenceNote ? <span className="text-micro text-fg-3">{p.confidenceNote}</span> : null}
+                            {blend ? <span className="text-micro text-fg-3">{blend}</span> : null}
                         </div>
-                        {anyPicksIn(d.picks) ? (
-                            <section className="flex flex-col gap-1">
-                                <h3 className="label">Our picks</h3>
-                                <div className="grid grid-cols-[3rem_auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 text-caption">
-                                    {sides.map(s => (
-                                        <div key={s.team.triCode} className="contents">
-                                            <span className="font-bold text-fg-1">{s.team.triCode}</span>
-                                            <span className="text-micro uppercase tracking-wide text-fg-3">To win</span>
-                                            <Dots entries={d.picks[s.team.triCode]?.pickedWin ?? []} />
-                                            <span className="text-micro uppercase tracking-wide text-fg-3">To lose</span>
-                                            <Dots entries={d.picks[s.team.triCode]?.pickedLose ?? []} />
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        ) : null}
-                    </div>
-                )}
-            </DetailsLoading>
+                    ) : blend ? (
+                        <p className="border-t border-line py-1.5 text-micro text-fg-3">{blend}</p>
+                    ) : null}
+                </section>
+                <ContextChips p={p} />
+                {implication ? <Stakes p={p} imp={implication} /> : null}
+
+                <DetailsLoading state={state}>
+                    {d => (
+                        <div className="flex flex-col gap-3.5">
+                            {anyPicksIn(d.picks) ? (
+                                <section className="flex flex-col gap-1">
+                                    <h3 className="label">Our picks</h3>
+                                    <div className="grid grid-cols-[3rem_auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 gap-y-1 text-caption">
+                                        {sides.map(s => (
+                                            <div key={s.team.triCode} className="contents">
+                                                <span className="font-bold text-fg-1">{s.team.triCode}</span>
+                                                <span className="text-micro uppercase tracking-wide text-fg-3">To win</span>
+                                                <Dots entries={d.picks[s.team.triCode]?.pickedWin ?? []} />
+                                                <span className="text-micro uppercase tracking-wide text-fg-3">To lose</span>
+                                                <Dots entries={d.picks[s.team.triCode]?.pickedLose ?? []} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            ) : null}
+                        </div>
+                    )}
+                </DetailsLoading>
+            </div>
         </div>
     );
 }
