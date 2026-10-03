@@ -13,8 +13,18 @@
   }
  },
  "seasons": {
-  "fit": ["20172018", "20182019", "20192020", "20202021", "20212022", "20222023"],
-  "dev": ["20232024", "20242025"],
+  "fit": [
+   "20172018",
+   "20182019",
+   "20192020",
+   "20202021",
+   "20212022",
+   "20222023"
+  ],
+  "dev": [
+   "20232024",
+   "20242025"
+  ],
   "holdout": "20252026"
  },
  "inputs": {
@@ -45,5 +55,15 @@
   "if_pass": "bu/sim/out/sim_params.json becomes the ST parameters; V4 kept as bu/sim/out/sim_params_v4.json and repository variable PONYXG_SIM_INPUTS=v4 rolls back (v2 stays available as PONYXG_SIM_INPUTS=v2)",
   "if_fail": "nothing changes in the published path; the ST parameters are kept as bu/sim/out/sim_params_st.json"
  },
- "amendments": []
+ "amendments": [
+  {
+   "id": "A1",
+   "by": "owner (directly, in the owner's own session with the main assistant; 2026-10-03)",
+   "made": "after the dev results were written (validation.json player_st_dev) and BEFORE any 2025-26 holdout look",
+   "reason": "dev derivative score ST - V4 = +0.00033 (SE 0.00174) is a statistical tie; dev ML favoured ST (-0.00055, SE 0.00045)",
+   "replaces": "promotion_rule.pass condition (3) 'dev pooled derivative score ST - V4 <= 0'",
+   "new_rule": "ST replaces V4 iff (1) dev pooled ML log loss ST < V4 (unchanged), AND (2) holdout ML log loss ST - V4 <= +0.0010 (unchanged), AND (3') holdout derivative score ST - V4 <= +1 SE of that difference",
+   "declared_at": "2026-10-03T16:52:45+00:00"
+  }
+ ]
 }

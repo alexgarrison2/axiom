@@ -185,7 +185,11 @@ def cmd_holdout(work, st_params, v4_params, workers):
     params, D, n_base, frames, act = run_arms(work, [HOLDOUT], st_params, v4_params, workers)
     sc = score(D, frames, act, [HOLDOUT])[HOLDOUT]
     hold_ok = bool(sc["ml_ST_minus_V4"]["diff"] <= PASS_MARGIN)
-    promote = bool(dev["dev_ml_pass"] and dev["dev_derivative_pass"] and hold_ok)
+    # Owner amendment A1 (prereg_st.json, before this look): the dev derivative condition is
+    # replaced by "holdout derivative ST - V4 <= +1 SE".
+    d_hold = sc["derivative_ST_minus_V4"]
+    hold_deriv_ok = bool(d_hold["diff"] <= d_hold["se"])
+    promote = bool(dev["dev_ml_pass"] and hold_ok and hold_deriv_ok)
     with open(V.LOOK_LOG, "a") as f:
         f.write(json.dumps({"season": HOLDOUT, "question": QUESTION,
                             "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -193,7 +197,8 @@ def cmd_holdout(work, st_params, v4_params, workers):
                             "ml_ST_minus_V4": sc["ml_ST_minus_V4"], "promote_st": promote}) + "\n")
     payload = {"prereg": "bu/sim/prereg_st.json", "season": HOLDOUT, "n_games": int(len(D)),
                "n_prereg_inputs_v4_games": n_base, "n_sims": I4.N_SIMS, "arms": _versions(params), "scores": sc,
-               "holdout_ml_ok": hold_ok, "dev_ml_pass": dev["dev_ml_pass"],
+               "holdout_ml_ok": hold_ok, "holdout_derivative_ok": hold_deriv_ok, "amendment": "A1",
+               "dev_ml_pass": dev["dev_ml_pass"],
                "dev_derivative_pass": dev["dev_derivative_pass"], "promote_st": promote,
                "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     V._report("player_st_holdout", I4._strip(payload))
