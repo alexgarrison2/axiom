@@ -386,6 +386,58 @@ RAPM v2 simulator, `sim-m5-20261002`, reading the bundle's `players` / `fin` tab
 writes.  `validate_outputs.py sim_inputs` checks that the active parameters' lineup table is
 committed and that a fresh bundle carries their ratings table with its intercept.
 
+## Player special teams and penalties (`prereg_st.json`, `st_lineup.py`, `player_st.py`)
+
+Question `sim_player_st` (pre-registered 2026-10-03 before any re-fit or dev / holdout run):
+should the PP / PK xG and penalty regressions read the dressed lineup's player ratings in addition
+to the team-level state?  Per side, over the dressed skaters (`st_lineup.aggregate`; history: the
+lake's dressed lineups, live: tonight's DFO lines through `LiveLineupTerm.side`, which now adds
+`st` to each side when the ratings table has the columns):
+
+* `ppo` = sum pp_i x 5 toi_pp_i / sum toi_pp (v4 PP OFF of the expected PP units, xG/60),
+* `pkd` = sum pk_i x 4 toi_pk_i / sum toi_pk (v4 PK DEF of the expected PK units),
+* `take` / `draw` = 5 x minutes-weighted mean of v5 `pt60` / `pd60` (all penalties rescaled to
+  PP-creating units, shrunk 800 / 400 pseudo minutes);
+
+features `lu_ppo = ppo_X / (3600 lg_pp_xg)`, `lu_pkd = pkd_Y / (3600 lg_pp_xg)` in the PP
+regression, `lu_take = log(take_X / (3600 lg_pen))`, `lu_draw = log(draw_Y / (3600 lg_pen))` in the
+penalty regression (`rates.ST_GROUPS`), team-state terms kept.  History:
+`bu/lineup/out/lineup_st_v4.csv.gz` (2017-18 .. 2026-27), built from per-date player tables
+(`st_lineup.player_table_asof`: the v4 table's `pp`, `pk`, `toi_*`, `pd60`, `pt60` as
+`bu.rapm.v4_pack.live_table` computes them on each game date from games up to d - 2; a replica of
+the live bundle's table at r >= 0.996 on every column) x the lake's dressed lineups.
+
+Re-fit (fit seasons; the 5v5 and conversion regressions reproduce V4's exactly): PP xG
+`lu_ppo` **0.715** (SE 0.101), `lu_pkd` 0.351 (0.136), team PP 0.362 (V4 1.180), opponent PK
+0.670 (0.908); penalties `lu_take` **0.482** (0.074), `lu_draw` 0.679 (0.091), team taken 0.626
+(1.070), opponent drawn 0.453 (0.923).  The player terms take over most of the team-state weight.
+Dispersion grid (same procedure): stretch 1.25, strength-tilt sd **0** (V4 0.1), scale 1.024.
+
+Dev (2,375 games, paired ST - V4; 20,000 runs):
+
+| Season | n | ML V4 | ML ST | diff (SE) | derivative V4 | derivative ST | diff (SE) |
+|---|---|---|---|---|---|---|---|
+| 2023-24 | 1,312 | 0.65789 | 0.65702 | -0.00087 (0.00062) | 6.31987 | 6.31943 | -0.00043 (0.00246) |
+| 2024-25 | 1,063 | 0.65847 | 0.65830 | -0.00016 (0.00064) | 6.33026 | 6.33153 | +0.00127 (0.00244) |
+| pooled | 2,375 | 0.65815 | 0.65759 | **-0.00055 (0.00045)** | 6.32449 | 6.32481 | **+0.00033 (0.00174)** |
+
+**Decision: not promoted.**  Rule (1) (dev ML lower) passes, rule (3) (dev derivative score not
+worse) fails by +0.00033 (well inside one SE; per market: reg 3-way +0.0004, home -1.5 +0.0003,
+total 6.0 +0.0003, 1st period -0.0004 / -0.0004).  The live simulator stays `sim-m5-v4`; the
+2025-26 look for this question was **not** taken (the dev rule already decides), so it is unspent
+for a later pre-registered version.  The ST parameters are kept as `out/sim_params_st.json`
+(`decision` records the result); `PONYXG_SIM_INPUTS=st` serves them (opt-in only).  ST predictions
+are a bit more spread (SD of logit p 0.509 vs 0.487) and better calibrated on 2024-25 (slope 1.08
+vs 1.14).
+
+```bash
+cd pipeline     # PONYXG_LAKE_DIR, PONYXG_RAPM_DIR; per-date player tables in $T (st_season=<S>.parquet)
+python -m bu.sim.st_lineup history --st-dir $T --out bu/lineup/out/lineup_st_v4.csv.gz
+python -m bu.sim.fit glm --work $W --st-table bu/lineup/out/lineup_st_v4.csv.gz --params-out $P
+PONYXG_SIM_PARAMS=$P python -m bu.sim.validate dispersion --work $W --n 2000
+python -m bu.sim.player_st dev --work $W --st-params $P        # holdout: the single logged look
+```
+
 ## Runtime
 
 One game, 20,000 runs: ~0.13 s simulation + ~0.04 s anchoring on an idle core.  `predict_games`
