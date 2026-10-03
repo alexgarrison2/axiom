@@ -11,6 +11,52 @@ live game model** (`logit-elo-v5-20261001-xg2-rapm`: `bu_d_net + bu_d_delta` rep
 `d_lineup`; `pipeline/bu/README.md` "Live").  The xG v1-target results below are kept for the
 record; their reports are archived in `out/xgv1/` and `../lineup/out/xgv1/`.
 
+## Ratings v5 (2026-10-03): the v4 impact, audited (penalties, finishing)
+
+Why: v4 passed 19 / 21 sanity checks; both failures were Rantanen (+0.6 goals / 82, 245th).  Owner
+rule: tune nothing to move one player; audit the structure and fix what is wrong, test-gated.
+Pre-registered in `v5_prereg.json` (committed before any v5 scoring), results in
+`out/v5_validation.json`, the single holdout look in `out/v5_look_log.jsonl`.  **No rating changed**
+(EV / PP / PK RAPM, SPM, FIN, TOI): every change is an impact-only term, so the lineup term, game
+model and simulator inputs are identical (checked column by column against the v4 pack).
+
+**Audit** (Rantanen, 2026-27 season start): his lake PBP matches the NHL stats API exactly in every
+season 2015-26 (taken, minors, majors, misconducts, drawn; no duplicates; fights and misconducts
+already 0).  His +0.6 = EV OFF +2.15, PP +1.37, EV FIN -0.33, drawn +1.05 / EV DEF -1.66 (on-ice xGA
+relative +0.23 / 60), taken -1.94; 47% of his D90 weight is 2025-26 (64 games, 16 EV goals); SPM
+prior +0.214 = role mean 0.056 + box score 0.158 (ixG, primary assists, PP primary assists, EV
+minutes; rebounds created -1 SD).  Structural problems found: (1) coincidental / offsetting minors
+(~20% of penalties) counted as power-play units, and (2) the goal value per unit (0.153) had them
+in its denominator and left out PP goals scored with the goalie pulled.
+
+**Changes** (rule: dev pooled better, holdout not worse by > 2 SE):
+
+| | tuning pick | dev (paired) | holdout 2025-26 | shipped |
+|---|---|---|---|---|
+| goal value per PP-creating unit (`box.pp_units`: equal-duration penalties cancel, then minute netting; washed-out delayed minors 0) | definitional | - | - | 0.183 (2025-26; NHL (PPG - SHGA) / PPO 0.184) |
+| drawn / taken shrinkage | 800 / 400 min (was 400 / 400) | deviance -51.6 (z -1.6) | -40.7 (z -1.8) | yes |
+| penalty rate basis (owner amendment A1, after the holdout look) | 800 / 400 re-checked on tuning only | - | - | every penalty, scaled per position to PP-creating units |
+| EV FIN in `off_impact` (next-30-game EV stint **goals** MSE) | - | -0.0172 (z -2.9) | -0.0231 (z -3.1) | kept |
+| PP FIN (`fin_pp`, shared EV+PP multiplier, prior 30 xG) | best of 8 + none | PP goals MSE -0.122 (z -1.3) | -0.051 (SE 0.11) | yes |
+| on-ice goals-above-xG residual RAPM blend | v_r 0.003 | +0.0069 vs FIN-only | +0.011 | no |
+
+Amendment A1 (labelled post-holdout in `v5_prereg.json`): the PP-unit-only rates predicted the
+next-30-game net penalty differential worse than all-penalty rates rescaled to the PP level (z 2.3
+tuning, 0.3 dev, 2.8 holdout), so the owner chose the all-penalty basis; the t0 re-check on the
+tuning seasons kept 800 / 400.  Repeatability (PP units, descriptive): split-half 0.49 drawn / 0.36
+taken, next season 0.65 / 0.59.
+
+**Result** (2026-27 as of 2026-10-02): 19 / 21 sanity checks as in v4; Rantanen +0.12 (269th): his
+penalty term moves -0.89 -> -1.00 (the higher value outweighs the units fix) and his PP finishing
+is slightly below average (`fin_pp` -0.04).  Correlation of impact with v4 0.996; biggest moves
+come from PP finishing (Draisaitl +2.7, Caufield +1.5, Hertl -1.7).
+
+**Code**: `v5.py` (penalty rates, PP finishing sums / values), `box.py` (`pp_units`, `pdu_all` /
+`ptu_all`, `pp_goal_value.value_pp`, BOX_VERSION 2), `v4_pack.py` (v5 config, grid `fin_pp` sums,
+live `fin_pp`), `v5_validate.py` (penalty rows, goal-target designs and scoring),
+`ratings_export.py` (`fin_pp` column and impact term).  The season pack must be rebuilt at the
+rollover with `python -m bu.rapm.v4_pack pack` (a v4 pack without `pen_units` keeps v4's impact).
+
 ## Ratings v4 (2026-10-03): v3 + a box-score (statistical plus-minus) prior
 
 Why: v3 still ranked Kiviranta (+0.9) above Rantanen (-0.5) and Makar 199th.  On-ice RAPM cannot

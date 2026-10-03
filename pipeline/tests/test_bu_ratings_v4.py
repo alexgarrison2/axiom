@@ -192,7 +192,7 @@ def _v4_bundle():
     rows = []
     for r in v3["rows"]:
         rows.append(r[:-1] + [r[3] * 0.8, r[4] * 0.8, r[8] * 0.5, r[9] * 0.5, 0.7 if r[0] == 1 else 0.4,
-                              0.2 if r[0] == 1 else 0.6, r[-1]])
+                              0.2 if r[0] == 1 else 0.6, 0.0, r[-1]])
     meta = dict(v3["meta"], pen_value=0.15)
     b["v4"] = {"columns": P4.LIVE_COLUMNS, "rows": rows, "meta": meta}
     return b
@@ -243,7 +243,7 @@ def test_check_player_ratings_v4(tmp_path):
     rng = np.random.default_rng(0)
     b["v4"]["rows"] = [[i, "D" if i % 3 == 0 else "F", True, float(rng.normal(0, .2)), float(rng.normal(0, .1)), 0.01,
                         0.004, 0.0, float(rng.normal(0, .3)), float(rng.normal(0, .2)), 0.04, 0.02, 0.0, 15.0, 1.5, 1.5,
-                        0.0, 0.0, 0.0, 0.0, 0.5, 0.5, ""] for i in range(1, 701)]
+                        0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.0, ""] for i in range(1, 701)]
     roster = {i: (f"Player {i}", f"T{i % 32:02d}", "D" if i % 3 == 0 else "C") for i in range(1, 701)}
     doc = RE.build_export(b, None, roster, None)
     p, bp = tmp_path / "pr.json", tmp_path / "b.json.gz"
