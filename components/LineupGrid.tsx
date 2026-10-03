@@ -28,13 +28,13 @@ const ord = (n: number) => {
     return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
 };
 
-const PP_NAME: Record<number, string> = { 0: 'text-fg-2', 1: 'font-bold text-warn', 2: 'text-fg-1' };
+const PP_NAME: Record<number, string> = { 0: 'text-fg-2', 1: 'font-bold text-warn', 2: 'font-bold text-fg-1' };
 
 function PpLegend() {
     return (
         <p aria-hidden="true" className="flex items-center gap-2 text-micro uppercase tracking-wide text-fg-3">
             <span className="font-bold text-warn">PP1</span>
-            <span className="text-fg-1">PP2</span>
+            <span className="font-bold text-fg-1">PP2</span>
         </p>
     );
 }
