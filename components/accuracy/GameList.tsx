@@ -509,8 +509,8 @@ function StripPlaceholder() {
 }
 
 /**
- * Loading placeholder with the list's own box model (toolbar panel, one
- * 32px row per expected pick up to a page, the More button), so the rows
+ * Loading placeholder with the list's own box model (toolbar panel, KPI strip, header
+ * row, one phone/desktop-height row per expected pick up to a page, the More button), so the rows
  * replace it without moving anything below.
  */
 function ListSkeleton({ rows, more, after }: { rows: number; more: boolean; after: React.ReactNode }) {
@@ -528,10 +528,14 @@ function ListSkeleton({ rows, more, after }: { rows: number; more: boolean; afte
                 <span className={cn(SELECT, 'inline-block w-24')} />
                 <Segmented label="Result" size="sm" value="all" onChange={() => {}} options={RESULT_OPTIONS} />
             </div>
+            <div aria-hidden="true" className="invisible">
+                <KpiStrip s={summarize([])} />
+            </div>
             <ul aria-hidden="true" className={LIST_UL}>
+                <li className="hidden h-[34px] border-b border-line md:block" />
                 {Array.from({ length: rows }, (_, i) => (
                     <li key={i} className={ROW_LI}>
-                        <div className="min-h-[4.25rem]" />
+                        <div className="min-h-[6.9rem] md:min-h-[3.6rem]" />
                     </li>
                 ))}
             </ul>

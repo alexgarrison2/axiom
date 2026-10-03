@@ -11,7 +11,7 @@
  *   location — home team: home games only; away team: road games only
  *   rest     — games in the same rest bucket as tonight (B2B / 1 / 2 / 3+ days off)
  *   starter  — games started by tonight's projected starter
- *   last     — only the team's most recent N games (after the filters above)
+ *   last     — only the team's most recent N games (after location and rest, before starter)
  *
  * Percentiles ("better than X% of the league", so lower-is-better stats are
  * flipped and a longer bar is always better) rank a side's value against
@@ -141,25 +141,29 @@ export interface SideFilter {
     rest: RestKey;
     /** Projected starter's name; null = any starter. */
     starter: string | null;
-    /** Most recent N games after the other filters; omitted = whole window. */
+    /** Most recent N games after location and rest (and before starter); omitted = whole window. */
     last?: LastKey;
 }
 
 export const NO_FILTER: SideFilter = { location: 'all', rest: 'all', starter: null, last: 'all' };
 
-/** Regular-season games matching the filter (tonight's own game excluded). */
+/**
+ * Regular-season games matching the filter (tonight's own game excluded). Order: location and
+ * rest first, then the team's most recent N of those, then the starter filter. The league
+ * reference has no starter analog, so "last N" has to be settled before it for a team's window
+ * to be the same one the reference ranks.
+ */
 export function filterGames(games: MatchupGame[], f: SideFilter, excludeId?: string): MatchupGame[] {
     const key = f.starter ? goalieMatchKey(f.starter) : '';
-    const picked = games.filter(
+    let picked = games.filter(
         g =>
             g.row.type === 2 &&
             g.row.id !== excludeId &&
             (f.location === 'all' || g.row.home === (f.location === 'home')) &&
-            (f.rest === 'all' || g.rest === f.rest) &&
-            (!key || goalieMatchKey(g.row.starter) === key),
+            (f.rest === 'all' || g.rest === f.rest),
     );
-    if (!f.last || f.last === 'all') return picked;
-    return [...picked].sort((a, b) => a.row.date.localeCompare(b.row.date)).slice(-f.last);
+    if (f.last && f.last !== 'all') picked = [...picked].sort((a, b) => a.row.date.localeCompare(b.row.date)).slice(-f.last);
+    return key ? picked.filter(g => goalieMatchKey(g.row.starter) === key) : picked;
 }
 
 // ── stats ────────────────────────────────────────────────────────────────────
