@@ -37,6 +37,14 @@ async function slateGames(page: Page): Promise<CardInfo[]> {
     );
 }
 
+/** The last slate in the predictions file: every game on it is still pregame, whatever the clock says. */
+function pregameSlate(): string {
+    const [head, ...lines] = readFileSync(join(process.cwd(), 'public/data/predictions_detailed.csv'), 'utf8').trim().split('\n');
+    const col = head.split(',').indexOf('game_date');
+    const dates = lines.map(l => l.split(',')[col]).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    return `/?date=${dates[dates.length - 1]}`;
+}
+
 function scoresFor(route: Route, games: { id: string; state: string; away: number; home: number; period: number; periodType: string; clock: string; last?: string }[]) {
     return route.fulfill({
         json: {
@@ -88,7 +96,7 @@ test.describe('home slate', () => {
     });
 
     test('renders puck drop in the viewer zone with its abbreviation', async ({ page }) => {
-        await page.goto('/');
+        await page.goto(pregameSlate());
         const time = page.locator('article time').first();
         const iso = await time.getAttribute('datetime');
         const expected = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: 'America/New_York' }).format(new Date(iso!));
@@ -141,7 +149,7 @@ test.describe('home slate', () => {
     });
 
     test('goalie stat lines from last season carry a 25-26 tag', async ({ page }) => {
-        await page.goto('/');
+        await page.goto(pregameSlate());
         await settle(page);
         // Read every line in one pass: the slate re-renders while games are live, so
         // per-element locators taken from .all() can go stale mid-loop.
@@ -188,7 +196,7 @@ test.describe('home slate', () => {
 
     test('the why-this-pick waterfall fits a 390px phone', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
-        await page.goto('/');
+        await page.goto(pregameSlate());
         const card = page.locator('article').first();
         await card.locator('h2 button[aria-expanded]').click();
         await card.getByRole('radio', { name: 'Why' }).click();
@@ -198,22 +206,24 @@ test.describe('home slate', () => {
     });
 
     test('the why panel shows the lineup / starting-goalie bar when the model has it', async ({ page }) => {
-        await page.goto('/');
+        await page.goto(pregameSlate());
         const card = page.locator('article').first();
         await card.locator('h2 button[aria-expanded]').click();
         await card.getByRole('radio', { name: 'Why' }).click();
         const rows = card.locator('section[aria-labelledby^="why-"] li');
         await expect(rows.first()).toBeVisible();
         const labels = await rows.allInnerTexts();
-        // Fast-track models publish a 'lineup_goalie' factor; older frozen rows keep 'lineup'.
+        // The simulator folds the lineup into its 5v5 row ("5v5"); logit rows publish
+        // 'lineup_goalie' ('who plays'), and older frozen rows keep 'lineup'.
+        const sim = labels.find(t => /^5v5\b/i.test(t.trim()));
         const who = labels.find(t => /who plays/i.test(t));
         const old = labels.find(t => /^lineups/i.test(t.trim()));
-        expect(who ?? old).toBeTruthy();
+        expect(sim ?? who ?? old).toBeTruthy();
         if (who) expect(who).toMatch(/(\+\d+\.\d [A-Z]{3}|0\.0)/);
     });
 
     test('tapping inside an expanded card keeps it open; Collapse closes it', async ({ page }) => {
-        await page.goto('/');
+        await page.goto(pregameSlate());
         const card = page.locator('article').first();
         const toggle = card.locator('h2 button[aria-expanded]');
         await toggle.click();
@@ -514,7 +524,7 @@ test.describe('home slate', () => {
 
 test.describe('game lifecycle', () => {
     test('a FINAL from the score feed shows FINAL/OT, the score and the model grade, no edge', async ({ page }) => {
-        await page.goto('/');
+        await page.goto(pregameSlate());
         const [first] = await slateGames(page);
         const ids = Object.keys(await gameIds(page));
         // Pretend puck drop has passed so the page asks for scores.
@@ -533,7 +543,7 @@ test.describe('game lifecycle', () => {
     });
 
     test('a LIVE game shows period and clock, pregame % dimmed, no edge', async ({ page }) => {
-        await page.goto('/');
+        await page.goto(pregameSlate());
         const [first] = await slateGames(page);
         const ids = Object.keys(await gameIds(page));
         await page.clock.setFixedTime(new Date(new Date(first.start).getTime() + 3600_000));
@@ -552,7 +562,7 @@ test.describe('game lifecycle', () => {
 
     test('polling stops once every game is final and the tab is hidden', async ({ page }) => {
         test.setTimeout(120_000);
-        await page.goto('/');
+        await page.goto(pregameSlate());
         const [first] = await slateGames(page);
         const ids = Object.keys(await gameIds(page));
         await page.clock.setFixedTime(new Date(new Date(first.start).getTime() + 3 * 3600_000));
