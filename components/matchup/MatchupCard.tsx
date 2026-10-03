@@ -10,7 +10,7 @@ import { cardAnchor, finalLabel, hasScore, modelCorrect, phaseOf, type LiveGame,
 import { forecastPair, hasMarket, hasPrediction, modelLean, recommendedBet } from '@/lib/matchup/edge';
 import { finalSentence, fmtOdds, isCoinFlip } from '@/lib/matchup/format';
 import { seriesChip, teamChip } from '@/lib/matchup/pills';
-import { glossaryHref } from '@/lib/glossary';
+import { glossaryHref } from '@/lib/glossary-href';
 import { cn } from '@/lib/utils';
 import { StatusLine } from './StatusLine';
 import { TeamSide, washVars } from './TeamSide';

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { glossaryHref } from '@/lib/glossary';
+import { glossaryHref } from '@/lib/glossary-href';
 import { cn } from '@/lib/utils';
 
 /**

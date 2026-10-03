@@ -4,7 +4,7 @@ import type { CSSProperties } from 'react';
 import type { Side, SideData } from '@/types/prediction';
 import { fmtSv, goalieSeasonLine, lastName, vsOppTone } from '@/lib/matchup/format';
 import type { CardChip } from '@/lib/matchup/pills';
-import { glossaryHref } from '@/lib/glossary';
+import { glossaryHref } from '@/lib/glossary-href';
 import { cn } from '@/lib/utils';
 import styles from './slate.module.css';
 import { GoalieGlyph } from './GoalieGlyph';

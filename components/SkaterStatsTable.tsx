@@ -11,7 +11,7 @@ import { TEAM_CODES } from '@/components/ui/team-color';
 import { TeamLogo } from '@/components/views/TeamLogo';
 import { cn } from '@/lib/utils';
 import { scrollBehavior } from '@/lib/scroll';
-import { glossaryHref } from '@/lib/glossary';
+import { glossaryHref } from '@/lib/glossary-href';
 import { signed } from '@/lib/players/ratings';
 import { CELL_BG } from '@/components/teams-table/table-style';
 import {

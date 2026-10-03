@@ -499,7 +499,4 @@ export function glossaryIds(term: GlossaryTerm): string[] {
 /** Every #term-… anchor rendered on /methodology. */
 export const GLOSSARY_ANCHORS: string[] = GLOSSARY_TERMS.flatMap(t => glossaryIds(t).map(id => `term-${id}`));
 
-/** Link to a term on /methodology, e.g. glossaryHref('b2b') → "/methodology#term-b2b". */
-export function glossaryHref(id: string): string {
-    return `/methodology#term-${id}`;
-}
+export { glossaryHref } from './glossary-href';
