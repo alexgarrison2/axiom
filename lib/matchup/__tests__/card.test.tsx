@@ -61,7 +61,7 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
         }
     });
 
-    it("tags every goalie season line from last season 25-26 (0 GP this season)", () => {
+    it("never shows a goalie's last-season line (0 GP this season shows nothing)", () => {
         for (const p of opening) {
             const el = card(p);
             for (const side of ['away', 'home'] as const) {
@@ -71,9 +71,7 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
                 expect(s.goalieCurGp ?? 0).toBe(0);
                 if (!prev) continue;
                 const line = [...el.querySelectorAll<HTMLElement>('[class*="gstat"] > span')].find(n => text(n).includes(prev.record));
-                expect(line, `${s.team.triCode} ${prev.record}`).toBeTruthy();
-                expect(visible(line!)).toContain('25-26');
-                expect(text(line!)).toContain('25-26 season');
+                expect(line, `${s.team.triCode} ${prev.record}`).toBeUndefined();
             }
             cleanup();
         }
@@ -85,7 +83,7 @@ describe('matchup card on the opening-night fixture (E2/E3)', () => {
         expect(line).toEqual({ tag: null, record: '1-0-0', sv: '.950', gaa: '1.00' });
         const t = text(card(p));
         expect(t).toContain('This season: 1-0-0');
-        expect(goalieSeasonLine({ goalieCur: '(1-0-0) | .950 | 1.00', goalieCurGp: 0, goaliePrev: '(19-12-8) | .888 | 3.07' })?.tag).toBe('25-26');
+        expect(goalieSeasonLine({ goalieCur: '(1-0-0) | .950 | 1.00', goalieCurGp: 0, goaliePrev: '(19-12-8) | .888 | 3.07' })).toBeNull();
     });
 
     it('puts both tricodes in the collapsed card and an expand toggle in the h2', () => {
@@ -272,11 +270,11 @@ describe('Goalies tab', () => {
         }
     });
 
-    it("shows this season's line first and last season's tagged, or 0 GP", () => {
+    it("shows this season's line or 0 GP, never last season's", () => {
         const [po] = fixture('playoffs');
         const t = goalies(po);
         expect(t).toMatch(/26-27\s*1-0-0/);
-        expect(t).toMatch(/25-26\s*31-18-4/);
+        expect(t).not.toMatch(/25-26/);
         cleanup();
         const nyiTor = fixture('opening_night').find(p => p.away.team.triCode === 'NYI')!;
         expect(goalies(nyiTor)).toMatch(/26-27\s*0 GP/);
@@ -349,8 +347,8 @@ describe('review fixes', () => {
         const side = { goalies: [goalie, backup] } as unknown as GameDetails['home'];
         const data = { home: side, away: { goalies: [] } } as unknown as GameDetails;
         const t = text(render(<GoaliesPanel p={p} state={{ status: 'ready', data }} />).container);
-        // 1 GP this season: neutral colour and the rating window's tag.
-        expect(t).toMatch(/−0\.08\s*GSAx\/gm\s*24-27 rating/);
+        // 1 GP this season: the regressed rating leans on past seasons, so it is not shown yet.
+        expect(t).not.toMatch(/GSAx\/gm/);
         expect(t).toMatch(/GSAx\/GS 26-27\s*\+1\.82 · 1 GS/);
         expect(t).toMatch(/IR · ~Dec 30/);
         expect(gsaxWindow(['2024-25'], false)).toBe('2024-25');

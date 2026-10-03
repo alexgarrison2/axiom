@@ -294,14 +294,11 @@ export interface GoalieStatLine {
 
 /**
  * The tiny season line under a goalie's name: this season once he has played
- * (goalie_cur_gp ≥ 1), else last season's line tagged "25-26" so it never
- * reads as current. null when neither exists.
+ * (goalie_cur_gp ≥ 1). null before that: last season's line is never shown.
  */
 export function goalieSeasonLine(s: { goalieCur?: string | null; goaliePrev?: string | null; goalieCurGp?: number | null }): GoalieStatLine | null {
     const cur = (s.goalieCurGp ?? 0) >= 1 ? parseGoalieLine(s.goalieCur) : null;
-    if (cur) return { tag: null, ...cur };
-    const prev = parseGoalieLine(s.goaliePrev);
-    return prev ? { tag: PREV_TAG, ...prev } : null;
+    return cur ? { tag: null, ...cur } : null;
 }
 
 /** Career starts vs this opponent before a record can read as strong or poor. */

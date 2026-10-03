@@ -64,18 +64,12 @@ describe('G1-2 goalie rating headline', () => {
         expect(windowTag(null)).toBeNull();
     });
 
-    it('renders Silovs / Vladar in fg-1 with a season tag at 0 GP, and colour at 5 GP', () => {
+    it('hides the rating before a real sample this season, and colours it from 5 GP', () => {
         const p = withOverrides(pitPhi, {}, { away: { gsax: -0.13, goalieCurGp: 0 }, home: { gsax: 0.15, goalieCurGp: 0 } });
         const view = (name: string | null, v: number) => ({ name: name ?? 'X', starter: true, cur: null, prev: null, gsaxPerGame: v, gsaxSeason: '2024-25 to 2025-26', injury: null });
         const data = { away: { goalies: [view(p.away.goalie, -0.13)] }, home: { goalies: [view(p.home.goalie, 0.15)] } } as unknown as GameDetails;
         const el = render(<GoaliesPanel p={p} state={{ status: 'ready', data }} />).container;
-        const heads = [...el.querySelectorAll('[data-gsax-headline]')];
-        expect(heads).toHaveLength(2);
-        for (const h of heads) {
-            expect(h.className).toContain('text-fg-1');
-            expect(h.className).not.toMatch(/text-(pos|neg)\b/);
-            expect(h.parentElement?.textContent).toContain('24-26');
-        }
+        expect(el.querySelectorAll('[data-gsax-headline]')).toHaveLength(0);
         cleanup();
         const played = withOverrides(p, {}, { away: { gsax: -0.13, goalieCurGp: 5 }, home: { gsax: 0.15, goalieCurGp: 5 } });
         const el2 = render(<GoaliesPanel p={played} state={{ status: 'ready', data }} />).container;
@@ -120,7 +114,8 @@ describe('G1-1 Lines tab season tag', () => {
     it('drops the tag once the ratings are this season', () => {
         const data = { away: side(true), home: side(true), impactSeason: SEASON_ID, picks: {} } as unknown as GameDetails;
         const el = render(<LineupsPanel p={pitPhi} state={{ status: 'ready', data }} />).container;
-        expect(el.textContent).not.toContain('25-26');
+        // The goalies now sit in this tab and may carry their own 25-26 lines; the lineup NET has no tag.
+        expect([...el.querySelectorAll('span.border-mute')].filter(s => s.textContent?.startsWith('25-26') && s.textContent.includes('ratings'))).toHaveLength(0);
     });
 });
 
