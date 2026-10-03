@@ -49,24 +49,43 @@ export function coinFlipFinal(p: Prediction, phase: Phase): boolean {
     return phase === 'final' && hasPrediction(p) && isCoinFlip(p.home.winPct);
 }
 
-/** Centre of the footer: the result flag on finals, else the gated edge or the model lean. */
-export function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: LiveGame | null }) {
+/** Card: a glossary link drawn over the expand toggle. Rail (`compact`): an inert span inside the row button. */
+function FlagLink({ compact, href, className, children, ...rest }: React.ComponentProps<'a'> & { compact: boolean }) {
+    return compact ? (
+        <span className={className} {...(rest as React.ComponentProps<'span'>)}>
+            {children}
+        </span>
+    ) : (
+        <a href={href} className={cn(OVER_TOGGLE, className)} {...rest}>
+            {children}
+        </a>
+    );
+}
+
+/**
+ * Centre of the footer: the result flag on finals, else the gated edge or the model lean.
+ * `compact` (the game rail): smaller, and plain text rather than glossary links, because
+ * the whole rail row is the button that opens the game.
+ */
+export function Flag({ p, phase, live, compact = false }: { p: Prediction; phase: Phase; live: LiveGame | null; compact?: boolean }) {
+    const text = compact ? 'text-micro' : 'text-caption';
     if (phase === 'final') {
         if (coinFlipFinal(p, phase)) {
             return (
-                <a
+                <FlagLink
+                    compact={compact}
                     href={glossaryHref('no-lean')}
-                    className={cn(OVER_TOGGLE, 'text-caption font-bold uppercase tracking-chip text-fg-3')}
+                    className={cn(text, 'font-bold uppercase tracking-chip text-fg-3')}
                     title={`Pregame ${p.home.team.triCode} ${p.home.winPct?.toFixed(1)}%`}
                 >
                     No lean
-                </a>
+                </FlagLink>
             );
         }
         const ok = modelCorrect(p, live);
         if (ok == null) return null;
         return (
-            <span className={cn('text-caption font-bold uppercase tracking-chip', ok ? 'text-pos' : 'text-neg')}>
+            <span className={cn(text, 'font-bold uppercase tracking-chip', ok ? 'text-pos' : 'text-neg')}>
                 <span aria-hidden="true">{ok ? '✓' : '✕'} Pick</span>
                 <span className="sr-only">{ok ? 'Model pick right' : 'Model pick wrong'}</span>
             </span>
@@ -83,35 +102,42 @@ export function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: Li
     const bet = recommendedBet(p);
     if (bet) {
         return (
-            <a
+            <FlagLink
+                compact={compact}
                 href="/methodology#edge"
                 data-bet
-                className={cn(OVER_TOGGLE, 'px-0 text-caption font-bold uppercase tracking-[0.1em]')}
+                className={cn('px-0 font-bold uppercase', text, compact ? 'tracking-[0.04em]' : 'tracking-[0.1em]')}
                 title={bet.official ? 'Expected value at the book price, quarter-Kelly stake' : `Unofficial: the betting gate is closed (${p.gateReason ?? 'model not yet proven against the market'})`}
             >
                 {/* Tight pill: green EV half, black stake half in green type. */}
-                <span className="inline-flex items-stretch overflow-hidden whitespace-nowrap rounded-[4px] border border-pos shadow-[0_0_10px_rgb(var(--pos-rgb)/0.35)]">
-                    <span className="bg-pos px-1.5 py-0.5 text-black">
+                <span
+                    className={cn(
+                        'inline-flex items-stretch overflow-hidden whitespace-nowrap border border-pos',
+                        compact ? 'rounded-[3px] leading-[16px]' : 'rounded-[4px] shadow-[0_0_10px_rgb(var(--pos-rgb)/0.35)]',
+                    )}
+                >
+                    <span className={cn('bg-pos text-black', compact ? 'px-1' : 'px-1.5 py-0.5')}>
                         +EV {bet.evPct.toFixed(1)}% {bet.tri}
                     </span>
                     {bet.units != null ? (
-                        <span className="bg-black px-1.5 py-0.5 text-pos">
+                        <span className={cn('bg-black text-pos', compact ? 'px-1' : 'px-1.5 py-0.5')}>
                             <span className="sr-only"> · </span>
                             {bet.units.toFixed(1)}u
                         </span>
                     ) : null}
                 </span>
                 {bet.official ? null : <span className="sr-only">, unofficial: the betting gate is closed</span>}
-            </a>
+            </FlagLink>
         );
     }
     const lean = modelLean(p);
     if (lean) {
         return (
-            <a
+            <FlagLink
+                compact={compact}
                 href={glossaryHref('lean')}
                 data-lean
-                className={cn(OVER_TOGGLE, 'glow-magenta text-caption font-bold uppercase tracking-[0.12em]')}
+                className={cn('glow-magenta font-bold uppercase', text, compact ? 'tracking-[0.06em]' : 'tracking-[0.12em]')}
                 title={`Model ${lean.pct}% ${lean.tri}, ${lean.gap.toFixed(1)} pts off the market`}
             >
                 <span aria-hidden="true">
@@ -120,7 +146,7 @@ export function Flag({ p, phase, live }: { p: Prediction; phase: Phase; live: Li
                 <span className="sr-only">
                     Model lean: {lean.tri} {lean.pct}%, {lean.gap.toFixed(1)} points off the market
                 </span>
-            </a>
+            </FlagLink>
         );
     }
     if (!hasMarket(p) && forecastPair(p)) return <span className="label text-fg-3">No line</span>;

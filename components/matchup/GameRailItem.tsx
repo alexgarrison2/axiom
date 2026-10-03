@@ -73,8 +73,6 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
     const awayLost = phase === 'final' && scored && live.away.score < live.home.score;
     const homeLost = phase === 'final' && scored && live.home.score < live.away.score;
     const showOurs = phase !== 'final' && hasPrediction(p);
-    // The model call-out (+EV or lean) sits beside the model's diamond on the bar; with no diamond it stays in the middle of the footer.
-    const calloutAtDiamond = phase === 'pre' && model != null;
     return (
         <button
             type="button"
@@ -119,16 +117,8 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
                                 dimmed={started}
                                 digits={coinFlipFinal(p, phase) ? 1 : 0}
                                 label={started ? 'Pregame win probability' : 'Our forecast win probability'}
-                                className={cn('pointer-events-none', calloutAtDiamond && 'pb-4')}
+                                className="pointer-events-none"
                             />
-                            {calloutAtDiamond && model != null ? (
-                                <span
-                                    className="absolute top-[26px] whitespace-nowrap leading-none"
-                                    style={model > 0.55 ? { right: `calc(${(1 - model) * 100}% + 10px)` } : { left: `calc(${model * 100}% + 10px)` }}
-                                >
-                                    <Flag p={p} phase={phase} live={live} />
-                                </span>
-                            ) : null}
                         </span>
                     ) : (
                         <span className="flex h-7 items-center justify-center rounded-bar border border-dashed border-line bg-track text-micro uppercase tracking-wide text-fg-3">
@@ -143,8 +133,8 @@ export function GameRailItem({ p, live, selected, onSelect }: { p: Prediction; l
                 <span className="text-center">
                     {phase === 'live' ? (
                         <span className="text-micro font-bold uppercase tracking-wide text-pos">{liveClock(live)}</span>
-                    ) : calloutAtDiamond ? null : (
-                        <Flag p={p} phase={phase} live={live} />
+                    ) : (
+                        <Flag p={p} phase={phase} live={live} compact />
                     )}
                 </span>
                 <span className="flex justify-end">
