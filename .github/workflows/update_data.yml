@@ -9,9 +9,11 @@ name: Update NHL Data
 
 on:
   schedule:
-    # 12:00-23:00 and 00:00-03:00 UTC (7 am - 11 pm ET), every day of the week.
+    # 12:00-23:00 and 00:00-07:00 UTC (7 am - 3 am ET), every day of the week: the
+    # late hours catch West Coast finals (a game ends as late as ~06:00 UTC) so the
+    # game log, Matchup and Form tabs are never a night behind the schedule.
     - cron: '0 12-23 * * *'
-    - cron: '0 0-3 * * *'
+    - cron: '0 0-7 * * *'
   workflow_dispatch:
     inputs:
       mode:
