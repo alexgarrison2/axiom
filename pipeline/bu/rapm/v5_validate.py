@@ -27,6 +27,7 @@ import pandas as pd
 from . import v3 as V
 from . import v3_validate as VV
 from . import v4 as V4
+from . import v5 as V5S
 from .box import SEC_COLS
 from .design import stint_rows
 from .recency import Recency
@@ -51,7 +52,7 @@ def pen_windows(engine, S: str, horizon: float = VV.HORIZON, next_season: bool =
     return out
 
 
-def pen_rows(engine, seasons, rec: Recency, t0s=PEN_T0_GRID, v4_t0: float = 400.0) -> pd.DataFrame:
+def pen_rows(engine, seasons, rec: Recency, t0s=PEN_T0_GRID, v4_t0: float = 400.0, all_t0s=()) -> pd.DataFrame:
     """Per (season, window, model, player): actual PP units drawn / taken in the window, predicted
     units (rate x his window minutes) and his window seconds.  ``model``: ``t<t0>`` (PP-unit rates)
     and ``v4`` (v4-unit rates at ``v4_t0``, scaled per position group by the pre-window ratio of PP
@@ -104,6 +105,10 @@ def pen_rows(engine, seasons, rec: Recency, t0s=PEN_T0_GRID, v4_t0: float = 400.
                 out.append(pd.DataFrame({**base, "model": f"t{int(t0)}", "mu_d": pdx, "mu_t": ptx}))
             pdx, ptx = pred(V4.penalty_rates(sums, engine.bio.group, v4_t0, cols=V4.PEN_COLS_V4), V4.PEN_COLS_V4, ratio)
             out.append(pd.DataFrame({**base, "model": "v4", "mu_d": pdx, "mu_t": ptx}))
+            for t0 in all_t0s:      # owner amendment: all-penalty rates rescaled to the PP-unit level
+                pdx, ptx = pred(V4.penalty_rates(sums, engine.bio.group, t0, cols=V4.PEN_COLS_V4), V4.PEN_COLS_V4,
+                                ratio)
+                out.append(pd.DataFrame({**base, "model": f"a{int(t0)}", "mu_d": pdx, "mu_t": ptx}))
     return pd.concat(out, ignore_index=True)
 
 
@@ -123,14 +128,15 @@ def pen_table(rows: pd.DataFrame, seasons, windows: str = "next30") -> pd.DataFr
                          "n": g.size()})
 
 
-def pen_combo(rows: pd.DataFrame, t0_d: float, t0_t: float, label: str | None = None) -> pd.DataFrame:
-    """Rows of the (t0_d, t0_t) model (drawn from ``t<t0_d>``, taken from ``t<t0_t>``)."""
-    a = rows[rows["model"] == f"t{int(t0_d)}"].reset_index(drop=True)
-    b = rows[rows["model"] == f"t{int(t0_t)}"].reset_index(drop=True)
+def pen_combo(rows: pd.DataFrame, t0_d: float, t0_t: float, label: str | None = None, prefix: str = "t") -> pd.DataFrame:
+    """Rows of the (t0_d, t0_t) model (drawn from ``<prefix><t0_d>``, taken from ``<prefix><t0_t>``;
+    prefix 't': PP-unit rates, 'a': all-penalty rates rescaled to the PP-unit level)."""
+    a = rows[rows["model"] == f"{prefix}{int(t0_d)}"].reset_index(drop=True)
+    b = rows[rows["model"] == f"{prefix}{int(t0_t)}"].reset_index(drop=True)
     assert len(a) == len(b) and (a["player_id"].to_numpy() == b["player_id"].to_numpy()).all()
     a = a.copy()
     a["mu_t"] = b["mu_t"].to_numpy()
-    a["model"] = label or f"t{int(t0_d)}/{int(t0_t)}"
+    a["model"] = label or f"{prefix}{int(t0_d)}/{int(t0_t)}"
     return a
 
 
@@ -238,57 +244,13 @@ def score_rows(des: V.Design, beta: np.ndarray, m: np.ndarray, label: str, S: st
             {"model": label, "season": S, "window": wl, "S": sc["S"].tolist(), "t": sc["t"].tolist()})
 
 
-# ----------------------------------------------------------------------- PP finishing
+# ----------------------------------------------------------------------- PP finishing (v5.py, the shipped code)
 
-def pp_fin_sums(engine, S: str, g: float, asof, rec: Recency, league_pseudo: float = V.FIN_LEAGUE_PSEUDO) -> pd.DataFrame:
-    """Per player D90-weighted (G_ev, X_ev, G_pp, X_pp, S_pp) from the box score: pre-season seasons at
-    w(g + games ago at the season start), each season's ixG scaled by its league goals / ixG of the
-    state; this season's games up to asof - LAG_DAYS at the running ratio shrunk with ``league_pseudo``."""
-    L0 = engine.clock.season_start(S)
-    parts = []
-    cols = ["g_ev", "ixg_ev", "g_pp", "ixg_pp", "pp_s"]
-    for s, b in engine.box.items():
-        if s > str(S):
-            continue
-        d = b["d"].to_numpy(dtype="datetime64[D]")
-        if s < str(S):
-            w = rec.weight(g + (L0 - engine._Lb[s]))
-            ok = np.ones(len(b), bool)
-            r_ev = float(b["g_ev"].sum()) / max(float(b["ixg_ev"].sum()), 1e-9)
-            r_pp = float(b["g_pp"].sum()) / max(float(b["ixg_pp"].sum()), 1e-9)
-        else:
-            cutoff = np.datetime64(asof, "D") - np.timedelta64(V.LAG_DAYS, "D")
-            ok = d <= cutoff
-            w = np.where(ok, rec.weight(float(engine.clock.before([asof])[0]) - engine._Lb[s]), 0.0)
-            r_ev = (float(b["g_ev"].to_numpy()[ok].sum()) + league_pseudo) / (float(b["ixg_ev"].to_numpy()[ok].sum()) + league_pseudo)
-            r_pp = (float(b["g_pp"].to_numpy()[ok].sum()) + league_pseudo / 5) / (float(b["ixg_pp"].to_numpy()[ok].sum()) + league_pseudo / 5)
-        m = (w > 0) & ok
-        if not m.any():
-            continue
-        x = b.loc[m, cols].to_numpy(float) * w[m, None]
-        df = pd.DataFrame(x, columns=["G_ev", "X_ev", "G_pp", "X_pp", "S_pp"])
-        df["X_ev"] *= r_ev
-        df["X_pp"] *= r_pp
-        df["player_id"] = b["player_id"].to_numpy()[m]
-        parts.append(df.groupby("player_id").sum())
-    if not parts:
-        return pd.DataFrame(columns=["G_ev", "X_ev", "G_pp", "X_pp", "S_pp"], dtype=float)
-    return pd.concat(parts).groupby(level=0).sum()
+def pp_fin_sums(engine, S: str, g: float, asof, rec: Recency) -> pd.DataFrame:
+    """Per player D90-weighted (G_ev, X_ev, G_pp, X_pp, S_pp) as of ``asof`` (pre-season at in-season
+    count g + this season up to asof - LAG_DAYS): ``v5.fin_pp_pre`` + ``v5.fin_pp_in``."""
+    return V5S.add_fin_pp(V5S.fin_pp_pre(engine, S, g, rec), V5S.fin_pp_in(engine, S, asof, rec))
 
 
-def fin_pp_values(sums: pd.DataFrame, groups: dict, P: float, variant: str = "own") -> pd.Series:
-    """PP finishing (goals above xG per 60 PP minutes): (mult - 1) x shrunk PP ixG / 60."""
-    from .finishing import VOL_PSEUDO_S
-    if not len(sums):
-        return pd.Series(dtype=float)
-    grp = V4._groups(sums.index, groups)
-    G, X, Sp = sums["G_pp"].to_numpy(float), sums["X_pp"].to_numpy(float), sums["S_pp"].to_numpy(float)
-    if variant == "own":
-        mult = (G + P) / (X + P)
-    elif variant == "shared":
-        mult = (G + sums["G_ev"].to_numpy(float) + P) / (X + sums["X_ev"].to_numpy(float) + P)
-    else:
-        raise ValueError(variant)
-    mu = {g_: (X[grp == g_].sum() / Sp[grp == g_].sum() if Sp[grp == g_].sum() > 0 else 0.0) for g_ in ("F", "D")}
-    vol = (X + VOL_PSEUDO_S * np.array([mu[g_] for g_ in grp])) / (Sp + VOL_PSEUDO_S) * 3600.0
-    return pd.Series((mult - 1.0) * vol, index=sums.index)
+fin_pp_values = V5S.fin_pp_values
+

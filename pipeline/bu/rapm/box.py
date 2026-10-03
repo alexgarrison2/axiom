@@ -82,11 +82,14 @@ def pp_units(events: pd.DataFrame) -> pd.Series:
     """Power-play-creating units (2-minute minor equivalents) of every penalty event of ``events``
     (a Series on the penalty rows' index).
 
-    At each stoppage (game, period, game second) the two teams' penalty minutes (``pp_minutes``)
-    cancel minute for minute (coincidental minors / majors, offsetting fights); the team with more
-    minutes is shorthanded for the excess, which is shared over that team's penalties at the
-    stoppage in proportion to their minutes.  A minor whose stoppage follows a goal of the other
-    team at the same second (a delayed penalty washed out by the goal) creates nothing."""
+    At each stoppage (game, period, game second) penalties of equal duration on the two sides cancel
+    first (coincidental minors, coincidental majors, offsetting fights), then the remaining minutes
+    (``pp_minutes``) net minute for minute; the team with more minutes is shorthanded for the
+    excess, which is shared over that team's remaining penalties in proportion to their minutes
+    (so a fight's instigator minor, not the fighting major, carries the power play).  A team's
+    total per stoppage is the plain minute-for-minute netting.  A minor whose stoppage follows a
+    goal of the other team at the same second (a delayed penalty washed out by the goal) creates
+    nothing."""
     e = events[events["period_type"].astype(str) != "SO"]
     p = e[e["type_desc"] == "penalty"]
     if not len(p):
@@ -106,12 +109,27 @@ def pp_units(events: pd.DataFrame) -> pd.Series:
         wash[mg["row"].to_numpy()] = True
         mins = np.where(wash & (mins == 2.0), 0.0, mins)
     key = pd.MultiIndex.from_arrays([p["game_id"].to_numpy(), p["period"].to_numpy(), p["game_seconds"].to_numpy()])
-    df = pd.DataFrame({"m_h": np.where(home, mins, 0.0), "m_a": np.where(home, 0.0, mins)}, index=key)
+    # 1. like cancels like (coincidental minors, double minors, majors / fights): per duration class
+    #    each side keeps the fraction (n_side - min(n_home, n_away)) / n_side of its penalties
+    surv = np.zeros(len(p))
+    for d in (2.0, 4.0, 5.0):
+        isd = mins == d
+        if not isd.any():
+            continue
+        c = pd.DataFrame({"h": (isd & home).astype(float), "a": (isd & ~home).astype(float)}, index=key)
+        n = c.groupby(level=[0, 1, 2]).sum().reindex(key)
+        nh, na = n["h"].to_numpy(), n["a"].to_numpy()
+        ns = np.where(home, nh, na)
+        surv = np.where(isd, (ns - np.minimum(nh, na)) / np.where(ns > 0, ns, 1.0), surv)
+    left = mins * surv
+    # 2. what is left nets minute for minute between the sides; the excess is shared by the side's
+    #    remaining penalties in proportion to their remaining minutes (team totals equal plain netting)
+    df = pd.DataFrame({"m_h": np.where(home, left, 0.0), "m_a": np.where(home, 0.0, left)}, index=key)
     t = df.groupby(level=[0, 1, 2]).sum().reindex(key)
     mh, ma = t["m_h"].to_numpy(), t["m_a"].to_numpy()
     m_side = np.where(home, mh, ma)
     x_side = np.clip(np.where(home, mh - ma, ma - mh), 0.0, None)
-    u = np.where(m_side > 0, mins * x_side / np.where(m_side > 0, m_side, 1.0) / 2.0, 0.0)
+    u = np.where(m_side > 0, left * x_side / np.where(m_side > 0, m_side, 1.0) / 2.0, 0.0)
     return pd.Series(u, index=p.index)
 
 

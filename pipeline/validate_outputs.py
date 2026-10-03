@@ -1014,6 +1014,11 @@ def check_player_ratings(ctx):
             if bad4:
                 errs.append(f"player_ratings.json: {len(bad4)} rows with a missing or implausible penalty / "
                             f"box-score prior value, e.g. {bad4[:3]}")
+        if "fin_pp" in cols:      # ratings v5 impact: PP finishing (goals above xG per 60 PP minutes, shrunk)
+            bad5 = [r.get("name") for r in rows
+                    if not isinstance(r.get("fin_pp"), (int, float)) or r["fin_pp"] != r["fin_pp"] or abs(r["fin_pp"]) > 2]
+            if bad5:
+                errs.append(f"player_ratings.json: {len(bad5)} rows with a missing or implausible fin_pp, e.g. {bad5[:3]}")
     if any(r.get("pos") == "G" for r in rows):
         errs.append("player_ratings.json: goalies listed (skaters only)")
     try:

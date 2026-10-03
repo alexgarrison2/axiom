@@ -5,7 +5,9 @@ v2.1 added the shadow columns, v2.2 the game simulator columns, v2.3 the win-% e
 ratings v4 (`player_ratings.json` version 4, the serving bundle's `v3` / `v4` tables with
 `meta.intercept`, the r4 logit's lineup term from the `v4` table) and the simulator on ratings v4
 inputs (`sim_version` `sim-m5-v4-...`; rollback `PONYXG_SIM_INPUTS=v2`) (all additive; the
-`schema_version` column stays `2`; no predictions column changed shape).
+`schema_version` column stays `2`; no predictions column changed shape).  Ratings v5 (impact-only:
+`player_ratings.json` gains `fin_pp` and `impact.pen_units` / `pen_t0` / `fin_pp`, the bundle's `v4`
+table `fin_pp`; still version 4) is additive too.
 
 `predictions_detailed.csv` is written by `pipeline/predict_games.py` to
 `data/predictions_detailed.csv` (server copy) and
@@ -287,6 +289,22 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
 
   The gate requires version >= 4 and these columns finite; an export from a bundle without the `v4`
   table falls back to version 3 (and fails the gate).
+
+  **Ratings v5 impact** (2026-10-03, still `version: 4`, `bu/rapm/README.md` "Ratings v5"; `model` =
+  "Ratings v5 ..."): the ratings (`ev_*`, `pp_off`, `pk_def`, `fin`, `spm_*`, minutes) are v4's; only the
+  impact changes.  `pd60` / `pt60` are now in **power-play-creating minor equivalents** (every penalty,
+  coincidental ones included, scaled per position group by the share of penalties that create a
+  power play; drawn / taken shrunk with 800 / 400 pseudo minutes) and `impact.pen_value` is the net
+  PP goals per power-play-creating penalty of the last season (0.183 for 2025-26; v4: 0.153 per
+  unit with coincidental penalties counted).  New `impact` keys `pen_units` (`"all_scaled"`),
+  `pen_t0` (`[drawn, taken]`) and `fin_pp` (`{variant, prior_xg}`), and one column appended after
+  `spm_pk`:
+
+  | column | type | meaning |
+  |---|---|---|
+  | `fin_pp` | float (3 dp) | PP goals above xG per 60 PP minutes from his own shots, shrunk (multiplier shared with his EV shots, prior 30 xG); `off_impact` includes 82 x PP minutes / 60 x (`fin_pp` - position mean) |
+
+  `validate_outputs.py player_ratings` checks `fin_pp` finite and |fin_pp| <= 2 when present.
 * `public/data/clinch_status.json`:
   `{season_id, generated_at, teams: {TRI: "x" | "y" | "z" | "p" | "e" | null}}`.
 * SiteHistory snapshots (`public/data/SiteHistory/<date>.csv`) gain
@@ -338,9 +356,10 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   (`models/shadow/game_model_rapm.pkl`, `shadow.rapm`).
   Player ratings tables: `v3` and **`v4`** (`bu/rapm/v4_pack.py` `LIVE_COLUMNS`: `player_id, group, rated,
   o, d, o_var, d_var, od_cov, pp, pk, pp_var, pk_var, fin, toi_ev, toi_pp, toi_pk, spm_o, spm_d, spm_pp,
-  spm_pk, pd60, pt60, role`, per 60 / minutes per game, `d` / `pk` lower = better; `meta` carries
-  `goals_per_xg`, `pen_value`, `impact_weights`, `low_role` (rookie prior by F / D), `toi_pos_means`,
-  `spm_coef`, `asof`, `g`).  `v4` is the source of `player_ratings.json` and the table for the game
+  spm_pk, pd60, pt60, fin_pp, role`, per 60 / minutes per game, `d` / `pk` lower = better; `meta` carries
+  `goals_per_xg`, `pen_value`, `pen_t0`, `pen_units`, `fin_pp`, `impact_weights`, `low_role` (rookie
+  prior by F / D), `toi_pos_means`, `spm_coef`, `asof`, `g`; `fin_pp` and the v5 penalty keys since
+  ratings v5, impact-only: the lineup / simulator columns are unchanged).  `v4` is the source of `player_ratings.json` and the table for the game
   simulator; a game model whose meta has `bu_lineup.ratings = "v4"` is served its lineup term from
   this table (`LiveLineupTerm(..., ratings="v4")`), a model without the key from `players` / `fin`.
   The `v3` / `v4` tables' `meta.intercept` (v2.4) is the EV fit's intercept (league 5v5 xGF/60 of an

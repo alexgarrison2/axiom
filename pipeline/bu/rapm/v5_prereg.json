@@ -52,6 +52,17 @@
  },
  "impact_formula_v5": "v4's impact with: penalty rates in PP units with t0_d / t0_t (P1, P3) and value_pp (P2); FIN term per C1; + 82 PP/60 (fin_pp - m) per C2; + 82 k EV/60 [(o_res - m) + (-(d_res) - m)] per C3. Everything is still goals per 82 games above the position average, drawn in off_impact, taken in def_impact.",
  "export": "player_ratings.json stays version 4 (columns appended, never reordered or removed; new impact.* keys), documented in pipeline/CONTRACT.md; the bundle's v4 table gains the new rate columns; lineup / game model / simulator inputs unchanged (o, d, pp, pk, fin, toi), so per the owner rule the simulator is not re-tested unless they change",
+ "amendments": [
+  {
+   "id": "A1",
+   "label": "POST-HOLDOUT OWNER AMENDMENT - chosen after the single 2025-26 look, not a pre-registered rule",
+   "at": "2026-10-03T03:55:00Z",
+   "decision": "owner (explicit, after seeing the results): the impact's penalty RATES use every penalty (v4 units, pd_all / pt_all, coincidental penalties included), rescaled per position group to the power-play-creating level (pdu_all / pd_all and ptu_all / pt_all of the same D90-weighted sums); the penalty VALUE stays the P2 value per power-play-creating unit (0.183 for 2025-26); P3's drawn / taken shrinkage applies on this basis",
+   "basis": "the P1 diagnostic reported under the declared rule was consistent across all three phases: the all-penalty rates (t0 400, rescaled) predict the next-30-game net penalty differential in PP-creating units better than the PP-unit-only rates of the selected configuration (z 2.3 tuning, 0.3 dev, 2.8 holdout for v4 vs selected; taken-side deviance z 2.7 tuning) - coincidental minors carry information about a player's future power-play penalties",
+   "t0_recheck": "re-run on the TUNING seasons only (2019-23, next-30-game Poisson deviance per kind, all-penalty basis rescaled): the optimum is unchanged, t0 drawn 800 / taken 400 (out/v5_validation.json 'amendment_A1'); no dev or holdout scoring of the amended configuration was run",
+   "unchanged": "P2, P3 (t0 800 / 400), C1 and C2 ship; C3 does not"
+  }
+ ],
  "sanity_checks": {
   "status": "the v4 CHECK LIST unchanged (21 checks: MacKinnon, McDavid, Draisaitl, Kucherov, Matthews, Pastrnak, Rantanen, Makar, Q. Hughes top 50; Rantanen above Kiviranta / Faksa / Back; those three below DAL's median; Robertson, Johnston, Rantanen, Heiskanen, Hintz, Harley in DAL's top 8), evaluated once on the shipped v5 export and on v4, reported pass / fail as is; plus DAL roster, league top 30 and Rantanen / Makar / Kiviranta / Gallagher / Caufield. Nothing in this file is chosen or changed because of it."
  }

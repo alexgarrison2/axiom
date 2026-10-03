@@ -9,7 +9,7 @@
   "C3": "E1+res0.003"
  },
  "decisions": {
-  "P1_penalty_units": "shipped (definitional): pdu_all / ptu_all",
+  "P1_penalty_units": "value per PP-creating unit; rates per owner amendment A1 (post-holdout): every penalty (v4 units) rescaled per position group to PP-creating units",
   "P2_penalty_value": "shipped: value_pp of the last completed season (2025-26: 0.1832; v4 value 0.1527)",
   "P3_penalty_shrinkage": "shipped: t0 drawn 800, taken 400 (dev and holdout better than 400 / 400)",
   "C1_ev_fin": "kept in off_impact (E1 better than E0 on tuning, dev and holdout)",
@@ -1549,6 +1549,203 @@
      "n_rows": 940,
      "delta_per_row": 0.6518515035166782
     }
+   }
+  }
+ },
+ "amendment_A1": {
+  "what": "post-holdout owner amendment (v5_prereg.json amendments A1): all-penalty rates rescaled to PP-creating units; t0 re-checked on the tuning seasons only",
+  "selected": {
+   "t0_d": 800,
+   "t0_t": 400
+  },
+  "paired_tune": {
+   "dev|pp_800_400->all_sel": {
+    "delta": -133.90094810854464,
+    "se": 90.3180446122768,
+    "z": -1.4825492367927515,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": -0.006902466524488099
+   },
+   "dev|pp_800_400->all_800_400": {
+    "delta": -133.90094810854464,
+    "se": 90.3180446122768,
+    "z": -1.4825492367927515,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": -0.006902466524488099
+   },
+   "dev|all_800_400->all_sel": {
+    "delta": 0.0,
+    "se": 0.0,
+    "z": null,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": 0.0
+   },
+   "dev_d|pp_800_400->all_sel": {
+    "delta": 22.651432051552273,
+    "se": 59.79218811424702,
+    "z": 0.3788359778416437,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": 0.0011676597789345984
+   },
+   "dev_d|pp_800_400->all_800_400": {
+    "delta": 22.651432051552273,
+    "se": 59.79218811424702,
+    "z": 0.3788359778416437,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": 0.0011676597789345984
+   },
+   "dev_d|all_800_400->all_sel": {
+    "delta": 0.0,
+    "se": 0.0,
+    "z": null,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": 0.0
+   },
+   "dev_t|pp_800_400->all_sel": {
+    "delta": -156.55238016009696,
+    "se": 59.75295368177559,
+    "z": -2.6199940005282922,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": -0.0080701263034227
+   },
+   "dev_t|pp_800_400->all_800_400": {
+    "delta": -156.55238016009696,
+    "se": 59.75295368177559,
+    "z": -2.6199940005282922,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": -0.0080701263034227
+   },
+   "dev_t|all_800_400->all_sel": {
+    "delta": 0.0,
+    "se": 0.0,
+    "z": null,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": 0.0
+   },
+   "net|pp_800_400->all_sel": {
+    "delta": -922.1965418504514,
+    "se": 252.02211036063076,
+    "z": -3.6591890311958553,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": -0.047538354649747476
+   },
+   "net|pp_800_400->all_800_400": {
+    "delta": -922.1965418504514,
+    "se": 252.02211036063076,
+    "z": -3.6591890311958553,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": -0.047538354649747476
+   },
+   "net|all_800_400->all_sel": {
+    "delta": 0.0,
+    "se": 0.0,
+    "z": null,
+    "n_players": 1321,
+    "n_rows": 19399,
+    "delta_per_row": 0.0
+   }
+  },
+  "tuning_table_next30": {
+   "a100": {
+    "dev_d": 24919.841,
+    "dev_t": 23907.822,
+    "net_sse": 129101.323,
+    "n": 19399
+   },
+   "a1600": {
+    "dev_d": 24014.19,
+    "dev_t": 23548.221,
+    "net_sse": 125913.72,
+    "n": 19399
+   },
+   "a200": {
+    "dev_d": 24296.582,
+    "dev_t": 23304.639,
+    "net_sse": 126276.939,
+    "n": 19399
+   },
+   "a3200": {
+    "dev_d": 24656.298,
+    "dev_t": 24557.891,
+    "net_sse": 130329.604,
+    "n": 19399
+   },
+   "a400": {
+    "dev_d": 23857.705,
+    "dev_t": 22937.49,
+    "net_sse": 124214.694,
+    "n": 19399
+   },
+   "a50": {
+    "dev_d": 25669.448,
+    "dev_t": 24655.097,
+    "net_sse": 132184.853,
+    "n": 19399
+   },
+   "a800": {
+    "dev_d": 23726.864,
+    "dev_t": 22973.945,
+    "net_sse": 123801.066,
+    "n": 19399
+   },
+   "t100": {
+    "dev_d": 24899.728,
+    "dev_t": 24012.477,
+    "net_sse": 133511.309,
+    "n": 19399
+   },
+   "t1600": {
+    "dev_d": 24009.113,
+    "dev_t": 23765.203,
+    "net_sse": 125108.038,
+    "n": 19399
+   },
+   "t200": {
+    "dev_d": 24255.247,
+    "dev_t": 23422.553,
+    "net_sse": 129313.713,
+    "n": 19399
+   },
+   "t3200": {
+    "dev_d": 24659.809,
+    "dev_t": 24750.974,
+    "net_sse": 129207.736,
+    "n": 19399
+   },
+   "t400": {
+    "dev_d": 23818.209,
+    "dev_t": 23094.042,
+    "net_sse": 125766.406,
+    "n": 19399
+   },
+   "t50": {
+    "dev_d": 25693.755,
+    "dev_t": 24778.29,
+    "net_sse": 137809.466,
+    "n": 19399
+   },
+   "t800": {
+    "dev_d": 23704.212,
+    "dev_t": 23173.519,
+    "net_sse": 123956.333,
+    "n": 19399
+   },
+   "v4": {
+    "dev_d": 23857.705,
+    "dev_t": 22937.49,
+    "net_sse": 124214.694,
+    "n": 19399
    }
   }
  },

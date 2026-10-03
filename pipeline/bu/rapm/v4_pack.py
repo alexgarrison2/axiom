@@ -19,6 +19,13 @@ bundle's ``v4`` table (``bundle_table``) is ``LIVE_COLUMNS``: v3's columns plus
 
 and ``meta.pen_value`` (goals per penalty unit).  ``player_ratings.json`` (``bu.lineup.ratings_export``)
 and the game simulator read this table.
+
+Ratings v5 (``v5.py``, impact-only; packs with ``config.pen_units``): ``pd60`` / ``pt60`` are
+``v5.penalty_rates`` in power-play-creating units (``"all_scaled"``: every penalty, rescaled per
+position group by the share that created a power play) with separate drawn / taken pseudo minutes
+(``config.pen_t0`` = [800, 400]), ``pen_value`` is the net PP goals per PP-creating unit, and the
+table gains ``fin_pp`` (PP goals above xG per 60 PP minutes; the pack's grid carries the
+pre-season sums ``fin_pp``).  A v4 pack (no ``pen_units``) keeps v4's penalty columns, ``fin_pp`` 0.
 """
 from __future__ import annotations
 
@@ -31,11 +38,12 @@ import pandas as pd
 from . import v3 as V
 from . import v3_pack as P3
 from . import v4 as V4
+from . import v5 as V5
 from .recency import LeagueClock, Recency
 
 PACK_VERSION = 1
 PACK_KIND = "ratings_pack_v4"
-LIVE_COLUMNS = P3.LIVE_COLUMNS[:-1] + ["spm_o", "spm_d", "spm_pp", "spm_pk", "pd60", "pt60", "role"]
+LIVE_COLUMNS = P3.LIVE_COLUMNS[:-1] + ["spm_o", "spm_d", "spm_pp", "spm_pk", "pd60", "pt60", "fin_pp", "role"]
 
 
 def pack_path(season: str) -> str:
@@ -60,18 +68,33 @@ def _spm_from_json(j: dict | None):
     coef = {c: {g: np.array(v, float) for g, v in d.items()} for c, d in j["coef"].items()}
     cols = j.get("box_columns") or V4.SUM_COLS
     box = pd.DataFrame([r[1:] for r in j["box"]], index=[int(r[0]) for r in j["box"]], columns=cols).astype(float)
-    return stats, coef, box[V4.SUM_COLS] if len(box) else V4.add_box()
+    box = box.reindex(columns=V4.SUM_COLS, fill_value=0.0)      # a v4 pack has no pdu_all / ptu_all
+    return stats, coef, box if len(box) else V4.add_box()
+
+
+def _fin_pp_json(s: pd.DataFrame) -> list:
+    return [[int(i)] + [P3._r(x, 6) for x in row] for i, row in zip(s.index, s[V5.FIN_PP_COLS].to_numpy())]
+
+
+def _fin_pp_from_json(rows) -> pd.DataFrame | None:
+    if rows is None:
+        return None
+    if not rows:
+        return V5.add_fin_pp()
+    return pd.DataFrame([r[1:] for r in rows], index=[int(r[0]) for r in rows], columns=V5.FIN_PP_COLS).astype(float)
 
 
 def build_pack(engine: V4.Engine4, S: str, rec: Recency, sh: V4.Shrink4, prior_xg: float = V.FIN_PRIOR_XG,
                pen_value: float | None = None, log=print) -> dict:
-    """Season-start v4 pack of season S (the v3 pack + the SPM part of every grid point)."""
+    """Season-start v4 pack of season S (the v3 pack + the SPM part of every grid point; v5: + the
+    pre-season PP-finishing sums and the v5 penalty configuration)."""
     S = str(S)
     grid = []
     for g in V.G_GRID:
         pr = engine.stage1(S, float(g), rec, sh)
         gj = P3._prior_json(pr, V.fin_pre(engine, S, float(g), rec))
         gj["spm"] = _spm_json(pr)
+        gj["fin_pp"] = _fin_pp_json(V5.fin_pp_pre(engine, S, float(g), rec))
         grid.append(gj)
         log(f"  [v4-pack] {S} g={g:g}: {len(gj['ev'])} EV, {len(gj['st'])} PP/PK, {len(gj['spm']['box'])} box rows")
     prev = [s for s in sorted(engine.inp) if s < S]
@@ -89,7 +112,8 @@ def build_pack(engine: V4.Engine4, S: str, rec: Recency, sh: V4.Shrink4, prior_x
            "toi_half_life": dict(V.TOI_HALF_LIFE), "toi_pseudo": V.TOI_PSEUDO, "sigma2_ev": V.SIGMA2_EV,
            "sigma2_st": V.SIGMA2_ST, "usage_tiers": V.USAGE_TIERS, "min_role_gp": V.MIN_ROLE_GP,
            "g_step": V.G_STEP, "lag_days": V.LAG_DAYS, "impact_weights": dict(V4.IMPACT_WEIGHTS),
-           "features": V4.FEATURES, "pen_t0": V4.PEN_T0}
+           "features": V4.FEATURES, "pen_t0": list(V5.PEN_T0), "pen_units": V5.PEN_UNITS,
+           "fin_pp": {"variant": V5.FIN_PP_VARIANT, "prior_xg": V5.FIN_PP_PRIOR_XG}}
     return {"version": PACK_VERSION, "kind": PACK_KIND, "season": S,
             "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "config": cfg, "goals_per_xg": float(gpx), "pen_value": float(pen_value or 0.0), "grid": grid,
@@ -123,13 +147,31 @@ class Pack(P3.Pack):
                                                                        if k in V.Shrink.__dataclass_fields__}}})
         self.sh = V4.Shrink4(**sh)
         self.pen_value = float(j.get("pen_value") or 0.0)
-        self.pen_t0 = float(j["config"].get("pen_t0", V4.PEN_T0))
-        g4 = []
+        c = j["config"]
+        t0 = c.get("pen_t0", V4.PEN_T0)
+        self.pen_t0 = tuple(float(x) for x in t0) if isinstance(t0, (list, tuple)) else float(t0)
+        self.pen_units = c.get("pen_units", "v4")
+        self.fin_pp_cfg = c.get("fin_pp")
+        g4, self.fin_pp_grid = [], []
         for (pr, fin), gj in zip(self.grid, j["grid"]):
             stats, coef, box = _spm_from_json(gj.get("spm"))
             g4.append((V4.Prior4(pr.g, pr.ev, pr.st, pr.role_ev, pr.role_st, pr.cov_ev, pr.cov_st, stats, coef, box),
                        fin))
+            self.fin_pp_grid.append(_fin_pp_from_json(gj.get("fin_pp")))
         self.grid = g4
+        if self.fin_pp_cfg is None or any(f is None for f in self.fin_pp_grid):
+            self.fin_pp_cfg, self.fin_pp_grid = None, None
+
+    def fin_pp_prior(self, g: float) -> pd.DataFrame | None:
+        """The pre-season PP-finishing sums at ``g`` (linear between grid points); None for a v4 pack."""
+        if self.fin_pp_grid is None:
+            return None
+        gs = np.array([p.g for p, _ in self.grid])
+        g = float(np.clip(g, gs.min(), gs.max()))
+        k = min(int(np.searchsorted(gs, g, side="right")) - 1, len(gs) - 1)
+        if k == len(gs) - 1 or g - gs[k] < 1e-9:
+            return self.fin_pp_grid[k]
+        return V5.interp_fin_pp(self.fin_pp_grid[k], self.fin_pp_grid[k + 1], (g - gs[k]) / (gs[k + 1] - gs[k]))
 
     def prior(self, g: float):
         gs = np.array([p.g for p, _ in self.grid])
@@ -143,9 +185,12 @@ class Pack(P3.Pack):
 
 
 def spm_columns(engine: V4.Engine4, df: pd.DataFrame, pr: V4.Prior4, box_now: pd.DataFrame,
-                pen_t0: float) -> pd.DataFrame:
+                pen_t0, pen_units: str = "v4", fin_pp_sums: pd.DataFrame | None = None,
+                fin_pp_cfg: dict | None = None) -> pd.DataFrame:
     """``spm_o`` / ``spm_d`` / ``spm_pp`` / ``spm_pk`` (role or position mean + beta' z at the current
-    box score) and ``pd60`` / ``pt60`` for the rows of a ratings table."""
+    box score), ``pd60`` / ``pt60`` (``v5.penalty_rates`` in ``pen_units``, ``pen_t0`` pseudo minutes:
+    one number or (drawn, taken)) and ``fin_pp`` (v5; 0 without ``fin_pp_sums``) for the rows of a
+    ratings table."""
     df = df.copy()
     ids = df["player_id"].astype(int).to_numpy()
     grp = np.array([engine.bio.g(p) for p in ids])
@@ -169,19 +214,16 @@ def spm_columns(engine: V4.Engine4, df: pd.DataFrame, pr: V4.Prior4, box_now: pd
     mpk = np.array([pr.role_st.get(g, (0.0, 0.0, 0, 0))[1] for g in grp])
     df["spm_o"], df["spm_d"] = mo + lin("o"), md + lin("d")
     df["spm_pp"], df["spm_pk"] = mpp + lin("pp"), mpk + lin("pk")
-    pen = V4.penalty_rates(box_now, engine.bio.group, pen_t0)
-    allb = box_now
-    fb = {}
-    sec = allb[V4.SEC_COLS].to_numpy(float).sum(axis=1) if len(allb) else np.zeros(0)
-    gall = V4._groups(allb.index, engine.bio.group)
-    for g in ("F", "D"):
-        m = gall == g
-        s = sec[m].sum() if len(sec) else 0.0
-        fb[g] = ((float(allb["pd_all"].to_numpy()[m].sum()) / s * 3600, float(allb["pt_all"].to_numpy()[m].sum()) / s * 3600)
-                 if s > 0 else (0.0, 0.0))
+    pen, fb = V5.penalty_rates(box_now, engine.bio.group, pen_t0, pen_units)
     rr = pen.reindex(pd.Index(ids))
     df["pd60"] = np.where(rr["pd60"].notna(), rr["pd60"], [fb[g][0] for g in grp]) if len(ids) else []
     df["pt60"] = np.where(rr["pt60"].notna(), rr["pt60"], [fb[g][1] for g in grp]) if len(ids) else []
+    df["fin_pp"] = 0.0
+    if fin_pp_sums is not None and len(fin_pp_sums) and len(ids):
+        cfg = fin_pp_cfg or {}
+        fp = V5.fin_pp_values(fin_pp_sums, engine.bio.group, float(cfg.get("prior_xg", V5.FIN_PP_PRIOR_XG)),
+                              cfg.get("variant", V5.FIN_PP_VARIANT))
+        df["fin_pp"] = fp.reindex(pd.Index(ids)).fillna(0.0).to_numpy()
     return df
 
 
@@ -210,10 +252,15 @@ def live_table(pack: Pack, inputs_cur: "V.SeasonInputs | None", box_cur: pd.Data
                           pack.toi_h)
     intercept = P3._intercept(df)
     box_now = V4.add_box(pr.box, eng.box_in(S, at, pack.rec) if S in eng.box else None)
-    df = spm_columns(eng, df, pr, box_now, pack.pen_t0)
+    fpp = pack.fin_pp_prior(g)
+    if fpp is not None:
+        fpp = V5.add_fin_pp(fpp, V5.fin_pp_in(eng, S, at, pack.rec) if S in eng.box else None)
+    df = spm_columns(eng, df, pr, box_now, pack.pen_t0, pack.pen_units, fpp, pack.fin_pp_cfg)
     meta = {"season": S, "asof": None if asof is None else str(np.datetime64(asof, "D")),
             "max_source_date": None if last is None else str(last), "g": round(float(g), 3),
-            "goals_per_xg": pack.goals_per_xg, "pen_value": pack.pen_value, "pen_t0": pack.pen_t0,
+            "goals_per_xg": pack.goals_per_xg, "pen_value": pack.pen_value,
+            "pen_t0": list(pack.pen_t0) if isinstance(pack.pen_t0, tuple) else pack.pen_t0,
+            "pen_units": pack.pen_units, "fin_pp": pack.fin_pp_cfg,
             "recency": pack.rec.as_dict(), "shrink": pack.sh.as_dict(), "prior_xg": pack.prior_xg,
             "intercept": intercept}
     return df[LIVE_COLUMNS].sort_values("player_id").reset_index(drop=True), meta, pr
@@ -291,7 +338,8 @@ def main(argv=None) -> int:
     paths = RapmPaths(Lake(a.lake_dir), a.out)
     eng = engine_for(paths, a.season, a.xg)
     prev = max(s for s in eng.inp if s < str(a.season))
-    pv = load_season(paths, prev, eng.inp[prev].toi, a.xg)[1]["value"]
+    pgv = load_season(paths, prev, eng.inp[prev].toi, a.xg)[1]
+    pv = pgv["value_pp"] if V5.PEN_UNITS != "v4" else pgv["value"]
     pk = build_pack(eng, a.season, V.RECENCY, V4.SHRINK, V.FIN_PRIOR_XG, pen_value=pv)
     print(f"  [v4-pack] -> {write_pack(pack_path(a.season), pk)}")
     return 0
