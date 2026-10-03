@@ -84,17 +84,28 @@ refresh logs a warning, `validate_outputs.py bu_bundle` fails on the fresh bundl
 no-FIN rollback model (`shadow.rapm`) is published.  Also build and commit the season's
 player sample for the site ratings (`python -m bu.lineup.ratings_export sample --lake-dir <lake>
 --season <S>`: EV minutes / games of the three seasons before S, names of every lake player).
+And build and commit the season's **ratings v3 pack** (`python -m bu.rapm.v3_pack pack --season <S>
+--xg <the asof xG source> --out <RAPM state>` from the full lake, after `bu.rapm asof` through S so
+the season's aging curve is in `prior_pack/season=S` -> `bu/lineup/out/ratings_pack_<S>.json.gz`,
+~1.7 MB); without it the bundle has no `v3` table, `validate_outputs.py bu_bundle` fails on the
+fresh bundle and the site's `player_ratings.json` is not re-exported (the last file stays).
 
-**Site player ratings** (`bu/lineup/ratings_export.py` -> `public/data/player_ratings.json`):
-the one player rating the site shows (/players, team pages, the matchup Lines tab).  One row per
-rated skater plus every rostered skater, every rating higher = better: `off` (EV xGF/60 impact,
-the bundle's `o`), `def` (EV xGA/60 *prevented*, `-d`; file version 2, v1 carried `d`), `net = off + def`
-(= `o - d`), the EV sample (`toi` minutes, `gp`) over the last three seasons +
-this one, `roster` (on a current NHL roster) and `rated` (False = no NHL sample yet: the rookie
-prior of his position group, as in the lineup term).  Exported by every bundle refresh
-(`bu_refresh.yml` commits it with the bundle) and by the daily full run (`refresh_pipeline.py`
-stage `player_ratings`: today's rosters), rewritten only when its content changed;
-`validate_outputs.py player_ratings` gates it.
+**Site player ratings: ratings v3** (`bu/lineup/ratings_export.py` -> `public/data/player_ratings.json`,
+version 3; model and validation: `bu/rapm/README.md` "Ratings v3"; schema: `pipeline/CONTRACT.md`):
+the one player rating the site shows (/players, team pages, the matchup Lines tab).  Headline
+`impact` = goals per 82 games above an average player at his position (F / D) = `off_impact`
+(EV offence + PP offence + finishing) + `def_impact` (EV defence + PK defence), each rate times his
+expected minutes per game in the state; per-60 rates `ev_off`, `ev_def`, `pp_off`, `pk_def`, `fin`
+and expected minutes `toi_ev_gp`, `toi_pp_gp`, `toi_pk_gp` as secondary columns; `sd` = posterior SD
+of `impact`; the v2 names `off` (= `ev_off`), `def` (= `ev_def`), `net = off + def`, `off_total =
+off + fin`, the EV sample (`toi`, `gp`, `toi_cur`, `gp_cur`), `roster` and `rated` stay.  Source: the
+serving bundle's `v3` table (`bu.lineup serve` rolls the season's ratings pack through the season's
+games: in-season weights move with every game, so the daily refresh rolls the recency forward).
+Exported by every bundle refresh (`bu_refresh.yml` commits it with the bundle) and by the daily full
+run (`refresh_pipeline.py` stage `player_ratings`: today's rosters), rewritten only when its content
+changed; `validate_outputs.py player_ratings` gates it.  The game model is unaffected: ratings v3
+in the lineup term did not beat the live model on the dev seasons (`bu/rapm/README.md`), so the
+bundle's `players` / `fin` tables (`bu_d_net`, `bu_d_delta`, `bu_d_fin`) stay RAPM v2 / FIN v2.
 
 ## FIN in the game model (shipped 2026-10-02)
 
