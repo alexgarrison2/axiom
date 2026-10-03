@@ -42,6 +42,12 @@ function priced(): RawRow {
         home_pl_ev: '0.0237', away_pl_ev: '-0.0667',
         home_1p3_ev: '-0.024', p1_tie_ev: '-0.0875', away_1p3_ev: '-0.1254',
         home_1p_ev: '-0.0214', away_1p_ev: '-0.0626',
+        // Model numbers pinned here (not taken from the fixture, which is regenerated with each model change).
+        away_reg_pct: '50.5', away_reg_fair: '-102', home_reg_pct: '33.7', home_reg_fair: '+197', reg_tie_pct: '15.8', reg_tie_fair: '+533',
+        sim_pl_spread: '-1.5', away_pl_pct: '79.5', away_pl_fair: '-389', home_pl_pct: '20.5', home_pl_fair: '+389',
+        sim_total_line: '6.0', total_line: '6.0', total_over: '-110', total_push_pct: '11.0',
+        over_pct: '50.8', over_fair: '-133', under_pct: '38.2', under_fair: '+133', over_ev: '0.0802', under_ev: '-0.1611',
+        home_1p_pct: '30.6', home_1p_fair: '+227', away_1p_2w_pct: '56.6', away_1p_2w_fair: '-130',
     };
 }
 
@@ -114,10 +120,11 @@ describe('marketRows', () => {
     });
 
     it('shows model % and fair price without a posted price, and omits rows with nothing', () => {
-        const p = parseRow(row('EDM', 'VAN'))!;
+        const raw = row('EDM', 'VAN');
+        const p = parseRow(raw)!;
         const rows = marketRows(p);
         const reg = rows.find(r => r.key === 'reg') as SidesRow;
-        expect(reg.home).toEqual({ pct: 33.7, fair: '+197' });
+        expect(reg.home).toEqual({ pct: Number(raw.home_reg_pct), fair: raw.home_reg_fair });
         expect(reg.home?.price).toBeUndefined();
         // No 1P 3-way price and no 1P EV: the row still shows the model.
         expect(rows.map(r => r.key)).toContain('p1');
@@ -178,8 +185,8 @@ describe('Odds tab markets', () => {
         expect(est?.getAttribute('href')).toBe('/methodology#term-simulator');
         // Unpriced markets: model % and fair price, price and edge as dashes.
         const reg = container.querySelector('tr[data-market="reg"]')!;
-        expect(reg.textContent).toContain('33.7');
-        expect(reg.textContent).toContain('+197');
+        expect(reg.textContent).toContain(p.markets!.reg!.home!.pct!.toFixed(1));
+        expect(reg.textContent).toContain(p.markets!.reg!.home!.fair!);
         expect(reg.textContent).toContain('—');
         expect(container.textContent).not.toMatch(/NaN|undefined|null/);
     });
