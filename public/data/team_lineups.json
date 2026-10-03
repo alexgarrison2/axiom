@@ -334,7 +334,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sam Reinhart",
@@ -430,7 +430,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Garnet Hathaway",
@@ -451,7 +451,7 @@
                 "id": 2431,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -556,6 +556,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Gustav Forsling",
+                "number": 42,
+                "pos": "ir4",
+                "id": 2431,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -584,7 +593,7 @@
                 "id": 2431,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Aaron Ekblad",
@@ -635,8 +644,8 @@
             }
         ],
         "lineup_source": "Jameson Olive",
-        "updated_at": "2026-10-03T20:49:41.472Z",
-        "fetched_at": "2026-10-03T21:02:37Z"
+        "updated_at": "2026-10-03T21:26:00.427Z",
+        "fetched_at": "2026-10-03T21:54:18Z"
     },
     "TOR": {
         "f1": [
