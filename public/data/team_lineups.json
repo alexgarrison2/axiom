@@ -5212,7 +5212,7 @@
                 "id": 37940,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -5275,6 +5275,15 @@
                 "id": 32816,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Emil Lilleberg",
+                "number": null,
+                "pos": "ir3",
+                "id": 37940,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -5355,8 +5364,8 @@
             }
         ],
         "lineup_source": "Gabby Shirley",
-        "updated_at": "2026-10-04T15:45:22.303Z",
-        "fetched_at": "2026-10-04T16:02:24Z"
+        "updated_at": "2026-10-04T17:10:23.716Z",
+        "fetched_at": "2026-10-04T18:02:34Z"
     },
     "ANA": {
         "f1": [
@@ -8011,16 +8020,6 @@
         ],
         "f4": [
             {
-                "name": "Carter Mazur",
-                "number": 43,
-                "pos": "lw",
-                "id": 34532,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Nate Danielson",
                 "number": 29,
                 "pos": "c",
@@ -8234,7 +8233,7 @@
         ],
         "lineup_source": "Ansar Khan",
         "updated_at": "2026-10-04T16:40:01.946Z",
-        "fetched_at": "2026-10-04T17:02:48Z"
+        "fetched_at": "2026-10-04T18:02:34Z"
     },
     "UTA": {
         "f1": [
