@@ -9,7 +9,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sebastian Aho",
@@ -19,7 +19,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Andrei Svechnikov",
@@ -51,7 +51,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jackson Blake",
@@ -73,7 +73,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jordan Staal",
@@ -105,7 +105,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Mark Jankowski",
@@ -191,7 +191,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -310,9 +310,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Walt Ruff",
-        "updated_at": "2026-10-03T22:43:15.227Z",
-        "fetched_at": "2026-10-03T23:02:28Z"
+        "lineup_source": "Last Game (2026-10-03)",
+        "updated_at": "2026-10-04T11:15:40.082Z",
+        "fetched_at": "2026-10-04T19:52:37Z"
     },
     "FLA": {
         "f1": [
@@ -785,7 +785,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Chris Tanev",
@@ -795,7 +795,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -807,7 +807,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Darren Raddysh",
@@ -817,7 +817,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -967,9 +967,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "David Alter",
-        "updated_at": "2026-10-03T22:47:38.310Z",
-        "fetched_at": "2026-10-03T23:02:28Z"
+        "lineup_source": "Last Game (2026-10-03)",
+        "updated_at": "2026-10-04T11:08:08.836Z",
+        "fetched_at": "2026-10-04T19:52:37Z"
     },
     "MTL": {
         "f1": [
@@ -1291,9 +1291,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Montreal Canadiens",
-        "updated_at": "2026-10-04T01:33:00.359Z",
-        "fetched_at": "2026-10-04T02:04:06Z"
+        "lineup_source": "Last Game (2026-10-03)",
+        "updated_at": "2026-10-04T11:18:19.350Z",
+        "fetched_at": "2026-10-04T19:52:37Z"
     },
     "BOS": {
         "f1": [
@@ -2788,19 +2788,19 @@
         ],
         "g": [
             {
-                "name": "Carter Hart",
-                "number": 79,
+                "name": "Adin Hill",
+                "number": 33,
                 "pos": "g1",
-                "id": 3874,
+                "id": 2906,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Adin Hill",
-                "number": 33,
+                "name": "Carter Hart",
+                "number": 79,
                 "pos": "g2",
-                "id": 2906,
+                "id": 3874,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -2884,7 +2884,7 @@
         ],
         "lineup_source": "Hannah Kirkell",
         "updated_at": "2026-10-03T01:38:23.890Z",
-        "fetched_at": "2026-10-03T01:48:05Z"
+        "fetched_at": "2026-10-04T19:52:37Z"
     },
     "CHI": {
         "f1": [
@@ -2903,7 +2903,7 @@
                 "number": null,
                 "pos": "c",
                 "id": 33280,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2935,7 +2935,7 @@
                 "number": 16,
                 "pos": "c",
                 "id": 38471,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3174,7 +3174,7 @@
                 "number": null,
                 "pos": "sk1",
                 "id": 33280,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -3206,9 +3206,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ben Pope",
-        "updated_at": "2026-10-03T22:39:58.253Z",
-        "fetched_at": "2026-10-03T23:02:28Z"
+        "lineup_source": "Last Game (2026-10-03)",
+        "updated_at": "2026-10-04T11:05:13.879Z",
+        "fetched_at": "2026-10-04T19:52:37Z"
     },
     "PHI": {
         "f1": [
@@ -6641,9 +6641,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Mike Vogel",
-        "updated_at": "2026-10-04T01:05:26.926Z",
-        "fetched_at": "2026-10-04T02:04:06Z"
+        "lineup_source": "Last Game (2026-10-03)",
+        "updated_at": "2026-10-04T11:10:14.120Z",
+        "fetched_at": "2026-10-04T19:52:37Z"
     },
     "CBJ": {
         "f1": [
@@ -6700,14 +6700,14 @@
                 "movement": null
             },
             {
-                "name": "Dmitri Voronkov",
-                "number": 10,
+                "name": "Conor Garland",
+                "number": 8,
                 "pos": "rw",
-                "id": 31266,
+                "id": 3791,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
@@ -6764,14 +6764,14 @@
                 "movement": null
             },
             {
-                "name": "Conor Garland",
-                "number": 8,
+                "name": "Dmitri Voronkov",
+                "number": 10,
                 "pos": "rw",
-                "id": 3791,
+                "id": 31266,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -6983,9 +6983,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Brian Hedger",
-        "updated_at": "2026-10-03T22:50:38.697Z",
-        "fetched_at": "2026-10-03T23:02:28Z"
+        "lineup_source": "Last Game (2026-10-03)",
+        "updated_at": "2026-10-04T11:22:42.953Z",
+        "fetched_at": "2026-10-04T19:52:37Z"
     },
     "SJS": {
         "f1": [
@@ -9037,7 +9037,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -9165,9 +9165,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Rachel Lenzi",
-        "updated_at": "2026-10-03T22:40:33.149Z",
-        "fetched_at": "2026-10-03T23:02:28Z"
+        "lineup_source": "Last Game (2026-10-03)",
+        "updated_at": "2026-10-04T11:06:42.652Z",
+        "fetched_at": "2026-10-04T19:52:37Z"
     },
     "STL": {
         "f1": [

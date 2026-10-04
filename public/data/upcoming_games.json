@@ -4,7 +4,7 @@
         "gameDate": "2026-10-04",
         "startTimeUTC": "2026-10-04T17:00:00Z",
         "gameType": 2,
-        "gameState": "LIVE",
+        "gameState": "FINAL",
         "homeTeam": "Red Wings",
         "awayTeam": "Jets",
         "homeTeamAbbrev": "DET",
@@ -219,11 +219,11 @@
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Carter Hart",
+        "awayGoalieConfirmed": "Adin Hill",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
+        "awayGoalieConflict": true,
+        "awayGoalieAlt": "Carter Hart",
         "tvNetwork": "",
         "tvDisplay": [
             {

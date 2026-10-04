@@ -37712,5 +37712,73 @@
         "market_p": 0.5
       }
     }
+  },
+  {
+    "gameId": 2026020035,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-04",
+    "homeTeam": "Red Wings",
+    "awayTeam": "Jets",
+    "homeScore": 2,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 3.01,
+    "awayXg": 3.04,
+    "homeWinProb": 49.5,
+    "predictedWinner": "Jets",
+    "actualWinner": "Jets",
+    "isCorrect": true,
+    "isLean": false,
+    "brierScore": 0.245,
+    "logLoss": 0.6832,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-04T16:10:00Z",
+    "startUtc": "2026-10-04T17:00:00Z",
+    "marketHomeProb": 49.5,
+    "modelHomeProb": 49.5,
+    "homeOdds": -108.0,
+    "awayOdds": -112.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 49.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.39,
+        "ll": 0.9416,
+        "naive_ll": 0.8655,
+        "market_p": 0.3872
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.718,
+        "ll": 0.3313,
+        "naive_ll": 0.3109,
+        "market_p": 0.7186
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.468,
+        "ll": 0.7593,
+        "naive_ll": 0.7809,
+        "market_p": 0.4722
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.336,
+        "ll": 1.0906,
+        "naive_ll": 1.0581,
+        "market_p": 0.3298
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.503,
+        "ll": 0.6872,
+        "naive_ll": 0.6857,
+        "market_p": 0.5
+      }
+    }
   }
 ]
