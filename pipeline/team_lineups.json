@@ -1140,7 +1140,7 @@
                 "id": 2732,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -1204,6 +1204,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Alexandre Carrier",
+                "number": 45,
+                "pos": "ir3",
+                "id": 2732,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -1241,7 +1250,7 @@
                 "id": 2732,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -1283,8 +1292,8 @@
             }
         ],
         "lineup_source": "Montreal Canadiens",
-        "updated_at": "2026-10-03T23:04:05.096Z",
-        "fetched_at": "2026-10-04T00:02:40Z"
+        "updated_at": "2026-10-04T01:33:00.359Z",
+        "fetched_at": "2026-10-04T02:04:06Z"
     },
     "BOS": {
         "f1": [
@@ -2268,7 +2277,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Elias Pettersson",
@@ -2342,7 +2351,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Brendan Gallagher",
@@ -2374,7 +2383,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jonathan Lekkerimaki",
@@ -2578,9 +2587,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ben Kuzma",
-        "updated_at": "2026-10-03T18:51:28.188Z",
-        "fetched_at": "2026-10-03T18:53:50Z"
+        "lineup_source": "Thomas Drance",
+        "updated_at": "2026-10-04T01:41:10.054Z",
+        "fetched_at": "2026-10-04T02:04:06Z"
     },
     "VGK": {
         "f1": [
@@ -3348,7 +3357,7 @@
                 "id": 2140,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -3425,6 +3434,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Rasmus Ristolainen",
+                "number": 55,
+                "pos": "ir2",
+                "id": 2140,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3500,12 +3518,12 @@
                 "id": 2140,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "lineup_source": "Jordan Hall",
-        "updated_at": "2026-10-03T22:40:52.757Z",
-        "fetched_at": "2026-10-03T23:02:28Z"
+        "updated_at": "2026-10-04T01:21:49.306Z",
+        "fetched_at": "2026-10-04T02:04:06Z"
     },
     "PIT": {
         "f1": [
@@ -4520,26 +4538,26 @@
                 "movement": null
             },
             {
-                "name": "Scott Laughton",
-                "number": 21,
-                "pos": "rw",
-                "id": 2018,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
                 "name": "Joel Armia",
                 "number": 40,
-                "pos": "lw",
+                "pos": "rw",
                 "id": 1952,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Scott Laughton",
+                "number": 21,
+                "pos": "lw",
+                "id": 2018,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             },
             {
                 "name": "Corey Perry",
@@ -4726,8 +4744,8 @@
             }
         ],
         "lineup_source": "Zach Dooley",
-        "updated_at": "2026-10-03T23:08:39.896Z",
-        "fetched_at": "2026-10-04T00:02:40Z"
+        "updated_at": "2026-10-04T01:39:46.965Z",
+        "fetched_at": "2026-10-04T02:04:06Z"
     },
     "DAL": {
         "f1": [
@@ -6450,7 +6468,7 @@
                 "id": 4512,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -6527,6 +6545,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Matt Roy",
+                "number": 3,
+                "pos": "ir2",
+                "id": 4512,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -6564,7 +6591,7 @@
                 "id": 4512,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -6606,8 +6633,8 @@
             }
         ],
         "lineup_source": "Mike Vogel",
-        "updated_at": "2026-10-03T22:44:44.152Z",
-        "fetched_at": "2026-10-03T23:02:28Z"
+        "updated_at": "2026-10-04T01:05:26.926Z",
+        "fetched_at": "2026-10-04T02:04:06Z"
     },
     "CBJ": {
         "f1": [
@@ -7120,7 +7147,7 @@
                 "id": 2099,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             }
         ],
@@ -7166,17 +7193,6 @@
                 "gameTimeDecision": false
             }
         ],
-        "ir": [
-            {
-                "name": "Jacob Trouba",
-                "number": 65,
-                "pos": "ir1",
-                "id": 2099,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            }
-        ],
         "pk1": [
             {
                 "name": "Alexander Wennberg",
@@ -7212,7 +7228,7 @@
                 "id": 2099,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             }
         ],
         "pk2": [
@@ -7254,8 +7270,8 @@
             }
         ],
         "lineup_source": "Max Miller",
-        "updated_at": "2026-10-03T18:11:02.601Z",
-        "fetched_at": "2026-10-03T18:53:50Z"
+        "updated_at": "2026-10-04T01:38:36.494Z",
+        "fetched_at": "2026-10-04T02:04:06Z"
     },
     "SEA": {
         "f1": [
