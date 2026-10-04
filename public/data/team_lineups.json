@@ -974,11 +974,11 @@
     "MTL": {
         "f1": [
             {
-                "name": "Chris Kreider",
-                "number": 22,
+                "name": "Cole Caufield",
+                "number": 13,
                 "pos": "lw",
-                "id": 1926,
-                "ppUnit": 2,
+                "id": 30424,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -994,11 +994,11 @@
                 "movement": null
             },
             {
-                "name": "Cole Caufield",
-                "number": 13,
+                "name": "Chris Kreider",
+                "number": 22,
                 "pos": "rw",
-                "id": 30424,
-                "ppUnit": 1,
+                "id": 1926,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1282,9 +1282,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-09-29)",
-        "updated_at": "2026-09-30T11:32:49.980Z",
-        "fetched_at": "2026-09-30T12:42:02Z"
+        "lineup_source": "Montreal Canadiens",
+        "updated_at": "2026-10-03T23:04:05.096Z",
+        "fetched_at": "2026-10-04T00:02:40Z"
     },
     "BOS": {
         "f1": [
@@ -1588,9 +1588,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-02)",
-        "updated_at": "2026-10-03T14:43:11.690Z",
-        "fetched_at": "2026-10-03T15:03:14Z"
+        "lineup_source": "Belle Fraser",
+        "updated_at": "2026-10-03T23:41:19.791Z",
+        "fetched_at": "2026-10-04T00:02:40Z"
     },
     "NYR": {
         "f1": [
@@ -4534,9 +4534,9 @@
             {
                 "name": "Joel Armia",
                 "number": 40,
-                "pos": "c",
+                "pos": "lw",
                 "id": 1952,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4549,7 +4549,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4664,7 +4664,7 @@
                 "number": 40,
                 "pos": "sk2",
                 "id": 1952,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -4725,9 +4725,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Noah Sher",
-        "updated_at": "2026-10-03T18:54:11.709Z",
-        "fetched_at": "2026-10-03T19:02:35Z"
+        "lineup_source": "Zach Dooley",
+        "updated_at": "2026-10-03T23:08:39.896Z",
+        "fetched_at": "2026-10-04T00:02:40Z"
     },
     "DAL": {
         "f1": [
@@ -5984,9 +5984,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Kristy Flannery",
-        "updated_at": "2026-10-02T16:47:49.976Z",
-        "fetched_at": "2026-10-02T17:01:43Z"
+        "lineup_source": "New Jersey Devils",
+        "updated_at": "2026-10-03T23:15:24.767Z",
+        "fetched_at": "2026-10-04T00:02:40Z"
     },
     "MIN": {
         "f1": [
@@ -9253,14 +9253,14 @@
         ],
         "f4": [
             {
-                "name": "Alexey Toropchenko",
-                "number": 13,
+                "name": "Zachary Dean",
+                "number": null,
                 "pos": "lw",
-                "id": 28113,
+                "id": 31230,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Pius Suter",
@@ -9273,14 +9273,14 @@
                 "movement": null
             },
             {
-                "name": "Ross Johnston",
-                "number": 49,
+                "name": "Dillon Dube",
+                "number": 29,
                 "pos": "rw",
-                "id": 3759,
+                "id": 3907,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -9387,6 +9387,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Alexey Toropchenko",
+                "number": 13,
+                "pos": "ir3",
+                "id": 28113,
+                "ppUnit": null,
+                "injuryStatus": "out",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -9465,9 +9474,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-02)",
-        "updated_at": "2026-10-03T15:08:05.824Z",
-        "fetched_at": "2026-10-03T15:24:39Z"
+        "lineup_source": "Chris Pinkert",
+        "updated_at": "2026-10-03T23:57:56.396Z",
+        "fetched_at": "2026-10-04T00:02:40Z"
     },
     "CGY": {
         "f1": [
@@ -9874,16 +9883,6 @@
         ],
         "f4": [
             {
-                "name": "Reid Schaefer",
-                "number": 49,
-                "pos": "lw",
-                "id": 32867,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Jack Drury",
                 "number": 18,
                 "pos": "c",
@@ -9923,7 +9922,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -9957,7 +9956,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Adam Wilsby",
@@ -9981,12 +9980,23 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Justus Annunen",
-                "number": 29,
+                "name": "Matthew Murray",
+                "number": null,
                 "pos": "g2",
-                "id": 29146,
+                "id": 27664,
                 "ppUnit": null,
                 "injuryStatus": null,
+                "gameTimeDecision": false
+            }
+        ],
+        "ir": [
+            {
+                "name": "Justus Annunen",
+                "number": 29,
+                "pos": "ir1",
+                "id": 29146,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -10066,8 +10076,8 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Nick Kieser",
-        "updated_at": "2026-10-02T16:45:36.261Z",
-        "fetched_at": "2026-10-02T17:01:43Z"
+        "lineup_source": "Alex Daughertry",
+        "updated_at": "2026-10-03T23:44:23.100Z",
+        "fetched_at": "2026-10-04T00:02:40Z"
     }
 }
