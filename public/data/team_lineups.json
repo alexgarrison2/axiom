@@ -327,24 +327,24 @@
                 "movement": null
             },
             {
-                "name": "Lars Eller",
-                "number": 20,
-                "pos": "c",
-                "id": 840,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Sam Reinhart",
                 "number": 13,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2364,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Brad Marchand",
+                "number": 63,
+                "pos": "rw",
+                "id": 124,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "f2": [
@@ -363,7 +363,7 @@
                 "number": 9,
                 "pos": "c",
                 "id": 2366,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -423,14 +423,14 @@
                 "movement": null
             },
             {
-                "name": "Sam Lafferty",
-                "number": 18,
+                "name": "Lars Eller",
+                "number": 20,
                 "pos": "c",
-                "id": 4656,
+                "id": 840,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Garnet Hathaway",
@@ -549,18 +549,9 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Brad Marchand",
-                "number": 63,
-                "pos": "ir3",
-                "id": 124,
-                "ppUnit": null,
-                "injuryStatus": "out",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Gustav Forsling",
                 "number": 42,
-                "pos": "ir4",
+                "pos": "ir3",
                 "id": 2431,
                 "ppUnit": 2,
                 "injuryStatus": "dtd",
@@ -573,7 +564,7 @@
                 "number": 20,
                 "pos": "sk1",
                 "id": 840,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -643,9 +634,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jameson Olive",
-        "updated_at": "2026-10-03T21:26:00.427Z",
-        "fetched_at": "2026-10-04T12:02:37Z"
+        "lineup_source": "DFO Projections",
+        "updated_at": "2026-10-04T21:44:13.157Z",
+        "fetched_at": "2026-10-04T22:02:39Z"
     },
     "TOR": {
         "f1": [
@@ -1643,7 +1634,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "J.T. Miller",
@@ -1707,7 +1698,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Joe Veleno",
@@ -1903,9 +1894,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Peter Baugh",
-        "updated_at": "2026-10-04T14:20:17.052Z",
-        "fetched_at": "2026-10-04T15:02:26Z"
+        "lineup_source": "Vince Mervogliano",
+        "updated_at": "2026-10-04T21:36:47.948Z",
+        "fetched_at": "2026-10-04T22:02:39Z"
     },
     "EDM": {
         "f1": [
@@ -8526,9 +8517,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-03)",
-        "updated_at": "2026-10-04T11:21:12.732Z",
-        "fetched_at": "2026-10-04T12:02:37Z"
+        "lineup_source": "Utah Mammoth",
+        "updated_at": "2026-10-04T21:37:13.228Z",
+        "fetched_at": "2026-10-04T22:02:39Z"
     },
     "WPG": {
         "f1": [
