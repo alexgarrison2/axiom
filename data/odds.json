@@ -12,7 +12,7 @@
             "nhl_partner_draftkings",
             "bovada"
         ],
-        "fetched_at": "2026-10-04T19:52:41Z",
+        "fetched_at": "2026-10-04T21:02:21Z",
         "three_way_tie": 300,
         "Rangers_puckline": 200,
         "Rangers_puckline_spread": "-1.5",
@@ -23,15 +23,15 @@
         "Mammoth_puckline_spread": "+1.5",
         "Mammoth_three_way": 155,
         "total_under": 100,
-        "Rangers": -125,
-        "Mammoth": 105,
-        "home_ml": -125,
-        "away_ml": 105,
+        "Rangers": -120,
+        "Mammoth": 100,
+        "home_ml": -120,
+        "away_ml": 100,
         "Mammoth_1p_ml": -105,
         "Rangers_1p_ml": -125,
-        "Mammoth_1p_three_way": 190,
-        "Rangers_1p_three_way": 175,
-        "1p_three_way_tie": 172
+        "Mammoth_1p_three_way": 188,
+        "Rangers_1p_three_way": 173,
+        "1p_three_way_tie": 173
     },
     "2026020037": {
         "game_id": 2026020037,
@@ -46,7 +46,7 @@
             "nhl_partner_draftkings",
             "bovada"
         ],
-        "fetched_at": "2026-10-04T18:02:23Z",
+        "fetched_at": "2026-10-04T21:02:21Z",
         "Ducks_three_way": 165,
         "Ducks_puckline": -225,
         "Ducks_puckline_spread": "+1.5",
@@ -63,9 +63,9 @@
         "away_ml": -135,
         "Panthers_1p_ml": -130,
         "Ducks_1p_ml": 100,
-        "Panthers_1p_three_way": 163,
+        "Panthers_1p_three_way": 167,
         "Ducks_1p_three_way": 188,
-        "1p_three_way_tie": 185
+        "1p_three_way_tie": 183
     },
     "2026020038": {
         "game_id": 2026020038,
@@ -80,7 +80,7 @@
             "nhl_partner_draftkings",
             "bovada"
         ],
-        "fetched_at": "2026-10-04T19:02:20Z",
+        "fetched_at": "2026-10-04T21:02:21Z",
         "Kraken_puckline": 164,
         "Kraken_puckline_spread": "-1.5",
         "three_way_tie": 320,
@@ -97,7 +97,7 @@
         "away_ml": 130,
         "Flames_1p_ml": 110,
         "Kraken_1p_ml": -145,
-        "Flames_1p_three_way": 205,
+        "Flames_1p_three_way": 210,
         "Kraken_1p_three_way": 157,
         "1p_three_way_tie": 175
     },
@@ -114,14 +114,14 @@
             "nhl_partner_draftkings",
             "bovada"
         ],
-        "fetched_at": "2026-10-04T20:02:53Z",
+        "fetched_at": "2026-10-04T21:02:21Z",
         "three_way_tie": 370,
-        "total_over": 110,
+        "total_over": 105,
         "total_line": "6.5",
         "Canucks_three_way": 300,
         "Canucks_puckline": -110,
         "Canucks_puckline_spread": "+1.5",
-        "total_under": -130,
+        "total_under": -125,
         "Golden Knights_three_way": -165,
         "Golden Knights_puckline": -110,
         "Golden Knights_puckline_spread": "-1.5",
@@ -133,7 +133,7 @@
         "Canucks_1p_ml": 155,
         "Golden Knights_1p_three_way": 120,
         "Canucks_1p_three_way": 265,
-        "1p_three_way_tie": 185
+        "1p_three_way_tie": 188
     },
     "2026020040": {
         "game_id": 2026020040,
@@ -143,18 +143,27 @@
         "away_team": "Flyers",
         "home_abbrev": "TBL",
         "away_abbrev": "PHI",
-        "source": "espn_draftkings",
+        "source": "bovada",
         "sources": [
-            "espn_draftkings"
+            "bovada"
         ],
-        "fetched_at": "2026-10-04T20:02:53Z",
-        "Lightning": -192,
-        "Flyers": 160,
-        "home_ml": -192,
-        "away_ml": 160,
-        "total_line": "5.5",
-        "total_over": -122,
-        "total_under": 102
+        "fetched_at": "2026-10-04T21:02:21Z",
+        "Flyers_puckline": -150,
+        "Flyers_puckline_spread": "+1.5",
+        "Lightning_puckline": 130,
+        "Lightning_puckline_spread": "-1.5",
+        "total_over": 100,
+        "total_line": "6.0",
+        "total_under": -120,
+        "Flyers_1p_ml": 130,
+        "Lightning_1p_ml": -170,
+        "Lightning": -205,
+        "Flyers": 173,
+        "home_ml": -205,
+        "away_ml": 173,
+        "Flyers_three_way": 250,
+        "Lightning_three_way": -124,
+        "three_way_tie": 330
     },
     "2026020041": {
         "game_id": 2026020041,
@@ -164,18 +173,27 @@
         "away_team": "Senators",
         "home_abbrev": "BOS",
         "away_abbrev": "OTT",
-        "source": "espn_draftkings",
+        "source": "bovada",
         "sources": [
-            "espn_draftkings"
+            "bovada"
         ],
-        "fetched_at": "2026-10-04T18:02:23Z",
-        "Bruins": -110,
-        "Senators": -110,
-        "home_ml": -110,
-        "away_ml": -110,
-        "total_line": "5.5",
-        "total_over": -125,
-        "total_under": 105
+        "fetched_at": "2026-10-04T21:02:21Z",
+        "Senators_puckline": 230,
+        "Senators_puckline_spread": "-1.5",
+        "Bruins_puckline": -280,
+        "Bruins_puckline_spread": "+1.5",
+        "total_over": -103,
+        "total_line": "6.0",
+        "total_under": -117,
+        "Senators_1p_ml": -115,
+        "Bruins_1p_ml": -115,
+        "Bruins": -105,
+        "Senators": -115,
+        "home_ml": -105,
+        "away_ml": -115,
+        "Senators_three_way": 138,
+        "Bruins_three_way": 148,
+        "three_way_tie": 305
     },
     "2026020042": {
         "game_id": 2026020042,
@@ -185,18 +203,22 @@
         "away_team": "Jets",
         "home_abbrev": "PIT",
         "away_abbrev": "WPG",
-        "source": "espn_draftkings",
+        "source": "bovada",
         "sources": [
-            "espn_draftkings"
+            "bovada"
         ],
-        "fetched_at": "2026-10-04T18:02:23Z",
-        "Penguins": -170,
-        "Jets": 142,
-        "home_ml": -170,
-        "away_ml": 142,
-        "total_line": "6.5",
+        "fetched_at": "2026-10-04T21:02:21Z",
+        "Jets_puckline": -185,
+        "Jets_puckline_spread": "+1.5",
+        "Penguins_puckline": 160,
+        "Penguins_puckline_spread": "-1.5",
         "total_over": 102,
-        "total_under": -122
+        "total_line": "6.5",
+        "total_under": -122,
+        "Penguins": -170,
+        "Jets": 145,
+        "home_ml": -170,
+        "away_ml": 145
     },
     "2026020043": {
         "game_id": 2026020043,
@@ -206,17 +228,26 @@
         "away_team": "Sharks",
         "home_abbrev": "DAL",
         "away_abbrev": "SJS",
-        "source": "espn_draftkings",
+        "source": "bovada",
         "sources": [
-            "espn_draftkings"
+            "bovada"
         ],
-        "fetched_at": "2026-10-04T17:02:38Z",
-        "Stars": -166,
-        "Sharks": 140,
-        "home_ml": -166,
-        "away_ml": 140,
+        "fetched_at": "2026-10-04T21:02:21Z",
+        "Sharks_puckline": -177,
+        "Sharks_puckline_spread": "+1.5",
+        "Stars_puckline": 153,
+        "Stars_puckline_spread": "-1.5",
+        "total_over": 102,
         "total_line": "6.5",
-        "total_over": 110,
-        "total_under": -130
+        "total_under": -122,
+        "Sharks_1p_ml": 115,
+        "Stars_1p_ml": -150,
+        "Stars": -168,
+        "Sharks": 142,
+        "home_ml": -168,
+        "away_ml": 142,
+        "Sharks_three_way": 205,
+        "Stars_three_way": -105,
+        "three_way_tie": 320
     }
 }
