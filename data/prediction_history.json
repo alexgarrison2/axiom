@@ -37578,6 +37578,74 @@
     }
   },
   {
+    "gameId": 2026020033,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-03",
+    "homeTeam": "Canucks",
+    "awayTeam": "Flames",
+    "homeScore": 4,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 3.02,
+    "awayXg": 3.36,
+    "homeWinProb": 44.4,
+    "predictedWinner": "Flames",
+    "actualWinner": "Canucks",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3091,
+    "logLoss": 0.8119,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-03T21:03:00Z",
+    "startUtc": "2026-10-04T02:00:00Z",
+    "marketHomeProb": 50.0,
+    "modelHomeProb": 43.1,
+    "homeOdds": -110.0,
+    "awayOdds": -110.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 43.1,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.338,
+        "ll": 1.0847,
+        "naive_ll": 1.0044,
+        "market_p": 0.3891
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.241,
+        "ll": 1.423,
+        "naive_ll": 1.4867,
+        "market_p": 0.2912
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.517,
+        "ll": 0.6597,
+        "naive_ll": 0.6655,
+        "market_p": 0.5454
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.36,
+        "ll": 1.0217,
+        "naive_ll": 0.9696,
+        "market_p": 0.3299
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.533,
+        "ll": 0.6292,
+        "naive_ll": 0.6132,
+        "market_p": 0.5
+      }
+    }
+  },
+  {
     "gameId": 2026020034,
     "season": "2026-27",
     "gameType": "02",
