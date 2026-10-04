@@ -4429,9 +4429,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-09-30)",
-        "updated_at": "2026-10-01T13:23:34.805Z",
-        "fetched_at": "2026-10-03T12:04:09Z"
+        "lineup_source": "Bailey Curtis",
+        "updated_at": "2026-10-04T00:41:15.973Z",
+        "fetched_at": "2026-10-04T01:02:57Z"
     },
     "LAK": {
         "f1": [
@@ -7572,7 +7572,7 @@
                 "id": 3911,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             },
             {
@@ -7700,7 +7700,7 @@
                 "id": 30807,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -7789,15 +7789,6 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Warren Foegele",
-                "number": 37,
-                "pos": "ir2",
-                "id": 3911,
-                "ppUnit": null,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Kurtis MacDermid",
                 "number": 23,
                 "pos": "ir3",
@@ -7812,6 +7803,15 @@
                 "pos": "ir4",
                 "id": 2154,
                 "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Jake Sanderson",
+                "number": 85,
+                "pos": "ir5",
+                "id": 30807,
+                "ppUnit": 1,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -7842,7 +7842,7 @@
                 "id": 30807,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Nikolas Matinpalo",
@@ -7894,7 +7894,7 @@
         ],
         "lineup_source": "Jackson Starr",
         "updated_at": "2026-10-03T15:55:22.302Z",
-        "fetched_at": "2026-10-03T16:02:48Z"
+        "fetched_at": "2026-10-04T01:02:57Z"
     },
     "DET": {
         "f1": [
@@ -9260,7 +9260,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Pius Suter",
@@ -9280,7 +9280,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -9295,14 +9295,14 @@
                 "movement": null
             },
             {
-                "name": "Adam  Ji\u0159\u00ed\u010dek",
-                "number": null,
+                "name": "Colton Parayko",
+                "number": 55,
                 "pos": "rd",
-                "id": 38135,
-                "ppUnit": 2,
+                "id": 2531,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -9317,14 +9317,14 @@
                 "movement": null
             },
             {
-                "name": "Colton Parayko",
-                "number": 55,
+                "name": "Brandon Carlo",
+                "number": 25,
                 "pos": "rd",
-                "id": 2531,
+                "id": 2692,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d3": [
@@ -9339,14 +9339,14 @@
                 "movement": null
             },
             {
-                "name": "Brandon Carlo",
-                "number": 25,
+                "name": "Adam  Ji\u0159\u00ed\u010dek",
+                "number": null,
                 "pos": "rd",
-                "id": 2692,
-                "ppUnit": null,
+                "id": 38135,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -9474,9 +9474,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Chris Pinkert",
-        "updated_at": "2026-10-03T23:57:56.396Z",
-        "fetched_at": "2026-10-04T00:02:40Z"
+        "lineup_source": "Jeremy Rutherford",
+        "updated_at": "2026-10-04T00:42:04.789Z",
+        "fetched_at": "2026-10-04T01:02:57Z"
     },
     "CGY": {
         "f1": [
