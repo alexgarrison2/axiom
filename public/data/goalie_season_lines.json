@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-10-03T12:04:17Z",
+ "generated_at": "2026-10-04T03:04:00Z",
  "goalies": {
   "Adin Hill": {
    "cur": null,
@@ -67,12 +67,12 @@
   },
   "Andrei Vasilevskiy": {
    "cur": {
-    "w": 0,
+    "w": 1,
     "l": 1,
     "ot": 0,
-    "svpct": 0.83333,
-    "gaa": 4.3,
-    "gp": 1
+    "svpct": 0.88888,
+    "gaa": 2.59,
+    "gp": 2
    },
    "prev": {
     "w": 39,
@@ -136,12 +136,12 @@
   },
   "Arturs Silovs": {
    "cur": {
-    "w": 1,
+    "w": 2,
     "l": 0,
     "ot": 0,
-    "svpct": 1.0,
-    "gaa": 0.0,
-    "gp": 1
+    "svpct": 0.88636,
+    "gaa": 2.47,
+    "gp": 2
    },
    "prev": {
     "w": 19,
@@ -273,7 +273,14 @@
    }
   },
   "Charlie Lindgren": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 1,
+    "ot": 0,
+    "svpct": 0.93103,
+    "gaa": 2.08,
+    "gp": 1
+   },
    "prev": {
     "w": 9,
     "l": 8,
@@ -409,12 +416,12 @@
   },
   "Devon Levi": {
    "cur": {
-    "w": 1,
+    "w": 2,
     "l": 0,
     "ot": 0,
-    "svpct": 0.68181,
-    "gaa": 7.02,
-    "gp": 1
+    "svpct": 0.80952,
+    "gaa": 4.02,
+    "gp": 2
    },
    "prev": null
   },
@@ -540,12 +547,12 @@
   },
   "Ilya Sorokin": {
    "cur": {
-    "w": 0,
+    "w": 1,
     "l": 1,
     "ot": 0,
-    "svpct": 0.92307,
-    "gaa": 2.07,
-    "gp": 1
+    "svpct": 0.96825,
+    "gaa": 1.02,
+    "gp": 2
    },
    "prev": {
     "w": 29,
@@ -625,10 +632,10 @@
    "cur": {
     "w": 1,
     "l": 0,
-    "ot": 0,
-    "svpct": 0.92857,
-    "gaa": 2.01,
-    "gp": 1
+    "ot": 1,
+    "svpct": 0.86206,
+    "gaa": 4.04,
+    "gp": 2
    },
    "prev": {
     "w": 29,
@@ -689,11 +696,11 @@
   "Jet Greaves": {
    "cur": {
     "w": 1,
-    "l": 0,
+    "l": 1,
     "ot": 0,
-    "svpct": 0.88461,
-    "gaa": 3.0,
-    "gp": 1
+    "svpct": 0.87719,
+    "gaa": 3.5,
+    "gp": 2
    },
    "prev": {
     "w": 26,
@@ -817,10 +824,10 @@
    "cur": {
     "w": 0,
     "l": 0,
-    "ot": 1,
-    "svpct": 0.93181,
+    "ot": 2,
+    "svpct": 0.92857,
     "gaa": 2.87,
-    "gp": 1
+    "gp": 2
    },
    "prev": {
     "w": 15,
@@ -926,7 +933,14 @@
    }
   },
   "Linus Ullmark": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.93103,
+    "gaa": 2.0,
+    "gp": 1
+   },
    "prev": {
     "w": 28,
     "l": 12,
@@ -1035,7 +1049,14 @@
    }
   },
   "Nico Daws": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 1,
+    "ot": 0,
+    "svpct": 0.8125,
+    "gaa": 6.01,
+    "gp": 1
+   },
    "prev": {
     "w": 2,
     "l": 1,
@@ -1090,7 +1111,14 @@
    }
   },
   "Philipp Grubauer": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 1,
+    "ot": 0,
+    "svpct": 0.91666,
+    "gaa": 2.03,
+    "gp": 1
+   },
    "prev": {
     "w": 13,
     "l": 12,
@@ -1101,7 +1129,14 @@
    }
   },
   "Pyotr Kochetkov": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.88888,
+    "gaa": 1.91,
+    "gp": 1
+   },
    "prev": {
     "w": 6,
     "l": 2,
@@ -1144,14 +1179,25 @@
     "gp": 45
    }
   },
+  "Sebastian Cossa": {
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.94444,
+    "gaa": 1.0,
+    "gp": 1
+   },
+   "prev": null
+  },
   "Sergei Bobrovsky": {
    "cur": {
     "w": 0,
-    "l": 1,
+    "l": 2,
     "ot": 0,
-    "svpct": 0.875,
+    "svpct": 0.88679,
     "gaa": 3.06,
-    "gp": 1
+    "gp": 2
    },
    "prev": {
     "w": 27,
@@ -1176,11 +1222,11 @@
   "Spencer Knight": {
    "cur": {
     "w": 0,
-    "l": 1,
+    "l": 2,
     "ot": 0,
-    "svpct": 0.88888,
-    "gaa": 4.01,
-    "gp": 1
+    "svpct": 0.875,
+    "gaa": 4.04,
+    "gp": 2
    },
    "prev": {
     "w": 19,
@@ -1273,12 +1319,12 @@
   },
   "Ukko-Pekka Luukkonen": {
    "cur": {
-    "w": 0,
+    "w": 1,
     "l": 1,
     "ot": 0,
-    "svpct": 0.77272,
-    "gaa": 5.07,
-    "gp": 1
+    "svpct": 0.78378,
+    "gaa": 4.03,
+    "gp": 2
    },
    "prev": {
     "w": 22,
