@@ -1113,7 +1113,7 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-04T16:09:03Z",
+  "fetched_at": "2026-10-04T17:02:38Z",
   "three_way_tie": 310,
   "Rangers_puckline": 200,
   "Rangers_puckline_spread": "-1.5",
@@ -1128,12 +1128,12 @@
   "Mammoth": 105,
   "home_ml": -125,
   "away_ml": 105,
-  "Mammoth_1p_ml": 100,
-  "Rangers_1p_ml": -130,
+  "Mammoth_1p_ml": -105,
+  "Rangers_1p_ml": -125,
   "Mammoth_1p_three_way": 190,
   "Rangers_1p_three_way": 172,
   "1p_three_way_tie": 173,
-  "captured_at": "2026-10-04T16:09:03Z"
+  "captured_at": "2026-10-04T17:02:38Z"
  },
  "2026020037": {
   "game_id": 2026020037,
@@ -1239,5 +1239,93 @@
   "Canucks_1p_three_way": 265,
   "1p_three_way_tie": 185,
   "captured_at": "2026-10-04T16:02:16Z"
+ },
+ "2026020040": {
+  "game_id": 2026020040,
+  "game_date": "2026-10-05",
+  "start_time_utc": "2026-10-05T23:00:00Z",
+  "home_team": "Lightning",
+  "away_team": "Flyers",
+  "home_abbrev": "TBL",
+  "away_abbrev": "PHI",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-04T17:02:38Z",
+  "Lightning": -175,
+  "Flyers": 145,
+  "home_ml": -175,
+  "away_ml": 145,
+  "total_line": "5.5",
+  "total_over": -122,
+  "total_under": 102,
+  "captured_at": "2026-10-04T17:02:38Z"
+ },
+ "2026020041": {
+  "game_id": 2026020041,
+  "game_date": "2026-10-05",
+  "start_time_utc": "2026-10-05T23:30:00Z",
+  "home_team": "Bruins",
+  "away_team": "Senators",
+  "home_abbrev": "BOS",
+  "away_abbrev": "OTT",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-04T17:02:38Z",
+  "Bruins": -120,
+  "Senators": 100,
+  "home_ml": -120,
+  "away_ml": 100,
+  "total_line": "5.5",
+  "total_over": -125,
+  "total_under": 105,
+  "captured_at": "2026-10-04T17:02:38Z"
+ },
+ "2026020042": {
+  "game_id": 2026020042,
+  "game_date": "2026-10-05",
+  "start_time_utc": "2026-10-05T23:30:00Z",
+  "home_team": "Penguins",
+  "away_team": "Jets",
+  "home_abbrev": "PIT",
+  "away_abbrev": "WPG",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-04T17:02:38Z",
+  "Penguins": -162,
+  "Jets": 136,
+  "home_ml": -162,
+  "away_ml": 136,
+  "total_line": "6.5",
+  "total_over": 102,
+  "total_under": -122,
+  "captured_at": "2026-10-04T17:02:38Z"
+ },
+ "2026020043": {
+  "game_id": 2026020043,
+  "game_date": "2026-10-05",
+  "start_time_utc": "2026-10-06T00:00:00Z",
+  "home_team": "Stars",
+  "away_team": "Sharks",
+  "home_abbrev": "DAL",
+  "away_abbrev": "SJS",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-04T17:02:38Z",
+  "Stars": -166,
+  "Sharks": 140,
+  "home_ml": -166,
+  "away_ml": 140,
+  "total_line": "6.5",
+  "total_over": 110,
+  "total_under": -130,
+  "captured_at": "2026-10-04T17:02:38Z"
  }
 }
