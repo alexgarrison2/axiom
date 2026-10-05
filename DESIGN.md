@@ -66,6 +66,12 @@ typography:
     fontSize: "30px"
     fontWeight: 700
     lineHeight: "32px"
+  score:
+    fontFamily: "IBM Plex Sans Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "72px"
+    fontWeight: 700
+    lineHeight: 1
+    fontFeature: "\"tnum\" 1, \"lnum\" 1"
 rounded:
   chip: "4px"
   control: "8px"
@@ -194,18 +200,18 @@ Honesty about samples is visual, not verbal. Prior-season and thin-sample values
 A near-black ink field with five saturated neons, each bound to exactly one job.
 
 ### Primary
-- **Arcade Cyan** (brand-cyan): Brand, active and focus. The selected segment's text, the selected filter chip's edge glow, the 2px focus ring, sort indicators, the PP1 chip, and on `/props` a game that cleared the line (lit tape bar, hit-rate wash). Solid cyan fill is reserved for the single primary button, with near-black text (brand-ink) on it.
+- **Arcade Cyan** (brand-cyan): Brand, active and focus. The selected segment's text, the selected filter chip's edge glow, the 2px focus ring, sort indicators, the PP1 chip, and on `/props` a game that cleared the line (lit tape bar, hit-rate wash). Solid cyan fill is reserved for the single primary button, with near-black text (brand-ink) on it. On `/games/[id]` cyan in the data is the reader's stop: the stepped event's flag, the selected pin ring, shot mark and goal card edge; it also marks the active section in the contents rail.
 
 ### Secondary
 - **Goal-Light Green** (pos-green): Positive. Plus edges, confirmed goalies, model-correct grades, the live dot.
 - **Siren Red** (neg-red): Negative. Minus edges, destructive actions, model misses.
-- **Model Magenta** (model-magenta): The model's own number. Raw model marker, model lean, and on `/props` the pony xG fair percentage and unposted fair prices. Also the playoff token.
+- **Model Magenta** (model-magenta): The model's own number. Raw model marker, model lean, and on `/props` the pony xG fair percentage and unposted fair prices. On `/games/[id]`: the win-probability line and readout, the pregame call percentage, and every pony xG value (xG, xGF, xGA, ixG). Also the playoff token.
 
 ### Tertiary
-- **Situational Amber** (warn-amber): Context that changes tonight's read, not a judgement. Back-to-back and other situational chips, a promoted lineup unit (amber edge + up arrow), a linemate boost ("w/ Name"), a top-8 soft matchup rank, the small-sample `n=` tag, rookie marks.
+- **Situational Amber** (warn-amber): Context that changes tonight's read, not a judgement. Back-to-back and other situational chips, a promoted lineup unit (amber edge + up arrow), a linemate boost ("w/ Name"), a top-8 soft matchup rank, the small-sample `n=` tag, rookie marks. On `/games/[id]`: the power-play window's 2px cap and "PP" tag on the pulse, and goal chips for PP, SH, EN and an extra attacker ("6v5").
 - **Goalie Blue** (goalie-blue): Starting-goalie status only, kept distinct from cyan and green.
-- **Penalty-Kill Orange** (pk-orange): Penalty kill in special-teams dots; power play uses cyan.
-- **Ice Grey** (info-ice): Neutral information that must never read as neon.
+- **Penalty-Kill Orange** (pk-orange): Penalty kill in special-teams dots and the PK segment of minutes bars; power-play minutes use cyan (the `--pp` token).
+- **Ice Grey** (info-ice): Neutral information that must never read as neon; defensive-zone starts on the zone-start bars.
 
 ### Neutral
 - **Rink Black** (bg): Page field; also the opaque strip behind sticky table headers and control bars (at 95% with backdrop blur for bars).
@@ -215,7 +221,14 @@ A near-black ink field with five saturated neons, each bound to exactly one job.
 - **Hairline** (line) and **Hover Edge** (line-strong): Every border, divider and zebra mix; line-strong on hover and on input edges.
 - **Ink** (ink): Data, names, headings. **Secondary** (text-2): secondary values. **Dim** (text-3): labels, AA on every surface. **Mute** (mute): separators, decoration, missed-game bars; never data text.
 
+### Team Sides
+Each side of a game carries its club colour, resolved per game rather than per team. The site-wide pair is clash-checked (primary vs primary, then alternates); the game page tightens it: a side that sits within deltaE 25 of penalty-kill orange moves to its alternate colour, and a pair still closer than deltaE 45 moves whichever side gains the most separation to its alternate. Side colour fills bars, pins, rings, lane labels and split cells; it never carries a state.
+
 ### Named Rules
+**The Clash-Safe Side Rule.** On a game surface, side colours come only from the game's resolved pair, never from a raw team primary, so split cells and dimmed bars stay tellable apart and no side reads as the penalty kill.
+
+**The Texture-Not-Hue Rule.** A game state that either side can own (a power-play window) is a neutral ink hatch that no team colour can reach, named by an amber cap and tag; the side with the extra skater gets only a 2px edge in its colour.
+
 **The One Meaning Rule.** Each neon owns one job: cyan active/hit, green positive, red negative, magenta model, amber situational, blue goalie. Never borrow a hue for decoration or for a second meaning.
 
 **The Single-Hue Intensity Rule.** Magnitude is shown as the strength of one hue, never as a traffic light. Hit-rate cells are a cyan wash whose alpha is the rate (0.04 + 0.34 x rate); samples under 5 games get no wash and dim text.
@@ -238,9 +251,12 @@ A near-black ink field with five saturated neons, each bound to exactly one job.
 - **Caption** (400, 13px/17px): Controls at md+, detail tables, inputs at md+.
 - **Label** (500, 12px/15px, 0.16em, uppercase, dim): The 1-2 word label. Table headers use 0.06em; segmented options 0.12em. 12px (`micro`) is the floor.
 - **Pct** (700 italic, display sizes): Bold italic win percentage; scoreboard numbers are bold with -0.02em tracking.
+- **Score** (700, 44px phone / 72px md, line-height 1, tabular): The game score on `/games/[id]`, one per side. In a final the loser's score dims to the dim text colour.
 
 ### Named Rules
 **The 12px Floor Rule.** Nothing is smaller than 12px; legacy smaller sizes are lifted to 12px in the stylesheet and flagged by lint.
+
+**The One Big Number Rule.** The ramp tops out at display; the only step above it is the game score, the dominant number of its page. Nothing else borrows that size.
 
 **The Page Name Rule.** A page heading is the page name, nothing else: no eyebrow, no tagline, no subtitle. The heading component accepts but does not render eyebrow and description props.
 
@@ -251,6 +267,8 @@ One content edge for nav, pages and footer: 1400px max width, 16px gutters on ph
 Data pages stack: heading row (title left, compact controls right) then a sticky control bar, then a meta line, then the table. The control bar pins under the app bar, bleeds to the page edge, and sits on 95% rink black with backdrop blur and a hairline under it; it holds the primary segmented control, a secondary segmented control, search (right-aligned at md), and a horizontally scrolling chip row on phones that wraps at md.
 
 Tables scroll inside their own region with edge fades; the first column is sticky with a right-edge shadow; the header row is sticky. On `/props` the column header pins beneath the sticky control bar from xl (1280px) by tracking the bar's measured height; below xl the table scrolls in its region. Default rows are 32px; `/props` rows are 44px so the 32px tape fits. Columns that are secondary drop out below xl or md rather than shrinking. Matchup cards lay out by their own width with container queries.
+
+The game page (`/games/[id]`) is one long read in a fixed order, every game: score band full width, then Story (the pulse), Goals, Shots, Team stats, Skaters, Goalies, Lines, Matchups, Zone starts, 40px apart. From lg (1024px) a 136px sticky contents rail sits left of the sections (a hairline left edge; the active item takes a 2px cyan left bar and cyan text). Below lg the rail becomes a chip bar pinned under the app bar, bled to the page edge on 95% rink black with backdrop blur and a hairline under it, scrolling sideways. Section headings anchor with scroll margin clear of the bar. Away is always left and home right; mirrored rows grow outward from a centre label.
 
 Touch targets grow to 44px on coarse pointers across chips, segments and buttons.
 
@@ -313,6 +331,29 @@ A 44px (48px md) by 32px chip centred in the cell: rate on top, `hits/n` in micr
 ### Edge chip (`/props`)
 Right-aligned signed value in tenths ("+6.2"), green above zero, red below, secondary at zero. At +5.0 or more it gains a 10% green fill and the strong edge glow. Fair percentage beside it is magenta.
 
+### Score band (`/games/[id]`)
+A full-width panel: away crest and score left, home mirrored right, a centre column with the status chip (live: green text on a 10% green fill with the live glow; final: raised fill, ink text), date, a goals-by-period line score with SOG, and venue. Crests run flush at 56px phone / 112px md. Under each score a 4px by 40px rounded bar in the side colour (40% for a final's loser). A hairline-topped strip below holds the pregame call (pick, magenta probability, dim market and price, green Hit / red Miss once final) and the three stars.
+
+### Pulse strip (signature, `/games/[id]`)
+The game on one 60-minute axis (longer for overtime), lanes top to bottom:
+- **Goal pins:** the scorer's headshot in a 17px-radius disc (12px under 640px wide) on the inset fill with a 2px side-colour ring; colliding pins stack into up to three rows 1.55 radii apart. A side-colour hairline at 55% drops from each pin through every lane.
+- **Win lane:** pony xG home win probability as a 2px magenta step line around a dashed 50% line; the leader's half is tinted in that side's colour at 20%. Home owns the top half, away the bottom; the end value sits right in magenta.
+- **Per-minute bars:** one bar per minute in side colour at 85%, home above the axis, away below; metric switchable (attempts, unblocked, SOG, xG). Power-play windows of 10s or more sit behind as a 45-degree ink hatch (1.2px lines at 16%, 6px pitch) with a 2px amber cap above the lane and an amber "PP" tag where the window is 16px or wider.
+- **Race lane:** running totals as 2px side-colour step lines, end values right.
+- **Seams and axis:** 1px hover-edge period seams through all lanes; dim period labels under the axis.
+- **Stepping:** arrow buttons and Left/Right keys step through goals and penalties (Escape clears); the stop is a 1.5px cyan line through every lane with a cyan flag at the top, and the pin's ring turns cyan. Pointer hover draws an ink playhead at 35%. A readout row under the strip shows clock, score, magenta win % and the race values in side colours.
+Lanes run 96 / 104 / 84px tall (70 / 76 / 60px compact) with 22px between them.
+
+### Goals spine (`/games/[id]`)
+A 1px hover-edge spine down the centre from md; away goal cards sit in the left half, home cards mirrored in the right, each with an 8px side-colour dot on the spine. Period chips (4px, rink black, hairline) sit on the spine. A goal card is a 16px panel with a hairline (cyan when it is the stop): 56px (64px md) headshot ring in side colour, scorer and running count, amber situational chips, assists, magenta xG, a cyan Clip link, and on the far side the score after, clock, and the win swing to tenths in green or red with the post-goal win % in magenta. Penalties join on demand (a filter chip) as dashed-hairline rows with the team in amber. Below md the spine drops and cards stack.
+
+### Game data marks (`/games/[id]`)
+- **Team stats rows:** mirrored 20px bars on the track, 3px corners, growing away from the centre label in side colour (90% for the leader, 35% otherwise); xG rows' values in magenta.
+- **Minutes bars:** 12px, 2px corners, length by time on ice; segments EV (secondary text colour), PP (`--pp` cyan), PK (`--pk` orange).
+- **Zone-start bars:** 16px diverging bars: defensive-zone starts left in ice grey, neutral and on-the-fly centre in mute, offensive-zone starts right in side colour; each splits into three intensity steps by period (40%, 68%, 100%, later periods darker).
+- **Matchup grid:** 5v5 time between every away and home skater as squares sized by the square root of time (cells 22-44px), each split area-true along the diagonal by xG share, away colour from the upper-left corner over the home colour; no xG shows mute, under 5 seconds a 2px hover-edge dot.
+- **Shot map:** marks in side colour sized by xG (goals solid with an ink ring, saved 50%, misses outlined, blocks as crosses); the stop gains a cyan ring.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -323,6 +364,7 @@ Right-aligned signed value in tenths ("+6.2"), green above zero, red below, seco
 - **Do** use big team crests with no padding, and place values on their team's side.
 - **Do** keep labels to 1-2 uppercase words and the page heading to the page name.
 - **Do** honour reduced motion; transitions are 200ms ease-out, transform and fill only.
+- **Do** take side colours from the game's resolved pair on any game surface, and keep away left, home right.
 
 ### Don't:
 - **Don't** use red-yellow-green scales or any traffic-light ramp for magnitude.
@@ -330,4 +372,5 @@ Right-aligned signed value in tenths ("+6.2"), green above zero, red below, seco
 - **Don't** add eyebrows, taglines or explanatory subtitles above or below page headings.
 - **Don't** set text below 12px or use the mute colour for data.
 - **Don't** introduce a second typeface; weight, case and tracking carry hierarchy.
-- **Don't** use solid cyan fills except the single primary action and lit data marks (tape bars, swatches).
+- **Don't** use solid cyan fills except the single primary action and lit data marks (tape bars, swatches, the stepped-event flag).
+- **Don't** paint a state either team can own in a team colour or in amber fill; use the neutral hatch and let amber name it.

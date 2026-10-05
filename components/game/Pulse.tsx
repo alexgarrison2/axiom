@@ -222,7 +222,7 @@ export function Pulse() {
                             </clipPath>
                         </defs>
 
-                        {/* Power plays: amber bands behind the bars, a team-coloured edge on the side with the extra skater. */}
+                        {/* Power plays: hatched windows behind the bars, an amber cap, and a team-coloured edge on the side with the extra skater. */}
                         {pps.map(([a, b, side], i) => (
                             <g key={i}>
                                 <rect x={x(a)} y={barTop} width={Math.max(1, x(b) - x(a))} height={barH} fill="url(#pulse-pp)" />
