@@ -621,11 +621,20 @@ export interface Unit {
     xga: number;
     gf: number;
     ga: number;
+    /** Shots on goal for / against. */
+    sf: number;
+    sa: number;
+    /** Separate stints together (consecutive stretches merge into one). */
+    stints: number;
+    /** Stints that began on a faceoff, by zone from this side's view. */
+    oz: number;
+    nz: number;
+    dz: number;
 }
 
-type UnitKind = 'F' | 'D' | 'PP' | 'PK';
+export type UnitKind = 'F' | 'D' | 'PP' | 'PK';
 
-export function units(m: GameModel, side: Side, kind: UnitKind): Unit[] {
+export function units(m: GameModel, side: Side, kind: UnitKind, per: PeriodFilter = 'all'): Unit[] {
     const byId = new Map(m.players.map(p => [p.id, p]));
     const segs = segments(m);
     const acc = new Map<string, Unit>();
@@ -642,15 +651,31 @@ export function units(m: GameModel, side: Side, kind: UnitKind): Unit[] {
         if ((kind === 'PP' && st !== 'pp') || (kind === 'PK' && st !== 'sh')) return null;
         return [...sk].sort((a, b) => a - b).join('-');
     };
+    const faceoffAt = new Map<number, GameEvent>();
+    for (const e of m.events) if (e.type === 'faceoff') faceoffAt.set(e.t, e);
+    let prev: { k: string | null; b: number } = { k: null, b: -1 };
     for (const s of segs) {
         const k = keyOf(s);
-        if (!k) continue;
-        const u = acc.get(k) ?? { ids: k.split('-').map(Number), toi: 0, cf: 0, ca: 0, xgf: 0, xga: 0, gf: 0, ga: 0 };
+        // A stint continues across a change elsewhere on the ice, not across an intermission.
+        const cont = k != null && prev.k === k && prev.b === s.a && periodOf(s.a) === periodOf(prev.b - 0.01);
+        prev = { k, b: s.b };
+        if (!k || (per !== 'all' && periodOf(s.a) !== per)) continue;
+        const u = acc.get(k) ?? { ids: k.split('-').map(Number), toi: 0, cf: 0, ca: 0, xgf: 0, xga: 0, gf: 0, ga: 0, sf: 0, sa: 0, stints: 0, oz: 0, nz: 0, dz: 0 };
         u.toi += s.b - s.a;
+        if (!cont) {
+            u.stints += 1;
+            const fo = faceoffAt.get(s.a);
+            if (fo?.zone) {
+                const z = fo.side === side ? fo.zone : fo.zone === 'O' ? 'D' : fo.zone === 'D' ? 'O' : 'N';
+                if (z === 'O') u.oz += 1;
+                else if (z === 'D') u.dz += 1;
+                else u.nz += 1;
+            }
+        }
         acc.set(k, u);
     }
     for (const e of m.events) {
-        if (!isAttempt(e)) continue;
+        if (!isAttempt(e) || !inPeriod(e, per)) continue;
         const ice = onIce(m, e);
         if (!ice) continue;
         const k = keyOf(ice);
@@ -661,10 +686,12 @@ export function units(m: GameModel, side: Side, kind: UnitKind): Unit[] {
             u.cf += 1;
             u.xgf += isUnblocked(e) ? (e.xg ?? 0) : 0;
             u.gf += e.type === 'goal' ? 1 : 0;
+            u.sf += isOnGoal(e) ? 1 : 0;
         } else {
             u.ca += 1;
             u.xga += isUnblocked(e) ? (e.xg ?? 0) : 0;
             u.ga += e.type === 'goal' ? 1 : 0;
+            u.sa += isOnGoal(e) ? 1 : 0;
         }
     }
     return [...acc.values()].sort((a, b) => b.toi - a.toi);

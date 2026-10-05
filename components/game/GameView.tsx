@@ -14,6 +14,8 @@ import { ScoreBand } from './ScoreBand';
 import { Shots } from './Shots';
 import { Skaters } from './Skaters';
 import { TeamStats } from './TeamStats';
+import { Units } from './Units';
+import { XgBreakdown } from './XgBreakdown';
 import { Zones } from './Zones';
 
 /** One fixed order, every game. */
@@ -21,10 +23,12 @@ const SECTIONS = [
     { id: 'story', label: 'Story' },
     { id: 'goals', label: 'Goals' },
     { id: 'shots', label: 'Shots' },
+    { id: 'xg', label: 'xG' },
     { id: 'team', label: 'Team' },
     { id: 'skaters', label: 'Skaters' },
     { id: 'goalies', label: 'Goalies' },
     { id: 'lines', label: 'Lines' },
+    { id: 'units', label: 'Units' },
     { id: 'matchups', label: 'Matchups' },
     { id: 'zones', label: 'Zones' },
 ] as const;
@@ -137,10 +141,12 @@ export function GameView({ m }: { m: GameModel }) {
                             <>
                                 <Goals />
                                 <Shots />
+                                <XgBreakdown />
                                 <TeamStats />
                                 <Skaters />
                                 <Goalies />
                                 <Lines />
+                                <Units />
                                 <Matchups />
                                 <Zones />
                             </>

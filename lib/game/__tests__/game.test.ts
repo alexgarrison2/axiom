@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { goalSwings, skaterRows, teamTotals, winModel } from '../analytics';
+import { goalSwings, iceAt, skaterRows, teamTotals, units, winModel } from '../analytics';
 
 const team = (id: number, abbrev: string) => ({ id, abbrev, commonName: { default: abbrev }, placeName: { default: abbrev }, score: 0, sog: 0 });
 const spot = (playerId: number, teamId: number, pos: string) => ({ playerId, teamId, positionCode: pos, firstName: { default: 'P' }, lastName: { default: String(playerId) }, sweaterNumber: playerId % 100 });
@@ -85,5 +85,25 @@ describe('game model', () => {
         expect(wm.at(3600, 1)).toBe(1);
         const [first] = goalSwings(m);
         expect(first.after).toBeGreaterThan(first.before);
+    });
+
+    it('snapshots who is on the ice with box-score counts up to the moment', () => {
+        const early = iceAt(m, 200)!;
+        expect(early.skaters.home.find(r => r.player.id === 21)!.g).toBe(0);
+        const later = iceAt(m, 1000)!;
+        const scorer = later.skaters.home.find(r => r.player.id === 21)!;
+        expect(scorer.g).toBe(1);
+        expect(scorer.toi).toBe(1000);
+        expect(scorer.shiftNo).toBe(1);
+        expect(later.skaters.home.find(r => r.player.id === 22)!.a).toBe(1);
+        expect(later.goalie.away!.ga).toBe(1);
+        expect(later.goalie.away!.sa).toBe(1);
+    });
+
+    it('counts unit results and stints per period', () => {
+        const [line] = units(m, 'home', 'F');
+        expect(line.gf).toBe(1);
+        expect(line.stints).toBe(3);
+        expect(units(m, 'home', 'F', 2)[0].gf).toBe(0);
     });
 });
