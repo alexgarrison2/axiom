@@ -22,6 +22,7 @@ export default function PropsPage() {
             <div className="page flex flex-col gap-4 py-5 md:py-7">
                 <PropsBoard
                     src="/data/props.json"
+                    detailSrc="/data/props_detail.json"
                     games={doc?.games ?? []}
                     slateDate={doc?.slate_date ?? null}
                     seasons={{ cur: label(SEASON_START_YEAR), prev: label(SEASON_START_YEAR - 1) }}

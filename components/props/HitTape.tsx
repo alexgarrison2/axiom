@@ -8,14 +8,13 @@ export interface HitTapeProps {
     line: Line;
     /** Bars to draw (the newest `games`). */
     games?: number;
-    size?: 'row' | 'compact' | 'detail';
+    size?: 'row' | 'compact';
     className?: string;
 }
 
 const SIZES = {
     row: { bar: 6, gap: 2, h: 32, top: 0, bottom: 0 },
     compact: { bar: 4, gap: 2, h: 30, top: 0, bottom: 0 },
-    detail: { bar: 20, gap: 7, h: 84, top: 14, bottom: 16 },
 } as const;
 
 /**
@@ -63,22 +62,12 @@ export function HitTape({ log, cat, line, games = 20, size = 'row', className }:
                             y={top}
                             width={s.bar}
                             height={s.top + plot - top}
-                            rx={size === 'detail' ? 2 : 1}
+                            rx={1}
                             className={cn(
                                 'transition-[fill] duration-200 ease-out motion-reduce:transition-none',
                                 hit ? 'fill-brand' : v > 0 ? 'fill-[var(--mute)]' : 'fill-[var(--line-strong)]',
                             )}
                         />
-                        {size === 'detail' ? (
-                            <>
-                                <text x={x + s.bar / 2} y={top - 3} textAnchor="middle" className={cn('text-micro tabular-nums', hit ? 'fill-fg-1' : 'fill-fg-3')}>
-                                    {v}
-                                </text>
-                                <text x={x + s.bar / 2} y={s.top + plot + 12} textAnchor="middle" className="fill-fg-3 text-micro uppercase">
-                                    {r[1]}
-                                </text>
-                            </>
-                        ) : null}
                     </g>
                 );
             })}

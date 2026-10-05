@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boostFor, buildRows, categoryOf, fairAmerican, filterRows, lastN, lineFor, sortRows, streak, DEFAULT_FILTER, type LogRow, type PropPlayer, type PropsDoc } from '../model';
+import { attemptsPer, boostFor, buildRows, extFor, seasonLabel, summarize, vsLog, categoryOf, fairAmerican, filterRows, lastN, lineFor, sortRows, streak, DEFAULT_FILTER, type LogRow, type PropPlayer, type PropsDoc } from '../model';
 
 // [date, opp, home, toi, g, a, sog, ppp, prev]
 const log = (sog: number[], prevFrom = 0): LogRow[] => sog.map((s, i) => [`2026-10-${String(i + 1).padStart(2, '0')}`, 'BOS', 1, 18, s >= 4 ? 1 : 0, 0, s, 0, i < prevFrom ? 1 : 0]);
@@ -56,5 +56,21 @@ describe('props model', () => {
         expect(fairAmerican(0.4)).toBe('+150');
         expect(fairAmerican(0.5)).toBe('EVEN');
         expect(fairAmerican(null)).toBe('—');
+    });
+
+    it('averages shot attempts and the share on net over games that carry attempts', () => {
+        const p = player({ log: [['2026-10-01', 'BOS', 1, 18, 0, 0, 2, 0, 0, 5], ['2026-10-02', 'BOS', 1, 18, 0, 0, 4, 0, 0, 7], ['2026-10-03', 'BOS', 1, 18, 0, 0, 1, 0, 0]] });
+        expect(attemptsPer(p, 10)).toEqual({ avg: 6, onNet: 0.5, n: 2 });
+        expect(attemptsPer(player({}), 5).avg).toBeNull();
+    });
+
+    it('matches detail rows to the log by date and grades games against the opponent', () => {
+        const p = player({});
+        const ext = extFor(p, { x: [['2026-10-02', 1, 0, 15, 2, 0.3]], ha: { h: { n: 0 }, a: { n: 0 } } });
+        expect(ext.map(x => x?.[5] ?? null)).toEqual([null, 0.3, null, null, null]);
+        const vs = vsLog(p, { x: [], ha: { h: { n: 0 }, a: { n: 0 } }, vs: [['2025-01-10', 1, 17, 0, 1, 3, 0, 6], ['2026-10-02', 0, 19, 1, 0, 1, 0, 2]] }, 2026);
+        expect(vs.map(r => [r[1], r[8], r[9]])).toEqual([['SEA', 1, 6], ['SEA', 0, 2]]);
+        expect(summarize(vs, sog, sog.lines[0])).toEqual({ hits: 1, n: 2, avg: 2 });
+        expect(seasonLabel('2025-01-10')).toBe('24-25');
     });
 });

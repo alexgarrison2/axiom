@@ -19,7 +19,7 @@ Public, graded honesty. Pre-game predictions are frozen per day (`public/data/Si
 Pipeline (Python, GitHub Actions) runs hourly 12:00-02:00 UTC and commits CSV/JSON to `main`; Next.js 16 App Router on Vercel renders them. No database. Usage peaks on game days around tonight's slate. Early in a season most current-season stats are tiny samples or empty.
 
 ## Capabilities and Constraints
-- Routes: home (matchups), accuracy, teams, players, standings, playoffs, news, methodology, ui-kit.
+- Routes: home (matchups), props, accuracy, teams, players, standings, playoffs, news, methodology, ui-kit.
 - Never hardcode a season; use `lib/season.ts`. 2026-27 is an 84-game season.
 - Early season: show "no games yet" or label prior-season values explicitly; never present last season as current.
 - Data limited to free public sources (NHL API, MoneyPuck with credit, DailyFaceoff, ESPN); Natural Stat Trick, DraftKings direct, PuckPedia unusable.

@@ -29,7 +29,9 @@ import {
     type CategoryKey,
     type Filter,
     type LineChoice,
+    type PlayerDetail,
     type PropGame,
+    type PropsDetailDoc,
     type PropsDoc,
     type Rate,
     type Row,
@@ -42,6 +44,8 @@ const PAGE = 50;
 
 export interface PropsBoardProps {
     src: string;
+    /** Opened-row detail (props_detail.json), fetched on the first open. */
+    detailSrc: string;
     /** Server-read slate so the game rail paints before the full board loads. */
     games: PropGame[];
     slateDate: string | null;
@@ -113,7 +117,7 @@ function gameLabel(g: PropGame) {
     return `${g.away} @ ${g.home}`;
 }
 
-export default function PropsBoard({ src, games: serverGames, slateDate, seasons }: PropsBoardProps) {
+export default function PropsBoard({ src, detailSrc, games: serverGames, slateDate, seasons }: PropsBoardProps) {
     const [doc, setDoc] = React.useState<PropsDoc | null>(null);
     const [failed, setFailed] = React.useState(false);
     const hasSlate = serverGames.length > 0;
@@ -124,6 +128,9 @@ export default function PropsBoard({ src, games: serverGames, slateDate, seasons
     const [sort, setSort] = React.useState<{ key: SortKey; dir: 'asc' | 'desc' } | null>(null);
     const [shown, setShown] = React.useState(PAGE);
     const [open, setOpen] = React.useState<number | null>(null);
+    // undefined = not loaded yet, null = failed.
+    const [detail, setDetail] = React.useState<PropsDetailDoc | null | undefined>(undefined);
+    const detailRequested = React.useRef(false);
     const searchId = React.useId();
     const rootRef = React.useRef<HTMLDivElement>(null);
     const barRef = React.useRef<HTMLDivElement>(null);
@@ -148,6 +155,15 @@ export default function PropsBoard({ src, games: serverGames, slateDate, seasons
             alive = false;
         };
     }, [src]);
+
+    React.useEffect(() => {
+        if (open == null || detailRequested.current) return;
+        detailRequested.current = true;
+        fetch(detailSrc)
+            .then(r => (r.ok ? (r.json() as Promise<PropsDetailDoc>) : Promise.reject(new Error(String(r.status)))))
+            .then(d => setDetail(d))
+            .catch(() => setDetail(null));
+    }, [open, detailSrc]);
 
     const cat = categoryOf(catKey);
     const games = doc?.games ?? serverGames;
@@ -193,7 +209,8 @@ export default function PropsBoard({ src, games: serverGames, slateDate, seasons
             {label}
         </SortHeader>
     );
-    const colCount = 7 + (view === 'tonight' ? 2 : 0) + (priced ? 3 : 0);
+    const showAtt = cat.key === 'sog';
+    const colCount = 7 + (view === 'tonight' ? 2 : 0) + (showAtt ? 1 : 0) + (priced ? 3 : 0);
     const toggleOpen = React.useCallback((id: number) => setOpen(o => (o === id ? null : id)), []);
 
     return (
@@ -366,6 +383,7 @@ export default function PropsBoard({ src, games: serverGames, slateDate, seasons
                                 {head('name', 'Player', 'Skater, tonight’s line and power-play unit', 'sticky left-0 z-10 w-[9.5rem] min-w-[9.5rem] bg-bg md:w-64', 'left')}
                                 {view === 'tonight' ? head('opp', 'Opp', `Opponent and its rank in ${cat.oppRank === 'sa_rank' ? 'shots' : 'goals'} allowed per game (1 = most)`, 'hidden md:table-cell', 'left') : null}
                                 {view === 'tonight' ? head('toi', 'TOI', 'Expected minutes (recent games weighted)', 'hidden lg:table-cell', 'right') : null}
+                                {showAtt ? head('att', 'Att/G', 'Shot attempts per game, last 10: on net, missed and blocked', 'hidden lg:table-cell', 'right') : null}
                                 <th scope="col" className="border-b border-line px-2 text-left text-micro font-medium uppercase tracking-[0.06em] text-fg-3">
                                     <span className="hidden md:inline">Last 20</span>
                                     <span className="md:hidden">Games</span>
@@ -390,6 +408,8 @@ export default function PropsBoard({ src, games: serverGames, slateDate, seasons
                                     view={view}
                                     priced={priced}
                                     open={open === r.p.id}
+                                    showAtt={showAtt}
+                                    detail={open !== r.p.id || detail === undefined ? undefined : (detail?.players[String(r.p.id)] ?? null)}
                                     onToggle={toggleOpen}
                                     doc={doc}
                                     colCount={colCount}
@@ -421,13 +441,15 @@ interface PropRowProps {
     view: View;
     priced: boolean;
     open: boolean;
+    showAtt: boolean;
+    detail: PlayerDetail | null | undefined;
     onToggle: (id: number) => void;
     doc: PropsDoc;
     colCount: number;
     seasons: { cur: string; prev: string };
 }
 
-const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open, onToggle, doc, colCount, seasons }: PropRowProps) {
+const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open, showAtt, detail, onToggle, doc, colCount, seasons }: PropRowProps) {
     const { p, line } = r;
     const book = p.book?.[line.key];
     const detailId = `prop-detail-${p.id}`;
@@ -490,6 +512,11 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
                 {view === 'tonight' ? (
                     <td className={cn(CELL_BG, 'hidden h-11 whitespace-nowrap border-b border-line px-2 text-right text-fg-2 lg:table-cell')}>{p.toi?.toFixed(1) ?? '—'}</td>
                 ) : null}
+                {showAtt ? (
+                    <td className={cn(CELL_BG, 'hidden h-11 whitespace-nowrap border-b border-line px-2 text-right lg:table-cell', r.att == null ? 'text-fg-disabled' : 'text-fg-1')}>
+                        {r.att?.toFixed(1) ?? '—'}
+                    </td>
+                ) : null}
                 <td className={cn(CELL_BG, 'h-11 border-b border-line px-1.5 md:px-2')}>
                     <HitTape log={p.log} cat={cat} line={line} className="hidden md:block" />
                     <HitTape log={p.log} cat={cat} line={line} games={10} size="compact" className="md:hidden" />
@@ -545,7 +572,7 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
             {open ? (
                 <tr id={detailId}>
                     <td colSpan={colCount} className="border-b border-line bg-surface-2 p-0">
-                        <PropDetail r={r} cat={cat} doc={doc} seasons={seasons} />
+                        <PropDetail r={r} cat={cat} doc={doc} detail={detail} seasons={seasons} />
                     </td>
                 </tr>
             ) : null}

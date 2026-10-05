@@ -102,3 +102,32 @@ def test_pregame_features_use_previous_games_only():
     # The steady 3-shot shooter projects above the 1-shot one.
     last = base[base.game_id == 2025020011].set_index("player_id")
     assert last.at[1, "lam_shots"] > last.at[2, "lam_shots"]
+
+
+def test_skater_game_frame_joins_attempts_and_toi_reports():
+    import fetch_skater_games as fsg
+    summary = [{"gameId": 1, "gameDate": "2026-10-01", "playerId": 7, "skaterFullName": "A B", "teamAbbrev": "AAA",
+                "opponentTeamAbbrev": "BBB", "homeRoad": "H", "positionCode": "C", "timeOnIcePerGame": 1200,
+                "goals": 1, "assists": 0, "points": 1, "shots": 4, "ppGoals": 0, "ppPoints": 0},
+               {"gameId": 1, "gameDate": "2026-10-01", "playerId": 8, "skaterFullName": "C D", "teamAbbrev": "AAA",
+                "opponentTeamAbbrev": "BBB", "homeRoad": "H", "positionCode": "D", "timeOnIcePerGame": 900,
+                "goals": 0, "assists": 0, "points": 0, "shots": 0, "ppGoals": 0, "ppPoints": 0}]
+    extra = {"realtime": [{"gameId": 1, "playerId": 7, "totalShotAttempts": 9, "missedShots": 3, "shotAttemptsBlocked": 2}],
+             "timeonice": [{"gameId": 1, "playerId": 7, "evTimeOnIce": 960, "ppTimeOnIce": 150}]}
+    df = fsg._frame(summary, extra).set_index("player_id")
+    assert set(fsg.COLUMNS) <= set(df.reset_index().columns)
+    assert (df.at[7, "attempts"], df.at[7, "missed"], df.at[7, "blocked"]) == (9, 3, 2)
+    assert df.at[7, "ev_toi"] == 16.0 and df.at[7, "pp_toi"] == 2.5
+    # A player missing from an extra report keeps the row, with the extra columns empty.
+    assert pd.isna(df.at[8, "attempts"]) and pd.isna(df.at[8, "pp_toi"])
+
+
+def test_rest_days_count_from_each_teams_last_game():
+    logs = pd.DataFrame({"team": ["AAA", "AAA", "BBB"], "date": ["2026-10-01", "2026-10-04", "2026-10-02"]})
+    assert prop_board._rest(logs, "2026-10-05") == {"AAA": 1, "BBB": 3}
+
+
+def test_goalie_carries_regressed_gsax_when_rated():
+    g = prop_board._goalie("X Y", "Confirmed", {"X Y": {"gsax_per_game": 0.2149}})
+    assert g == {"name": "X Y", "status": "Confirmed", "gsax": 0.21}
+    assert prop_board._goalie(None, None, {}) is None

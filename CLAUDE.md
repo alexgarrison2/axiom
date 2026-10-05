@@ -62,9 +62,9 @@ Key pipeline scripts:
 | `fetch_dailyfaceoff.py` | Line combinations, starting goalies and news |
 | `season_simulator.py` | Monte Carlo playoff odds (`season_projections.json`) |
 | `generate_history.py` | Graded prediction history (`data/prediction_history.json`) |
-| `fetch_skater_games.py` | Per-game skater logs incl. PP points (`nhl_season_*_skater_games.csv`, NHL stats API in weekly windows; one query caps at 10k rows) |
+| `fetch_skater_games.py` | Per-game skater logs incl. PP points, shot attempts (missed/blocked) and EV/PP TOI (`nhl_season_*_skater_games.csv`, NHL stats API `summary` + `realtime` + `timeonice` in weekly windows; one query caps at 10k rows). Older seasons live in `nhl_historical_skater_games.csv` (from 2022-23) for games vs an opponent |
 | `fetch_props.py` | Bovada player props (SOG O/U, anytime goal, 1+/2+ points, assists, 1+ PPP) → `player_props.json`, per-day archive in `prop_lines/` |
-| `prop_model.py` / `prop_board.py` | Fair prop probabilities (backtest: `tools/backtest_props.py`) and `public/data/props.json` for `/props` |
+| `prop_model.py` / `prop_board.py` | Fair prop probabilities (backtest: `tools/backtest_props.py`), `public/data/props.json` for `/props` and `props_detail.json` (opened-row detail: attempts, TOI, ixG, splits, games vs tonight's opponent; fetched on first open) |
 
 ### Model files and tracking
 Model artifacts are committed to git (they are small enough and the lite run needs them): `pipeline/xg_model_xgb.pkl` (shot model), `pipeline/game_model.pkl` + `game_model_meta.json` (game model). Retraining changes these binaries, so commit a retrain on its own with the validation numbers (log loss, Brier, calibration vs the previous model and vs the de-vigged market) in the message. Frozen pre-game predictions are archived per day in `public/data/SiteHistory/<date>.csv`; `data/prediction_history.json` is the graded record built from them.

@@ -590,6 +590,20 @@ export default function MethodologyPage() {
                                     A plus-money point scorer on the same forward line or power-play unit as a teammate priced -200 or shorter to record a
                                     point.
                                 </Key>
+                                <Key sample={<span className="label text-fg-1">Att/G</span>}>
+                                    Shot attempts per game: on net, missed and blocked (NHL stats feed). Opening a row draws them as a hollow column
+                                    behind each shots-on-goal bar, so a skater firing often but missing the net stands out. <strong>On net</strong> is the share
+                                    that reached the goalie.
+                                </Key>
+                                <Key sample={<span className="label text-model">ixG</span>}>
+                                    Individual expected goals: the pony xG shot model summed over his unblocked attempts in a game. Goals against ixG over
+                                    his last 20 games shows whether he is finishing above or below his chances.
+                                </Key>
+                                <Key sample={<span className="label text-fg-1">Opened row</span>}>
+                                    Also shows time on ice and power-play time against his last 20, his rate on the line at home and on the road over two
+                                    seasons, his last 10 games against tonight&apos;s opponent (back to 2022-23), the opposing goalie&apos;s pony xG
+                                    goals saved above expected per game, and each team&apos;s days of rest.
+                                </Key>
                             </dl>
                             <p>
                                 <strong>Validation.</strong> Replayed over the 2025-26 season from mid-November (35,261 skater games, each priced from

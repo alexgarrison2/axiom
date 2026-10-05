@@ -18,7 +18,7 @@ They can also be imported as a package from `pipeline/`, e.g.
 
 | Script | When to use it | Reads | Writes |
 |---|---|---|---|
-| `archive_season.py [start_year]` | Season rollover: fold the finished season's gamestats and shots into the `nhl_historical_*` files. Defaults to the previous season; safe to re-run. | `nhl_season_<prev>_{gamestats,shots}.csv` | `nhl_historical_{gamestats,shots}.csv` |
+| `archive_season.py [start_year] [kind ...]` | Season rollover: fold the finished season's gamestats, shots and per-game skater logs into the `nhl_historical_*` files. Defaults to the previous season and every kind; safe to re-run. Older skater seasons: `python3 fetch_skater_games.py --season YYYY`, then `python3 tools/archive_season.py YYYY skater_games` (the archive starts at 2022-23). | `nhl_season_<prev>_{gamestats,shots,skater_games}.csv` | `nhl_historical_{gamestats,shots,skater_games}.csv` |
 | `backtest_model.py` | Walk-forward backtest of the game model (`train_game_model.py`) against Poisson and home-rate baselines: log loss, Brier, accuracy, calibration. | historical + current gamestats | stdout |
 | `backfill_snapshot_source.py <date>...` | Add `market_source` to SiteHistory rows written before that column existed, matched by game, moneyline and fetch time against the committed predictions CSV history (never guessed). | git history of `public/data/predictions_detailed.csv` | `public/data/SiteHistory/<date>.csv` |
 | `backfill_pbp.py` | Backfill raw play-by-play for games present in the current season's gamestats but missing from its PBP file. Follow with `python3 enrich_pbp.py` and `python3 calc_pbp_impact.py`. | `nhl_season_<cur>_gamestats.csv`, NHL API | `nhl_season_<cur>_pbp.csv` |

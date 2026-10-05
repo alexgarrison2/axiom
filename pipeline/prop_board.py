@@ -1,10 +1,12 @@
 """
 prop_board.py — public/data/props.json for the /props page.
 
-Joins four inputs per skater:
+Joins five inputs per skater:
   * game logs        nhl_season_*_skater_games.csv (current + previous season;
                      the last LOG_GAMES games, flagged by season, feed the
-                     page's L5/L10/L20 tapes)
+                     page's L5/L10/L20 tapes), plus nhl_historical_skater_games.csv
+                     for his games against tonight's opponent
+  * shot xG          nhl_season_*_shots.csv (pony xG per shot, summed per game)
   * lines            DailyFaceoff lineups (forward line / D pair / PP unit,
                      movement up/down) for linemate context
   * book prices      Bovada player props (pipeline/player_props.json)
@@ -14,13 +16,22 @@ The slate is today's games (America/New_York). Every skater on a current
 DailyFaceoff lineup or with a game this season is listed; slate skaters also
 carry tonight's opponent, fair probabilities and book prices.
 
+The opened-row detail is a second file, public/data/props_detail.json, fetched
+by the browser only when a row is opened:
+  { generated_at, slate_date, players: { id: {
+      x:  [[date, missed, blocked, ev_toi, pp_toi, ixg], ...],  # same games as log
+      ha: { h: {n, key: hits}, a: {...} },                      # home / road, both seasons
+      vs: [[date, home, toi, g, a, sog, ppp, att], ...],        # last VS_GAMES vs tonight's opp
+      vs_n: games vs tonight's opp since the archive starts } } }
+
 Shape (keys kept short; the file is fetched by the browser):
   { generated_at, season, prev_season, slate_date, props: [...],
-    games: [{ id, start, home, away, home_xg, away_xg, total, priced }],
+    games: [{ id, start, home, away, home_xg, away_xg, total, priced,
+              goalies: {home, away: {name, status, gsax}}, rest: {home, away} }],
     teams: { TRI: { sa_rank, ga_rank } },           # 1 = allows the most
     players: [{ id, name, team, pos, unit, pp, move, mates: [ids], gp, gp_prev,
                 game, opp, home, toi, fair: {key: p}, book: {key: {...}},
-                log: [[date, opp, home, toi, g, a, sog, ppp, prev], ...],
+                log: [[date, opp, home, toi, g, a, sog, ppp, prev, att], ...],
                 cur: {key: hits}, prev: {key: hits} }] }
 """
 from __future__ import annotations
@@ -35,10 +46,13 @@ import prop_model as pm
 from fetch_skater_games import games_file
 from io_utils import atomic_write_json, keep_if_unchanged, read_json, utc_now_iso
 from paths import pipeline_path, public_path
-from season import START_YEAR, PREV_START_YEAR, SEASON_ID, PREV_SEASON_ID, today_local
+from season import START_YEAR, PREV_START_YEAR, SEASON_ID, PREV_SEASON_ID, season_file, today_local
 
 OUT_FILE = public_path("props.json")
+DETAIL_FILE = public_path("props_detail.json")
+HIST_FILE = pipeline_path("nhl_historical_skater_games.csv")
 LOG_GAMES = 20
+VS_GAMES = 10
 UNITS = ["f1", "f2", "f3", "f4", "d1", "d2", "d3"]
 SOG_KEYS = {1.5: "sog15", 2.5: "sog25", 3.5: "sog35"}
 ONE_WAY = ["atg", "a1", "p1", "p2", "ppp1"]
@@ -59,7 +73,49 @@ def load_logs() -> pd.DataFrame:
             f = pd.read_csv(games_file(y))
             f["prev"] = int(y != START_YEAR)
             frames.append(f)
-    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    logs = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    if logs.empty:
+        return logs
+    ixg, scraped = load_ixg()
+    logs = logs.merge(ixg, on=["game_id", "player_id"], how="left")
+    # In a scraped game, no unblocked attempt is 0 xG; games the shot scrape has not reached stay missing.
+    logs.loc[logs["game_id"].isin(scraped) & logs["ixg"].isna(), "ixg"] = 0.0
+    return logs
+
+
+def load_ixg() -> tuple[pd.DataFrame, set]:
+    """Individual xG per (game, shooter): pony xG summed over his unblocked attempts,
+    and the set of games the shot scrape covers."""
+    frames = []
+    for y in (PREV_START_YEAR, START_YEAR):
+        path = pipeline_path(season_file("shots", y))
+        if os.path.exists(path):
+            frames.append(pd.read_csv(path, usecols=["game_id", "player_id", "xG"]))
+    if not frames:
+        return pd.DataFrame(columns=["game_id", "player_id", "ixg"]), set()
+    shots = pd.concat(frames, ignore_index=True)
+    ixg = shots.groupby(["game_id", "player_id"], as_index=False)["xG"].sum().rename(columns={"xG": "ixg"})
+    return ixg, set(shots["game_id"])
+
+
+def load_history(current: pd.DataFrame) -> pd.DataFrame:
+    """Every archived player-game plus the current logs, one row per (game, player)."""
+    cols = ["game_id", "date", "player_id", "opp", "home", "toi", "goals", "assists", "points", "shots",
+            "pp_points", "attempts"]
+    frames = [current[[c for c in cols if c in current.columns]]]
+    if os.path.exists(HIST_FILE):
+        hist = pd.read_csv(HIST_FILE, usecols=lambda c: c in cols)
+        frames.insert(0, hist)
+    out = pd.concat(frames, ignore_index=True)
+    return out.drop_duplicates(["game_id", "player_id"], keep="last").sort_values(["date", "game_id"])
+
+
+def _int(v):
+    return None if pd.isna(v) else int(v)
+
+
+def _num(v, nd=2):
+    return None if pd.isna(v) else round(float(v), nd)
 
 
 def _slate(today: str):
@@ -126,11 +182,26 @@ def _team_ranks(logs: pd.DataFrame) -> dict:
             for t, r in df.iterrows()}
 
 
+def _goalie(name, status, ratings: dict) -> dict | None:
+    if not name:
+        return None
+    r = ratings.get(name) or {}
+    gsax = r.get("gsax_per_game")
+    return {"name": name, "status": status, "gsax": None if gsax is None else round(float(gsax), 2)}
+
+
+def _rest(logs: pd.DataFrame, today: str) -> dict:
+    """Days since each team's last game before today (1 = played yesterday)."""
+    last = logs.loc[logs["date"] < today].groupby("team")["date"].max()
+    t = pd.Timestamp(today)
+    return {team: int((t - pd.Timestamp(d)).days) for team, d in last.items()}
+
+
 def _hits(part: pd.DataFrame) -> dict:
     return {key: int((part[stat] >= k).sum()) for key, stat, k in pm.PROPS}
 
 
-def build(today=None) -> dict:
+def build(today=None) -> tuple[dict, dict]:
     today = str(today or today_local())
     logs = load_logs()
     if logs.empty:
@@ -140,6 +211,8 @@ def build(today=None) -> dict:
     id_by_name = {(norm(r["name"]), r["team"]): pid for pid, r in latest.iterrows()}
     lineups = _lineups(id_by_name)
     games, xg, odds = _slate(today)
+    ratings = read_json(public_path("goalie_ratings.json"), {}) or {}
+    rest = _rest(logs, today)
     props_raw = (read_json(pipeline_path("player_props.json"), {}) or {}).get("games", {})
 
     # Who is listed: current lineups plus anyone who has played this season.
@@ -158,7 +231,10 @@ def build(today=None) -> dict:
                           "home": home, "away": away,
                           "home_xg": None if pd.isna(hx) else round(float(hx), 2),
                           "away_xg": None if pd.isna(ax) else round(float(ax), 2),
-                          "total": o.get("total_line"), "priced": str(gid) in props_raw})
+                          "total": o.get("total_line"), "priced": str(gid) in props_raw,
+                          "goalies": {"home": _goalie(g.get("homeGoalieConfirmed"), g.get("homeGoalieStatus"), ratings),
+                                      "away": _goalie(g.get("awayGoalieConfirmed"), g.get("awayGoalieStatus"), ratings)},
+                          "rest": {"home": rest.get(home), "away": rest.get(away)}})
         for pid, t in team_of.items():
             # A team with a posted lineup dresses only its lineup; otherwise everyone on it is listed.
             if t not in (home, away) or (t in lineup_teams and pid not in lineups):
@@ -185,7 +261,10 @@ def build(today=None) -> dict:
             book_idx[(int(gid), norm(name))] = entry
 
     by_player = {pid: part for pid, part in logs.groupby("player_id")}
-    players = []
+    slate_ids = set(tonight_feats.index) if len(tonight_feats) else set()
+    hist = load_history(logs)
+    by_player_hist = {pid: part for pid, part in hist[hist["player_id"].isin(slate_ids)].groupby("player_id")}
+    players, detail = [], {}
     for pid in ids:
         part = by_player.get(pid)
         if part is None or pid not in team_of:
@@ -201,17 +280,32 @@ def build(today=None) -> dict:
             "gp": int(len(cur)), "gp_prev": int(len(prev)),
             "cur": _hits(cur), "prev": _hits(prev),
             "log": [[r.date, r.opp, int(r.home), round(float(r.toi), 1), int(r.goals), int(r.assists),
-                     int(r.shots), int(r.pp_points), int(r.prev)] for r in recent.itertuples()],
+                     int(r.shots), int(r.pp_points), int(r.prev), _int(getattr(r, "attempts", None))]
+                    for r in recent.itertuples()],
         }
+        d = {
+            "x": [[r.date, _int(getattr(r, "missed", None)), _int(getattr(r, "blocked", None)),
+                   _num(getattr(r, "ev_toi", None), 1), _num(getattr(r, "pp_toi", None), 1),
+                   _num(getattr(r, "ixg", None))] for r in recent.itertuples()],
+            "ha": {k: {"n": int(len(side)), **_hits(side)} for k, side in
+                   (("h", part[part["home"] == 1]), ("a", part[part["home"] == 0]))},
+        }
+        detail[int(pid)] = d
         if pid in tonight_feats.index:
             f = tonight_feats.loc[pid]
+            vs = by_player_hist.get(pid)
+            if vs is not None:
+                vs = vs[vs["opp"] == f["opp"]]
+                d["vs_n"] = int(len(vs))
+                d["vs"] = [[r.date, int(r.home), _num(r.toi, 1), int(r.goals), int(r.assists), int(r.shots),
+                            int(r.pp_points), _int(getattr(r, "attempts", None))] for r in vs.tail(VS_GAMES).itertuples()]
             p.update({"game": int(f["game_id"]), "opp": f["opp"], "home": int(f["home"]),
                       "toi": round(float(f["toi_exp"]), 1),
                       "fair": {key: round(float(f[f"fair_{key}"]), 4) for key, _, _ in pm.PROPS},
                       "book": _book(book_idx.get((int(f["game_id"]), norm(last["name"]))))})
         players.append(p)
 
-    return {
+    board = {
         "generated_at": utc_now_iso(), "season": SEASON_ID, "prev_season": PREV_SEASON_ID,
         "slate_date": today, "log_games": LOG_GAMES,
         "props": [{"key": k, "label": LABELS[k], "stat": s, "k": n} for k, s, n in pm.PROPS],
@@ -219,12 +313,17 @@ def build(today=None) -> dict:
         "book_source": "bovada" if props_raw else None,
         "book_fetched_at": (read_json(pipeline_path("player_props.json"), {}) or {}).get("fetched_at"),
     }
+    return board, {"generated_at": board["generated_at"], "slate_date": today, "players": detail}
 
 
 def main():
     # Only the build stamp changed: keep the old file so an hourly run without news commits nothing.
-    board = keep_if_unchanged(read_json(OUT_FILE), build(), keys={"generated_at"})
+    new_board, new_detail = build()
+    board = keep_if_unchanged(read_json(OUT_FILE), new_board, keys={"generated_at"})
     atomic_write_json(OUT_FILE, board, min_items=1, indent=None, separators=(",", ":"),
+                      validator=lambda d: None if d["players"] else "no players")
+    detail = keep_if_unchanged(read_json(DETAIL_FILE), new_detail, keys={"generated_at"})
+    atomic_write_json(DETAIL_FILE, detail, min_items=1, indent=None, separators=(",", ":"),
                       validator=lambda d: None if d["players"] else "no players")
     n_slate = sum(1 for p in board["players"] if "game" in p)
     n_book = sum(1 for p in board["players"] if p.get("book"))

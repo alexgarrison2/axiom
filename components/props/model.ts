@@ -4,8 +4,8 @@
  * linemate boosts, filters and sorting.
  */
 
-/** [date, opp, home, toi, g, a, sog, ppp, prevSeason] */
-export type LogRow = [string, string, number, number, number, number, number, number, number];
+/** [date, opp, home, toi, g, a, sog, ppp, prevSeason, attempts] (attempts missing in older files) */
+export type LogRow = [string, string, number, number, number, number, number, number, number, (number | null)?];
 
 export interface BookPrice {
     over: number | null;
@@ -37,6 +37,14 @@ export interface PropPlayer {
     book?: Record<string, BookPrice>;
 }
 
+export interface GoalieInfo {
+    name: string;
+    /** DailyFaceoff: Confirmed / Likely / Unconfirmed */
+    status: string | null;
+    /** pony xG goals saved above expected per game (regressed). */
+    gsax: number | null;
+}
+
 export interface PropGame {
     id: number;
     start: string;
@@ -47,6 +55,31 @@ export interface PropGame {
     away_xg: number | null;
     total: string | null;
     priced: boolean;
+    goalies?: { home: GoalieInfo | null; away: GoalieInfo | null };
+    /** Days since each side's last game (1 = played yesterday). */
+    rest?: { home: number | null; away: number | null };
+}
+
+/** [date, missed, blocked, evToi, ppToi, ixG]: the same games as PropPlayer.log. */
+export type ExtRow = [string, number | null, number | null, number | null, number | null, number | null];
+/** [date, home, toi, g, a, sog, ppp, attempts]: a game against tonight's opponent. */
+export type VsRow = [string, number, number | null, number, number, number, number, number | null];
+/** Games played and hits per prop key. */
+export type Split = { n: number } & Record<string, number>;
+
+export interface PlayerDetail {
+    x: ExtRow[];
+    ha: { h: Split; a: Split };
+    vs?: VsRow[];
+    /** All archived games against tonight's opponent (vs holds the latest). */
+    vs_n?: number;
+}
+
+/** public/data/props_detail.json: fetched when a row is first opened. */
+export interface PropsDetailDoc {
+    generated_at: string;
+    slate_date: string;
+    players: Record<string, PlayerDetail>;
 }
 
 export interface PropsDoc {
@@ -249,6 +282,8 @@ export interface Row {
     streak: number;
     boost: Boost | null;
     oppRank: number | null;
+    /** Shot attempts per game, last 10. */
+    att: number | null;
     /** L5 hit rate clearly above his longer baseline (season, else last season). */
     hot: boolean;
 }
@@ -277,6 +312,7 @@ export function buildRows(doc: PropsDoc, view: View, cat: Category, choice: Line
             streak: streak(p, cat, line),
             boost: cat.key === 'pts' || cat.key === 'a' ? boostFor(p, byId) : null,
             oppRank: p.opp ? (doc.teams[p.opp]?.[cat.oppRank] ?? null) : null,
+            att: attemptsPer(p, 10).avg,
             hot: l5.n === 5 && l5p != null && base != null && l5p - base >= 0.25,
         };
     });
@@ -298,7 +334,7 @@ export function filterRows(rows: Row[], f: Filter): Row[] {
     });
 }
 
-export type SortKey = 'name' | 'opp' | 'toi' | 'l5' | 'l10' | 'l20' | 'szn' | 'imp' | 'fair' | 'edge' | 'streak';
+export type SortKey = 'name' | 'opp' | 'toi' | 'att' | 'l5' | 'l10' | 'l20' | 'szn' | 'imp' | 'fair' | 'edge' | 'streak';
 
 export const FIRST_DIR: Partial<Record<SortKey, 'asc' | 'desc'>> = { name: 'asc', opp: 'asc' };
 
@@ -310,6 +346,8 @@ function sortValue(r: Row, key: SortKey): number | string | null {
             return r.oppRank;
         case 'toi':
             return r.p.toi ?? null;
+        case 'att':
+            return r.att;
         case 'l5':
             return pct(r.l5);
         case 'l10':
@@ -358,4 +396,45 @@ export function shortDate(iso: string): string {
 export function shortName(name: string): string {
     const parts = name.split(' ');
     return parts.length > 1 ? `${parts[0][0]}. ${parts.slice(1).join(' ')}` : name;
+}
+
+export const mean = (xs: (number | null | undefined)[]): number | null => {
+    const v = xs.filter((x): x is number => x != null);
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+};
+
+/** Season start year of a game date (seasons roll over on July 1). */
+export const seasonStart = (iso: string): number => {
+    const [y, m] = iso.split('-').map(Number);
+    return m >= 7 ? y : y - 1;
+};
+
+/** "2025-11-03" → "25-26" */
+export const seasonLabel = (iso: string): string => {
+    const y = seasonStart(iso);
+    return `${String(y).slice(2)}-${String(y + 1).slice(2)}`;
+};
+
+/** Shot attempts per game over the last `n` logged games that carry attempts. */
+export function attemptsPer(p: PropPlayer, n: number): { avg: number | null; onNet: number | null; n: number } {
+    const rows = p.log.slice(-n).filter(r => r[9] != null);
+    const att = rows.reduce((a, r) => a + (r[9] ?? 0), 0);
+    const sog = rows.reduce((a, r) => a + r[6], 0);
+    return { avg: rows.length ? att / rows.length : null, onNet: att ? sog / att : null, n: rows.length };
+}
+
+/** The detail rows for a player's log, matched by date (null where the detail file has none). */
+export function extFor(p: PropPlayer, d: PlayerDetail | null | undefined): (ExtRow | null)[] {
+    const byDate = new Map((d?.x ?? []).map(x => [x[0], x]));
+    return p.log.map(r => byDate.get(r[0]) ?? null);
+}
+
+/** Games against tonight's opponent as log rows, so tapes and hit counts reuse the category logic. */
+export function vsLog(p: PropPlayer, d: PlayerDetail | null | undefined, currentStart: number): LogRow[] {
+    return (d?.vs ?? []).map(v => [v[0], p.opp ?? '', v[1], v[2] ?? 0, v[3], v[4], v[5], v[6], seasonStart(v[0]) < currentStart ? 1 : 0, v[7]]);
+}
+
+/** Hits and the mean count over a set of log rows. */
+export function summarize(rows: LogRow[], cat: Category, line: Line): { hits: number; n: number; avg: number | null } {
+    return { hits: rows.filter(r => cat.value(r) >= line.k).length, n: rows.length, avg: mean(rows.map(r => cat.value(r))) };
 }

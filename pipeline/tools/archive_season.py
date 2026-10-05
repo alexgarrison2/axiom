@@ -1,13 +1,13 @@
-"""Season rollover: fold the finished season's gamestats and shots into the
-nhl_historical_* files so everything that reads "historical + current"
+"""Season rollover: fold the finished season's gamestats, shots and per-game
+skater logs into the nhl_historical_* files so everything that reads "historical + current"
 (team/goalie priors, shooting talent, xG re-scoring and training) keeps
 last season once season.py points at the new season.
 
 The season file is authoritative: any rows for that season already in the
 historical file (e.g. a partial mid-season snapshot) are replaced.
 
-Usage (from pipeline/): python tools/archive_season.py [start_year]
-Defaults to the previous season. Safe to re-run.
+Usage (from pipeline/): python tools/archive_season.py [start_year] [kind ...]
+Defaults to the previous season and every kind. Safe to re-run.
 """
 import os
 import sys
@@ -29,7 +29,7 @@ def archive(kind, start_year):
     dst = os.path.join(PIPELINE_DIR, f"nhl_historical_{kind}.csv")
     season_df = pd.read_csv(src, low_memory=False)
     season_df = season_df[season_df["game_id"].map(season_of_game_id) == start_year]
-    hist_df = pd.read_csv(dst, low_memory=False)
+    hist_df = pd.read_csv(dst, low_memory=False) if os.path.exists(dst) else season_df.iloc[:0]
 
     kept = hist_df[hist_df["game_id"].map(season_of_game_id) != start_year]
     combined = pd.concat([kept, season_df], ignore_index=True)
@@ -41,5 +41,5 @@ def archive(kind, start_year):
 
 if __name__ == "__main__":
     year = int(sys.argv[1]) if len(sys.argv) > 1 else PREV_START_YEAR
-    for kind in ("gamestats", "shots"):
+    for kind in sys.argv[2:] or ("gamestats", "shots", "skater_games"):
         archive(kind, year)
