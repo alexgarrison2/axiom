@@ -82,12 +82,17 @@ export function Units() {
     const [period, setPeriod] = React.useState<string>('all');
     const [sort, setSort] = React.useState<{ key: string; dir: SortDir }>({ key: 'toi', dir: 'desc' });
     const per = period === 'all' ? 'all' : Number(period);
-    const rows = React.useMemo(() => units(m, side, kind, per).filter(u => u.toi >= MIN_TOI), [m, side, kind, per]);
+    // Regular vs occasional is a whole-game call, so a period view keeps the same lines up top.
+    const regularKeys = React.useMemo(() => {
+        const all = units(m, side, kind).filter(u => u.toi >= MIN_TOI);
+        return new Set(all.slice(0, regularCount(all.map(u => u.toi), MAX_CORE[kind])).map(u => u.ids.join('-')));
+    }, [m, side, kind]);
+    const rows = React.useMemo(() => units(m, side, kind, per).filter(u => u.toi >= MIN_TOI || regularKeys.has(u.ids.join('-'))), [m, side, kind, per, regularKeys]);
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
     const col = COLS.find(c => c.key === sort.key) ?? COLS[0];
     const byToi = [...rows].sort((a, b) => b.toi - a.toi);
-    const nRegular = regularCount(byToi.map(u => u.toi), MAX_CORE[kind]);
-    const regular = new Set(byToi.slice(0, nRegular));
+    const regular = new Set(byToi.filter(u => regularKeys.has(u.ids.join('-'))));
+    const nRegular = regular.size;
     const cmp = (a: Unit, b: Unit) => {
         const va = col.value(a);
         const vb = col.value(b);
@@ -163,7 +168,7 @@ export function Units() {
                                         .sort((a, b) => order[a.pos] - order[b.pos] || (a.num ?? 0) - (b.num ?? 0));
                                     return (
                                         <React.Fragment key={u.ids.join('-')}>
-                                        {spot && i === nRegular ? (
+                                        {spot && i === nRegular && nRegular > 0 ? (
                                             <tr>
                                                 <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 pt-3 text-left align-bottom font-normal shadow-[inset_0_-1px_0_var(--line-strong)]')}>
                                                     <span className="text-micro uppercase tracking-label text-fg-3">
