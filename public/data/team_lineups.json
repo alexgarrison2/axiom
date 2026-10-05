@@ -3315,8 +3315,8 @@
                 "id": 35098,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Sean Couturier",
@@ -3427,6 +3427,15 @@
         ],
         "ir": [
             {
+                "name": "Nikita Grebenkin",
+                "number": 71,
+                "pos": "ir1",
+                "id": 34689,
+                "ppUnit": null,
+                "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
                 "name": "Rasmus Ristolainen",
                 "number": 55,
                 "pos": "ir2",
@@ -3514,7 +3523,7 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-10-05T17:05:36.328Z",
-        "fetched_at": "2026-10-05T17:25:07Z"
+        "fetched_at": "2026-10-05T21:12:56Z"
     },
     "PIT": {
         "f1": [
@@ -7149,14 +7158,14 @@
         ],
         "d2": [
             {
-                "name": "Nolan Allan",
-                "number": 5,
+                "name": "Sam Dickinson",
+                "number": null,
                 "pos": "ld",
-                "id": 32541,
+                "id": 37090,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jacob Trouba",
@@ -7269,10 +7278,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Nolan Allan",
-                "number": 5,
+                "name": "Sam Dickinson",
+                "number": null,
                 "pos": "sk3",
-                "id": 32541,
+                "id": 37090,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -7288,8 +7297,8 @@
             }
         ],
         "lineup_source": "Max Miller",
-        "updated_at": "2026-10-04T01:38:36.494Z",
-        "fetched_at": "2026-10-04T02:04:06Z"
+        "updated_at": "2026-10-05T19:06:38.581Z",
+        "fetched_at": "2026-10-05T21:12:56Z"
     },
     "SEA": {
         "f1": [
