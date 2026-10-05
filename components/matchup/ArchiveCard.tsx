@@ -2,6 +2,7 @@ import type { ArchiveGame, ArchiveSide } from '@/lib/matchup/archive';
 import { archiveFinalLabel, isFinalState } from '@/lib/matchup/archive';
 import { clashSafePair } from '@/components/ui/team-color';
 import { finalWords, isCoinFlip } from '@/lib/matchup/format';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { WinBar } from '@/components/ui/win-bar';
 import { GameTime } from './GameTime';
@@ -9,7 +10,7 @@ import { washVars } from './TeamSide';
 
 function Side({ s, lost, home }: { s: ArchiveSide; lost: boolean; home?: boolean }) {
     return (
-        <a href={`/teams/${s.tri}`} className={cn('flex min-w-0 items-center gap-2.5 rounded-control', home && 'flex-row-reverse text-right')}>
+        <a href={`/teams/${s.tri}`} className={cn('relative z-10 flex min-w-0 items-center gap-2.5 rounded-control', home && 'flex-row-reverse text-right')}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={`/logos/${s.tri}.svg`}
@@ -49,7 +50,7 @@ export function ArchiveCard({ g }: { g: ArchiveGame }) {
         <article
             id={anchor}
             aria-label={`${g.away.name} at ${g.home.name}${score ? `, ${final ? 'final' : 'live'} ${score}` : ''}`}
-            className="panel team-wash flex flex-col gap-2.5 px-3 py-2.5 md:px-4 md:py-3"
+            className={cn('panel team-wash relative flex flex-col gap-2.5 px-3 py-2.5 md:px-4 md:py-3', (final || live) && 'panel-hover')}
             style={washVars(colors.away, colors.home)}
         >
             <div className="flex min-h-6 items-center justify-between gap-2">
@@ -67,11 +68,18 @@ export function ArchiveCard({ g }: { g: ArchiveGame }) {
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
                 <Side s={g.away} lost={final && as < hs} />
                 {scored ? (
-                    <span aria-hidden="true" className="num-score flex items-center gap-2 text-[30px] leading-none md:text-[36px]">
-                        <span className={final && as < hs ? 'text-fg-3' : 'text-fg-1'}>{as}</span>
-                        <span className="text-[0.7em] text-fg-disabled">-</span>
-                        <span className={final && hs < as ? 'text-fg-3' : 'text-fg-1'}>{hs}</span>
-                    </span>
+                    // The score is the card's link to the game page; its hit area stretches over the whole card.
+                    <Link
+                        href={`/games/${g.id}`}
+                        className="rounded-control after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                    >
+                        <span aria-hidden="true" className="num-score flex items-center gap-2 text-[30px] leading-none md:text-[36px]">
+                            <span className={final && as < hs ? 'text-fg-3' : 'text-fg-1'}>{as}</span>
+                            <span className="text-[0.7em] text-fg-disabled">-</span>
+                            <span className={final && hs < as ? 'text-fg-3' : 'text-fg-1'}>{hs}</span>
+                        </span>
+                        <span className="sr-only">Game page: {g.away.tri} {as}, {g.home.tri} {hs}</span>
+                    </Link>
                 ) : (
                     <span aria-hidden="true" className="text-body text-fg-disabled">
                         @

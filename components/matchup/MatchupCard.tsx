@@ -265,7 +265,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                                 <span className="sr-only">{chip.title}</span>
                             </span>
                         ) : null}
-                        {phase !== 'pre' ? (
+                        {phase === 'live' ? (
                             <Link
                                 href={`/games/${p.id}`}
                                 title="Game page"
@@ -279,7 +279,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                             </Link>
                         ) : null}
                         <ShareButton p={p} title={title} anchor={anchor} />
-                        {pinned ? null : (
+                        {pinned || phase === 'final' ? null : (
                             <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-3 transition-transform', open && 'rotate-180')}>
                                 <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -296,7 +296,26 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                         </span>
                     ) : null}
                     <h2 className="flex justify-center">
-                        {pinned ? (
+                        {phase === 'final' ? (
+                            <Link
+                                href={`/games/${p.id}`}
+                                className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                            >
+                                <span id={titleId} className="sr-only">
+                                    {title}
+                                </span>
+                                {scored ? (
+                                    <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
+                                        <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
+                                        <span className="text-[0.7em] text-fg-disabled">-</span>
+                                        <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                                    </span>
+                                ) : (
+                                    <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
+                                )}
+                                <span className="sr-only">, game page</span>
+                            </Link>
+                        ) : pinned ? (
                             <span className="min-h-6 min-w-4 px-0.5 text-center">
                                 <span id={titleId} className="sr-only">
                                     {title}
