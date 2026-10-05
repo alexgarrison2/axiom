@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getPredictions } from '@/utils/data';
 import { buildGame, type RawFeeds } from './build';
-import type { GameModel, Pregame } from './types';
+import type { GameModel, GameOdds, Pregame, SeasonOdds, Side } from './types';
 
 /**
  * Server side of the game page: the four NHL game feeds (Data Cache, 30s
@@ -100,6 +100,76 @@ async function pregameFor(id: number): Promise<Pregame | null> {
     };
 }
 
+const num = (v: unknown): number | null => {
+    const n = typeof v === 'string' ? Number(v.replace('+', '')) : typeof v === 'number' ? v : NaN;
+    return Number.isFinite(n) ? n : null;
+};
+
+/** Closing lines for the game from public/data/odds_closing.json (keyed by game id; per-side fields by team name). */
+function closingOdds(id: number): GameOdds | null {
+    try {
+        const all = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'odds_closing.json'), 'utf8')) as Record<string, Record<string, unknown>>;
+        const e = all[String(id)];
+        if (!e) return null;
+        const name: Record<Side, string> = { away: String(e.away_team ?? ''), home: String(e.home_team ?? '') };
+        const per = (suffix: string) => ({ away: num(e[`${name.away}${suffix}`]), home: num(e[`${name.home}${suffix}`]) });
+        const ml = { away: num(e.away_ml) ?? num(e[name.away]), home: num(e.home_ml) ?? num(e[name.home]) };
+        const pl = (side: Side) => {
+            const spread = num(e[`${name[side]}_puckline_spread`]);
+            return spread == null ? null : { spread, price: num(e[`${name[side]}_puckline`]) };
+        };
+        const line = num(e.total_line);
+        const tw = per('_three_way');
+        const tw1 = per('_1p_three_way');
+        return {
+            source: e.source ? String(e.source) : null,
+            ml,
+            puckline: { away: pl('away'), home: pl('home') },
+            total: line == null ? null : { line, over: num(e.total_over), under: num(e.total_under) },
+            firstPeriod: per('_1p_ml'),
+            threeWay: tw.away == null && tw.home == null ? null : { ...tw, tie: num(e.three_way_tie) },
+            firstPeriodThreeWay: tw1.away == null && tw1.home == null ? null : { ...tw1, tie: num(e['1p_three_way_tie']) },
+        };
+    } catch {
+        return null;
+    }
+}
+
+interface ProjectionSnapshot {
+    date: string;
+    generated_at: string;
+    teams: Record<string, { make_playoffs_pct?: number; won_cup_pct?: number }>;
+}
+
+/**
+ * Playoff and Cup chances from the daily season simulation: "before" is the
+ * last run before puck drop, "after" the first run once the next morning's full
+ * refresh has scraped the result (12:00 UTC the day after the game).
+ */
+function seasonOutlook(m: { startUtc: string; date: string; teams: Record<Side, { tri: string }> }): SeasonOdds | null {
+    try {
+        const doc = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'season_projections_history.json'), 'utf8')) as { snapshots?: ProjectionSnapshot[] };
+        const snaps = [...(doc.snapshots ?? [])].sort((a, b) => a.generated_at.localeCompare(b.generated_at));
+        const start = m.startUtc;
+        const next = new Date(Date.parse(`${m.date}T12:00:00Z`) + 86_400_000).toISOString();
+        const before = [...snaps].reverse().find(s => s.generated_at < start) ?? null;
+        const after = snaps.find(s => s.generated_at >= next) ?? null;
+        if (!before && !after) return null;
+        const pick = (s: ProjectionSnapshot | null, side: Side) => {
+            const t = s?.teams[m.teams[side].tri];
+            return t && t.make_playoffs_pct != null ? { playoffs: t.make_playoffs_pct / 100, cup: (t.won_cup_pct ?? 0) / 100 } : null;
+        };
+        return {
+            before: { away: pick(before, 'away'), home: pick(before, 'home') },
+            after: { away: pick(after, 'away'), home: pick(after, 'home') },
+            beforeAt: before?.generated_at ?? null,
+            afterAt: after?.generated_at ?? null,
+        };
+    } catch {
+        return null;
+    }
+}
+
 /** The game, or null when the NHL has no such game. */
 export async function getGame(idStr: string): Promise<GameModel | null> {
     if (!validGameId(idStr)) return null;
@@ -116,5 +186,11 @@ export async function getGame(idStr: string): Promise<GameModel | null> {
         getJson(`https://api-web.nhle.com/v1/gamecenter/${id}/right-rail`, ttl),
         pregameFor(id),
     ]);
-    return buildGame({ pbp, landing, box, shifts, rightRail }, gameXg(String(pbp.season), id), pregame);
+    const odds = closingOdds(id);
+    const outlook = seasonOutlook({
+        startUtc: pbp.startTimeUTC,
+        date: pbp.gameDate,
+        teams: { away: { tri: pbp.awayTeam?.abbrev }, home: { tri: pbp.homeTeam?.abbrev } },
+    });
+    return buildGame({ pbp, landing, box, shifts, rightRail }, gameXg(String(pbp.season), id), pregame, { odds, outlook });
 }

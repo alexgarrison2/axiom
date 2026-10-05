@@ -1,10 +1,11 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import { Crest } from '@/components/ui/crest';
 import { LocalTime } from '@/components/ui/local-time';
 import { cn } from '@/lib/utils';
-import { lineScore, shortName } from '@/lib/game/analytics';
+import { lineScore, marketResults, shortName, type Hit } from '@/lib/game/analytics';
 import { other, SIDES, type Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
 
@@ -31,6 +32,167 @@ function Team({ side }: { side: Side }) {
                     {t.score}
                 </span>
                 <span className="mt-1 h-1 w-10 rounded-full" style={{ background: colors[side], opacity: won || m.state !== 'final' ? 1 : 0.4 }} aria-hidden="true" />
+            </div>
+        </div>
+    );
+}
+
+/** Settled-bet mark: a check in a circle (hit), a P (push); nothing on a miss. */
+function HitMark({ h }: { h: Hit | null | undefined }) {
+    if (h === 'hit')
+        return (
+            <svg viewBox="0 0 12 12" className="h-3.5 w-3.5 shrink-0 text-pos" role="img" aria-label="hit">
+                <circle cx={6} cy={6} r={5.3} fill="none" stroke="currentColor" strokeWidth={1.2} />
+                <path d="M3.4 6.2 5.2 8 8.7 4.3" fill="none" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+        );
+    if (h === 'push')
+        return (
+            <svg viewBox="0 0 12 12" className="h-3.5 w-3.5 shrink-0 text-fg-3" role="img" aria-label="push">
+                <circle cx={6} cy={6} r={5.3} fill="none" stroke="currentColor" strokeWidth={1.2} />
+                <path d="M4.6 9V3.2h1.9a1.6 1.6 0 0 1 0 3.2H4.6" fill="none" stroke="currentColor" strokeWidth={1.3} />
+            </svg>
+        );
+    return <span className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />;
+}
+
+/** Feed id -> book name ("nhl_partner_draftkings" -> "DraftKings"). */
+const bookName = (src: string) => (/draftkings/i.test(src) ? 'DraftKings' : /bovada/i.test(src) ? 'Bovada' : /fanduel/i.test(src) ? 'FanDuel' : src.replace(/_/g, ' '));
+
+const odd = (o: number | null | undefined) => (o == null ? '—' : o > 0 ? `+${o}` : String(o));
+const pctPt = (p: number) => `${(p * 100).toFixed(p < 0.1 ? 1 : 0)}%`;
+
+/** One mirrored row: away value left, market centre, home value right; each value with its settled mark. */
+function MarketRow({ label, away, home, center, hits }: { label: string; away: React.ReactNode; home: React.ReactNode; center?: React.ReactNode; hits?: { away?: Hit | null; home?: Hit | null } }) {
+    return (
+        <>
+            <span className="flex items-center justify-end gap-1.5 text-fg-1">
+                {away}
+                <HitMark h={hits?.away} />
+            </span>
+            <span className="flex flex-col items-center text-center">
+                <span className="text-micro font-bold uppercase tracking-wide text-fg-2">{label}</span>
+                {center}
+            </span>
+            <span className="flex items-center gap-1.5 text-fg-1">
+                <HitMark h={hits?.home} />
+                {home}
+            </span>
+        </>
+    );
+}
+
+/** Closing odds for every market, settled. */
+function Markets() {
+    const { m } = useGame();
+    const o = m.odds;
+    if (!o) return null;
+    const r = marketResults(m);
+    const pl = (side: Side) => {
+        const p = o.puckline[side];
+        return p ? (
+            <span>
+                <span className="text-fg-3">{p.spread > 0 ? `+${p.spread}` : p.spread}</span> {odd(p.price)}
+            </span>
+        ) : (
+            '—'
+        );
+    };
+    return (
+        <div className="min-w-0">
+            <p className="label mb-2">Closing lines{o.source ? <span className="ml-2 normal-case tracking-normal text-fg-3">{bookName(o.source)}</span> : null}</p>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1.5 text-caption tabular-nums">
+                <MarketRow label="Moneyline" away={odd(o.ml.away)} home={odd(o.ml.home)} hits={r ? r.ml : undefined} />
+                <MarketRow label="Puck line" away={pl('away')} home={pl('home')} hits={r ? { away: r.puckline.away, home: r.puckline.home } : undefined} />
+                {o.total ? (
+                    <MarketRow
+                        label={`Total ${o.total.line}`}
+                        away={
+                            <span>
+                                <span className="text-fg-3">O</span> {odd(o.total.over)}
+                            </span>
+                        }
+                        home={
+                            <span>
+                                <span className="text-fg-3">U</span> {odd(o.total.under)}
+                            </span>
+                        }
+                        hits={r ? { away: r.over, home: r.under } : undefined}
+                    />
+                ) : null}
+                {o.threeWay ? (
+                    <MarketRow
+                        label="Regulation"
+                        away={odd(o.threeWay.away)}
+                        home={odd(o.threeWay.home)}
+                        center={
+                            <span className="flex items-center gap-1 text-micro text-fg-2">
+                                Tie {odd(o.threeWay.tie)} <HitMark h={r?.threeWay.tie} />
+                            </span>
+                        }
+                        hits={r ? { away: r.threeWay.away, home: r.threeWay.home } : undefined}
+                    />
+                ) : null}
+                {o.firstPeriod.away != null || o.firstPeriod.home != null ? (
+                    <MarketRow label="1st period" away={odd(o.firstPeriod.away)} home={odd(o.firstPeriod.home)} hits={r ? r.firstPeriod : undefined} />
+                ) : null}
+                {o.firstPeriodThreeWay ? (
+                    <MarketRow
+                        label="1st · 3-way"
+                        away={odd(o.firstPeriodThreeWay.away)}
+                        home={odd(o.firstPeriodThreeWay.home)}
+                        center={
+                            <span className="flex items-center gap-1 text-micro text-fg-2">
+                                Tie {odd(o.firstPeriodThreeWay.tie)} <HitMark h={r?.firstPeriodThreeWay.tie} />
+                            </span>
+                        }
+                        hits={r ? { away: r.firstPeriodThreeWay.away, home: r.firstPeriodThreeWay.home } : undefined}
+                    />
+                ) : null}
+            </div>
+        </div>
+    );
+}
+
+/** Playoff and Cup chances before and after the game, from the daily season simulation. */
+function Outlook() {
+    const { m } = useGame();
+    const o = m.outlook;
+    if (!o) return null;
+    const cell = (side: Side, key: 'playoffs' | 'cup') => {
+        const b = o.before[side]?.[key];
+        const a = o.after[side]?.[key];
+        if (b == null && a == null) return <span className="text-fg-3">—</span>;
+        const d = a != null && b != null ? (a - b) * 100 : null;
+        return (
+            <span className={cn('flex items-baseline gap-1.5', side === 'away' ? 'justify-end' : 'justify-start')}>
+                <span className="text-fg-3">{b != null ? pctPt(b) : '—'}</span>
+                <span className="text-fg-3" aria-hidden="true">
+                    ›
+                </span>
+                <span className="font-bold text-model">{a != null ? pctPt(a) : '…'}</span>
+                {d != null ? (
+                    <span className={cn('text-micro font-bold', Math.abs(d) < 0.05 ? 'text-fg-3' : d > 0 ? 'text-pos' : 'text-neg')}>
+                        {d > 0 ? '+' : d < 0 ? '−' : '±'}
+                        {Math.abs(d).toFixed(1)}
+                    </span>
+                ) : null}
+            </span>
+        );
+    };
+    return (
+        <div className="min-w-0">
+            <p className="label mb-2">
+                Season odds{!o.afterAt ? <span className="ml-2 normal-case tracking-normal text-fg-3">after: next morning&apos;s run</span> : null}
+            </p>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1.5 text-caption tabular-nums">
+                {(['playoffs', 'cup'] as const).map(k => (
+                    <React.Fragment key={k}>
+                        {cell('away', k)}
+                        <span className="text-center text-micro font-bold uppercase tracking-wide text-fg-2">{k === 'playoffs' ? 'Playoffs' : 'Cup'}</span>
+                        {cell('home', k)}
+                    </React.Fragment>
+                ))}
             </div>
         </div>
     );
@@ -145,6 +307,13 @@ export function ScoreBand() {
                             ))}
                         </ol>
                     ) : null}
+                </div>
+            ) : null}
+
+            {m.odds || m.outlook ? (
+                <div className="grid gap-6 border-t border-line px-card py-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:gap-10 md:px-8">
+                    <Markets />
+                    <Outlook />
                 </div>
             ) : null}
         </header>

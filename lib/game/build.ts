@@ -2,7 +2,7 @@
  * Raw NHL feeds -> GameModel. Pure (no I/O) so it runs in tests on saved
  * fixtures; lib/game/fetch.ts does the fetching.
  */
-import type { EventType, GameEvent, GameModel, GameState, Player, Pos, Pregame, Shift, Side, Situation, Star, Strength } from './types';
+import type { EventType, GameEvent, GameModel, GameOdds, GameState, Player, Pos, Pregame, SeasonOdds, Shift, Side, Situation, Star, Strength } from './types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Raw = any;
@@ -59,7 +59,12 @@ export interface RawFeeds {
     rightRail?: Raw | null;
 }
 
-export function buildGame(feeds: RawFeeds, xg: Map<number, number> | null, pregame: Pregame | null): GameModel {
+export function buildGame(
+    feeds: RawFeeds,
+    xg: Map<number, number> | null,
+    pregame: Pregame | null,
+    extras: { odds?: GameOdds | null; outlook?: SeasonOdds | null } = {},
+): GameModel {
     const { pbp } = feeds;
     const awayId: number = pbp.awayTeam.id;
     const homeId: number = pbp.homeTeam.id;
@@ -200,7 +205,17 @@ export function buildGame(feeds: RawFeeds, xg: Map<number, number> | null, prega
         if (b <= a) continue;
         (shifts[s.playerId] ??= []).push([a, b]);
     }
-    for (const list of Object.values(shifts)) list.sort((p, q) => p[0] - q[0]);
+    // The NHL feed sometimes repeats a stretch of a player's shift in an overlapping row: merge overlaps.
+    for (const [id, list] of Object.entries(shifts)) {
+        list.sort((p, q) => p[0] - q[0]);
+        const merged: Shift[] = [];
+        for (const s of list) {
+            const last = merged[merged.length - 1];
+            if (last && s[0] < last[1]) last[1] = Math.max(last[1], s[1]);
+            else merged.push([s[0], s[1]]);
+        }
+        shifts[Number(id)] = merged;
+    }
 
     const box: GameModel['box'] = {};
     const stats = feeds.box?.playerByGameStats;
@@ -271,6 +286,8 @@ export function buildGame(feeds: RawFeeds, xg: Map<number, number> | null, prega
         shootout,
         stars,
         pregame,
+        odds: extras.odds ?? null,
+        outlook: extras.outlook ?? null,
         official,
         xgPending: unscored,
     };

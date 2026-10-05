@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { goalSwings, periodLabel, playerName, shortName, type GoalSwing } from '@/lib/game/analytics';
 import type { GameEvent, Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
+import { RinkMarkings } from './Rink';
 
 const pct = (p: number) => `${Math.round(p * 100)}%`;
 
@@ -117,8 +118,108 @@ function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: n
     );
 }
 
+/** Feet to the net the shooter attacked (normalized: home shoots at x = +89, away at x = -89). */
+function geometry(e: GameEvent) {
+    if (e.x == null || e.y == null) return null;
+    const x = Math.abs(e.x);
+    const y = e.side === 'home' ? e.y : -e.y;
+    const dx = 89 - x;
+    return { x, y, dist: Math.hypot(dx, y), angle: (Math.atan2(Math.abs(y), Math.abs(dx)) * 180) / Math.PI, behind: dx < 0 };
+}
+
+const EVENT_WORD: Partial<Record<GameEvent['type'], string>> = {
+    faceoff: 'Faceoff won',
+    shot: 'Shot saved',
+    miss: 'Shot missed',
+    block: 'Shot blocked',
+    hit: 'Hit',
+    giveaway: 'Giveaway',
+    takeaway: 'Takeaway',
+    penalty: 'Penalty',
+};
+
+/** The selected goal on half ice: where it came from, the angle to the net, and the plays just before it. */
+function GoalShot({ e }: { e: GameEvent }) {
+    const { m, colors, byId, label } = useGame();
+    const g = geometry(e);
+    const color = colors[e.side];
+    const before = m.events.filter(x => x.period === e.period && x.t <= e.t && x.t >= e.t - 20 && x.id !== e.id && x.type !== 'goal').slice(-4);
+    const rebound = before.some(x => x.side === e.side && (x.type === 'shot' || x.type === 'miss' || x.type === 'block') && e.t - x.t <= 3);
+    const rush = (() => {
+        const prev = [...before].reverse().find(x => x.t < e.t);
+        return !!prev && e.t - prev.t <= 4 && prev.zone != null && (prev.side === e.side ? prev.zone !== 'O' : prev.zone !== 'D');
+    })();
+    const goalie = e.other != null ? byId.get(e.other) : undefined;
+    const strengthLabel = `${e.side === 'away' ? e.situation.away : e.situation.home}v${e.side === 'away' ? e.situation.home : e.situation.away}`;
+    return (
+        <div className="panel grid gap-3 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:p-4" data-goal-shot>
+            {g ? (
+                <svg viewBox="20 -43.5 82 87" className="block max-h-[220px] w-full self-center" role="img" aria-label={`Shot from ${Math.round(g.dist)} feet at ${Math.round(g.angle)} degrees`}>
+                    <RinkMarkings half />
+                    {/* Angle: lines to both posts and the arc of the shooting window. */}
+                    <path d={`M${g.x},${-g.y} L89,-3 L89,3 Z`} fill={color} opacity={0.18} />
+                    <line x1={g.x} y1={-g.y} x2={89} y2={0} stroke={color} strokeWidth={0.6} strokeDasharray="1.5 1.2" />
+                    <circle cx={g.x} cy={-g.y} r={2.6 + Math.sqrt(e.xg ?? 0.05) * 3} fill={color} stroke="var(--ink)" strokeWidth={0.6} />
+                    <text x={(g.x + 89) / 2} y={-g.y / 2 - 2.5} textAnchor="middle" className="fill-fg-1" fontSize={3.6} fontWeight={700}>
+                        {Math.round(g.dist)} ft
+                    </text>
+                </svg>
+            ) : (
+                <p className="label">No location</p>
+            )}
+            <div className="flex min-w-0 flex-col gap-2.5">
+            <dl className="grid grid-cols-3 gap-x-3 gap-y-2 text-caption tabular-nums">
+                <div>
+                    <dt className="label">Distance</dt>
+                    <dd className="mt-0.5 font-bold text-fg-1">{g ? `${Math.round(g.dist)} ft` : '—'}</dd>
+                </div>
+                <div>
+                    <dt className="label">Angle</dt>
+                    <dd className="mt-0.5 font-bold text-fg-1">{g ? `${Math.round(g.angle)}°${g.behind ? ' (behind)' : ''}` : '—'}</dd>
+                </div>
+                <div>
+                    <dt className="label">xG</dt>
+                    <dd className="mt-0.5 font-bold text-model">{e.xg != null ? e.xg.toFixed(2) : 'Pending'}</dd>
+                </div>
+                <div>
+                    <dt className="label">Shot</dt>
+                    <dd className="mt-0.5 capitalize text-fg-1">{e.shotType ?? '—'}</dd>
+                </div>
+                <div>
+                    <dt className="label">Strength</dt>
+                    <dd className="mt-0.5 text-fg-1">{strengthLabel}</dd>
+                </div>
+                <div>
+                    <dt className="label">Goalie</dt>
+                    <dd className="mt-0.5 truncate text-goalie">{goalie ? label(goalie.id) : e.emptyNet ? 'Empty net' : '—'}</dd>
+                </div>
+            </dl>
+            {rebound || rush ? (
+                <p className="flex gap-2">
+                    {rebound ? <span className="rounded-chip border border-warn/50 px-1.5 text-micro font-bold uppercase leading-5 text-warn">Rebound</span> : null}
+                    {rush ? <span className="rounded-chip border border-warn/50 px-1.5 text-micro font-bold uppercase leading-5 text-warn">Rush</span> : null}
+                </p>
+            ) : null}
+            {before.length ? (
+                <ol className="flex flex-col gap-1 border-t border-line pt-2 text-caption" aria-label="Plays before the goal">
+                    {before.map(x => (
+                        <li key={x.id} className="flex items-baseline gap-2">
+                            <span className="w-10 shrink-0 text-right text-micro tabular-nums text-fg-3">−{e.t - x.t}s</span>
+                            <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: colors[x.side] }} aria-hidden="true" />
+                            <span className="min-w-0 truncate text-fg-2">
+                                {EVENT_WORD[x.type] ?? x.type} · {label(x.player)}
+                            </span>
+                        </li>
+                    ))}
+                </ol>
+            ) : null}
+            </div>
+        </div>
+    );
+}
+
 export function Goals() {
-    const { m, byId, colors } = useGame();
+    const { m, byId, colors, selected } = useGame();
     const [showPen, setShowPen] = React.useState(false);
     const swings = React.useMemo(() => goalSwings(m), [m]);
     const penalties = m.events.filter(e => e.type === 'penalty');
@@ -151,16 +252,25 @@ export function Goals() {
                                 .map(({ e, swing }) => {
                                     const away = e.side === 'away';
                                     return (
-                                        <li key={e.id} className={cn('relative md:w-1/2', away ? 'md:self-start md:pr-6' : 'md:self-end md:pl-6')}>
+                                        <li key={e.id} className="relative md:grid md:grid-cols-2 md:items-start md:gap-x-12">
                                             <span
                                                 aria-hidden="true"
-                                                className={cn('absolute top-1/2 hidden h-2 w-2 -translate-y-1/2 rounded-full md:block', away ? '-right-1' : '-left-1')}
+                                                className="absolute left-1/2 top-8 hidden h-2 w-2 -translate-x-1/2 rounded-full md:block"
                                                 style={{ background: swing ? colors[e.side] : 'var(--warn)' }}
                                             />
                                             {swing ? (
-                                                <GoalCard e={e} before={swing.before} after={swing.after} />
+                                                <>
+                                                    <div className={cn('min-w-0 md:row-start-1', away ? 'md:col-start-1' : 'md:col-start-2')}>
+                                                        <GoalCard e={e} before={swing.before} after={swing.after} />
+                                                    </div>
+                                                    {selected === e.id ? (
+                                                        <div className={cn('mt-2 min-w-0 md:row-start-1 md:mt-0', away ? 'md:col-start-2' : 'md:col-start-1')}>
+                                                            <GoalShot e={e} />
+                                                        </div>
+                                                    ) : null}
+                                                </>
                                             ) : (
-                                                <p className={cn('flex items-center gap-2 rounded-control border border-dashed border-line px-3 py-1.5 text-caption text-fg-2', !away && 'md:flex-row-reverse md:text-right')}>
+                                                <p className={cn('flex items-center gap-2 rounded-control border border-dashed border-line px-3 py-1.5 text-caption text-fg-2', away ? 'md:col-start-1' : 'md:col-start-2 md:flex-row-reverse md:text-right')}>
                                                     <span className="text-micro font-bold uppercase text-warn">{m.teams[e.side].tri}</span>
                                                     <span className="truncate">
                                                         {shortName(e.player != null ? byId.get(e.player) : undefined)} · {(e.detail ?? 'penalty').replace(/-/g, ' ')} {e.minutes ? `${e.minutes}:00` : ''}

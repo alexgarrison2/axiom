@@ -106,6 +106,27 @@ export interface Pregame {
     correct: boolean | null;
 }
 
+/** Closing lines (Bovada / DraftKings, odds_closing.json), American odds per side. */
+export interface GameOdds {
+    source: string | null;
+    ml: Record<Side, number | null>;
+    puckline: Record<Side, { spread: number; price: number | null } | null>;
+    total: { line: number; over: number | null; under: number | null } | null;
+    firstPeriod: Record<Side, number | null>;
+    /** Regulation result: away / tie / home. */
+    threeWay: { away: number | null; tie: number | null; home: number | null } | null;
+    /** First-period 3-way. */
+    firstPeriodThreeWay: { away: number | null; tie: number | null; home: number | null } | null;
+}
+
+/** pony xG season simulation, per team: playoff and Cup chances before and after this game. */
+export interface SeasonOdds {
+    before: Record<Side, { playoffs: number; cup: number } | null>;
+    after: Record<Side, { playoffs: number; cup: number } | null>;
+    beforeAt: string | null;
+    afterAt: string | null;
+}
+
 export interface Star {
     star: number;
     playerId: number;
@@ -141,6 +162,9 @@ export interface GameModel {
     shootout: { side: Side; player: number | null; goal: boolean }[];
     stars: Star[];
     pregame: Pregame | null;
+    odds: GameOdds | null;
+    /** Playoff and Cup chances before / after the game. */
+    outlook: SeasonOdds | null;
     /** Official NHL figures where ours are only an estimate (power play "goals/opportunities"). */
     official: { pp: Record<Side, string> } | null;
     /** Shots that should carry pony xG but do not yet (live games, last night before the nightly run). */

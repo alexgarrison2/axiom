@@ -359,7 +359,7 @@ export function segments(m: GameModel): Segment[] {
             const p = byId.get(id);
             if (!p) continue;
             if (p.pos === 'G') seg.goalie[p.side] = id;
-            else seg.skaters[p.side].push(id);
+            else if (!seg.skaters[p.side].includes(id)) seg.skaters[p.side].push(id);
         }
         if (seg.skaters.away.length || seg.skaters.home.length) out.push(seg);
     }
@@ -866,4 +866,155 @@ export function nameLabels(players: Player[]): Map<number, string> {
     const count = new Map<string, number>();
     for (const p of players) count.set(p.last, (count.get(p.last) ?? 0) + 1);
     return new Map(players.map(p => [p.id, (count.get(p.last) ?? 0) > 1 ? `${p.first.charAt(0)}. ${p.last}` : p.last]));
+}
+
+/* ── Market results ────────────────────────────────────────────────────── */
+
+export type Hit = 'hit' | 'miss' | 'push';
+
+export interface MarketResults {
+    ml: Record<Side, Hit>;
+    puckline: Record<Side, Hit | null>;
+    over: Hit | null;
+    under: Hit | null;
+    firstPeriod: Record<Side, Hit>;
+    threeWay: { away: Hit; tie: Hit; home: Hit };
+    firstPeriodThreeWay: { away: Hit; tie: Hit; home: Hit };
+}
+
+const grade = (d: number): Hit => (d > 0 ? 'hit' : d < 0 ? 'miss' : 'push');
+
+/** How every pregame market settled (final games). Final score includes the shootout winner's +1, as books grade it. */
+export function marketResults(m: GameModel): MarketResults | null {
+    if (m.state !== 'final') return null;
+    const s = { away: m.teams.away.score, home: m.teams.home.score };
+    const goalsIn = (pred: (e: GameEvent) => boolean) => ({
+        away: m.events.filter(e => e.type === 'goal' && e.side === 'away' && pred(e)).length,
+        home: m.events.filter(e => e.type === 'goal' && e.side === 'home' && pred(e)).length,
+    });
+    const reg = goalsIn(e => e.t < 3600);
+    const p1 = goalsIn(e => e.period === 1);
+    const three = (g: Record<Side, number>) => ({
+        away: g.away > g.home ? ('hit' as Hit) : 'miss',
+        tie: g.away === g.home ? ('hit' as Hit) : 'miss',
+        home: g.home > g.away ? ('hit' as Hit) : 'miss',
+    });
+    const pl = m.odds?.puckline;
+    const total = m.odds?.total;
+    return {
+        ml: { away: s.away > s.home ? 'hit' : 'miss', home: s.home > s.away ? 'hit' : 'miss' },
+        puckline: {
+            away: pl?.away ? grade(s.away - s.home + pl.away.spread) : null,
+            home: pl?.home ? grade(s.home - s.away + pl.home.spread) : null,
+        },
+        over: total ? grade(s.away + s.home - total.line) : null,
+        under: total ? grade(total.line - (s.away + s.home)) : null,
+        // Two-way first-period moneyline pushes on a tie.
+        firstPeriod: { away: grade(p1.away - p1.home), home: grade(p1.home - p1.away) },
+        threeWay: three(reg),
+        firstPeriodThreeWay: three(p1),
+    };
+}
+
+/* ── Strength states over time ─────────────────────────────────────────── */
+
+export type StateKind = 'pp' | 'reduced' | 'extra';
+
+/** Merged windows of special strength: a power play (side with the extra skater), 4v4 / 3v3, and an extra attacker for a pulled goalie (that side). */
+export function strengthStates(m: GameModel): { a: number; b: number; kind: StateKind; side: Side | null; label: string }[] {
+    const out: { a: number; b: number; kind: StateKind; side: Side | null; label: string }[] = [];
+    for (const s of segments(m)) {
+        const a = s.skaters.away.length;
+        const h = s.skaters.home.length;
+        let kind: StateKind | null = null;
+        let side: Side | null = null;
+        let label = '';
+        if (!s.goalie.away || !s.goalie.home) {
+            if (s.goalie.away && s.goalie.home) continue;
+            kind = 'extra';
+            side = !s.goalie.away ? 'away' : 'home';
+            label = 'EN';
+        } else if (a !== h && a >= 3 && h >= 3) {
+            kind = 'pp';
+            side = a > h ? 'away' : 'home';
+            label = `${Math.max(a, h)}v${Math.min(a, h)}`;
+        } else if (a === h && a < 5 && a >= 3) {
+            kind = 'reduced';
+            label = `${a}v${h}`;
+        }
+        if (!kind) continue;
+        const last = out[out.length - 1];
+        if (last && last.kind === kind && last.side === side && last.b === s.a) last.b = s.b;
+        else out.push({ a: s.a, b: s.b, kind, side, label });
+    }
+    return out.filter(w => w.b - w.a >= 5);
+}
+
+/* ── Player usage (lines, pairs, units, markers) ──────────────────────── */
+
+/** Even-strength seconds every two skaters of a side spent on the ice together, keyed "lo-hi". */
+export function pairTimes(m: GameModel, side: Side): Map<string, number> {
+    const out = new Map<string, number>();
+    for (const s of segments(m)) {
+        if (!s.goalie.away || !s.goalie.home || s.skaters.away.length !== s.skaters.home.length) continue;
+        const ids = s.skaters[side];
+        for (let i = 0; i < ids.length; i++) {
+            for (let j = i + 1; j < ids.length; j++) {
+                const k = ids[i] < ids[j] ? `${ids[i]}-${ids[j]}` : `${ids[j]}-${ids[i]}`;
+                out.set(k, (out.get(k) ?? 0) + (s.b - s.a));
+            }
+        }
+    }
+    return out;
+}
+export const pairKey = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+
+/**
+ * Each forward on one line and each defender on one pair, like a coach's
+ * lineup card: 5v5 trios / pairs taken greedily by time together, then the
+ * rest by even-strength time.
+ */
+export function lineup(m: GameModel, side: Side): { forwards: number[][]; defense: number[][] } {
+    const rows = skaterRows(m, side, 'ev');
+    const take = (kind: 'F' | 'D', size: number, count: number) => {
+        const used = new Set<number>();
+        const out: number[][] = [];
+        for (const u of units(m, side, kind)) {
+            if (out.length >= count) break;
+            if (u.ids.some(id => used.has(id))) continue;
+            out.push(u.ids);
+            u.ids.forEach(id => used.add(id));
+        }
+        const rest = rows.filter(r => (r.player.pos === 'D') === (kind === 'D') && !used.has(r.player.id)).map(r => r.player.id);
+        while (out.length < count && rest.length) out.push(rest.splice(0, size));
+        // Order lines by even-strength time of their players.
+        const toi = new Map(rows.map(r => [r.player.id, r.toi]));
+        return out.map(ids => [...ids].sort((a, b) => (toi.get(b) ?? 0) - (toi.get(a) ?? 0))).sort((a, b) => b.reduce((s, id) => s + (toi.get(id) ?? 0), 0) - a.reduce((s, id) => s + (toi.get(id) ?? 0), 0));
+    };
+    return { forwards: take('F', 3, 4), defense: take('D', 2, 3) };
+}
+
+export type MarkerKind = 'gf' | 'ga' | 'goal' | 'a1';
+
+/**
+ * Goal markers for one skater in a strength context: 'es' = even strength and
+ * any empty-net time (the lines and pairs), 'pp' = his team's power play,
+ * 'sh' = his team's penalty kill. When, and what (his goal, his primary
+ * assist, another team goal for, a goal against).
+ */
+export function goalMarkers(m: GameModel, playerId: number, side: Side, ctx: 'es' | 'pp' | 'sh'): { t: number; kind: MarkerKind }[] {
+    const out: { t: number; kind: MarkerKind }[] = [];
+    for (const e of m.events) {
+        if (e.type !== 'goal') continue;
+        const ice = onIce(m, e);
+        if (!ice || !ice.skaters[side].includes(playerId)) continue;
+        const empty = !ice.goalie.away || !ice.goalie.home;
+        const here = empty ? 'es' : segStrength(ice, side) === 'ev' ? 'es' : segStrength(ice, side);
+        if (here !== ctx) continue;
+        const mine = e.side === side;
+        if (mine && e.player === playerId) out.push({ t: e.t, kind: 'goal' });
+        else if (mine && e.assists[0] === playerId) out.push({ t: e.t, kind: 'a1' });
+        else out.push({ t: e.t, kind: mine ? 'gf' : 'ga' });
+    }
+    return out;
 }

@@ -84,8 +84,65 @@ function Heat({ side, events, color }: { side: Side; events: GameEvent[]; color:
     );
 }
 
+const RESULT: Record<string, string> = { goal: 'Goal', shot: 'Saved', miss: 'Missed', block: 'Blocked' };
+
+/** Hover card: anchored to the mark, flipped toward the centre so it never leaves the rink. */
+function ShotCard({ e }: { e: GameEvent }) {
+    const { m, colors, byId, label } = useGame();
+    const left = ((e.x! + 101) / 202) * 100;
+    const top = ((-e.y! + 43.5) / 87) * 100;
+    const x = Math.abs(e.x!);
+    const yy = e.y!;
+    const dist = Math.hypot(89 - x, yy);
+    const angle = (Math.atan2(Math.abs(yy), Math.abs(89 - x)) * 180) / Math.PI;
+    const shooter = e.player != null ? byId.get(e.player) : undefined;
+    const goalie = e.type !== 'block' && e.other != null ? byId.get(e.other) : undefined;
+    const own = e.side === 'away' ? e.situation.away : e.situation.home;
+    const opp = e.side === 'away' ? e.situation.home : e.situation.away;
+    return (
+        <div
+            role="status"
+            className="pointer-events-none absolute z-10 w-56 rounded-control border border-line-strong bg-surface-1/95 p-2.5 text-caption shadow-[0_8px_24px_-8px_rgba(0,0,0,0.8)] backdrop-blur"
+            style={{
+                left: `${left}%`,
+                top: `${top}%`,
+                transform: `translate(${left > 50 ? 'calc(-100% - 12px)' : '12px'}, ${top > 50 ? 'calc(-100% - 8px)' : '8px'})`,
+            }}
+        >
+            <p className="flex items-center justify-between gap-2">
+                <span className="truncate font-bold" style={{ color: colors[e.side] }}>
+                    {shooter ? `${shooter.first} ${shooter.last}` : m.teams[e.side].tri}
+                </span>
+                <span className={cn('text-micro font-bold uppercase', e.type === 'goal' ? 'text-pos' : 'text-fg-3')}>{RESULT[e.type]}</span>
+            </p>
+            <p className="mt-0.5 text-micro uppercase tracking-label text-fg-3">
+                {periodLabel(e.period)} {e.clock} · {own}v{opp}
+                {e.emptyNet ? ' · EN' : ''}
+            </p>
+            <dl className="mt-2 grid grid-cols-3 gap-x-2 gap-y-1 tabular-nums">
+                <div>
+                    <dt className="label">xG</dt>
+                    <dd className="font-bold text-model">{e.xg != null ? e.xg.toFixed(2) : '—'}</dd>
+                </div>
+                <div>
+                    <dt className="label">Dist</dt>
+                    <dd className="font-bold text-fg-1">{Math.round(dist)} ft</dd>
+                </div>
+                <div>
+                    <dt className="label">Angle</dt>
+                    <dd className="font-bold text-fg-1">{Math.round(angle)}°</dd>
+                </div>
+            </dl>
+            <p className="mt-1.5 flex justify-between gap-2 text-micro text-fg-2">
+                <span className="capitalize">{e.shotType ?? (e.type === 'block' ? 'Blocked' : '—')}</span>
+                {goalie ? <span className="truncate text-goalie">vs {label(goalie.id)}</span> : e.type === 'block' && e.other != null ? <span className="truncate">by {label(e.other)}</span> : null}
+            </p>
+        </div>
+    );
+}
+
 export function Shots() {
-    const { m, colors, byId, selected, select } = useGame();
+    const { m, colors, byId, selected } = useGame();
     const [strength, setStrength] = React.useState<TeamStrength>('all');
     const [period, setPeriod] = React.useState<string>('all');
     const [kinds, setKinds] = React.useState<Set<Kind>>(new Set(['goal', 'shot', 'miss']));
@@ -106,7 +163,8 @@ export function Shots() {
         else n.add(k);
         return n;
     });
-    const hovered = shown.find(e => e.id === selected);
+    const [hoverId, setHoverId] = React.useState<number | null>(null);
+    const hovered = shown.find(e => e.id === hoverId) ?? null;
 
     return (
         <GameSection
@@ -168,6 +226,7 @@ export function Shots() {
 
                 {view === 'map' ? (
                     <div className="p-card">
+                        <div className="relative">
                         <svg viewBox="-101 -43.5 202 87" className="block w-full" role="img" aria-label={`${shown.length} shot attempts. ${m.teams.away.tri} shoot left, ${m.teams.home.tri} shoot right.`}>
                             <RinkMarkings />
                             <text x={-96} y={2} className="fill-fg-3" fontSize={4} fontWeight={700} textAnchor="start" opacity={0.6}>
@@ -180,12 +239,21 @@ export function Shots() {
                             {[...shown]
                                 .sort((a, b) => Number(a.type === 'goal') - Number(b.type === 'goal'))
                                 .map(e => (
-                                    <g key={e.id} onClick={() => select(selected === e.id ? null : e.id)} className="cursor-pointer">
-                                        <title>{`${periodLabel(e.period)} ${e.clock} · ${m.teams[e.side].tri} ${shortName(e.player != null ? byId.get(e.player) : undefined)} · ${e.type}${e.xg != null ? ` · xG ${e.xg.toFixed(2)}` : ''}${e.shotType ? ` · ${e.shotType}` : ''}`}</title>
-                                        <Mark e={e} color={colors[e.side]} lit={selected === e.id} />
+                                    <g
+                                        key={e.id}
+                                        onPointerEnter={() => setHoverId(e.id)}
+                                        onPointerLeave={() => setHoverId(h => (h === e.id ? null : h))}
+                                        onClick={() => setHoverId(e.id)}
+                                        className="cursor-crosshair"
+                                    >
+                                        {/* A generous invisible hit area so small marks are easy to hover. */}
+                                        <circle cx={e.x!} cy={-e.y!} r={Math.max(3, radius(e) + 1)} fill="transparent" />
+                                        <Mark e={e} color={colors[e.side]} lit={selected === e.id || hoverId === e.id} />
                                     </g>
                                 ))}
                         </svg>
+                        {hovered ? <ShotCard e={hovered} /> : null}
+                        </div>
                         <div className="mt-2 grid grid-cols-2 gap-4 text-caption tabular-nums">
                             {SIDES.map(side => {
                                 const evs = base.filter(e => e.side === side);
@@ -229,12 +297,6 @@ export function Shots() {
                                 Blocked
                             </span>
                             <span>Size = xG</span>
-                            {hovered ? (
-                                <span className="ml-auto normal-case tracking-normal text-fg-1">
-                                    {periodLabel(hovered.period)} {hovered.clock} · {shortName(hovered.player != null ? byId.get(hovered.player) : undefined)}
-                                    {hovered.xg != null ? <span className="ml-1 text-model">xG {hovered.xg.toFixed(2)}</span> : null}
-                                </span>
-                            ) : null}
                         </p>
                     </div>
                 ) : (

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
-import { clockOf, perMinute, periodLabel, powerPlays, race, shortName, winModel, winSeries, type FlowMetric, type TeamStrength } from '@/lib/game/analytics';
+import { clockOf, perMinute, periodLabel, race, shortName, strengthStates, winModel, winSeries, type FlowMetric, type TeamStrength } from '@/lib/game/analytics';
 import { SIDES, type GameEvent } from '@/lib/game/types';
 import { useGame } from './GameContext';
 
@@ -65,7 +65,7 @@ export function Pulse() {
     const x = (t: number) => padL + (Math.min(t, domain) / domain) * plot;
 
     // Goal pins: greedy rows so collided headshots stack instead of hiding each other.
-    const pinR = compact ? 12 : 17;
+    const pinR = compact ? 13 : 19;
     const goalsAll = m.events.filter(e => e.type === 'goal');
     const pinRow = new Map<number, number>();
     const rowEnds: number[] = [];
@@ -83,9 +83,9 @@ export function Pulse() {
 
     // Lanes, top to bottom.
     const pinH = pinR * 2 + 6 + (rows - 1) * pinStep;
-    const winH = compact ? 70 : 96;
-    const barH = compact ? 76 : 104;
-    const raceH = compact ? 60 : 84;
+    const winH = compact ? 96 : 150;
+    const barH = compact ? 110 : 170;
+    const raceH = compact ? 84 : 136;
     const gap = 22;
     const winTop = pinH;
     const barTop = winTop + winH + gap;
@@ -97,7 +97,7 @@ export function Pulse() {
     const wm = React.useMemo(() => winModel(m), [m]);
     const bins = React.useMemo(() => perMinute(m, barMetric, strength), [m, barMetric, strength]);
     const races = React.useMemo(() => race(m, raceMetric, strength), [m, raceMetric, strength]);
-    const pps = React.useMemo(() => powerPlays(m).filter(([a, b]) => b - a >= 10), [m]);
+    const states = React.useMemo(() => strengthStates(m).filter(w => w.b - w.a >= 10), [m]);
     const goals = goalsAll;
 
     const yWin = (p: number) => winTop + (1 - p) * winH;
@@ -210,9 +210,9 @@ export function Pulse() {
                         className="block select-none font-mono tabular-nums"
                     >
                         <defs>
-                            {/* Power plays: a neutral ink hatch (no team colour can collide with it), named by an amber PP tag. */}
+                            {/* Strength windows: an amber hatch over the bars (bars stay solid, so the texture never reads as a team). */}
                             <pattern id="pulse-pp" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                                <line x1={0} y1={0} x2={0} y2={6} className="stroke-fg-1" strokeWidth={1.2} strokeOpacity={0.16} />
+                                <line x1={0} y1={0} x2={0} y2={6} className="stroke-warn" strokeWidth={1.4} strokeOpacity={0.3} />
                             </pattern>
                             <clipPath id="pulse-home">
                                 <rect x={0} y={winTop} width={W} height={winH / 2} />
@@ -222,20 +222,27 @@ export function Pulse() {
                             </clipPath>
                         </defs>
 
-                        {/* Power plays: hatched windows behind the bars, an amber cap, and a team-coloured edge on the side with the extra skater. */}
-                        {pps.map(([a, b, side], i) => (
-                            <g key={i}>
-                                <rect x={x(a)} y={barTop} width={Math.max(1, x(b) - x(a))} height={barH} fill="url(#pulse-pp)" />
-                                {/* Amber cap on every window (any width), the PP tag where it fits. */}
-                                <rect x={x(a)} y={barTop - 3} width={Math.max(2, x(b) - x(a))} height={2} className="fill-warn" />
-                                {x(b) - x(a) >= 16 ? (
-                                    <text x={(x(a) + x(b)) / 2} y={barTop - 7} textAnchor="middle" className="fill-warn text-micro font-bold">
-                                        PP
-                                    </text>
-                                ) : null}
-                                <rect x={x(a)} y={side === 'home' ? barTop : barTop + barH - 2} width={Math.max(1, x(b) - x(a))} height={2} fill={colors[side]} opacity={0.9} />
-                            </g>
-                        ))}
+                        {/* Strength states: a band through every lane, a hatch over the bars, a tag in the gap above
+                            (power play and extra attacker carry the side's colour edge; 4v4 / 3v3 stay neutral). */}
+                        {states.map((w, i) => {
+                            const x0 = x(w.a);
+                            const wd = Math.max(2, x(w.b) - x0);
+                            const edge = w.side ? colors[w.side] : 'var(--text-3)';
+                            return (
+                                <g key={i}>
+                                    <title>{`${w.kind === 'pp' ? `${m.teams[w.side!].tri} power play` : w.kind === 'extra' ? `${m.teams[w.side!].tri} extra attacker` : 'Reduced strength'} ${w.label} · ${clockOf(w.b - w.a)}`}</title>
+                                    <rect x={x0} y={winTop} width={wd} height={raceTop + raceH - winTop} className="fill-warn" opacity={w.kind === 'reduced' ? 0.035 : 0.07} />
+                                    <rect x={x0} y={barTop} width={wd} height={barH} fill="url(#pulse-pp)" />
+                                    <rect x={x0} y={barTop - 3} width={wd} height={2.5} className="fill-warn" />
+                                    <rect x={x0} y={w.side === 'away' ? barTop + barH - 2 : barTop} width={wd} height={2} fill={edge} opacity={w.kind === 'reduced' ? 0.5 : 0.95} />
+                                    {wd >= 18 ? (
+                                        <text x={x0 + wd / 2} y={barTop - 7} textAnchor="middle" className="fill-warn text-micro font-bold">
+                                            {w.kind === 'pp' ? (wd >= 46 ? `PP ${m.teams[w.side!].tri}` : 'PP') : w.label}
+                                        </text>
+                                    ) : null}
+                                </g>
+                            );
+                        })}
 
                         {/* Period seams and lane labels. */}
                         {seams.map(t => (
@@ -323,9 +330,7 @@ export function Pulse() {
                                         <circle cx={gx} cy={cy} r={pinR - 2} />
                                     </clipPath>
                                     <circle cx={gx} cy={cy} r={pinR} className="fill-surface-2" stroke={lit ? 'var(--brand)' : colors[g.side]} strokeWidth={lit ? 2.5 : 2} />
-                                    {p?.headshot ? (
-                                        <image href={p.headshot} x={gx - pinR + 2} y={cy - pinR + 2} width={(pinR - 2) * 2} height={(pinR - 2) * 2} clipPath={`url(#pin-${g.id})`} preserveAspectRatio="xMidYMid slice" />
-                                    ) : null}
+                                    <image href={`/logos/${m.teams[g.side].tri}.svg`} x={gx - pinR + 5} y={cy - pinR + 5} width={(pinR - 5) * 2} height={(pinR - 5) * 2} clipPath={`url(#pin-${g.id})`} preserveAspectRatio="xMidYMid meet" />
                                 </g>
                             );
                         })}
@@ -356,7 +361,7 @@ export function Pulse() {
                         />
                     </svg>
                 ) : (
-                    <div className="h-[280px] md:h-[366px]" aria-hidden="true" />
+                    <div className="h-[400px] md:h-[580px]" aria-hidden="true" />
                 )}
             </div>
 
