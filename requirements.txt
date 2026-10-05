@@ -1,21 +1,21 @@
-pandas==2.3.3
-numpy==2.3.5
-scipy==1.16.3
+pandas==3.0.6
+numpy==2.5.3
+scipy==1.18.1
 # CPU-only wheel on the Linux runners (drops ~500 MB of CUDA/NCCL); same
 # `import xgboost` API.  xgboost-cpu has no macOS wheels, so dev machines use
 # the regular package.
-xgboost-cpu==3.1.2; sys_platform == "linux"
-xgboost==3.1.2; sys_platform != "linux"
-scikit-learn==1.7.2
-pytz==2025.2
-psycopg2-binary==2.9.11
-python-dotenv==1.2.3
-beautifulsoup4==4.13.4
+xgboost-cpu==3.4.1; sys_platform == "linux"
+xgboost==3.4.1; sys_platform != "linux"
+scikit-learn==1.9.1
+pytz==2026.4
+psycopg2-binary==2.9.13
+python-dotenv==1.2.4
+beautifulsoup4==4.15.0
 # NHL roster/player lookups in team_ratings.py
-requests==2.33.0
+requests==2.34.2
 # workflow-structure tests (pipeline/tests) parse the GitHub Actions YAML
 PyYAML==6.0.3
 # TLS CA bundle for pipeline/http_utils.py (verification is always on)
-certifi==2026.2.25
+certifi==2026.7.22
 # Parquet IO for the bottom-up data lake (pipeline/bu/lake)
 pyarrow==25.0.1
