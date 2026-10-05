@@ -30,7 +30,7 @@ export function SortHeader({ children, direction, onSort, align = 'left', classN
                 type="button"
                 onClick={onSort}
                 className={cn(
-                    'inline-flex min-h-8 w-full items-center px-2 text-micro uppercase tracking-[0.06em] transition-colors hover:text-fg-1 coarse:min-h-11',
+                    'inline-flex min-h-8 w-full min-w-6 items-center px-2 text-micro uppercase tracking-[0.06em] transition-colors hover:text-fg-1 coarse:min-h-11',
                     align === 'right' && 'justify-end',
                     align === 'center' && 'justify-center',
                     direction ? 'text-brand' : 'text-fg-3',

@@ -9,6 +9,7 @@ import pytest
 import features as F
 import shooting_talent as ST
 import team_ratings as TR
+from season import season_file
 
 PIPELINE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -77,9 +78,14 @@ def test_goalie_rows_use_nhl_games_only(feature_games):
                 assert gs.gp <= n
                 checked += 1
     assert checked > 0
-    # 4 Nations / PWHL-only names never get a rating
+    # 4 Nations / PWHL-only names never get a rating. Ratings also read the current
+    # season, so a goalie's first NHL starts this season count as NHL games.
     ratings = TR.compute_goalie_ratings()
     nhl_names = set(nhl['starting_goalie'].dropna())
+    cur_path = os.path.join(PIPELINE_DIR, season_file('gamestats'))
+    if os.path.exists(cur_path):
+        cur = pd.read_csv(cur_path, low_memory=False)
+        nhl_names |= set(cur.loc[cur['game_id'].astype(str).str[4:6].isin(['02', '03']), 'starting_goalie'].dropna())
     assert set(ratings) <= nhl_names
 
 
