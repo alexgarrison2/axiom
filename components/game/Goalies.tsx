@@ -13,6 +13,9 @@ const svp = (sa: number, ga: number) => {
 };
 const sgn = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(2)}`;
 
+const tone = (v: number) => (v > 0.05 ? 'text-pos' : v < -0.05 ? 'text-neg' : 'text-fg-2');
+const Gsax = ({ v }: { v: number }) => <td className={cn('py-1.5 text-right', tone(v))}>{sgn(v)}</td>;
+
 export function Goalies() {
     const { m, colors } = useGame();
     return (
@@ -44,7 +47,7 @@ export function Goalies() {
                                                 ['Saves', `${g.sa - g.ga}/${g.sa}`, 'text-fg-1'],
                                                 ['SV%', svp(g.sa, g.ga), 'text-fg-1'],
                                                 ['xGA', g.xga.toFixed(2), 'text-model'],
-                                                ['GSAx', sgn(gsax), gsax > 0.05 ? 'text-pos' : gsax < -0.05 ? 'text-neg' : 'text-fg-2'],
+                                                ['GSAx', sgn(gsax), tone(gsax)],
                                             ].map(([k, v, c]) => (
                                                 <div key={k}>
                                                     <dt className="label">{k}</dt>
@@ -67,6 +70,9 @@ export function Goalies() {
                                                     <th scope="col" className="py-1 text-right font-medium">
                                                         xGA
                                                     </th>
+                                                    <th scope="col" className="py-1 text-right font-medium">
+                                                        GSAx
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -86,6 +92,7 @@ export function Goalies() {
                                                         </td>
                                                         <td className="py-1.5 text-right text-fg-1">{svp(s.sa, s.ga)}</td>
                                                         <td className="py-1.5 text-right text-model">{s.xga.toFixed(2)}</td>
+                                                        <Gsax v={s.xga - s.ga} />
                                                     </tr>
                                                 ))}
                                                 <tr className="border-t border-line">
@@ -96,7 +103,8 @@ export function Goalies() {
                                                         {g.hdSa - g.hdGa}/{g.hdSa}
                                                     </td>
                                                     <td className="py-1.5 text-right text-fg-1">{svp(g.hdSa, g.hdGa)}</td>
-                                                    <td className="py-1.5 text-right text-fg-3" />
+                                                    <td className="py-1.5 text-right text-model">{g.hdXga.toFixed(2)}</td>
+                                                    <Gsax v={g.hdXga - g.hdGa} />
                                                 </tr>
                                             </tbody>
                                         </table>

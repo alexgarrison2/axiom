@@ -2,9 +2,10 @@
 
 import * as React from 'react';
 import { Segmented } from '@/components/ui/segmented';
-import { clockOf, goalMarkers, goalieRows, lineup, pairKey, pairTimes, skaterRows, units, type MarkerKind } from '@/lib/game/analytics';
+import { clockOf, goalMarkers, goalieRows, lineup, pairKey, pairTimes, skaterRows, units, type MarkerKind, type SkaterRow } from '@/lib/game/analytics';
 import { SIDES, type Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
+import { TipFace, TipRow, useHoverTip } from './HoverTip';
 import { useWidth } from './Pulse';
 
 /*
@@ -190,8 +191,55 @@ function TeamUsage({ side }: { side: Side }) {
 }
 
 /** Minutes per skater: even strength (number inside), power play, penalty kill; defenders first, like the lineup card. */
+/** Minutes card: the ES / PP / PK split with shares, then shift count and length. */
+function MinutesTip({ r, color, rank }: { r: SkaterRow; color: string; rank: string }) {
+    const parts: [string, number, string][] = [
+        ['Even', r.toiEv, 'var(--surface-3)'],
+        ['Power play', r.toiPp, 'var(--pp)'],
+        ['Penalty kill', r.toiSh, 'var(--pk)'],
+    ];
+    return (
+        <div className="flex w-56 flex-col gap-2">
+            <div className="flex items-center gap-2">
+                <TipFace p={r.player} color={color} />
+                <span className="leading-tight">
+                    <span className="block font-bold text-fg-1">
+                        {r.player.first} {r.player.last}
+                    </span>
+                    <span className="text-micro text-fg-3">
+                        #{r.player.num ?? '–'} · {r.player.pos} · {rank}
+                    </span>
+                </span>
+                <span className="ml-auto font-display text-title font-bold text-fg-1">{clockOf(r.toi)}</span>
+            </div>
+            <div className="flex h-2 overflow-hidden rounded-full" aria-hidden="true">
+                {parts.map(([k, v, c]) => (
+                    <span key={k} style={{ width: `${(v / Math.max(1, r.toi)) * 100}%`, background: c }} />
+                ))}
+            </div>
+            {parts.map(([k, v, c]) => (
+                <TipRow
+                    key={k}
+                    k={
+                        <span className="flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-[2px]" style={{ background: c }} />
+                            {k}
+                        </span>
+                    }
+                >
+                    {clockOf(v)} <span className="text-fg-3">· {Math.round((v / Math.max(1, r.toi)) * 100)}%</span>
+                </TipRow>
+            ))}
+            <TipRow k="Shifts" className="border-t border-line pt-1.5">
+                {r.shifts} <span className="text-fg-3">· avg {clockOf(r.toi / Math.max(1, r.shifts))}</span>
+            </TipRow>
+        </div>
+    );
+}
+
 function Minutes({ side }: { side: Side }) {
-    const { m, label } = useGame();
+    const { m, label, colors } = useGame();
+    const { bind, tip } = useHoverTip();
     const rows = skaterRows(m, side, 'all');
     const max = Math.max(1, ...rows.map(r => r.toi));
     const groups = [rows.filter(r => r.player.pos === 'D'), rows.filter(r => r.player.pos !== 'D')];
@@ -199,12 +247,15 @@ function Minutes({ side }: { side: Side }) {
         <div className="flex flex-col gap-4">
             {groups.map((list, gi) => (
                 <ol key={gi} className="flex flex-col gap-1.5" aria-label={gi === 0 ? 'Defence minutes' : 'Forward minutes'}>
-                    {list.map(r => (
-                        <li key={r.player.id} className="grid grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-2 text-caption tabular-nums">
+                    {list.map((r, i) => (
+                        <li
+                            key={r.player.id}
+                            {...bind(<MinutesTip r={r} color={colors[side]} rank={`${i + 1}${['st', 'nd', 'rd'][i] ?? 'th'} ${gi === 0 ? 'D' : 'F'} in TOI`} />)}
+                            className="-mx-1 grid grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-2 rounded-control px-1 text-caption tabular-nums hover:bg-surface-2"
+                        >
                             <span
                                 className="flex h-5 overflow-hidden rounded-[3px]"
                                 style={{ width: `${(r.toi / max) * 100}%` }}
-                                title={`ES ${clockOf(r.toiEv)} · PP ${clockOf(r.toiPp)} · PK ${clockOf(r.toiSh)} · total ${clockOf(r.toi)}`}
                             >
                                 <span className="flex h-full items-center bg-surface-3 pl-1.5 text-micro font-bold text-fg-1" style={{ width: `${(r.toiEv / r.toi) * 100}%` }}>
                                     {Math.round(r.toiEv / 60)}
@@ -217,6 +268,7 @@ function Minutes({ side }: { side: Side }) {
                     ))}
                 </ol>
             ))}
+            {tip}
         </div>
     );
 }

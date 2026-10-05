@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { clockOf, perMinute, periodLabel, race, shortName, strengthStates, winModel, winSeries, type FlowMetric, type TeamStrength } from '@/lib/game/analytics';
 import { SIDES, type GameEvent } from '@/lib/game/types';
 import { useGame } from './GameContext';
+import { OnIce } from './OnIce';
 
 const BAR_METRICS: { value: FlowMetric; label: string }[] = [
     { value: 'attempts', label: 'Att' },
@@ -54,6 +55,8 @@ export function Pulse() {
     const [raceMetric, setRaceMetric] = React.useState<FlowMetric>(m.xgPending && !m.events.some(e => e.xg != null) ? 'sog' : 'xg');
     const [strength, setStrength] = React.useState<TeamStrength>('all');
     const [hover, setHover] = React.useState<number | null>(null);
+    // The on-ice panel keeps the last hovered moment so the pointer can leave the chart to read it.
+    const [lastHover, setLastHover] = React.useState<number | null>(null);
     const [wrapRef, width] = useWidth<HTMLDivElement>();
     const compact = width > 0 && width < 640;
 
@@ -87,8 +90,11 @@ export function Pulse() {
     const barH = compact ? 110 : 170;
     const raceH = compact ? 84 : 136;
     const gap = 22;
+    const stripH = compact ? 16 : 20;
     const winTop = pinH;
-    const barTop = winTop + winH + gap;
+    // The strength strip sits in its own row between the win lane and the bars.
+    const stripTop = winTop + winH + 8;
+    const barTop = stripTop + stripH + 10;
     const raceTop = barTop + barH + gap;
     const axisTop = raceTop + raceH + 6;
     const H = axisTop + 18;
@@ -142,7 +148,9 @@ export function Pulse() {
     const onMove = (e: React.PointerEvent<SVGRectElement>) => {
         const r = e.currentTarget.getBoundingClientRect();
         const px = ((e.clientX - r.left) / r.width) * plot;
-        setHover(Math.max(0, Math.min(m.end || domain, (px / plot) * domain)));
+        const t = Math.max(0, Math.min(m.end || domain, (px / plot) * domain));
+        setHover(t);
+        setLastHover(t);
     };
 
     const sel = selected != null ? m.events.find(e => e.id === selected) ?? null : null;
@@ -210,10 +218,12 @@ export function Pulse() {
                         className="block select-none font-mono tabular-nums"
                     >
                         <defs>
-                            {/* Strength windows: an amber hatch over the bars (bars stay solid, so the texture never reads as a team). */}
-                            <pattern id="pulse-pp" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                                <line x1={0} y1={0} x2={0} y2={6} className="stroke-warn" strokeWidth={1.4} strokeOpacity={0.3} />
-                            </pattern>
+                            {/* Strength windows: a hatch in the advantaged team's colour over its half of the bars. */}
+                            {SIDES.map(side => (
+                                <pattern key={side} id={`pulse-hatch-${side}`} width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                                    <line x1={0} y1={0} x2={0} y2={6} stroke={colors[side]} strokeWidth={1.6} strokeOpacity={0.45} />
+                                </pattern>
+                            ))}
                             <clipPath id="pulse-home">
                                 <rect x={0} y={winTop} width={W} height={winH / 2} />
                             </clipPath>
@@ -222,22 +232,30 @@ export function Pulse() {
                             </clipPath>
                         </defs>
 
-                        {/* Strength states: a band through every lane, a hatch over the bars, a tag in the gap above
-                            (power play and extra attacker carry the side's colour edge; 4v4 / 3v3 stay neutral). */}
+                        {/* Strength states, coloured by the team with the extra skater: a faint band through every lane,
+                            a hatch over that team's half of the bars, and a labelled block in the strip row
+                            (4v4 / 3v3 stay neutral). */}
+                        <text x={padL - 6} y={stripTop + stripH / 2 + 4} textAnchor="end" className="fill-fg-3 text-micro uppercase">
+                            Str
+                        </text>
+                        <rect x={padL} y={stripTop + stripH / 2 - 0.5} width={plot} height={1} className="fill-line" />
                         {states.map((w, i) => {
                             const x0 = x(w.a);
                             const wd = Math.max(2, x(w.b) - x0);
-                            const edge = w.side ? colors[w.side] : 'var(--text-3)';
+                            const c = w.side ? colors[w.side] : 'var(--text-3)';
+                            const tri = w.side ? m.teams[w.side].tri : '';
+                            const tag = w.kind === 'reduced' ? w.label : w.kind === 'extra' ? `${tri} 6v5` : `${tri} ${w.label}`;
+                            const short = w.kind === 'extra' ? '6v5' : w.label;
+                            const text = wd >= tag.length * 6 + 8 ? tag : wd >= short.length * 5.6 + 2 ? short : null;
                             return (
                                 <g key={i}>
-                                    <title>{`${w.kind === 'pp' ? `${m.teams[w.side!].tri} power play` : w.kind === 'extra' ? `${m.teams[w.side!].tri} extra attacker` : 'Reduced strength'} ${w.label} · ${clockOf(w.b - w.a)}`}</title>
-                                    <rect x={x0} y={winTop} width={wd} height={raceTop + raceH - winTop} className="fill-warn" opacity={w.kind === 'reduced' ? 0.035 : 0.07} />
-                                    <rect x={x0} y={barTop} width={wd} height={barH} fill="url(#pulse-pp)" />
-                                    <rect x={x0} y={barTop - 3} width={wd} height={2.5} className="fill-warn" />
-                                    <rect x={x0} y={w.side === 'away' ? barTop + barH - 2 : barTop} width={wd} height={2} fill={edge} opacity={w.kind === 'reduced' ? 0.5 : 0.95} />
-                                    {wd >= 18 ? (
-                                        <text x={x0 + wd / 2} y={barTop - 7} textAnchor="middle" className="fill-warn text-micro font-bold">
-                                            {w.kind === 'pp' ? (wd >= 46 ? `PP ${m.teams[w.side!].tri}` : 'PP') : w.label}
+                                    <title>{`${w.kind === 'pp' ? `${tri} power play` : w.kind === 'extra' ? `${tri} extra attacker` : 'Reduced strength'} ${w.label} · ${clockOf(w.b - w.a)}`}</title>
+                                    <rect x={x0} y={winTop} width={wd} height={raceTop + raceH - winTop} fill={c} opacity={w.kind === 'reduced' ? 0.05 : 0.09} />
+                                    {w.side ? <rect x={x0} y={w.side === 'home' ? barTop : axisY} width={wd} height={half} fill={`url(#pulse-hatch-${w.side})`} /> : null}
+                                    <rect x={x0} y={stripTop} width={wd} height={stripH} rx={2} fill={c} opacity={w.kind === 'reduced' ? 0.35 : 0.9} />
+                                    {text ? (
+                                        <text x={x0 + wd / 2} y={stripTop + stripH / 2 + 4} textAnchor="middle" fill={w.kind === 'reduced' ? 'var(--text-1)' : 'var(--bg)'} className="text-micro font-bold uppercase">
+                                            {text}
                                         </text>
                                     ) : null}
                                 </g>
@@ -400,6 +418,7 @@ export function Pulse() {
                     </>
                 )}
             </div>
+            {(focusT ?? lastHover) != null ? <OnIce t={(focusT ?? lastHover)!} /> : null}
         </div>
     );
 }

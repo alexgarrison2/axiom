@@ -2,9 +2,10 @@
 
 import * as React from 'react';
 import { ScrollRegion } from '@/components/ui/scroll-region';
-import { clockOf, matchups, units } from '@/lib/game/analytics';
+import { clockOf, matchups, units, type Matchup } from '@/lib/game/analytics';
 import type { Player, Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
+import { TipFace, useHoverTip } from './HoverTip';
 import { useWidth } from './Pulse';
 
 /** Skaters in line order: 5v5 forward lines, then D pairs, then anyone left. */
@@ -37,12 +38,65 @@ function splitPath(x0: number, y0: number, s: number, share: number): string {
     return `M${x0},${y0}h${s}v${s - l}L${x0 + s - l},${y0 + s}H${x0}Z`;
 }
 
+/** Head-to-head card: both faces, 5v5 time, then attempts / xG / goals mirrored on each side. */
+function MatchupTip({ a, h, c }: { a: Player; h: Player; c: Matchup }) {
+    const { m, colors } = useGame();
+    const tot = c.xg.away + c.xg.home;
+    const share = tot > 0 ? c.xg.away / tot : 0.5;
+    const row = (k: string, av: string, hv: string) => (
+        <div className="grid grid-cols-[1fr_auto_1fr] items-baseline gap-3">
+            <span className="text-left font-semibold" style={{ color: colors.away }}>
+                {av}
+            </span>
+            <span className="text-micro uppercase tracking-label text-fg-3">{k}</span>
+            <span className="text-right font-semibold" style={{ color: colors.home }}>
+                {hv}
+            </span>
+        </div>
+    );
+    return (
+        <div className="flex w-60 flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                    <TipFace p={a} color={colors.away} />
+                    <span className="min-w-0 leading-tight">
+                        <span className="block truncate font-bold text-fg-1">{a.last}</span>
+                        <span className="text-micro text-fg-3">
+                            {m.teams.away.tri} · {a.pos}
+                        </span>
+                    </span>
+                </div>
+                <div className="flex min-w-0 items-center gap-2 text-right">
+                    <span className="min-w-0 leading-tight">
+                        <span className="block truncate font-bold text-fg-1">{h.last}</span>
+                        <span className="text-micro text-fg-3">
+                            {h.pos} · {m.teams.home.tri}
+                        </span>
+                    </span>
+                    <TipFace p={h} color={colors.home} />
+                </div>
+            </div>
+            <p className="text-center text-micro uppercase tracking-label text-fg-3">
+                <span className="text-body font-bold normal-case tracking-normal text-fg-1">{clockOf(c.toi)}</span> 5v5 together
+            </p>
+            {row('Att', String(c.att.away), String(c.att.home))}
+            {row('xG', c.xg.away.toFixed(2), c.xg.home.toFixed(2))}
+            {row('Goals', String(c.g.away), String(c.g.home))}
+            <div className="flex h-1.5 overflow-hidden rounded-full" aria-hidden="true">
+                <span style={{ width: `${share * 100}%`, background: colors.away }} />
+                <span className="flex-1" style={{ background: colors.home }} />
+            </div>
+            <p className="text-center text-micro uppercase tracking-label text-fg-3">xG share {Math.round(share * 100)}–{Math.round((1 - share) * 100)}</p>
+        </div>
+    );
+}
+
 export function Matchups() {
     const { m, colors, byId, label } = useGame();
     const grid = React.useMemo(() => matchups(m), [m]);
     const away = React.useMemo(() => ordered(m, 'away', byId), [m, byId]);
     const home = React.useMemo(() => ordered(m, 'home', byId), [m, byId]);
-    const [hover, setHover] = React.useState<{ a: Player; h: Player } | null>(null);
+    const { bind, tip } = useHoverTip();
     const [boxRef, boxW] = useWidth<HTMLDivElement>();
     let max = 1;
     for (const row of grid.values()) for (const c of row.values()) max = Math.max(max, c.toi);
@@ -51,7 +105,6 @@ export function Matchups() {
     const CELL = Math.max(22, Math.min(44, Math.floor(((boxW || 600) - gutter - 8) / Math.max(1, home.length))));
     const W = gutter + home.length * CELL;
     const H = 96 + away.length * CELL;
-    const cur = hover ? grid.get(hover.a.id)?.get(hover.h.id) : null;
 
     return (
         <GameSection id="matchups" title="Matchups">
@@ -65,14 +118,6 @@ export function Matchups() {
                         {m.teams.away.tri}
                         <span className="h-2.5 w-2.5" style={{ background: colors.home }} />
                         {m.teams.home.tri}
-                    </span>
-                    <span className="ml-auto normal-case tracking-normal text-fg-1" aria-live="polite">
-                        {hover && cur ? (
-                            <>
-                                {label(hover.a.id)} vs {label(hover.h.id)} · {clockOf(cur.toi)} ·{' '}
-                                <span style={{ color: colors.away }}>{cur.xg.away.toFixed(2)}</span>–<span style={{ color: colors.home }}>{cur.xg.home.toFixed(2)}</span> xG
-                            </>
-                        ) : null}
                     </span>
                 </p>
                 <div ref={boxRef} className="min-w-0 px-card">
@@ -98,8 +143,8 @@ export function Matchups() {
                                     const tot = c.xg.away + c.xg.home;
                                     const share = tot > 0 ? c.xg.away / tot : null;
                                     return (
-                                        <g key={h.id} onPointerEnter={() => setHover({ a, h })} onPointerLeave={() => setHover(null)}>
-                                            <title>{`${label(a.id)} vs ${label(h.id)}: ${clockOf(c.toi)}, xG ${c.xg.away.toFixed(2)}–${c.xg.home.toFixed(2)}`}</title>
+                                        <g key={h.id} {...bind(<MatchupTip a={a} h={h} c={c} />)} className="cursor-crosshair">
+                                            <rect x={cx} y={0} width={CELL} height={CELL} fill="transparent" />
                                             {share == null ? (
                                                 <rect x={x0} y={y0} width={s} height={s} className="fill-mute" />
                                             ) : (
@@ -115,6 +160,7 @@ export function Matchups() {
                             </g>
                         ))}
                     </svg>
+                    {tip}
                 </ScrollRegion>
                 </div>
             </div>

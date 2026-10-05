@@ -4,7 +4,7 @@
  * browser).
  */
 import { effectiveSkaters } from './build';
-import { other, SIDES, type GameEvent, type GameModel, type Player, type Shift, type Side } from './types';
+import { other, SIDES, type GameEvent, type GameModel, type Player, type Pos, type Shift, type Side } from './types';
 
 /* ── Score adjustment ─────────────────────────────────────────────────────
  * 5v5 regular-season share of unblocked attempts and of xG by the shooting
@@ -676,6 +676,9 @@ export interface Matchup {
     toi: number;
     /** xG for the away / home side while both were on the ice. */
     xg: Record<Side, number>;
+    /** Shot attempts (incl. blocked) and goals per side over the same time. */
+    att: Record<Side, number>;
+    g: Record<Side, number>;
 }
 
 /** away skater id -> home skater id -> 5v5 time together and xG each way. */
@@ -685,7 +688,7 @@ export function matchups(m: GameModel): Map<number, Map<number, Matchup>> {
         let row = out.get(a);
         if (!row) out.set(a, (row = new Map()));
         let c = row.get(h);
-        if (!c) row.set(h, (c = { toi: 0, xg: { away: 0, home: 0 } }));
+        if (!c) row.set(h, (c = { toi: 0, xg: { away: 0, home: 0 }, att: { away: 0, home: 0 }, g: { away: 0, home: 0 } }));
         return c;
     };
     for (const s of segments(m)) {
@@ -693,10 +696,16 @@ export function matchups(m: GameModel): Map<number, Map<number, Matchup>> {
         for (const a of s.skaters.away) for (const h of s.skaters.home) cell(a, h).toi += s.b - s.a;
     }
     for (const e of m.events) {
-        if (!isUnblocked(e) || !e.fiveOnFive || e.xg == null) continue;
+        if (!(isUnblocked(e) || e.type === 'block') || !e.fiveOnFive) continue;
         const ice = onIce(m, e);
         if (!ice || !segFive(ice)) continue;
-        for (const a of ice.skaters.away) for (const h of ice.skaters.home) cell(a, h).xg[e.side] += e.xg;
+        for (const a of ice.skaters.away)
+            for (const h of ice.skaters.home) {
+                const c = cell(a, h);
+                c.att[e.side] += 1;
+                if (e.xg != null && isUnblocked(e)) c.xg[e.side] += e.xg;
+                if (e.type === 'goal') c.g[e.side] += 1;
+            }
     }
     return out;
 }
@@ -747,6 +756,8 @@ export interface GoalieRow {
     fa: number;
     hdSa: number;
     hdGa: number;
+    /** xG of the high-danger unblocked attempts faced (same basis as xGA). */
+    hdXga: number;
     byStrength: Record<'ev' | 'pp' | 'sh', { sa: number; ga: number; xga: number }>;
 }
 
@@ -763,6 +774,7 @@ export function goalieRows(m: GameModel, side: Side): GoalieRow[] {
                 fa: 0,
                 hdSa: 0,
                 hdGa: 0,
+                hdXga: 0,
                 byStrength: { ev: { sa: 0, ga: 0, xga: 0 }, pp: { sa: 0, ga: 0, xga: 0 }, sh: { sa: 0, ga: 0, xga: 0 } },
             };
             for (const e of m.events) {
@@ -772,6 +784,7 @@ export function goalieRows(m: GameModel, side: Side): GoalieRow[] {
                 r.fa += 1;
                 r.xga += e.xg ?? 0;
                 r.byStrength[st].xga += e.xg ?? 0;
+                if ((e.xg ?? 0) >= HD_XG) r.hdXga += e.xg ?? 0;
                 if (isOnGoal(e)) {
                     r.sa += 1;
                     r.byStrength[st].sa += 1;
@@ -1017,4 +1030,100 @@ export function goalMarkers(m: GameModel, playerId: number, side: Side, ctx: 'es
         else out.push({ t: e.t, kind: mine ? 'gf' : 'ga' });
     }
     return out;
+}
+
+/* ── On the ice at a moment ───────────────────────────────────────────── */
+
+export interface SkaterSnap {
+    player: Player;
+    /** Seconds into the current shift, its number, and game TOI so far. */
+    shift: number;
+    shiftNo: number;
+    toi: number;
+    g: number;
+    a: number;
+    sog: number;
+    att: number;
+    pim: number;
+    hits: number;
+    blk: number;
+    fow: number;
+    fol: number;
+}
+export interface GoalieSnap {
+    player: Player;
+    toi: number;
+    sa: number;
+    ga: number;
+    xga: number;
+}
+export interface IceSnapshot {
+    t: number;
+    skaters: Record<Side, SkaterSnap[]>;
+    goalie: Record<Side, GoalieSnap | null>;
+}
+
+const POS_ORDER: Record<Pos, number> = { C: 0, L: 1, R: 2, D: 3, G: 4 };
+
+/** Who was on the ice at game time t, with each player's box score up to that moment. */
+export function iceAt(m: GameModel, t: number): IceSnapshot | null {
+    const seg = segAt(segments(m), Math.min(t, m.end - 0.01));
+    if (!seg) return null;
+    const byId = new Map(m.players.map(p => [p.id, p]));
+    const shiftInfo = (id: number) => {
+        const list = m.shifts[id] ?? [];
+        let toi = 0;
+        let shift = 0;
+        let shiftNo = 0;
+        list.forEach(([a, b], i) => {
+            if (a >= t) return;
+            toi += Math.min(b, t) - a;
+            if (b > t) {
+                shift = Math.min(b, t) - a;
+                shiftNo = i + 1;
+            }
+        });
+        return { toi, shift, shiftNo };
+    };
+    const past = m.events.filter(e => e.t <= t);
+    const skater = (id: number): SkaterSnap | null => {
+        const player = byId.get(id);
+        if (!player) return null;
+        const r: SkaterSnap = { player, ...shiftInfo(id), g: 0, a: 0, sog: 0, att: 0, pim: 0, hits: 0, blk: 0, fow: 0, fol: 0 };
+        for (const e of past) {
+            if (e.player === id) {
+                if (e.type === 'goal') r.g += 1;
+                if (isOnGoal(e)) r.sog += 1;
+                if (isUnblocked(e) || e.type === 'block') r.att += 1;
+                if (e.type === 'penalty') r.pim += e.minutes ?? 0;
+                if (e.type === 'hit') r.hits += 1;
+                if (e.type === 'faceoff') r.fow += 1;
+            }
+            if (e.other === id) {
+                if (e.type === 'block') r.blk += 1;
+                if (e.type === 'faceoff') r.fol += 1;
+            }
+            if (e.type === 'goal' && e.assists.includes(id)) r.a += 1;
+        }
+        return r;
+    };
+    const goalie = (side: Side): GoalieSnap | null => {
+        const id = seg.goalie[side];
+        const player = id != null ? byId.get(id) : undefined;
+        if (!player || id == null) return null;
+        const r: GoalieSnap = { player, toi: shiftInfo(id).toi, sa: 0, ga: 0, xga: 0 };
+        for (const e of past) {
+            if (e.side === side || !isUnblocked(e) || e.other !== id) continue;
+            r.xga += e.xg ?? 0;
+            if (isOnGoal(e)) r.sa += 1;
+            if (e.type === 'goal') r.ga += 1;
+        }
+        return r;
+    };
+    const skaters = (side: Side) =>
+        seg.skaters[side]
+            .map(skater)
+            .filter((r): r is SkaterSnap => r != null)
+            .sort((p, q) => POS_ORDER[p.player.pos] - POS_ORDER[q.player.pos] || (p.player.num ?? 0) - (q.player.num ?? 0));
+    return { t, skaters: { away: skaters('away'), home: skaters('home') }, goalie: { away: goalie('away'), home: goalie('home') } };
 }
