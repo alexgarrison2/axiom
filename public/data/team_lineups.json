@@ -344,7 +344,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f2": [
@@ -430,7 +430,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Garnet Hathaway",
@@ -451,18 +451,18 @@
                 "id": 2431,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Aaron Ekblad",
-                "number": 5,
+                "name": "Dmitry Kulikov",
+                "number": 7,
                 "pos": "rd",
-                "id": 2363,
-                "ppUnit": 2,
+                "id": 593,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -489,14 +489,14 @@
         ],
         "d3": [
             {
-                "name": "Dmitry Kulikov",
-                "number": 7,
+                "name": "Uvis Balinskis",
+                "number": 26,
                 "pos": "ld",
-                "id": 593,
-                "ppUnit": null,
+                "id": 37929,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Radko Gudas",
@@ -549,11 +549,11 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Gustav Forsling",
-                "number": 42,
+                "name": "Aaron Ekblad",
+                "number": 5,
                 "pos": "ir3",
-                "id": 2431,
-                "ppUnit": 2,
+                "id": 2363,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -584,14 +584,14 @@
                 "id": 2431,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
-                "name": "Aaron Ekblad",
-                "number": 5,
+                "name": "Dmitry Kulikov",
+                "number": 7,
                 "pos": "sk4",
-                "id": 2363,
-                "ppUnit": 2,
+                "id": 593,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -634,9 +634,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "DFO Projections",
-        "updated_at": "2026-10-04T21:44:13.157Z",
-        "fetched_at": "2026-10-04T22:02:39Z"
+        "lineup_source": "Steve Goldstein",
+        "updated_at": "2026-10-04T23:37:36.776Z",
+        "fetched_at": "2026-10-05T00:02:34Z"
     },
     "TOR": {
         "f1": [
@@ -1707,7 +1707,7 @@
                 "id": 26350,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -1816,6 +1816,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Joe Veleno",
+                "number": 90,
+                "pos": "ir2",
+                "id": 26350,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -1826,7 +1835,7 @@
                 "id": 26350,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Tye Kartye",
@@ -1895,8 +1904,8 @@
             }
         ],
         "lineup_source": "Vince Mervogliano",
-        "updated_at": "2026-10-04T21:36:47.948Z",
-        "fetched_at": "2026-10-04T22:02:39Z"
+        "updated_at": "2026-10-04T23:18:55.102Z",
+        "fetched_at": "2026-10-05T00:02:34Z"
     },
     "EDM": {
         "f1": [
@@ -5445,14 +5454,14 @@
                 "movement": null
             },
             {
-                "name": "Frank Vatrano",
-                "number": 77,
+                "name": "Sam Colangelo",
+                "number": 12,
                 "pos": "rw",
-                "id": 2545,
+                "id": 32857,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -5678,9 +5687,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Derek Lee",
-        "updated_at": "2026-10-03T01:40:15.227Z",
-        "fetched_at": "2026-10-03T01:48:05Z"
+        "lineup_source": "Patrick Present",
+        "updated_at": "2026-10-04T23:41:42.008Z",
+        "fetched_at": "2026-10-05T00:02:34Z"
     },
     "NJD": {
         "f1": [
@@ -7296,14 +7305,14 @@
                 "movement": null
             },
             {
-                "name": "Kaapo Kakko",
-                "number": 84,
+                "name": "Mackie Samoskevich",
+                "number": 11,
                 "pos": "rw",
-                "id": 30605,
-                "ppUnit": 2,
+                "id": 31226,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -7340,11 +7349,21 @@
         ],
         "f3": [
             {
-                "name": "Ryan Winterton",
-                "number": 26,
+                "name": "Kaapo Kakko",
+                "number": 84,
                 "pos": "lw",
-                "id": 30837,
-                "ppUnit": null,
+                "id": 30605,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Shane Wright",
+                "number": 51,
+                "pos": "c",
+                "id": 30830,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7352,18 +7371,8 @@
             {
                 "name": "Berkly Catton",
                 "number": 27,
-                "pos": "c",
-                "id": 36542,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Shane Wright",
-                "number": 51,
                 "pos": "rw",
-                "id": 30830,
+                "id": 36542,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -7372,14 +7381,14 @@
         ],
         "f4": [
             {
-                "name": "Ben Meyers",
-                "number": 59,
+                "name": "Ryan Winterton",
+                "number": 26,
                 "pos": "lw",
-                "id": 30084,
+                "id": 30837,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Frederick Gaudreau",
@@ -7392,14 +7401,14 @@
                 "movement": null
             },
             {
-                "name": "Mackie Samoskevich",
-                "number": 11,
+                "name": "Ben Meyers",
+                "number": 59,
                 "pos": "rw",
-                "id": 31226,
+                "id": 30084,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -7465,7 +7474,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -7576,8 +7585,8 @@
             }
         ],
         "lineup_source": "@sound_hockey",
-        "updated_at": "2026-10-02T22:11:19.849Z",
-        "fetched_at": "2026-10-03T23:02:28Z"
+        "updated_at": "2026-10-04T23:45:15.709Z",
+        "fetched_at": "2026-10-05T00:02:34Z"
     },
     "OTT": {
         "f1": [
@@ -9487,14 +9496,14 @@
     "CGY": {
         "f1": [
             {
-                "name": "Matvei Gridin",
-                "number": 92,
+                "name": "Yegor Sharangovich",
+                "number": 17,
                 "pos": "lw",
-                "id": 36778,
-                "ppUnit": 1,
+                "id": 29637,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Morgan Frost",
@@ -9529,6 +9538,38 @@
                 "movement": null
             },
             {
+                "name": "Ryan Strome",
+                "number": 16,
+                "pos": "c",
+                "id": 1825,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Connor Zary",
+                "number": 47,
+                "pos": "rw",
+                "id": 29510,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Matvei Gridin",
+                "number": 92,
+                "pos": "lw",
+                "id": 36778,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
                 "name": "Mikael Backlund",
                 "number": 11,
                 "pos": "c",
@@ -9536,7 +9577,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Joel Farabee",
@@ -9546,39 +9587,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Brennan Othmann",
-                "number": 78,
-                "pos": "lw",
-                "id": 30831,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Ryan Strome",
-                "number": 16,
-                "pos": "c",
-                "id": 1825,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Yegor Sharangovich",
-                "number": 17,
-                "pos": "rw",
-                "id": 29637,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -9637,14 +9646,14 @@
         ],
         "d2": [
             {
-                "name": "Joel Hanley",
-                "number": 44,
+                "name": "Yan Kuznetsov",
+                "number": 37,
                 "pos": "ld",
-                "id": 2605,
+                "id": 30745,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Simon Nemec",
@@ -9768,10 +9777,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Joel Hanley",
-                "number": 44,
+                "name": "Yan Kuznetsov",
+                "number": 37,
                 "pos": "sk3",
-                "id": 2605,
+                "id": 30745,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -9786,9 +9795,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Derek Wills",
-        "updated_at": "2026-10-03T18:47:15.958Z",
-        "fetched_at": "2026-10-04T12:02:37Z"
+        "lineup_source": "Eric Francis",
+        "updated_at": "2026-10-04T23:41:16.657Z",
+        "fetched_at": "2026-10-05T00:02:34Z"
     },
     "NSH": {
         "f1": [
