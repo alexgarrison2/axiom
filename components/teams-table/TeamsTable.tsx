@@ -432,15 +432,15 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                         </colgroup>
                         <thead>
                             <tr>
-                                <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-5 border-b-0')} />
+                                <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-4 border-b-0')} />
                                 {groupSpans.map(g => (
-                                    <th key={g.name} scope="colgroup" colSpan={g.n} className={cn(HEAD_CELL, 'h-5 overflow-hidden border-b-0 border-r px-2 text-left')}>
-                                        <span className="text-micro font-medium uppercase tracking-wide text-fg-2">{g.name}</span>
+                                    <th key={g.name} scope="colgroup" colSpan={g.n} className={cn(HEAD_CELL, 'h-4 overflow-hidden border-b-0 border-r px-2 text-left leading-4')}>
+                                        <span className="text-micro font-medium uppercase leading-4 tracking-wide text-fg-2">{g.name}</span>
                                     </th>
                                 ))}
                             </tr>
                             <tr>
-                                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 px-2 text-left top-5')}>
+                                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 px-2 text-left top-4')}>
                                     <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Team</span>
                                 </th>
                                 {columns.map(({ col, groupEnd }) => (
@@ -450,7 +450,8 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                                         title={col.title}
                                         direction={model?.paired ? undefined : activeSort.key === col.key ? activeSort.dir : null}
                                         onSort={model?.paired ? undefined : () => onSort(col.key)}
-                                        className={cn(HEAD_CELL, 'top-5', groupEnd && 'border-r')}
+                                        className={cn(HEAD_CELL, 'top-4', groupEnd && 'border-r')}
+                                        dense
                                     />
                                 ))}
                             </tr>

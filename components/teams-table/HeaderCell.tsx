@@ -15,6 +15,8 @@ interface HeaderCellProps {
     align?: 'left' | 'center' | 'right';
     className?: string;
     style?: React.CSSProperties;
+    /** 24px row (the league table, so all 32 teams fit one screen) instead of 32px. */
+    dense?: boolean;
 }
 
 /**
@@ -23,20 +25,21 @@ interface HeaderCellProps {
  * the cell (same contract as the SortHeader primitive, plus a native
  * tooltip carrying the full column name).
  */
-export function HeaderCell({ label, title, direction, onSort, align = 'center', className, style }: HeaderCellProps) {
+export function HeaderCell({ label, title, direction, onSort, align = 'center', className, style, dense }: HeaderCellProps) {
     const sortable = direction !== undefined && !!onSort;
     const ariaSort = !sortable ? undefined : direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none';
     const justify = align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start';
     const text = 'whitespace-nowrap text-micro font-medium uppercase tracking-[0.06em]';
     return (
-        <th scope="col" aria-sort={ariaSort} className={cn('h-8 p-0 align-middle font-medium', className)} style={style}>
+        <th scope="col" aria-sort={ariaSort} className={cn(dense ? 'h-6' : 'h-8', 'p-0 align-middle font-medium', className)} style={style}>
             {sortable ? (
                 <button
                     type="button"
                     onClick={onSort}
                     title={title}
                     className={cn(
-                        'inline-flex h-full min-h-8 w-full items-center px-1.5 transition-colors hover:text-fg-1 focus-visible:outline-offset-[-2px] coarse:min-h-11',
+                        'inline-flex h-full w-full items-center px-1.5 transition-colors hover:text-fg-1 focus-visible:outline-offset-[-2px] coarse:min-h-11',
+                        dense ? 'min-h-6' : 'min-h-8',
                         justify,
                         text,
                         direction ? 'text-brand' : 'text-fg-3',
@@ -59,7 +62,7 @@ export function HeaderCell({ label, title, direction, onSort, align = 'center', 
                     {title ? <span className="sr-only">, {title}</span> : null}
                 </button>
             ) : (
-                <span title={title} className={cn('flex min-h-8 items-center px-1.5 text-fg-3', justify, text)}>
+                <span title={title} className={cn('flex items-center px-1.5 text-fg-3', dense ? 'min-h-6' : 'min-h-8', justify, text)}>
                     {label}
                     {title ? <span className="sr-only">, {title}</span> : null}
                 </span>

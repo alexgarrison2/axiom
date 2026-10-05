@@ -23,7 +23,9 @@ export const STICKY_EDGE = 'sticky left-0 border-r border-line shadow-[4px_0_8px
  * The scroll container for a sticky-header table: scrolls on both axes and is
  * at most one viewport tall (below the app bar, and above the fixed bottom tab
  * bar on phones), so the header row and first column stay pinned while the
- * page itself scrolls normally around it.
+ * page itself scrolls normally around it. On desktop the league table's 32
+ * rows (24px) plus its 40px header fit an ~860px-tall window: keep the
+ * margin and the (thin) horizontal scrollbar small.
  */
 export const SCROLLER =
-    'overflow-auto overscroll-x-contain max-h-[calc(100dvh-var(--appbar-h)-var(--tabbar-h)-env(safe-area-inset-bottom)-12px)] md:max-h-[calc(100dvh-var(--appbar-h)-16px)] focus-visible:outline-offset-[-2px]';
+    'overflow-auto overscroll-x-contain [scrollbar-width:thin] max-h-[calc(100dvh-var(--appbar-h)-var(--tabbar-h)-env(safe-area-inset-bottom)-12px)] md:max-h-[calc(100dvh-var(--appbar-h)-8px)] focus-visible:outline-offset-[-2px]';
