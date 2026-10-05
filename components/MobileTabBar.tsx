@@ -55,7 +55,7 @@ export function MobileTabBar({ playoffsSeason }: { playoffsSeason?: string | nul
         );
 
     return (
-        <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/[.92] pb-[env(safe-area-inset-bottom)] backdrop-blur-[10px] md:hidden">
+        <nav aria-label="Main" className="fixed inset-x-0 bottom-[calc(0px_-_var(--vv-bottom,0px))] z-40 border-t border-line bg-bg/[.92] pb-[env(safe-area-inset-bottom)] backdrop-blur-[10px] md:hidden">
             <ul className="flex h-tabbar items-stretch">
                 {primary.map(item => {
                     const Icon = ICONS[item.key];
@@ -81,7 +81,7 @@ export function MobileTabBar({ playoffsSeason }: { playoffsSeason?: string | nul
                             <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-bg/70 backdrop-blur-sm animate-fade-in md:hidden" />
                             <DialogPrimitive.Content
                                 aria-describedby={undefined}
-                                className="fixed inset-x-0 bottom-0 z-[61] rounded-t-card border-t border-line-strong bg-surface-1 pb-[calc(env(safe-area-inset-bottom)+8px)] animate-sheet-up focus:outline-none md:hidden"
+                                className="fixed inset-x-0 bottom-[calc(0px_-_var(--vv-bottom,0px))] z-[61] rounded-t-card border-t border-line-strong bg-surface-1 pb-[calc(env(safe-area-inset-bottom)+8px)] animate-sheet-up focus:outline-none md:hidden"
                             >
                                 <div aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-full bg-mute" />
                                 <div className="flex items-center justify-between px-card pb-1 pt-1">

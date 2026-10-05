@@ -4,6 +4,7 @@ import "./globals.css";
 import SiteNav from "@/components/SiteNav";
 import Footer from "@/components/Footer";
 import { FocusReveal } from "@/components/ui/focus-reveal";
+import { ViewportAnchor } from "@/components/ViewportAnchor";
 
 // One family for everything: IBM Plex Sans Condensed. Narrow letterforms fit
 // dense tables and notes; numbers use tabular figures (set on body in
@@ -111,6 +112,7 @@ export default function RootLayout({
         </div>
         <Footer />
         <FocusReveal />
+        <ViewportAnchor />
       </body>
     </html>
   );

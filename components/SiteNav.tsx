@@ -63,7 +63,7 @@ export default function SiteNav() {
 
     return (
         <>
-            <header className="sticky top-0 z-40 border-b border-line bg-bg/[.82] pt-[env(safe-area-inset-top)] backdrop-blur-[10px]">
+            <header className="sticky top-[var(--vv-top,0px)] z-40 border-b border-line bg-bg/[.82] pt-[env(safe-area-inset-top)] backdrop-blur-[10px]">
                 <div className="page flex h-appbar items-center gap-6 md:gap-5 lg:gap-8">
                     <Link
                         href="/"

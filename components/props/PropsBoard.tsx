@@ -278,7 +278,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
             />
 
             {/* Sticky: the stat and line always stay named while the table scrolls. */}
-            <div ref={barRef} className="sticky top-appbar z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
+            <div ref={barRef} className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
                 <div className="flex flex-wrap items-center gap-2">
                     <Segmented
                         label="Category"

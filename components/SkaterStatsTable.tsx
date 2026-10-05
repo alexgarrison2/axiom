@@ -187,7 +187,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
 
     return (
         <div className="flex flex-col gap-3">
-            <div ref={filterBar} className="sticky top-appbar z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:flex-row md:items-center md:px-6">
+            <div ref={filterBar} className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:flex-row md:items-center md:px-6">
                 <div className="flex items-end gap-2">
                     <div className="flex min-w-0 flex-1 flex-col gap-1 md:w-72 md:flex-none">
                         <label htmlFor={ids.search} className="sr-only">
