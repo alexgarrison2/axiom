@@ -142,7 +142,7 @@ function ShotCard({ e }: { e: GameEvent }) {
 }
 
 export function Shots() {
-    const { m, colors, byId, selected } = useGame();
+    const { m, colors, byId } = useGame();
     const [strength, setStrength] = React.useState<TeamStrength>('all');
     const [period, setPeriod] = React.useState<string>('all');
     const [kinds, setKinds] = React.useState<Set<Kind>>(new Set(['goal', 'shot', 'miss']));
@@ -163,8 +163,10 @@ export function Shots() {
         else n.add(k);
         return n;
     });
+    // Hover previews a shot; a click pins it until the same mark (or open ice) is clicked again.
     const [hoverId, setHoverId] = React.useState<number | null>(null);
-    const hovered = shown.find(e => e.id === hoverId) ?? null;
+    const [pinId, setPinId] = React.useState<number | null>(null);
+    const card = shown.find(e => e.id === (hoverId ?? pinId)) ?? null;
 
     return (
         <GameSection
@@ -227,7 +229,7 @@ export function Shots() {
                 {view === 'map' ? (
                     <div className="p-card">
                         <div className="relative">
-                        <svg viewBox="-101 -43.5 202 87" className="block w-full" role="img" aria-label={`${shown.length} shot attempts. ${m.teams.away.tri} shoot left, ${m.teams.home.tri} shoot right.`}>
+                        <svg viewBox="-101 -43.5 202 87" className="block w-full" onClick={() => setPinId(null)} role="img" aria-label={`${shown.length} shot attempts. ${m.teams.away.tri} shoot left, ${m.teams.home.tri} shoot right.`}>
                             <RinkMarkings />
                             <text x={-96} y={2} className="fill-fg-3" fontSize={4} fontWeight={700} textAnchor="start" opacity={0.6}>
                                 {m.teams.away.tri}
@@ -243,16 +245,19 @@ export function Shots() {
                                         key={e.id}
                                         onPointerEnter={() => setHoverId(e.id)}
                                         onPointerLeave={() => setHoverId(h => (h === e.id ? null : h))}
-                                        onClick={() => setHoverId(e.id)}
+                                        onClick={ev => {
+                                            ev.stopPropagation();
+                                            setPinId(p => (p === e.id ? null : e.id));
+                                        }}
                                         className="cursor-crosshair"
                                     >
                                         {/* A generous invisible hit area so small marks are easy to hover. */}
                                         <circle cx={e.x!} cy={-e.y!} r={Math.max(3, radius(e) + 1)} fill="transparent" />
-                                        <Mark e={e} color={colors[e.side]} lit={selected === e.id || hoverId === e.id} />
+                                        <Mark e={e} color={colors[e.side]} lit={pinId === e.id || hoverId === e.id} />
                                     </g>
                                 ))}
                         </svg>
-                        {hovered ? <ShotCard e={hovered} /> : null}
+                        {card ? <ShotCard e={card} /> : null}
                         </div>
                         <div className="mt-2 grid grid-cols-2 gap-4 text-caption tabular-nums">
                             {SIDES.map(side => {
