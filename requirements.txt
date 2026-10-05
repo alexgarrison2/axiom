@@ -1,12 +1,12 @@
-pandas==2.3.3
-numpy==2.3.5
-scipy==1.16.3
+pandas==3.0.6
+numpy==2.5.3
+scipy==1.18.1
 # CPU-only wheel on the Linux runners (drops ~500 MB of CUDA/NCCL); same
 # `import xgboost` API.  xgboost-cpu has no macOS wheels, so dev machines use
 # the regular package.
 xgboost-cpu==3.1.2; sys_platform == "linux"
-xgboost==3.1.2; sys_platform != "linux"
-scikit-learn==1.7.2
+xgboost==3.4.1; sys_platform != "linux"
+scikit-learn==1.9.1
 pytz==2025.2
 psycopg2-binary==2.9.11
 python-dotenv==1.2.1
