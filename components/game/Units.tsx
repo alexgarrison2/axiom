@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { clockOf, periodLabel, units, type Unit, type UnitKind } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
+import { JerseyNumber } from './Jersey';
 
 interface Col {
     key: string;
@@ -114,7 +115,7 @@ export function Units() {
                         <table className="w-full border-separate border-spacing-0 text-caption tabular-nums">
                             <thead>
                                 <tr>
-                                    <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[16rem] px-2 text-left')}>
+                                    <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[18rem] px-2 text-left')}>
                                         <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">{kindLabel.label}</span>
                                     </th>
                                     {COLS.map(c => (
@@ -138,14 +139,11 @@ export function Units() {
                                         .sort((a, b) => order[a.pos] - order[b.pos] || (a.num ?? 0) - (b.num ?? 0));
                                     return (
                                         <tr key={u.ids.join('-')} className="group">
-                                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]')}>
+                                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-11 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]')}>
                                                 <span className="flex items-center gap-2.5">
-                                                    <span className="flex shrink-0 -space-x-2" aria-hidden="true">
+                                                    <span className="flex shrink-0 gap-1">
                                                         {ps.map(p => (
-                                                            <span key={p.id} className="block h-7 w-7 overflow-hidden rounded-full border-2 bg-surface-2" style={{ borderColor: colors[side] }}>
-                                                                {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}
-                                                                {p.headshot ? <img src={p.headshot} alt="" width={28} height={28} loading="lazy" className="h-full w-full object-cover" /> : null}
-                                                            </span>
+                                                            <JerseyNumber key={p.id} tri={m.teams[side].tri} num={p.num} ring={colors[side]} size={32} />
                                                         ))}
                                                     </span>
                                                     <span className="truncate">
@@ -165,7 +163,7 @@ export function Units() {
                                                         key={c.key}
                                                         className={cn(
                                                             CELL_BG,
-                                                            'h-9 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]',
+                                                            'h-11 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]',
                                                             v == null || v === 0 ? 'text-fg-3' : c.signed ? (v > 0 ? 'text-pos' : 'text-neg') : c.model ? 'text-model' : 'text-fg-1',
                                                         )}
                                                     >
