@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { Segmented } from '@/components/ui/segmented';
 import { Slider } from '@/components/ui/slider';
 import { formatTime } from '@/lib/format/time';
@@ -595,12 +596,23 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
                 </svg>
             </button>
             {open ? (
-                <dl id={detailId} className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line px-4 py-3 text-caption sm:grid-cols-5">
+                <dl id={detailId} className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line px-4 py-3 text-caption sm:grid-cols-6">
                     <Detail label={`Model ${g.home}`} value={`${g.homeProb.toFixed(1)}%`} />
                     <Detail label={`Mkt ${g.home}`} value={g.placeholderOdds ? 'Placeholder' : g.marketProb != null ? `${g.marketProb.toFixed(1)}%` : '—'} />
                     <Detail label="xG" value={hasXg ? `${g.away} ${g.awayXg!.toFixed(2)} · ${g.home} ${g.homeXg!.toFixed(2)}` : '—'} />
                     <Detail label="Brier · LL" value={`${Number.isFinite(g.brier) ? g.brier.toFixed(3) : '—'} · ${Number.isFinite(g.logLoss) ? g.logLoss.toFixed(3) : '—'}`} />
                     <Detail label="Frozen" value={g.retro ? 'Back-filled' : g.snapshotUtc ? (formatTime(g.snapshotUtc, 'datetime') ?? 'Pregame') : 'Pregame'} />
+                    <div>
+                        <dt className="label">Game</dt>
+                        <dd className="mt-1">
+                            <Link href={`/games/${g.id}`} className="inline-flex min-h-6 items-center gap-1 font-bold uppercase tracking-label text-brand hover:underline coarse:min-h-11">
+                                Full page
+                                <svg viewBox="0 0 8 8" className="h-2 w-2" aria-hidden="true">
+                                    <path d="M2.5 1 6 4 2.5 7" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                                </svg>
+                            </Link>
+                        </dd>
+                    </div>
                 </dl>
             ) : (
                 <div id={detailId} hidden />

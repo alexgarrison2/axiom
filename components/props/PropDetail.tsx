@@ -418,7 +418,13 @@ export function PropDetail({ r, cat, doc, detail, seasons }: PropDetailProps) {
                                     return (
                                         <tr key={g[0]} className={cn('border-t border-line', g[8] === 1 && 'text-fg-2')}>
                                             <th scope="row" className="py-1 text-left font-normal">
-                                                <span className={g[8] === 1 ? 'text-fg-2' : 'text-fg-1'}>{shortDate(g[0])}</span>
+                                                {g[10] ? (
+                                                    <a href={`/games/${g[10]}`} className={cn('hover:text-brand hover:underline', g[8] === 1 ? 'text-fg-2' : 'text-fg-1')}>
+                                                        {shortDate(g[0])}
+                                                    </a>
+                                                ) : (
+                                                    <span className={g[8] === 1 ? 'text-fg-2' : 'text-fg-1'}>{shortDate(g[0])}</span>
+                                                )}
                                                 <span className="ml-1.5 text-micro text-fg-3">
                                                     {seasonLabel(g[0])} {g[2] ? 'H' : 'A'}
                                                 </span>

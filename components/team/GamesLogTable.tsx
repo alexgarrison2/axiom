@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { Crest } from '@/components/ui/crest';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
@@ -11,6 +12,21 @@ import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
 import { TableScroller } from '@/components/teams-table/TableScroller';
 import { flags, gameGsax, resultLabel, resultTone, score, stat, totals } from './game-log-model';
+
+/** Into the full game page (/games/[id]): goals, pulse, shots, skaters, lines, matchups. */
+function GameLink({ id }: { id: string }) {
+    return (
+        <Link
+            href={`/games/${id}`}
+            className="mb-2 inline-flex min-h-8 items-center gap-1.5 text-micro font-bold uppercase tracking-label text-brand hover:underline coarse:min-h-11"
+        >
+            Game page
+            <svg viewBox="0 0 8 8" className="h-2 w-2" aria-hidden="true">
+                <path d="M2.5 1 6 4 2.5 7" fill="none" stroke="currentColor" strokeWidth="1.4" />
+            </svg>
+        </Link>
+    );
+}
 
 interface GamesLogTableProps {
     games: GameRow[];
@@ -223,6 +239,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                     </button>
                                     {isOpen ? (
                                         <div id={`box-m-${g.id}`} className="border-t border-line bg-bg/60 p-3">
+                                            <GameLink id={g.id} />
                                             <MiniStats g={g} period={period} />
                                             <Boxscore rows={box?.games[g.id]} players={box?.players} state={boxState} />
                                         </div>
@@ -311,6 +328,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                                 <tr>
                                                     <td id={`box-${g.id}`} colSpan={cols.length + 1} className="border-b border-line bg-bg/60 p-0">
                                                         <div className="sticky left-0 max-w-[min(100vw-4rem,1000px)] px-3 py-2.5" style={{ borderLeft: `2px solid ${teamColor}` }}>
+                                                            <GameLink id={g.id} />
                                                             <Boxscore rows={box?.games[g.id]} players={box?.players} state={boxState} />
                                                         </div>
                                                     </td>

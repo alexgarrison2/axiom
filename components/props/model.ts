@@ -4,8 +4,8 @@
  * linemate boosts, filters and sorting.
  */
 
-/** [date, opp, home, toi, g, a, sog, ppp, prevSeason, attempts] (attempts missing in older files) */
-export type LogRow = [string, string, number, number, number, number, number, number, number, (number | null)?];
+/** [date, opp, home, toi, g, a, sog, ppp, prevSeason, attempts, gameId] (the last two missing in older files) */
+export type LogRow = [string, string, number, number, number, number, number, number, number, (number | null)?, number?];
 
 export interface BookPrice {
     over: number | null;
@@ -64,8 +64,8 @@ export interface PropGame {
 
 /** [date, missed, blocked, evToi, ppToi, ixG]: the same games as PropPlayer.log. */
 export type ExtRow = [string, number | null, number | null, number | null, number | null, number | null];
-/** [date, home, toi, g, a, sog, ppp, attempts]: a game against tonight's opponent. */
-export type VsRow = [string, number, number | null, number, number, number, number, number | null];
+/** [date, home, toi, g, a, sog, ppp, attempts, gameId]: a game against tonight's opponent. */
+export type VsRow = [string, number, number | null, number, number, number, number, number | null, number?];
 /** Games played and hits per prop key. */
 export type Split = { n: number } & Record<string, number>;
 
@@ -438,7 +438,7 @@ export function extFor(p: PropPlayer, d: PlayerDetail | null | undefined): (ExtR
 
 /** Games against tonight's opponent as log rows, so tapes and hit counts reuse the category logic. */
 export function vsLog(p: PropPlayer, d: PlayerDetail | null | undefined, currentStart: number): LogRow[] {
-    return (d?.vs ?? []).map(v => [v[0], p.opp ?? '', v[1], v[2] ?? 0, v[3], v[4], v[5], v[6], seasonStart(v[0]) < currentStart ? 1 : 0, v[7]]);
+    return (d?.vs ?? []).map(v => [v[0], p.opp ?? '', v[1], v[2] ?? 0, v[3], v[4], v[5], v[6], seasonStart(v[0]) < currentStart ? 1 : 0, v[7], v[8]]);
 }
 
 /** Hits and the mean count over a set of log rows. */

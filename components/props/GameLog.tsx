@@ -158,12 +158,22 @@ export function GameLog({ log, ext, cat, line }: GameLogProps) {
                     </g>
                 );
             })}
-            {rows.map((r, i) => (
-                <text key={`o${i}`} x={cx(i)} y={tableTop + stats.length * ROW + 12} textAnchor="middle" opacity={r[8] === 1 ? 0.6 : 1} className="fill-fg-3 text-micro uppercase">
-                    {r[2] ? '' : '@'}
-                    {r[1]}
-                </text>
-            ))}
+            {rows.map((r, i) => {
+                const label = (
+                    <text x={cx(i)} y={tableTop + stats.length * ROW + 12} textAnchor="middle" opacity={r[8] === 1 ? 0.6 : 1} className={cn('text-micro uppercase', r[10] ? 'fill-brand' : 'fill-fg-3')}>
+                        {r[2] ? '' : '@'}
+                        {r[1]}
+                    </text>
+                );
+                // Each game's opponent opens its game page.
+                return r[10] ? (
+                    <a key={`o${i}`} href={`/games/${r[10]}`} aria-label={`${shortDate(r[0])} ${r[2] ? 'vs' : 'at'} ${r[1]}: game page`}>
+                        {label}
+                    </a>
+                ) : (
+                    <React.Fragment key={`o${i}`}>{label}</React.Fragment>
+                );
+            })}
         </svg>
     );
 }

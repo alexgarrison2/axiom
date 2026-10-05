@@ -686,6 +686,7 @@ def run_full(r, phase, rescore_all=False):
     r.run("rosters_bio_goalies", _call, "fetch_player_bio", title="Rosters, bios, team_goalies")
     r.run("xg_rescore", stage_rescore_xg, state, rescore_all, required=True, title="Idempotent xG")
     r.run("gamestats_update", stage_update_gamestats, state, required=True, title="xG + HD into gamestats")
+    r.run("game_xg", _call, "game_xg_export", "main", [], title="Per-shot xG for game pages")
     r.run("sync_gamestats", stage_sync_gamestats, required=True)
     r.run("team_ratings", stage_team_ratings, required=True, title="Team & goalie ratings")
     phase.update(season_phase())

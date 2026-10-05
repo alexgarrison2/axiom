@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useId, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import type { Prediction } from '@/types/prediction';
@@ -263,6 +264,19 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                                 <span aria-hidden="true">{chip.label}</span>
                                 <span className="sr-only">{chip.title}</span>
                             </span>
+                        ) : null}
+                        {phase !== 'pre' ? (
+                            <Link
+                                href={`/games/${p.id}`}
+                                title="Game page"
+                                className="relative z-[2] grid h-6 w-6 place-items-center rounded-chip text-brand hover:bg-brand/10 coarse:h-11 coarse:w-11"
+                            >
+                                {/* Bars glyph: the full game breakdown. */}
+                                <svg viewBox="0 0 12 12" className="h-3.5 w-3.5" aria-hidden="true">
+                                    <path d="M2 10V6M6 10V2M10 10V5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                                </svg>
+                                <span className="sr-only">Game page: {title}</span>
+                            </Link>
                         ) : null}
                         <ShareButton p={p} title={title} anchor={anchor} />
                         {pinned ? null : (

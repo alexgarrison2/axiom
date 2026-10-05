@@ -21,7 +21,7 @@ by the browser only when a row is opened:
   { generated_at, slate_date, players: { id: {
       x:  [[date, missed, blocked, ev_toi, pp_toi, ixg], ...],  # same games as log
       ha: { h: {n, key: hits}, a: {...} },                      # home / road, both seasons
-      vs: [[date, home, toi, g, a, sog, ppp, att], ...],        # last VS_GAMES vs tonight's opp
+      vs: [[date, home, toi, g, a, sog, ppp, att, gameId], ...], # last VS_GAMES vs tonight's opp
       vs_n: games vs tonight's opp since the archive starts } } }
 
 Shape (keys kept short; the file is fetched by the browser):
@@ -32,7 +32,7 @@ Shape (keys kept short; the file is fetched by the browser):
     players: [{ id, name, team, pos, unit, pp, move, mates: [ids], gp, gp_prev,
                 game, opp, home, toi, fair: {key: p}, book: {key: {...}},
                 proj: {sog, g, a, pts, ppp},                  # expected count tonight
-                log: [[date, opp, home, toi, g, a, sog, ppp, prev, att], ...],
+                log: [[date, opp, home, toi, g, a, sog, ppp, prev, att, gameId], ...],
                 cur: {key: hits}, prev: {key: hits} }] }
 """
 from __future__ import annotations
@@ -283,7 +283,7 @@ def build(today=None) -> tuple[dict, dict]:
             "gp": int(len(cur)), "gp_prev": int(len(prev)),
             "cur": _hits(cur), "prev": _hits(prev),
             "log": [[r.date, r.opp, int(r.home), round(float(r.toi), 1), int(r.goals), int(r.assists),
-                     int(r.shots), int(r.pp_points), int(r.prev), _int(getattr(r, "attempts", None))]
+                     int(r.shots), int(r.pp_points), int(r.prev), _int(getattr(r, "attempts", None)), int(r.game_id)]
                     for r in recent.itertuples()],
         }
         d = {
@@ -301,7 +301,7 @@ def build(today=None) -> tuple[dict, dict]:
                 vs = vs[vs["opp"] == f["opp"]]
                 d["vs_n"] = int(len(vs))
                 d["vs"] = [[r.date, int(r.home), _num(r.toi, 1), int(r.goals), int(r.assists), int(r.shots),
-                            int(r.pp_points), _int(getattr(r, "attempts", None))] for r in vs.tail(VS_GAMES).itertuples()]
+                            int(r.pp_points), _int(getattr(r, "attempts", None)), int(r.game_id)] for r in vs.tail(VS_GAMES).itertuples()]
             p.update({"game": int(f["game_id"]), "opp": f["opp"], "home": int(f["home"]),
                       "toi": round(float(f["toi_exp"]), 1),
                       "fair": {key: round(float(f[f"fair_{key}"]), 4) for key, _, _ in pm.PROPS},
