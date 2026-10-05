@@ -1248,19 +1248,26 @@
   "away_team": "Flyers",
   "home_abbrev": "TBL",
   "away_abbrev": "PHI",
-  "source": "espn_draftkings",
+  "source": "nhl_partner_draftkings",
   "sources": [
-   "espn_draftkings"
+   "nhl_partner_draftkings"
   ],
-  "fetched_at": "2026-10-05T13:02:34Z",
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Lightning_puckline": 114,
+  "Lightning_puckline_spread": "-1.5",
+  "three_way_tie": 330,
+  "Lightning_three_way": -135,
+  "total_over": -122,
+  "total_line": "5.5",
+  "Flyers_puckline": -135,
+  "Flyers_puckline_spread": "+1.5",
+  "Flyers_three_way": 270,
+  "total_under": 102,
   "Lightning": -218,
   "Flyers": 180,
   "home_ml": -218,
   "away_ml": 180,
-  "total_line": "5.5",
-  "total_over": -122,
-  "total_under": 102,
-  "captured_at": "2026-10-05T13:02:34Z"
+  "captured_at": "2026-10-05T17:25:01Z"
  },
  "2026020041": {
   "game_id": 2026020041,
@@ -1270,19 +1277,26 @@
   "away_team": "Senators",
   "home_abbrev": "BOS",
   "away_abbrev": "OTT",
-  "source": "espn_draftkings",
+  "source": "nhl_partner_draftkings",
   "sources": [
-   "espn_draftkings"
+   "nhl_partner_draftkings"
   ],
-  "fetched_at": "2026-10-05T13:02:34Z",
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "three_way_tie": 310,
+  "total_over": -120,
+  "total_line": "5.5",
+  "Bruins_three_way": 135,
+  "Bruins_puckline": -265,
+  "Bruins_puckline_spread": "+1.5",
+  "total_under": 100,
+  "Senators_three_way": 140,
+  "Senators_puckline": 215,
+  "Senators_puckline_spread": "-1.5",
   "Bruins": -102,
   "Senators": -118,
   "home_ml": -102,
   "away_ml": -118,
-  "total_line": "5.5",
-  "total_over": -125,
-  "total_under": 105,
-  "captured_at": "2026-10-05T13:02:34Z"
+  "captured_at": "2026-10-05T17:25:01Z"
  },
  "2026020042": {
   "game_id": 2026020042,
@@ -1292,19 +1306,26 @@
   "away_team": "Jets",
   "home_abbrev": "PIT",
   "away_abbrev": "WPG",
-  "source": "espn_draftkings",
+  "source": "nhl_partner_draftkings",
   "sources": [
-   "espn_draftkings"
+   "nhl_partner_draftkings"
   ],
-  "fetched_at": "2026-10-05T13:02:34Z",
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Penguins_puckline": 145,
+  "Penguins_puckline_spread": "-1.5",
+  "Penguins_three_way": -105,
+  "three_way_tie": 330,
+  "total_over": -105,
+  "total_line": "6.5",
+  "Jets_puckline": -175,
+  "Jets_puckline_spread": "+1.5",
+  "Jets_three_way": 195,
+  "total_under": -115,
   "Penguins": -180,
   "Jets": 150,
   "home_ml": -180,
   "away_ml": 150,
-  "total_line": "6.5",
-  "total_over": 102,
-  "total_under": -122,
-  "captured_at": "2026-10-05T13:02:34Z"
+  "captured_at": "2026-10-05T17:25:01Z"
  },
  "2026020043": {
   "game_id": 2026020043,
@@ -1314,19 +1335,48 @@
   "away_team": "Sharks",
   "home_abbrev": "DAL",
   "away_abbrev": "SJS",
+  "source": "nhl_partner_draftkings",
+  "sources": [
+   "nhl_partner_draftkings"
+  ],
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Stars_puckline": 130,
+  "Stars_puckline_spread": "-1.5",
+  "three_way_tie": 340,
+  "Stars_three_way": -120,
+  "total_over": 100,
+  "total_line": "6.5",
+  "Sharks_puckline": -155,
+  "Sharks_puckline_spread": "+1.5",
+  "Sharks_three_way": 220,
+  "total_under": -120,
+  "Stars": -205,
+  "Sharks": 170,
+  "home_ml": -205,
+  "away_ml": 170,
+  "captured_at": "2026-10-05T17:25:01Z"
+ },
+ "2026020044": {
+  "game_id": 2026020044,
+  "game_date": "2026-10-06",
+  "start_time_utc": "2026-10-06T23:00:00Z",
+  "home_team": "Maple Leafs",
+  "away_team": "Predators",
+  "home_abbrev": "TOR",
+  "away_abbrev": "NSH",
   "source": "espn_draftkings",
   "sources": [
    "espn_draftkings"
   ],
-  "fetched_at": "2026-10-05T04:45:02Z",
-  "Stars": -175,
-  "Sharks": 145,
-  "home_ml": -175,
-  "away_ml": 145,
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Maple Leafs": -155,
+  "Predators": 130,
+  "home_ml": -155,
+  "away_ml": 130,
   "total_line": "6.5",
-  "total_over": 100,
-  "total_under": -120,
-  "captured_at": "2026-10-05T04:45:02Z"
+  "total_over": 114,
+  "total_under": -135,
+  "captured_at": "2026-10-05T17:25:01Z"
  },
  "2026020045": {
   "game_id": 2026020045,
@@ -1350,6 +1400,94 @@
   "total_under": -120,
   "captured_at": "2026-10-05T04:45:02Z"
  },
+ "2026020046": {
+  "game_id": 2026020046,
+  "game_date": "2026-10-06",
+  "start_time_utc": "2026-10-06T23:00:00Z",
+  "home_team": "Red Wings",
+  "away_team": "Senators",
+  "home_abbrev": "DET",
+  "away_abbrev": "OTT",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Red Wings": -115,
+  "Senators": -105,
+  "home_ml": -115,
+  "away_ml": -105,
+  "total_line": "5.5",
+  "total_over": -135,
+  "total_under": 114,
+  "captured_at": "2026-10-05T17:25:01Z"
+ },
+ "2026020047": {
+  "game_id": 2026020047,
+  "game_date": "2026-10-06",
+  "start_time_utc": "2026-10-06T23:00:00Z",
+  "home_team": "Devils",
+  "away_team": "Mammoth",
+  "home_abbrev": "NJD",
+  "away_abbrev": "UTA",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Devils": -135,
+  "Mammoth": 114,
+  "home_ml": -135,
+  "away_ml": 114,
+  "total_line": "5.5",
+  "total_over": -135,
+  "total_under": 114,
+  "captured_at": "2026-10-05T17:25:01Z"
+ },
+ "2026020048": {
+  "game_id": 2026020048,
+  "game_date": "2026-10-06",
+  "start_time_utc": "2026-10-06T23:30:00Z",
+  "home_team": "Rangers",
+  "away_team": "Islanders",
+  "home_abbrev": "NYR",
+  "away_abbrev": "NYI",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Rangers": -135,
+  "Islanders": 114,
+  "home_ml": -135,
+  "away_ml": 114,
+  "total_line": "5.5",
+  "total_over": -108,
+  "total_under": -112,
+  "captured_at": "2026-10-05T17:25:01Z"
+ },
+ "2026020049": {
+  "game_id": 2026020049,
+  "game_date": "2026-10-06",
+  "start_time_utc": "2026-10-06T23:00:00Z",
+  "home_team": "Sabres",
+  "away_team": "Wild",
+  "home_abbrev": "BUF",
+  "away_abbrev": "MIN",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Sabres": -112,
+  "Wild": -108,
+  "home_ml": -112,
+  "away_ml": -108,
+  "total_line": "6.5",
+  "total_over": 102,
+  "total_under": -122,
+  "captured_at": "2026-10-05T17:25:01Z"
+ },
  "2026020050": {
   "game_id": 2026020050,
   "game_date": "2026-10-06",
@@ -1362,15 +1500,37 @@
   "sources": [
    "espn_draftkings"
   ],
-  "fetched_at": "2026-10-05T04:45:02Z",
-  "Blackhawks": -105,
-  "Blues": -115,
-  "home_ml": -105,
-  "away_ml": -115,
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Blackhawks": 114,
+  "Blues": -135,
+  "home_ml": 114,
+  "away_ml": -135,
   "total_line": "5.5",
-  "total_over": 100,
-  "total_under": -120,
-  "captured_at": "2026-10-05T04:45:02Z"
+  "total_over": -105,
+  "total_under": -115,
+  "captured_at": "2026-10-05T17:25:01Z"
+ },
+ "2026020051": {
+  "game_id": 2026020051,
+  "game_date": "2026-10-06",
+  "start_time_utc": "2026-10-07T01:40:00Z",
+  "home_team": "Kraken",
+  "away_team": "Golden Knights",
+  "home_abbrev": "SEA",
+  "away_abbrev": "VGK",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-05T17:25:01Z",
+  "Kraken": 145,
+  "Golden Knights": -175,
+  "home_ml": 145,
+  "away_ml": -175,
+  "total_line": "5.5",
+  "total_over": -130,
+  "total_under": 110,
+  "captured_at": "2026-10-05T17:25:01Z"
  },
  "2026020052": {
   "game_id": 2026020052,
@@ -1384,14 +1544,14 @@
   "sources": [
    "espn_draftkings"
   ],
-  "fetched_at": "2026-10-05T04:45:02Z",
+  "fetched_at": "2026-10-05T17:25:01Z",
   "Kings": 105,
   "Panthers": -125,
   "home_ml": 105,
   "away_ml": -125,
   "total_line": "5.5",
-  "total_over": -130,
-  "total_under": 110,
-  "captured_at": "2026-10-05T04:45:02Z"
+  "total_over": -122,
+  "total_under": 102,
+  "captured_at": "2026-10-05T17:25:01Z"
  }
 }
