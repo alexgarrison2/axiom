@@ -55,6 +55,24 @@ const KINDS: { value: UnitKind; label: string; strength: string }[] = [
 
 /** Under this the unit is a line change in passing, not a unit. */
 const MIN_TOI = 30;
+/** Most regular units a team can dress per kind; the cut is searched only up to here. */
+const MAX_CORE: Record<UnitKind, number> = { F: 8, D: 6, PP: 4, PK: 4 };
+/** The time drop between neighbours (by TOI) must be at least this ratio to count as the fall-off. */
+const DROP = 1.6;
+
+/** How many units, by TOI, come before the steepest fall-off (all of them when nothing drops sharply). */
+export function regularCount(tois: number[], maxCore: number): number {
+    let best = tois.length;
+    let bestR = DROP;
+    for (let k = 2; k <= Math.min(tois.length - 1, maxCore); k++) {
+        const r = tois[k - 1] / Math.max(1, tois[k]);
+        if (r > bestR) {
+            bestR = r;
+            best = k;
+        }
+    }
+    return best;
+}
 
 /** Forward lines, defence pairs and special-teams units: on-ice results while that exact group was out together. */
 export function Units() {
@@ -67,13 +85,18 @@ export function Units() {
     const rows = React.useMemo(() => units(m, side, kind, per).filter(u => u.toi >= MIN_TOI), [m, side, kind, per]);
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
     const col = COLS.find(c => c.key === sort.key) ?? COLS[0];
-    const sorted = [...rows].sort((a, b) => {
+    const byToi = [...rows].sort((a, b) => b.toi - a.toi);
+    const nRegular = regularCount(byToi.map(u => u.toi), MAX_CORE[kind]);
+    const regular = new Set(byToi.slice(0, nRegular));
+    const cmp = (a: Unit, b: Unit) => {
         const va = col.value(a);
         const vb = col.value(b);
         if (va == null) return 1;
         if (vb == null) return -1;
         return sort.dir === 'desc' ? vb - va : va - vb;
-    });
+    };
+    // Regular units first, then the occasional ones (overlapping changes, one-off shifts), each sorted by the column.
+    const sorted = [...byToi.filter(u => regular.has(u)).sort(cmp), ...byToi.filter(u => !regular.has(u)).sort(cmp)];
     // Forwards left to right C, L, R like a lineup card; D by number.
     const order = { C: 1, L: 0, R: 2, D: 3, G: 4 } as const;
     const kindLabel = KINDS.find(k => k.value === kind)!;
@@ -132,18 +155,31 @@ export function Units() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {sorted.map(u => {
+                                {sorted.map((u, i) => {
+                                    const spot = !regular.has(u);
                                     const ps = u.ids
                                         .map(id => byId.get(id))
                                         .filter((p): p is NonNullable<typeof p> => p != null)
                                         .sort((a, b) => order[a.pos] - order[b.pos] || (a.num ?? 0) - (b.num ?? 0));
                                     return (
-                                        <tr key={u.ids.join('-')} className="group">
-                                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-11 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]')}>
-                                                <span className="flex items-center gap-2.5">
+                                        <React.Fragment key={u.ids.join('-')}>
+                                        {spot && i === nRegular ? (
+                                            <tr>
+                                                <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 pt-3 text-left align-bottom font-normal shadow-[inset_0_-1px_0_var(--line-strong)]')}>
+                                                    <span className="text-micro uppercase tracking-label text-fg-3">
+                                                        Occasional · {byToi.length - nRegular} {byToi.length - nRegular === 1 ? 'group' : 'groups'}
+                                                    </span>
+                                                </th>
+                                                <td colSpan={COLS.length} className={cn(CELL_BG, 'h-9 px-2 pt-3 shadow-[inset_0_-1px_0_var(--line-strong)]')}>
+                                                </td>
+                                            </tr>
+                                        ) : null}
+                                        <tr className="group">
+                                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]', spot ? 'h-9' : 'h-11')}>
+                                                <span className={cn('flex items-center gap-2.5', spot && 'opacity-50 transition-opacity group-hover:opacity-100')}>
                                                     <span className="flex shrink-0 gap-1">
                                                         {ps.map(p => (
-                                                            <JerseyNumber key={p.id} tri={m.teams[side].tri} num={p.num} ring={colors[side]} size={32} />
+                                                            <JerseyNumber key={p.id} tri={m.teams[side].tri} num={p.num} ring={colors[side]} size={spot ? 26 : 32} />
                                                         ))}
                                                     </span>
                                                     <span className="truncate">
@@ -163,15 +199,17 @@ export function Units() {
                                                         key={c.key}
                                                         className={cn(
                                                             CELL_BG,
-                                                            'h-11 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]',
+                                                            'px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]',
+                                                            spot ? 'h-9' : 'h-11',
                                                             v == null || v === 0 ? 'text-fg-3' : c.signed ? (v > 0 ? 'text-pos' : 'text-neg') : c.model ? 'text-model' : 'text-fg-1',
                                                         )}
                                                     >
-                                                        {v == null ? '—' : c.fmt ? c.fmt(v) : v}
+                                                        <span className={cn(spot && 'opacity-50 transition-opacity group-hover:opacity-100')}>{v == null ? '—' : c.fmt ? c.fmt(v) : v}</span>
                                                     </td>
                                                 );
                                             })}
                                         </tr>
+                                        </React.Fragment>
                                     );
                                 })}
                             </tbody>

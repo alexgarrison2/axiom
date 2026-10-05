@@ -26,9 +26,9 @@ const SECTIONS = [
     { id: 'xg', label: 'xG' },
     { id: 'team', label: 'Team' },
     { id: 'skaters', label: 'Skaters' },
+    { id: 'units', label: 'Units' },
     { id: 'goalies', label: 'Goalies' },
     { id: 'lines', label: 'Lines' },
-    { id: 'units', label: 'Units' },
     { id: 'matchups', label: 'Matchups' },
     { id: 'zones', label: 'Zones' },
 ] as const;
@@ -144,9 +144,9 @@ export function GameView({ m }: { m: GameModel }) {
                                 <XgBreakdown />
                                 <TeamStats />
                                 <Skaters />
+                                <Units />
                                 <Goalies />
                                 <Lines />
-                                <Units />
                                 <Matchups />
                                 <Zones />
                             </>
