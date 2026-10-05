@@ -37977,5 +37977,73 @@
         "market_p": 0.5598
       }
     }
+  },
+  {
+    "gameId": 2026020039,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-04",
+    "homeTeam": "Canucks",
+    "awayTeam": "Golden Knights",
+    "homeScore": 2,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 2.27,
+    "awayXg": 4.18,
+    "homeWinProb": 21.8,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Golden Knights",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.0475,
+    "logLoss": 0.2459,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-05T00:02:00Z",
+    "startUtc": "2026-10-05T01:00:00Z",
+    "marketHomeProb": 27.3,
+    "modelHomeProb": 20.5,
+    "homeOdds": 235.0,
+    "awayOdds": -290.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 20.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.679,
+        "ll": 0.3871,
+        "naive_ll": 0.3469,
+        "market_p": 0.5898
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.444,
+        "ll": 0.8119,
+        "naive_ll": 0.8038,
+        "market_p": 0.5
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.503,
+        "ll": 0.6872,
+        "naive_ll": 0.671,
+        "market_p": 0.5346
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.197,
+        "ll": 1.6246,
+        "naive_ll": 1.5907,
+        "market_p": 0.247
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.28,
+        "ll": 1.273,
+        "naive_ll": 1.2641,
+        "market_p": 0.3522
+      }
+    }
   }
 ]
