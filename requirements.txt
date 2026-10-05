@@ -9,10 +9,10 @@ xgboost==3.1.2; sys_platform != "linux"
 scikit-learn==1.7.2
 pytz==2025.2
 psycopg2-binary==2.9.11
-python-dotenv==1.2.1
+python-dotenv==1.2.3
 beautifulsoup4==4.13.4
 # NHL roster/player lookups in team_ratings.py
-requests==2.32.5
+requests==2.33.0
 # workflow-structure tests (pipeline/tests) parse the GitHub Actions YAML
 PyYAML==6.0.3
 # TLS CA bundle for pipeline/http_utils.py (verification is always on)
