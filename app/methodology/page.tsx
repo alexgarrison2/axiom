@@ -579,6 +579,10 @@ export default function MethodologyPage() {
                                     games weighted) and adjusted for the matchup: the opponent&apos;s shots allowed for shots on goal, the game model&apos;s
                                     expected goals for his team for the scoring props. Shots on goal use a negative binomial, the rest a Poisson count.
                                 </Key>
+                                <Key sample={<span className="label text-model">Proj</span>}>
+                                    His expected count tonight (shots on goal, goals, points, assists or power-play points): the mean the fair chance is
+                                    built from. For shots on goal the number under it is the projection minus the line.
+                                </Key>
                                 <Key sample={<span className="label text-fg-1">Book</span>}>
                                     Bovada&apos;s posted over price and its implied chance. Two-way lines (shots on goal) have the vig removed; one-way prices
                                     (anytime goal, points, assists, power-play points, marked *) still include it, so their edge reads low.

@@ -210,7 +210,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
         </SortHeader>
     );
     const showAtt = cat.key === 'sog';
-    const colCount = 7 + (view === 'tonight' ? 2 : 0) + (showAtt ? 1 : 0) + (priced ? 3 : 0);
+    const colCount = 7 + (view === 'tonight' ? 3 : 0) + (showAtt ? 1 : 0) + (priced ? 3 : 0);
     const toggleOpen = React.useCallback((id: number) => setOpen(o => (o === id ? null : id)), []);
 
     return (
@@ -383,6 +383,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
                                 {head('name', 'Player', 'Skater, tonight’s line and power-play unit', 'sticky left-0 z-10 w-[9.5rem] min-w-[9.5rem] bg-bg md:w-64', 'left')}
                                 {view === 'tonight' ? head('opp', 'Opp', `Opponent and its rank in ${cat.oppRank === 'sa_rank' ? 'shots' : 'goals'} allowed per game (1 = most)`, 'hidden md:table-cell', 'left') : null}
                                 {view === 'tonight' ? head('toi', 'TOI', 'Expected minutes (recent games weighted)', 'hidden lg:table-cell', 'right') : null}
+                                {view === 'tonight' ? head('proj', 'Proj', `pony xG projected ${cat.stat} tonight (the mean behind the fair price)`, 'hidden md:table-cell', 'right') : null}
                                 {showAtt ? head('att', 'Att/G', 'Shot attempts per game, last 10: on net, missed and blocked', 'hidden lg:table-cell', 'right') : null}
                                 <th scope="col" className="border-b border-line px-2 text-left text-micro font-medium uppercase tracking-[0.06em] text-fg-3">
                                     <span className="hidden md:inline">Last 20</span>
@@ -511,6 +512,23 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
                 ) : null}
                 {view === 'tonight' ? (
                     <td className={cn(CELL_BG, 'hidden h-11 whitespace-nowrap border-b border-line px-2 text-right text-fg-2 lg:table-cell')}>{p.toi?.toFixed(1) ?? '—'}</td>
+                ) : null}
+                {view === 'tonight' ? (
+                    <td className={cn(CELL_BG, 'hidden h-11 whitespace-nowrap border-b border-line px-2 text-right md:table-cell')}>
+                        {r.proj != null ? (
+                            <span className="flex flex-col items-end leading-tight">
+                                <span className="text-model">{r.proj.toFixed(cat.key === 'sog' ? 1 : 2)}</span>
+                                {cat.key === 'sog' ? (
+                                    <span className="text-micro text-fg-3" title={`Projection minus the ${line.label} line`}>
+                                        {r.proj - (line.k - 0.5) >= 0 ? '+' : '−'}
+                                        {Math.abs(r.proj - (line.k - 0.5)).toFixed(1)}
+                                    </span>
+                                ) : null}
+                            </span>
+                        ) : (
+                            <span className="text-fg-disabled">—</span>
+                        )}
+                    </td>
                 ) : null}
                 {showAtt ? (
                     <td className={cn(CELL_BG, 'hidden h-11 whitespace-nowrap border-b border-line px-2 text-right lg:table-cell', r.att == null ? 'text-fg-disabled' : 'text-fg-1')}>

@@ -31,6 +31,7 @@ Shape (keys kept short; the file is fetched by the browser):
     teams: { TRI: { sa_rank, ga_rank } },           # 1 = allows the most
     players: [{ id, name, team, pos, unit, pp, move, mates: [ids], gp, gp_prev,
                 game, opp, home, toi, fair: {key: p}, book: {key: {...}},
+                proj: {sog, g, a, pts, ppp},                  # expected count tonight
                 log: [[date, opp, home, toi, g, a, sog, ppp, prev, att], ...],
                 cur: {key: hits}, prev: {key: hits} }] }
 """
@@ -49,6 +50,8 @@ from paths import pipeline_path, public_path
 from season import START_YEAR, PREV_START_YEAR, SEASON_ID, PREV_SEASON_ID, season_file, today_local
 
 OUT_FILE = public_path("props.json")
+# Page category -> prop_model expected-count column.
+PROJ = {"sog": "lam_shots", "g": "lam_goals", "a": "lam_assists", "pts": "lam_points", "ppp": "lam_pp_points"}
 DETAIL_FILE = public_path("props_detail.json")
 HIST_FILE = pipeline_path("nhl_historical_skater_games.csv")
 LOG_GAMES = 20
@@ -302,6 +305,7 @@ def build(today=None) -> tuple[dict, dict]:
             p.update({"game": int(f["game_id"]), "opp": f["opp"], "home": int(f["home"]),
                       "toi": round(float(f["toi_exp"]), 1),
                       "fair": {key: round(float(f[f"fair_{key}"]), 4) for key, _, _ in pm.PROPS},
+                      "proj": {cat: round(float(f[col]), 2) for cat, col in PROJ.items()},
                       "book": _book(book_idx.get((int(f["game_id"]), norm(last["name"]))))})
         players.append(p)
 

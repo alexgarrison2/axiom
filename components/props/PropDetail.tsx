@@ -262,7 +262,16 @@ export function PropDetail({ r, cat, doc, detail, seasons }: PropDetailProps) {
                     </div>
                 </Section>
 
-                <Section title="Lines">
+                <Section
+                    title="Lines"
+                    aside={
+                        p.proj?.[cat.key] != null ? (
+                            <span className="text-micro uppercase">
+                                Proj <span className="text-model">{p.proj[cat.key]!.toFixed(cat.key === 'sog' ? 1 : 2)}</span> {cat.stat}
+                            </span>
+                        ) : null
+                    }
+                >
                     <table className="w-full text-caption tabular-nums">
                         <thead>
                             <tr className="text-micro uppercase text-fg-3">

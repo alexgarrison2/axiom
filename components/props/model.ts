@@ -34,6 +34,8 @@ export interface PropPlayer {
     home?: number;
     toi?: number;
     fair?: Record<string, number>;
+    /** pony xG expected count tonight, by category (the mean behind the fair prices). */
+    proj?: Partial<Record<CategoryKey, number>>;
     book?: Record<string, BookPrice>;
 }
 
@@ -282,6 +284,8 @@ export interface Row {
     streak: number;
     boost: Boost | null;
     oppRank: number | null;
+    /** pony xG expected count tonight for the category. */
+    proj: number | null;
     /** Shot attempts per game, last 10. */
     att: number | null;
     /** L5 hit rate clearly above his longer baseline (season, else last season). */
@@ -312,6 +316,7 @@ export function buildRows(doc: PropsDoc, view: View, cat: Category, choice: Line
             streak: streak(p, cat, line),
             boost: cat.key === 'pts' || cat.key === 'a' ? boostFor(p, byId) : null,
             oppRank: p.opp ? (doc.teams[p.opp]?.[cat.oppRank] ?? null) : null,
+            proj: p.proj?.[cat.key] ?? null,
             att: attemptsPer(p, 10).avg,
             hot: l5.n === 5 && l5p != null && base != null && l5p - base >= 0.25,
         };
@@ -334,7 +339,7 @@ export function filterRows(rows: Row[], f: Filter): Row[] {
     });
 }
 
-export type SortKey = 'name' | 'opp' | 'toi' | 'att' | 'l5' | 'l10' | 'l20' | 'szn' | 'imp' | 'fair' | 'edge' | 'streak';
+export type SortKey = 'name' | 'opp' | 'toi' | 'proj' | 'att' | 'l5' | 'l10' | 'l20' | 'szn' | 'imp' | 'fair' | 'edge' | 'streak';
 
 export const FIRST_DIR: Partial<Record<SortKey, 'asc' | 'desc'>> = { name: 'asc', opp: 'asc' };
 
@@ -346,6 +351,8 @@ function sortValue(r: Row, key: SortKey): number | string | null {
             return r.oppRank;
         case 'toi':
             return r.p.toi ?? null;
+        case 'proj':
+            return r.proj;
         case 'att':
             return r.att;
         case 'l5':
