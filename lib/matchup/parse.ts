@@ -127,6 +127,9 @@ function side(row: RawRow, s: Side, team: TeamRef): SideData {
         firstPeriodMl: int(k('1p_ml')),
         threeWay: int(k('three_way')),
         record: null,
+        points: null,
+        divRank: null,
+        division: null,
         hasNews: Array.isArray(news) && news.some(n => n && n.category !== 'Goalie Start'),
     };
 }

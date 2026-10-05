@@ -58,12 +58,19 @@ function tvNetworks(): Map<string, TvBroadcast[]> {
     return m;
 }
 
+interface NhlStanding {
+    record: string;
+    points: number;
+    divRank: number | null;
+    division: string | null;
+}
+
 /**
- * Current-season W-L-OTL from the NHL (Data Cache, 30 min). Null on any
- * failure or when the feed still returns last season (the /now endpoints lag
- * around opening night).
+ * Current-season W-L-OTL, points and division place from the NHL (Data
+ * Cache, 30 min). Null on any failure or when the feed still returns last
+ * season (the /now endpoints lag around opening night).
  */
-async function nhlRecords(): Promise<Record<string, string> | null> {
+async function nhlStandings(): Promise<Record<string, NhlStanding> | null> {
     try {
         const res = await fetch('https://api-web.nhle.com/v1/standings/now', {
             next: { revalidate: 1800 },
@@ -72,13 +79,29 @@ async function nhlRecords(): Promise<Record<string, string> | null> {
         });
         if (!res.ok) return null;
         const body = (await res.json()) as {
-            standings?: { teamAbbrev?: { default?: string }; wins?: number; losses?: number; otLosses?: number; seasonId?: number }[];
+            standings?: {
+                teamAbbrev?: { default?: string };
+                wins?: number;
+                losses?: number;
+                otLosses?: number;
+                points?: number;
+                divisionSequence?: number;
+                divisionName?: string;
+                seasonId?: number;
+            }[];
         };
-        const out: Record<string, string> = {};
+        const out: Record<string, NhlStanding> = {};
         for (const t of body.standings ?? []) {
             const tri = t.teamAbbrev?.default;
             if (!tri || (t.seasonId && String(t.seasonId) !== SEASON_ID)) continue;
-            out[tri] = `${t.wins ?? 0}-${t.losses ?? 0}-${t.otLosses ?? 0}`;
+            const w = t.wins ?? 0;
+            const otl = t.otLosses ?? 0;
+            out[tri] = {
+                record: `${w}-${t.losses ?? 0}-${otl}`,
+                points: t.points ?? 2 * w + otl,
+                divRank: t.divisionSequence ?? null,
+                division: t.divisionName ?? null,
+            };
         }
         return Object.keys(out).length ? out : null;
     } catch {
@@ -107,8 +130,19 @@ export async function getPredictions(): Promise<Prediction[]> {
         }
         preds.push(p);
     }
-    const nhl = preds.length ? await nhlRecords() : null;
-    if (nhl) for (const p of preds) for (const s of ['home', 'away'] as const) p[s].record = nhl[p[s].team.triCode] ?? p[s].record;
+    const nhl = preds.length ? await nhlStandings() : null;
+    if (nhl) {
+        for (const p of preds) {
+            for (const s of ['home', 'away'] as const) {
+                const t = nhl[p[s].team.triCode];
+                if (!t) continue;
+                p[s].record = t.record;
+                p[s].points = t.points;
+                p[s].divRank = t.divRank;
+                p[s].division = t.division;
+            }
+        }
+    }
     return preds;
 }
 

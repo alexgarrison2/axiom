@@ -96,6 +96,10 @@ export interface SideData {
     threeWay: number | null;
     /** Current-season W-L-OTL (NHL standings, or derived early in the season). */
     record: string | null;
+    /** Standings points and division place, from the NHL standings (null when the feed is unavailable). */
+    points: number | null;
+    divRank: number | null;
+    division: string | null;
     /** Has non-goalie news (drives the news dot). */
     hasNews: boolean;
 }

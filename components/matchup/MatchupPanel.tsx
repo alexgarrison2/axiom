@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { Prediction, SideDetails } from '@/types/prediction';
+import type { Prediction, SideData, SideDetails } from '@/types/prediction';
 import { DEPLOY, loadJson } from '@/lib/client-data';
 import { SEASON_ID } from '@/lib/season';
 import { shortSeason } from '@/utils/team-stats/season';
@@ -152,16 +152,36 @@ function GroupTag({ children, extra, first }: { children: React.ReactNode; extra
     );
 }
 
-function TeamHead({ side, tri, gp, pending, tags }: { side: Side; tri: string; gp: number; pending: number; tags: string[] }) {
+const DIVISION_SHORT: Record<string, string> = { Metropolitan: 'Metro' };
+
+/** ["3-1-0", "(6 pts)", "1st Metro"]: record, standings points, division place; each part stays on one line. */
+export function standingLine(s: Pick<SideData, 'record' | 'points' | 'divRank' | 'division'>): string[] | null {
+    if (!s.record) return null;
+    const [w, , otl] = s.record.split('-').map(Number);
+    const pts = s.points ?? (Number.isFinite(w) && Number.isFinite(otl) ? 2 * w + otl : null);
+    const div = s.divRank && s.division ? `${ordinal(s.divRank)} ${DIVISION_SHORT[s.division] ?? s.division}` : null;
+    return [s.record, ...(pts != null ? [`(${pts} pts)`] : []), ...(div ? [div] : [])];
+}
+
+function TeamHead({ side, tri, gp, pending, tags, standing }: { side: Side; tri: string; gp: number; pending: number; tags: string[]; standing: string[] | null }) {
     const away = side === 'away';
     return (
         <div className={cn('flex min-w-0 items-center gap-2', !away && 'flex-row-reverse text-right')}>
-            <Crest tri={tri} size={96} className="-my-1 h-20 w-20 cq-md:h-24 cq-md:w-24" />
+            <Crest tri={tri} size={96} className="-my-1 h-16 w-16 shrink-0 cq-sm:h-20 cq-sm:w-20 cq-md:h-24 cq-md:w-24" />
             <div className={cn('flex min-w-0 flex-col', away ? 'items-start' : 'items-end')}>
                 <span className="font-display text-h2 font-bold uppercase leading-none text-fg-1">{tri}</span>
                 <span className={cn('mt-1 text-micro uppercase tracking-wide tabular-nums', gp < MIN_GP ? 'text-warn' : 'text-fg-3')}>
                     GP <span className="font-bold">{gp}</span>
                 </span>
+                {standing ? (
+                    <span className={cn('mt-0.5 flex flex-wrap gap-x-1.5 text-micro uppercase tracking-wide tabular-nums text-fg-2', !away && 'justify-end')} data-standing>
+                        {standing.map(part => (
+                            <span key={part} className="whitespace-nowrap">
+                                {part}
+                            </span>
+                        ))}
+                    </span>
+                ) : null}
                 {pending > 0 ? (
                     <span className="mt-0.5 text-micro uppercase tracking-wide text-amber" title="Played, but not in these numbers yet: the game log updates after the nightly ingest.">
                         +{pending} pending
@@ -281,8 +301,8 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
     return (
         <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between gap-2">
-                <TeamHead side="away" tri={tris.away} gp={model.gp.away} pending={model.pending.away} tags={tags('away')} />
-                <TeamHead side="home" tri={tris.home} gp={model.gp.home} pending={model.pending.home} tags={tags('home')} />
+                <TeamHead side="away" tri={tris.away} gp={model.gp.away} pending={model.pending.away} tags={tags('away')} standing={standingLine(p.away)} />
+                <TeamHead side="home" tri={tris.home} gp={model.gp.home} pending={model.pending.home} tags={tags('home')} standing={standingLine(p.home)} />
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-1.5" role="group" aria-label="Filter each team by its own situation tonight">
