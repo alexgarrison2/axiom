@@ -143,7 +143,8 @@ function GoalShot({ e }: { e: GameEvent }) {
     const { m, colors, byId, label } = useGame();
     const g = geometry(e);
     const color = colors[e.side];
-    const before = m.events.filter(x => x.period === e.period && x.t <= e.t && x.t >= e.t - 20 && x.id !== e.id && x.type !== 'goal').slice(-4);
+    // Plays before the goal in feed order: same-second events after it (the centre-ice faceoff) are not lead-up.
+    const before = m.events.slice(0, m.events.indexOf(e)).filter(x => x.period === e.period && x.t >= e.t - 20 && x.type !== 'goal').slice(-4);
     const rebound = before.some(x => x.side === e.side && (x.type === 'shot' || x.type === 'miss' || x.type === 'block') && e.t - x.t <= 3);
     const rush = (() => {
         const prev = [...before].reverse().find(x => x.t < e.t);
