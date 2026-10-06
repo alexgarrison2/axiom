@@ -321,6 +321,51 @@ export function goalSwings(m: GameModel): GoalSwing[] {
     return out;
 }
 
+/**
+ * The "deserved" home win probability from the shots so far: every unblocked
+ * attempt is a coin with its pony xG, goals are the sum of those coins
+ * (Poisson-binomial), and a level game splits evenly. Steps at every shot.
+ * Where it parts from the score line, finishing and goaltending made the
+ * difference.
+ */
+export function deservedSeries(m: GameModel): [number, number][] {
+    const dist: Record<Side, number[]> = { away: [1], home: [1] };
+    const pHome = () => {
+        let win = 0;
+        let tie = 0;
+        let cdfAway = 0;
+        for (let h = 0; h < dist.home.length; h++) {
+            const ph = dist.home[h];
+            tie += ph * (dist.away[h] ?? 0);
+            win += ph * cdfAway;
+            cdfAway += dist.away[h] ?? 0;
+        }
+        return win + tie / 2;
+    };
+    const out: [number, number][] = [[0, 0.5]];
+    for (const e of m.events) {
+        if (!isUnblocked(e) || e.xg == null || e.xg <= 0) continue;
+        const p = Math.min(0.99, e.xg);
+        const d = dist[e.side];
+        const next = new Array(d.length + 1).fill(0);
+        for (let k = 0; k < d.length; k++) {
+            next[k] += d[k] * (1 - p);
+            next[k + 1] += d[k] * p;
+        }
+        dist[e.side] = next;
+        out.push([e.t, pHome()]);
+    }
+    out.push([Math.max(m.end, 1), out[out.length - 1][1]]);
+    return out;
+}
+
+/** Period number and seconds into it for game time t (any number of overtimes). */
+export function periodAt(t: number, otLength: number): { period: number; into: number } {
+    if (t < 3600) return { period: Math.floor(t / 1200) + 1, into: t % 1200 };
+    const k = Math.floor((t - 3600) / otLength);
+    return { period: 4 + k, into: t - 3600 - k * otLength };
+}
+
 /* ── On-ice segments ───────────────────────────────────────────────────── */
 
 export interface Segment {
@@ -973,7 +1018,8 @@ export function strengthStates(m: GameModel): { a: number; b: number; kind: Stat
             if (s.goalie.away && s.goalie.home) continue;
             kind = 'extra';
             side = !s.goalie.away ? 'away' : 'home';
-            label = 'EN';
+            // The real counts: 6v5 at even strength, 6v4 when the goalie comes out on a power play.
+            label = `${s.skaters[side].length}v${s.skaters[other(side)].length}`;
         } else if (a !== h && a >= 3 && h >= 3) {
             kind = 'pp';
             side = a > h ? 'away' : 'home';

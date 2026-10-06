@@ -40,6 +40,7 @@ const SECTIONS = [
     { id: 'validation', label: 'Validation' },
     { id: 'goalies', label: 'Goalies' },
     { id: 'context', label: 'Context chips' },
+    { id: 'game-story', label: 'Game story' },
     { id: 'players', label: 'Players & standings' },
     { id: 'data-sources', label: 'Data sources' },
     { id: 'glossary', label: 'Glossary' },
@@ -487,6 +488,24 @@ export default function MethodologyPage() {
                                 season), head-to-head this season, power play and penalty kill, and rest (back-to-backs and compressed stretches). The
                                 &ldquo;Why&rdquo; bars show how much each factor pushes the forecast toward one team, diverging from the centre in team
                                 colours. They follow the same sample rules as above — this season first, prior-season values tagged.
+                            </p>
+                        </Section>
+
+                        <Section id="game-story" index={++i} title="Game story">
+                            <p>
+                                Every finished or live game has a page with a <strong>story</strong> chart. The solid magenta line is the home
+                                team&apos;s win probability from the <strong>score and the clock</strong>: it starts at our frozen pregame call and moves
+                                only when a goal goes in, so it stays flat through a power play or a run of shots. The dashed magenta line is the
+                                <strong> deserved</strong> win probability: every unblocked shot so far counted as a chance to score at its pony xG, with a
+                                level game split evenly. Where the two lines part, finishing and goaltending made the difference. The scale stretches
+                                near 0% and 100% so late movement in a lopsided game stays visible.
+                            </p>
+                            <p>
+                                At puck drop the chart marks our call (PONY) and the de-vigged closing market (MKT). The coloured blocks in the strength
+                                row belong to the team with the extra skater (5v4, 5v3, 6v5 with the goalie pulled); amber ticks mark penalty calls. Dots
+                                at the edges of the bar lane are chances worth at least 0.20 xG that did not go in. In the running totals, the dashed lines
+                                rise to each team&apos;s pregame projection at 60:00, so you can see who is ahead of or behind the model&apos;s pace. The
+                                Share view replaces the bars with a rolling five-minute xG share.
                             </p>
                         </Section>
 

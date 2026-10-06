@@ -58,3 +58,18 @@ export function deltaE(a: string, b: string): number {
     const [l2, a2, b2] = hexToLab(b);
     return Math.hypot(l1 - l2, a1 - a2, b1 - b2);
 }
+
+/**
+ * A team colour made legible as small text on a dark surface: mixed toward
+ * white just enough to reach `min` contrast (4.5:1 by default), hue kept.
+ */
+export function legibleOn(color: string, bg: string, min = 4.5): string {
+    if (!/^#?[0-9a-fA-F]{3,6}$/.test(color.trim())) return color;
+    const [r, g, b] = hexToRgb(color);
+    for (let k = 0; k <= 1.0001; k += 0.05) {
+        const mix = [r, g, b].map(c => Math.round(c + (255 - c) * k));
+        const hex = `#${mix.map(c => c.toString(16).padStart(2, '0')).join('')}`;
+        if (contrastRatio(hex, bg) >= min) return hex;
+    }
+    return '#ffffff';
+}

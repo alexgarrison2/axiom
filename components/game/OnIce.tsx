@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { legibleOn } from '@/components/ui/color';
 import { cn } from '@/lib/utils';
 import { clockOf, iceAt, shortName, type GoalieSnap, type SkaterSnap } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
@@ -22,7 +23,7 @@ const zero = (v: number) => (v ? 'text-fg-1' : 'text-fg-3');
 
 function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[]; goalie: GoalieSnap | null }) {
     const { m, colors } = useGame();
-    const color = colors[side];
+    const color = legibleOn(colors[side], '#0a0e15');
     const n = skaters.length;
     return (
         <div className="min-w-0">
@@ -122,14 +123,15 @@ function Stat({ k, v, model, tone }: { k: string; v: string; model?: boolean; to
     );
 }
 
-/** Players on the ice at game time t (the Pulse playhead), home first like the chart. */
-export function OnIce({ t }: { t: number }) {
+/** Players on the ice at game time t (the Pulse playhead), away then home like the readout. */
+export function OnIce({ t, caption }: { t: number; caption: React.ReactNode }) {
     const { m } = useGame();
     const snap = React.useMemo(() => iceAt(m, t), [m, t]);
     if (!snap) return null;
     return (
         <div className="grid gap-4 border-t border-line px-card py-3">
-            {(['home', 'away'] as Side[]).map(side => (
+            <p className="label">{caption}</p>
+            {(['away', 'home'] as Side[]).map(side => (
                 <TeamIce key={side} side={side} skaters={snap.skaters[side]} goalie={snap.goalie[side]} />
             ))}
         </div>

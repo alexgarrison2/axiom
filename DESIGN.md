@@ -227,7 +227,7 @@ Each side of a game carries its club colour, resolved per game rather than per t
 ### Named Rules
 **The Clash-Safe Side Rule.** On a game surface, side colours come only from the game's resolved pair, never from a raw team primary, so split cells and dimmed bars stay tellable apart and no side reads as the penalty kill.
 
-**The Texture-Not-Hue Rule.** A game state that either side can own (a power-play window) is a neutral ink hatch that no team colour can reach, named by an amber cap and tag; the side with the extra skater gets only a 2px edge in its colour.
+**The Owner-Colour Rule.** A game state either side can own (a power-play or extra-attacker window) takes the colour of the side that owns it at that moment, so whose advantage it is reads at a glance: a solid side-colour block with the real counts ("DAL 5v4", "6v5"), a faint side-colour band, and a side-colour hatch over that side's half of the bars. States nobody owns (4v4, 3v3) stay neutral grey. Amber marks the cause (a penalty tick), never the state. Text on a block picks dark or light ink by contrast; side-colour text on the panel is lifted toward white until it reaches 4.5:1.
 
 **The One Meaning Rule.** Each neon owns one job: cyan active/hit, green positive, red negative, magenta model, amber situational, blue goalie. Never borrow a hue for decoration or for a second meaning.
 
@@ -335,14 +335,17 @@ Right-aligned signed value in tenths ("+6.2"), green above zero, red below, seco
 A full-width panel: away crest and score left, home mirrored right, a centre column with the status chip (live: green text on a 10% green fill with the live glow; final: raised fill, ink text), date, a goals-by-period line score with SOG, and venue. Crests run flush at 56px phone / 112px md. Under each score a 4px by 40px rounded bar in the side colour (40% for a final's loser). A hairline-topped strip below holds the pregame call (pick, magenta probability, dim market and price, green Hit / red Miss once final) and the three stars.
 
 ### Pulse strip (signature, `/games/[id]`)
-The game on one 60-minute axis (longer for overtime), lanes top to bottom:
-- **Goal pins:** the scorer's headshot in a 17px-radius disc (12px under 640px wide) on the inset fill with a 2px side-colour ring; colliding pins stack into up to three rows 1.55 radii apart. A side-colour hairline at 55% drops from each pin through every lane.
-- **Win lane:** pony xG home win probability as a 2px magenta step line around a dashed 50% line; the leader's half is tinted in that side's colour at 20%. Home owns the top half, away the bottom; the end value sits right in magenta.
-- **Per-minute bars:** one bar per minute in side colour at 85%, home above the axis, away below; metric switchable (attempts, unblocked, SOG, xG). Power-play windows of 10s or more sit behind as a 45-degree ink hatch (1.2px lines at 16%, 6px pitch) with a 2px amber cap above the lane and an amber "PP" tag where the window is 16px or wider.
-- **Race lane:** running totals as 2px side-colour step lines, end values right.
-- **Seams and axis:** 1px hover-edge period seams through all lanes; dim period labels under the axis.
-- **Stepping:** arrow buttons and Left/Right keys step through goals and penalties (Escape clears); the stop is a 1.5px cyan line through every lane with a cyan flag at the top, and the pin's ring turns cyan. Pointer hover draws an ink playhead at 35%. A readout row under the strip shows clock, score, magenta win % and the race values in side colours.
-Lanes run 96 / 104 / 84px tall (70 / 76 / 60px compact) with 22px between them.
+The game on one 60-minute axis (longer for overtime, one seam per OT period), lanes top to bottom:
+- **Goal pins:** the scoring side's crest, as large as the disc allows, in a 19px-radius disc (13px under 640px wide) on the inset fill with a 2px side-colour ring; the goal's xG in magenta under the pin when no pin hangs below. Colliding pins stack into up to three rows 1.55 radii apart. A side-colour hairline at 55% drops from each pin through every lane. Pins are focusable buttons named with clock, team, scorer, xG and the win swing.
+- **Win lane:** home win probability on a scale that is linear through the middle and stretched near 0 and 100% (so blowouts keep moving). Solid 2px magenta = the score-and-clock model, starting at the frozen pregame call (a magenta dot at puck drop); dashed 1.25px magenta = deserved win % from the shots' xG so far. A 2px ink tick marks the de-vigged market at puck drop; "PONY TRI 63% · MKT TRI 58%" rides the lane's top row. The leader's half is tinted in that side's colour at 20%; home owns the top half. End values right: the score line's % and "xG %" for the dashed line.
+- **Strength row ("STR"):** owner-colour blocks per the Owner-Colour Rule; amber 2px ticks where penalties were called.
+- **Bars lane:** one bar per minute in side colour at 85%, home above the axis, away below; metric switchable (attempts, unblocked, SOG, xG) with the lane maximum printed under the label. "Share" swaps the bars for a rolling five-minute xG share around 50% (side-colour fills at 50%, ink line). High-danger chances (xG ≥ 0.20) that did not score are 2.75px side-colour dots on the shooting side's edge.
+- **Race lane:** running totals as 2px side-colour step lines, end values right; for xG and goals, dashed side-colour pace lines rise to each side's pregame projection at 60:00.
+- **Seams and axis:** 1px hover-edge period seams through all lanes; dim period labels under the axis (1st, 2nd, 3rd, OT, 2OT…).
+- **Moments:** a mouse hover draws an ink playhead at 40%; a click, a tap or drag (touch scrubs horizontally, vertical drags scroll), Shift+Left/Right (one minute) or Home/End holds a moment as a dashed ink line, mirrored to `?t=` so a moment can be shared. Left/Right and the arrow buttons step through goals and penalties (Escape clears); the stop is a 1.5px cyan line with a cyan flag and a cyan pin ring. A playhead chip (16px card, 95% panel with blur) follows the moment and flips past 58% of the width: clock, then away crest, score and race value | metric | home value, score and crest, then the leader's win % and the deserved leader's xG %.
+- **Verdict row:** at rest the row under the chart reads how it ended: Result, Call (with a drawn check or cross), Market, xG totals and the deserved %, the biggest Swing, and a Method link to `/methodology#game-story`.
+- **On ice:** always present under the verdict, at the final horn (or the live moment) until a moment is chosen; away first, then home.
+Lanes run 120 / 136 / 110px tall (84 / 96 / 72px compact) with 18px between them; the strength row is 20px (16px compact). Metric choices persist per browser.
 
 ### Goals spine (`/games/[id]`)
 A 1px hover-edge spine down the centre from md; away goal cards sit in the left half, home cards mirrored in the right, each with an 8px side-colour dot on the spine. Period chips (4px, rink black, hairline) sit on the spine. A goal card is a 16px panel with a hairline (cyan when it is the stop): 56px (64px md) headshot ring in side colour, scorer and running count, amber situational chips, assists, magenta xG, a cyan Clip link, and on the far side the score after, clock, and the win swing to tenths in green or red with the post-goal win % in magenta. Penalties join on demand (a filter chip) as dashed-hairline rows with the team in amber. Below md the spine drops and cards stack.
@@ -373,4 +376,4 @@ A 1px hover-edge spine down the centre from md; away goal cards sit in the left 
 - **Don't** set text below 12px or use the mute colour for data.
 - **Don't** introduce a second typeface; weight, case and tracking carry hierarchy.
 - **Don't** use solid cyan fills except the single primary action and lit data marks (tape bars, swatches, the stepped-event flag).
-- **Don't** paint a state either team can own in a team colour or in amber fill; use the neutral hatch and let amber name it.
+- **Don't** paint a state in amber fill or leave its owner to colour alone: owner-colour blocks carry the team and the counts in text when they fit, and amber marks only the penalty that caused it.

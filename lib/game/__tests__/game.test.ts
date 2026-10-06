@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { goalSwings, iceAt, skaterRows, teamTotals, units, winModel } from '../analytics';
+import { deservedSeries, goalSwings, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
+import { contrastRatio, legibleOn } from '@/components/ui/color';
 
 const team = (id: number, abbrev: string) => ({ id, abbrev, commonName: { default: abbrev }, placeName: { default: abbrev }, score: 0, sog: 0 });
 const spot = (playerId: number, teamId: number, pos: string) => ({ playerId, teamId, positionCode: pos, firstName: { default: 'P' }, lastName: { default: String(playerId) }, sweaterNumber: playerId % 100 });
@@ -105,5 +106,20 @@ describe('game model', () => {
         expect(line.gf).toBe(1);
         expect(line.stints).toBe(3);
         expect(units(m, 'home', 'F', 2)[0].gf).toBe(0);
+    });
+
+    it('builds the deserved line from shot xG and names any overtime', () => {
+        const d = deservedSeries(m);
+        expect(d[0][1]).toBe(0.5);
+        expect(d[1][1]).toBeGreaterThan(0.5);
+        expect(d[d.length - 1][1]).toBeGreaterThan(0);
+        expect(periodAt(1800, 300)).toEqual({ period: 2, into: 600 });
+        expect(periodAt(3600 + 300 + 10, 300)).toEqual({ period: 5, into: 10 });
+    });
+
+    it('lifts a dark team colour to legible text contrast', () => {
+        const c = legibleOn('#00875A', '#0a0e15');
+        expect(contrastRatio(c, '#0a0e15')).toBeGreaterThanOrEqual(4.5);
+        expect(legibleOn('#FFB81C', '#0a0e15')).toBe('#ffb81c');
     });
 });
