@@ -5826,7 +5826,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -6030,8 +6030,8 @@
             }
         ],
         "lineup_source": "Amanda Stein",
-        "updated_at": "2026-10-05T15:42:36.887Z",
-        "fetched_at": "2026-10-05T17:25:07Z"
+        "updated_at": "2026-10-06T15:37:12.843Z",
+        "fetched_at": "2026-10-06T16:03:07Z"
     },
     "MIN": {
         "f1": [
@@ -6419,7 +6419,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -6483,7 +6483,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -6498,26 +6498,26 @@
                 "movement": null
             },
             {
-                "name": "Matt Roy",
-                "number": 3,
+                "name": "Timothy Liljegren",
+                "number": 37,
                 "pos": "rd",
-                "id": 4512,
+                "id": 2805,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "up"
             }
         ],
         "d2": [
             {
-                "name": "Cole Hutson",
-                "number": null,
+                "name": "Martin Fehervary",
+                "number": 42,
                 "pos": "ld",
-                "id": 37137,
-                "ppUnit": 2,
+                "id": 29099,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Vincent Desharnais",
@@ -6532,41 +6532,41 @@
         ],
         "d3": [
             {
-                "name": "Martin Fehervary",
-                "number": 42,
+                "name": "Cole Hutson",
+                "number": null,
                 "pos": "ld",
-                "id": 29099,
-                "ppUnit": null,
+                "id": 37137,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Timothy Liljegren",
-                "number": 37,
+                "name": "Dylan McIlrath",
+                "number": 52,
                 "pos": "rd",
-                "id": 2805,
+                "id": 1590,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
             {
-                "name": "Charlie Lindgren",
-                "number": 79,
+                "name": "Logan Thompson",
+                "number": 48,
                 "pos": "g1",
-                "id": 2615,
+                "id": 28990,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Logan Thompson",
-                "number": 48,
+                "name": "Charlie Lindgren",
+                "number": 79,
                 "pos": "g2",
-                "id": 28990,
+                "id": 2615,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -6612,22 +6612,22 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Vincent Desharnais",
-                "number": 73,
+                "name": "Martin Fehervary",
+                "number": 42,
                 "pos": "sk3",
-                "id": 25716,
+                "id": 29099,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Matt Roy",
-                "number": 3,
+                "name": "Vincent Desharnais",
+                "number": 73,
                 "pos": "sk4",
-                "id": 4512,
+                "id": 25716,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             }
         ],
         "pk2": [
@@ -6650,11 +6650,11 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Martin Fehervary",
-                "number": 42,
+                "name": "Jakob Chychrun",
+                "number": 6,
                 "pos": "sk3",
-                "id": 29099,
-                "ppUnit": null,
+                "id": 2643,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -6669,8 +6669,8 @@
             }
         ],
         "lineup_source": "Sammi Silber",
-        "updated_at": "2026-10-05T15:04:19.081Z",
-        "fetched_at": "2026-10-06T01:02:23Z"
+        "updated_at": "2026-10-06T15:36:43.017Z",
+        "fetched_at": "2026-10-06T16:03:07Z"
     },
     "CBJ": {
         "f1": [
