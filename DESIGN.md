@@ -200,7 +200,7 @@ Honesty about samples is visual, not verbal. Prior-season and thin-sample values
 A near-black ink field with five saturated neons, each bound to exactly one job.
 
 ### Primary
-- **Arcade Cyan** (brand-cyan): Brand, active and focus. The selected segment's text, the selected filter chip's edge glow, the 2px focus ring, sort indicators, the PP1 chip, and on `/props` a game that cleared the line (lit tape bar, hit-rate wash). Solid cyan fill is reserved for the single primary button, with near-black text (brand-ink) on it. On `/games/[id]` cyan in the data is the reader's stop: the stepped event's flag, the selected pin ring, shot mark and goal card edge; it also marks the active section in the contents rail.
+- **Arcade Cyan** (brand-cyan): Brand, active and focus. The selected segment's text, the selected filter chip's edge glow, the 2px focus ring, sort indicators, the PP1 chip, and on `/props` a game that cleared the line (lit tape bar, hit-rate wash). Solid cyan fill is reserved for the single primary button, with near-black text (brand-ink) on it. On `/games/[id]` cyan in the data is the reader's stop: the stepped event's flag, the selected pin ring, shot mark and goal card edge; it also marks the active section chip.
 
 ### Secondary
 - **Goal-Light Green** (pos-green): Positive. Plus edges, confirmed goalies, model-correct grades, the live dot.
@@ -268,7 +268,7 @@ Data pages stack: heading row (title left, compact controls right) then a sticky
 
 Tables scroll inside their own region with edge fades; the first column is sticky with a right-edge shadow; the header row is sticky. On `/props` the column header pins beneath the sticky control bar from xl (1280px) by tracking the bar's measured height; below xl the table scrolls in its region. Default rows are 32px; `/props` rows are 44px so the 32px tape fits. Columns that are secondary drop out below xl or md rather than shrinking. Matchup cards lay out by their own width with container queries.
 
-The game page (`/games/[id]`) is one long read in a fixed order, every game: score band full width, then Story (the pulse), Goals, Shots, Team stats, Skaters, Goalies, Lines, Matchups, Zone starts, 40px apart. From lg (1024px) a 136px sticky contents rail sits left of the sections (a hairline left edge; the active item takes a 2px cyan left bar and cyan text). Below lg the rail becomes a chip bar pinned under the app bar, bled to the page edge on 95% rink black with backdrop blur and a hairline under it, scrolling sideways. Section headings anchor with scroll margin clear of the bar. Away is always left and home right; mirrored rows grow outward from a centre label.
+The game page (`/games/[id]`) is one long read in a fixed order, every game: score band full width, then Story (the pulse), Goals, Shots, xG breakdown, Team stats, Skaters, Units, Goalies, Lines, Matchups, Zone starts, 40px apart, at the page's full width. Section navigation is a chip bar pinned under the app bar at every width, bled to the page edge on 95% rink black with backdrop blur and a hairline under it, scrolling sideways when it does not fit; the active chip takes a cyan edge and text. Section headings anchor with scroll margin clear of the bar. Away is always left and home right; mirrored rows grow outward from a centre label.
 
 Touch targets grow to 44px on coarse pointers across chips, segments and buttons.
 

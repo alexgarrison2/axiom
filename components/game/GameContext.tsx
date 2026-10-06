@@ -68,7 +68,7 @@ export function useGame(): GameCtx {
 /** Section frame: heading on the shared rhythm, anchor for the rail. */
 export function GameSection({ id, title, aside, children }: { id: string; title: string; aside?: React.ReactNode; children: React.ReactNode }) {
     return (
-        <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-[calc(var(--appbar-h)+var(--vv-top,0px)+56px)] lg:scroll-mt-[calc(var(--appbar-h)+var(--vv-top,0px)+16px)]">
+        <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-[calc(var(--appbar-h)+var(--vv-top,0px)+60px)]">
             <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
                 <h2 id={`${id}-h`} className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
                     {title}
