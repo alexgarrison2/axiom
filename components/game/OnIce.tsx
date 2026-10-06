@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { clockOf, iceAt, shortName, type GoalieSnap, type SkaterSnap } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
+import { JerseyNumber } from './Jersey';
 
 const TH = 'px-1.5 py-1 text-right text-micro font-semibold uppercase tracking-label text-fg-3';
 const TD = 'px-1.5 py-1 text-right tabular-nums';
@@ -134,6 +135,103 @@ export function OnIce({ t, caption }: { t: number; caption: React.ReactNode }) {
             {(['away', 'home'] as Side[]).map(side => (
                 <TeamIce key={side} side={side} skaters={snap.skaters[side]} goalie={snap.goalie[side]} />
             ))}
+        </div>
+    );
+}
+
+/** Skater slots per team in the rail: room for 6v5, so the rail never changes height as the cursor moves. */
+const RAIL_SLOTS = 6;
+
+function RailTeam({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[]; goalie: GoalieSnap | null }) {
+    const { m, colors } = useGame();
+    const ink = legibleOn(colors[side], '#0a0e15');
+    const tri = m.teams[side].tri;
+    const rows: (SkaterSnap | null)[] = [...skaters, ...new Array(Math.max(0, RAIL_SLOTS - skaters.length)).fill(null)];
+    const svp = goalie && goalie.sa ? ((goalie.sa - goalie.ga) / goalie.sa).toFixed(3).replace(/^0/, '') : '–';
+    const gsax = goalie ? goalie.xga - goalie.ga : 0;
+    return (
+        <div className="min-w-0">
+            <div className="flex h-6 items-center gap-1.5">
+                {/* eslint-disable-next-line @next/next/no-img-element -- team logos are static SVGs */}
+                <img src={`/logos/${tri}.svg`} alt="" width={20} height={20} className="h-5 w-5" />
+                <span className="font-bold" style={{ color: ink }}>
+                    {tri}
+                </span>
+                <span className="text-micro uppercase tracking-label text-fg-3">
+                    {skaters.length} sk{goalie ? '' : ' · empty net'}
+                </span>
+            </div>
+            <ol>
+                {rows.map((r, i) =>
+                    r ? (
+                        <li key={r.player.id} className="grid h-6 grid-cols-[1.25rem_minmax(0,1fr)_2.25rem_2.5rem_1.75rem_1.75rem] items-center gap-x-1.5">
+                            <JerseyNumber tri={tri} num={r.player.num} ring={colors[side]} size={20} />
+                            <span className="truncate text-fg-1">
+                                {r.player.last}
+                                <span className="ml-1 text-micro text-fg-3">{r.player.pos}</span>
+                            </span>
+                            {/* Shift length: the clock over a bar that fills to two minutes, amber past one. */}
+                            <span className="relative text-right">
+                                <span className={r.shift > 60 ? 'text-warn' : 'text-fg-1'}>{clockOf(r.shift)}</span>
+                                <span className="absolute inset-x-0 -bottom-0.5 h-0.5 rounded-full bg-line" aria-hidden="true">
+                                    <span className={cn('block h-full rounded-full', r.shift > 60 ? 'bg-warn' : 'bg-line-strong')} style={{ width: `${Math.min(1, r.shift / 120) * 100}%` }} />
+                                </span>
+                            </span>
+                            <span className="text-right text-fg-2">{clockOf(r.toi)}</span>
+                            <span className={cn('text-right', r.g + r.a ? 'text-fg-1' : 'text-fg-3')}>
+                                {r.g ? <span className="font-bold text-pos">{r.g}</span> : r.g}-{r.a}
+                            </span>
+                            <span className={cn('text-right', r.sog ? 'text-fg-1' : 'text-fg-3')}>{r.sog}</span>
+                        </li>
+                    ) : (
+                        <li key={`empty-${i}`} className="h-6" aria-hidden="true" />
+                    ),
+                )}
+                {goalie ? (
+                    <li className="grid h-6 grid-cols-[1.25rem_minmax(0,1fr)_auto] items-center gap-x-1.5 border-t border-line/60">
+                        <JerseyNumber tri={tri} num={goalie.player.num} ring="var(--goalie)" size={20} />
+                        <span className="truncate text-goalie">{goalie.player.last}</span>
+                        <span className="whitespace-nowrap text-right">
+                            <span className="text-fg-1">{svp}</span>{' '}
+                            <span className={gsax > 0.005 ? 'text-pos' : gsax < -0.005 ? 'text-neg' : 'text-fg-2'}>
+                                {gsax >= 0 ? '+' : '−'}
+                                {Math.abs(gsax).toFixed(2)}
+                            </span>
+                        </span>
+                    </li>
+                ) : (
+                    <li className="h-6 border-t border-line/60" aria-hidden="true" />
+                )}
+            </ol>
+        </div>
+    );
+}
+
+/**
+ * The compact on-ice rail beside the Story chart (wide screens): home on top
+ * and away below, like the chart's halves, so the players follow the cursor
+ * without leaving the chart. Number, name, shift (amber past a minute), TOI,
+ * G-A and SOG to that moment; goalies with SV% and GSAx.
+ */
+export function OnIceRail({ t, caption }: { t: number; caption: React.ReactNode }) {
+    const { m } = useGame();
+    const snap = React.useMemo(() => iceAt(m, t), [m, t]);
+    return (
+        <div className="flex h-full flex-col gap-3 px-3 py-2.5 text-caption tabular-nums">
+            <p className="label">{caption}</p>
+            <div className="grid grid-cols-[1.25rem_minmax(0,1fr)_2.25rem_2.5rem_1.75rem_1.75rem] gap-x-1.5 text-micro uppercase tracking-label text-fg-3" aria-hidden="true">
+                <span />
+                <span />
+                <span className="text-right">Shift</span>
+                <span className="text-right">TOI</span>
+                <span className="text-right">G-A</span>
+                <span className="text-right">SOG</span>
+            </div>
+            {snap ? (
+                (['home', 'away'] as Side[]).map(side => <RailTeam key={side} side={side} skaters={snap.skaters[side]} goalie={snap.goalie[side]} />)
+            ) : (
+                <p className="text-fg-3">No shifts yet</p>
+            )}
         </div>
     );
 }

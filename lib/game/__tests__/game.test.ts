@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { deservedSeries, goalSwings, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
+import { clockOf, deservedSeries, goalSwings, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
 
 const team = (id: number, abbrev: string) => ({ id, abbrev, commonName: { default: abbrev }, placeName: { default: abbrev }, score: 0, sog: 0 });
@@ -114,6 +114,7 @@ describe('game model', () => {
         expect(d[1][1]).toBeGreaterThan(0.5);
         expect(d[d.length - 1][1]).toBeGreaterThan(0);
         expect(periodAt(1800, 300)).toEqual({ period: 2, into: 600 });
+        expect(clockOf(419.6)).toBe('7:00');
         expect(periodAt(3600 + 300 + 10, 300)).toEqual({ period: 5, into: 10 });
     });
 

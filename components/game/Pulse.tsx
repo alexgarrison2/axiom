@@ -24,7 +24,7 @@ import {
 } from '@/lib/game/analytics';
 import { SIDES, type GameEvent, type Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
-import { OnIce } from './OnIce';
+import { OnIce, OnIceRail } from './OnIce';
 
 type BarMetric = FlowMetric | 'share';
 
@@ -404,6 +404,15 @@ export function Pulse() {
                 </div>
             </div>
 
+            {/* Wide screens: the compact on-ice rail sits left of the chart so players follow the cursor. */}
+            <div className="xl:grid xl:grid-cols-[18.5rem_minmax(0,1fr)]">
+            {iceT != null ? (
+                <aside className="hidden border-r border-line xl:block" aria-label="Players on the ice">
+                    <OnIceRail t={iceT} caption={<>On ice · {focusT == null ? (m.state === 'final' ? 'final horn' : 'now') : clockText(iceT)}</>} />
+                </aside>
+            ) : (
+                <div className="hidden xl:block" />
+            )}
             <div
                 ref={wrapRef}
                 role="group"
@@ -713,6 +722,8 @@ export function Pulse() {
                 ) : null}
             </div>
 
+            </div>
+
             {/* Verdict: how it ended against our call and the market; links to how the lines are built. */}
             <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 border-t border-line px-card py-2 text-caption tabular-nums">
                 {m.state === 'final' && winner ? (
@@ -818,7 +829,11 @@ export function Pulse() {
                 </tbody>
             </table>
 
-            {iceT != null ? <OnIce t={iceT} caption={<>On ice · {focusT == null ? (m.state === 'final' ? 'final horn' : 'now') : clockText(iceT)}</>} /> : null}
+            {iceT != null ? (
+                <div className="xl:hidden">
+                    <OnIce t={iceT} caption={<>On ice · {focusT == null ? (m.state === 'final' ? 'final horn' : 'now') : clockText(iceT)}</>} />
+                </div>
+            ) : null}
         </div>
     );
 }

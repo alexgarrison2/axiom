@@ -875,7 +875,11 @@ export function goalieRows(m: GameModel, side: Side): GoalieRow[] {
 
 /* ── Formatting ────────────────────────────────────────────────────────── */
 
-export const clockOf = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+/** m:ss, rounding the whole time first so 6:59.6 reads 7:00, never 6:60. */
+export const clockOf = (sec: number) => {
+    const s = Math.round(sec);
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
 export const periodLabel = (p: number) => (p <= 3 ? ['1st', '2nd', '3rd'][p - 1] : p === 4 ? 'OT' : `${p - 3}OT`);
 export const playerName = (p: Player | undefined) => (p ? `${p.first} ${p.last}` : '—');
 export const shortName = (p: Player | undefined) => (p ? `${p.first.charAt(0)}. ${p.last}` : '—');
