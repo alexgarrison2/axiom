@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-10-06T03:04:07Z",
+ "generated_at": "2026-10-06T05:29:49Z",
  "goalies": {
   "Adin Hill": {
    "cur": {
@@ -312,7 +312,14 @@
    }
   },
   "Clay Stevenson": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.9375,
+    "gaa": 2.0,
+    "gp": 1
+   },
    "prev": {
     "w": 3,
     "l": 1,
@@ -643,7 +650,7 @@
     "w": 1,
     "l": 1,
     "ot": 0,
-    "svpct": 0.94444,
+    "svpct": 0.94285,
     "gaa": 1.01,
     "gp": 2
    },
@@ -1258,7 +1265,14 @@
    }
   },
   "Sergei Murashov": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 1,
+    "ot": 0,
+    "svpct": 0.91176,
+    "gaa": 3.14,
+    "gp": 1
+   },
    "prev": {
     "w": 1,
     "l": 1,
