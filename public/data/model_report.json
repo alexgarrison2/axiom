@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-06T02:04:48.848087+00:00",
+ "generated_at": "2026-10-06T03:04:52.966408+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -4223,20 +4223,20 @@
   },
   "2026-27": {
    "all": {
-    "n": 38,
+    "n": 41,
     "n_retro_excluded": 0,
     "n_legacy": 3,
-    "n_picks": 34,
-    "n_no_lean": 4,
+    "n_picks": 36,
+    "n_no_lean": 5,
     "by_model": {
      "current": {
-      "n": 35,
-      "n_picks": 32,
-      "correct": 19,
-      "accuracy": 0.5938,
-      "accuracy_all": 0.5857,
-      "brier": 0.2182,
-      "log_loss": 0.6254
+      "n": 38,
+      "n_picks": 34,
+      "correct": 20,
+      "accuracy": 0.5882,
+      "accuracy_all": 0.5789,
+      "brier": 0.2225,
+      "log_loss": 0.6345
      },
      "legacy": {
       "n": 3,
@@ -4248,38 +4248,38 @@
       "log_loss": 0.7476
      }
     },
-    "accuracy": 0.5882,
+    "accuracy": 0.5833,
     "accuracy_ci": [
-     0.4222,
-     0.7363
+     0.422,
+     0.7286
     ],
-    "correct": 20,
-    "accuracy_all": 0.5789,
-    "brier": 0.2227,
-    "log_loss": 0.635,
-    "mean_pred_home": 0.5496,
-    "actual_home": 0.6053,
+    "correct": 21,
+    "accuracy_all": 0.5732,
+    "brier": 0.2263,
+    "log_loss": 0.6427,
+    "mean_pred_home": 0.5536,
+    "actual_home": 0.5854,
     "first_date": "2026-09-29",
     "last_date": "2026-10-05",
     "baselines": {
      "home_rate": {
       "rate": 0.5362,
       "source": "2022-2025 home win rate",
-      "n": 38,
-      "log_loss": 0.6805,
-      "brier": 0.2437,
-      "accuracy": 0.6053
+      "n": 41,
+      "log_loss": 0.6834,
+      "brier": 0.2451,
+      "accuracy": 0.5854
      },
      "market": {
-      "n": 38,
+      "n": 41,
       "source": "odds_closing",
       "devig": "power",
-      "log_loss": 0.6519,
-      "brier": 0.2302,
-      "accuracy": 0.5658,
-      "model_log_loss_same_games": 0.635,
-      "model_brier_same_games": 0.2227,
-      "model_accuracy_same_games": 0.5789
+      "log_loss": 0.6544,
+      "brier": 0.2314,
+      "accuracy": 0.5732,
+      "model_log_loss_same_games": 0.6427,
+      "model_brier_same_games": 0.2263,
+      "model_accuracy_same_games": 0.5732
      }
     },
     "reliability": [
@@ -4319,9 +4319,9 @@
       "bin": 4,
       "lo": 0.4,
       "hi": 0.5,
-      "n": 12,
-      "mean_pred": 0.4541,
-      "actual": 0.5833
+      "n": 13,
+      "mean_pred": 0.4572,
+      "actual": 0.5385
      },
      {
       "bin": 5,
@@ -4335,9 +4335,9 @@
       "bin": 6,
       "lo": 0.6,
       "hi": 0.7,
-      "n": 9,
-      "mean_pred": 0.6557,
-      "actual": 0.7778
+      "n": 11,
+      "mean_pred": 0.6563,
+      "actual": 0.7273
      },
      {
       "bin": 7,
@@ -4389,25 +4389,25 @@
      },
      {
       "tier": "60-65",
-      "n": 4,
-      "correct": 3,
-      "accuracy": 0.75,
+      "n": 5,
+      "correct": 4,
+      "accuracy": 0.8,
       "accuracy_ci": [
-       0.3006,
-       0.9544
+       0.3755,
+       0.9638
       ],
-      "mean_confidence": 0.6382
+      "mean_confidence": 0.6404
      },
      {
       "tier": "65+",
-      "n": 12,
+      "n": 13,
       "correct": 10,
-      "accuracy": 0.8333,
+      "accuracy": 0.7692,
       "accuracy_ci": [
-       0.552,
-       0.953
+       0.4974,
+       0.9182
       ],
-      "mean_confidence": 0.7019
+      "mean_confidence": 0.6994
      }
     ],
     "rolling": [],
@@ -4506,6 +4506,19 @@
       "legacy": false
      },
      {
+      "gameId": 2026020042,
+      "date": "2026-10-05",
+      "homeTeam": "Penguins",
+      "awayTeam": "Jets",
+      "pick": "Penguins",
+      "confidence": 66.9,
+      "homeScore": 2,
+      "awayScore": 3,
+      "decision": "REG",
+      "correct": false,
+      "legacy": false
+     },
+     {
       "gameId": 2026020020,
       "date": "2026-10-02",
       "homeTeam": "Stars",
@@ -4528,39 +4541,26 @@
       "homeScore": 5,
       "awayScore": 1,
       "decision": "REG",
-      "correct": false,
-      "legacy": false
-     },
-     {
-      "gameId": 2026020016,
-      "date": "2026-10-01",
-      "homeTeam": "Sharks",
-      "awayTeam": "Panthers",
-      "pick": "Panthers",
-      "confidence": 57.9,
-      "homeScore": 4,
-      "awayScore": 3,
-      "decision": "OT",
       "correct": false,
       "legacy": false
      }
     ]
    },
    "regular": {
-    "n": 38,
+    "n": 41,
     "n_retro_excluded": 0,
     "n_legacy": 3,
-    "n_picks": 34,
-    "n_no_lean": 4,
+    "n_picks": 36,
+    "n_no_lean": 5,
     "by_model": {
      "current": {
-      "n": 35,
-      "n_picks": 32,
-      "correct": 19,
-      "accuracy": 0.5938,
-      "accuracy_all": 0.5857,
-      "brier": 0.2182,
-      "log_loss": 0.6254
+      "n": 38,
+      "n_picks": 34,
+      "correct": 20,
+      "accuracy": 0.5882,
+      "accuracy_all": 0.5789,
+      "brier": 0.2225,
+      "log_loss": 0.6345
      },
      "legacy": {
       "n": 3,
@@ -4572,38 +4572,38 @@
       "log_loss": 0.7476
      }
     },
-    "accuracy": 0.5882,
+    "accuracy": 0.5833,
     "accuracy_ci": [
-     0.4222,
-     0.7363
+     0.422,
+     0.7286
     ],
-    "correct": 20,
-    "accuracy_all": 0.5789,
-    "brier": 0.2227,
-    "log_loss": 0.635,
-    "mean_pred_home": 0.5496,
-    "actual_home": 0.6053,
+    "correct": 21,
+    "accuracy_all": 0.5732,
+    "brier": 0.2263,
+    "log_loss": 0.6427,
+    "mean_pred_home": 0.5536,
+    "actual_home": 0.5854,
     "first_date": "2026-09-29",
     "last_date": "2026-10-05",
     "baselines": {
      "home_rate": {
       "rate": 0.5362,
       "source": "2022-2025 home win rate",
-      "n": 38,
-      "log_loss": 0.6805,
-      "brier": 0.2437,
-      "accuracy": 0.6053
+      "n": 41,
+      "log_loss": 0.6834,
+      "brier": 0.2451,
+      "accuracy": 0.5854
      },
      "market": {
-      "n": 38,
+      "n": 41,
       "source": "odds_closing",
       "devig": "power",
-      "log_loss": 0.6519,
-      "brier": 0.2302,
-      "accuracy": 0.5658,
-      "model_log_loss_same_games": 0.635,
-      "model_brier_same_games": 0.2227,
-      "model_accuracy_same_games": 0.5789
+      "log_loss": 0.6544,
+      "brier": 0.2314,
+      "accuracy": 0.5732,
+      "model_log_loss_same_games": 0.6427,
+      "model_brier_same_games": 0.2263,
+      "model_accuracy_same_games": 0.5732
      }
     },
     "reliability": [
@@ -4643,9 +4643,9 @@
       "bin": 4,
       "lo": 0.4,
       "hi": 0.5,
-      "n": 12,
-      "mean_pred": 0.4541,
-      "actual": 0.5833
+      "n": 13,
+      "mean_pred": 0.4572,
+      "actual": 0.5385
      },
      {
       "bin": 5,
@@ -4659,9 +4659,9 @@
       "bin": 6,
       "lo": 0.6,
       "hi": 0.7,
-      "n": 9,
-      "mean_pred": 0.6557,
-      "actual": 0.7778
+      "n": 11,
+      "mean_pred": 0.6563,
+      "actual": 0.7273
      },
      {
       "bin": 7,
@@ -4713,25 +4713,25 @@
      },
      {
       "tier": "60-65",
-      "n": 4,
-      "correct": 3,
-      "accuracy": 0.75,
+      "n": 5,
+      "correct": 4,
+      "accuracy": 0.8,
       "accuracy_ci": [
-       0.3006,
-       0.9544
+       0.3755,
+       0.9638
       ],
-      "mean_confidence": 0.6382
+      "mean_confidence": 0.6404
      },
      {
       "tier": "65+",
-      "n": 12,
+      "n": 13,
       "correct": 10,
-      "accuracy": 0.8333,
+      "accuracy": 0.7692,
       "accuracy_ci": [
-       0.552,
-       0.953
+       0.4974,
+       0.9182
       ],
-      "mean_confidence": 0.7019
+      "mean_confidence": 0.6994
      }
     ],
     "rolling": [],
@@ -4830,6 +4830,19 @@
       "legacy": false
      },
      {
+      "gameId": 2026020042,
+      "date": "2026-10-05",
+      "homeTeam": "Penguins",
+      "awayTeam": "Jets",
+      "pick": "Penguins",
+      "confidence": 66.9,
+      "homeScore": 2,
+      "awayScore": 3,
+      "decision": "REG",
+      "correct": false,
+      "legacy": false
+     },
+     {
       "gameId": 2026020020,
       "date": "2026-10-02",
       "homeTeam": "Stars",
@@ -4852,19 +4865,6 @@
       "homeScore": 5,
       "awayScore": 1,
       "decision": "REG",
-      "correct": false,
-      "legacy": false
-     },
-     {
-      "gameId": 2026020016,
-      "date": "2026-10-01",
-      "homeTeam": "Sharks",
-      "awayTeam": "Panthers",
-      "pick": "Panthers",
-      "confidence": 57.9,
-      "homeScore": 4,
-      "awayScore": 3,
-      "decision": "OT",
       "correct": false,
       "legacy": false
      }
@@ -4969,9 +4969,9 @@
   "reasons": [
    "Backtest ROI 95% CI lower bound -9.5% is not above -2%.",
    "Backtest closing-line value -5.20% is not positive.",
-   "Only 15 graded games with market odds were predicted by the current model (logit-elo) so far (38 graded in 2026-27 in all); need 200 to compare it with the market."
+   "Only 15 graded games with market odds were predicted by the current model (logit-elo) so far (41 graded in 2026-27 in all); need 200 to compare it with the market."
   ],
-  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Only 15 graded games with market odds were predicted by the current model (logit-elo) so far (38 graded in 2026-27 in all); need 200 to compare it with the market.",
+  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Only 15 graded games with market odds were predicted by the current model (logit-elo) so far (41 graded in 2026-27 in all); need 200 to compare it with the market.",
   "backtest": {
    "n": 64,
    "roi": 0.1399,
