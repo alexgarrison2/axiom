@@ -835,19 +835,19 @@
         ],
         "g": [
             {
-                "name": "Sergei Bobrovsky",
-                "number": 72,
+                "name": "Anthony Stolarz",
+                "number": 41,
                 "pos": "g1",
-                "id": 1117,
+                "id": 2432,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Anthony Stolarz",
-                "number": 41,
+                "name": "Sergei Bobrovsky",
+                "number": 72,
                 "pos": "g2",
-                "id": 2432,
+                "id": 1117,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -960,7 +960,7 @@
         ],
         "lineup_source": "David Alter",
         "updated_at": "2026-10-05T15:20:13.011Z",
-        "fetched_at": "2026-10-05T17:25:07Z"
+        "fetched_at": "2026-10-06T15:03:06Z"
     },
     "MTL": {
         "f1": [
@@ -1017,26 +1017,26 @@
                 "movement": null
             },
             {
-                "name": "Ivan Demidov",
-                "number": null,
+                "name": "Kirby Dach",
+                "number": 77,
                 "pos": "rw",
-                "id": 38445,
-                "ppUnit": 1,
+                "id": 29585,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Alexandre Texier",
-                "number": 85,
+                "name": "Zack Bolduc",
+                "number": 76,
                 "pos": "lw",
-                "id": 4759,
-                "ppUnit": 2,
+                "id": 31240,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Phillip Danault",
@@ -1049,11 +1049,11 @@
                 "movement": null
             },
             {
-                "name": "Kirby Dach",
-                "number": 77,
+                "name": "Alexandre Texier",
+                "number": 85,
                 "pos": "rw",
-                "id": 29585,
-                "ppUnit": null,
+                "id": 4759,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1061,14 +1061,14 @@
         ],
         "f4": [
             {
-                "name": "Zack Bolduc",
-                "number": 76,
+                "name": "Florian Xhekaj",
+                "number": 63,
                 "pos": "lw",
-                "id": 31240,
-                "ppUnit": 2,
+                "id": 37772,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jake Evans",
@@ -1204,6 +1204,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Ivan Demidov",
+                "number": null,
+                "pos": "ir4",
+                "id": 38445,
+                "ppUnit": null,
+                "injuryStatus": "out",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -1282,9 +1291,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-03)",
-        "updated_at": "2026-10-04T11:18:19.350Z",
-        "fetched_at": "2026-10-04T19:52:37Z"
+        "lineup_source": "J-F Chaumont",
+        "updated_at": "2026-10-06T14:51:03.276Z",
+        "fetched_at": "2026-10-06T15:03:06Z"
     },
     "BOS": {
         "f1": [
@@ -3836,9 +3845,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "@penguins",
-        "updated_at": "2026-10-05T23:20:43.202Z",
-        "fetched_at": "2026-10-06T00:02:37Z"
+        "lineup_source": "Last Game (2026-10-05)",
+        "updated_at": "2026-10-06T14:10:24.972Z",
+        "fetched_at": "2026-10-06T15:03:06Z"
     },
     "NYI": {
         "f1": [
@@ -4037,19 +4046,19 @@
         ],
         "g": [
             {
-                "name": "Ilya Sorokin",
-                "number": 30,
+                "name": "Semyon Varlamov",
+                "number": 40,
                 "pos": "g1",
-                "id": 25264,
+                "id": 1545,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Semyon Varlamov",
-                "number": 40,
+                "name": "Ilya Sorokin",
+                "number": 30,
                 "pos": "g2",
-                "id": 1545,
+                "id": 25264,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4144,7 +4153,7 @@
         ],
         "lineup_source": "Last Game (2026-10-03)",
         "updated_at": "2026-10-05T01:05:23.873Z",
-        "fetched_at": "2026-10-05T03:04:08Z"
+        "fetched_at": "2026-10-06T15:03:06Z"
     },
     "COL": {
         "f1": [
@@ -7656,7 +7665,7 @@
                 "number": 72,
                 "pos": "lw",
                 "id": 34666,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7708,7 +7717,7 @@
                 "number": 28,
                 "pos": "rw",
                 "id": 1126,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7752,7 +7761,7 @@
                 "number": 72,
                 "pos": "ld",
                 "id": 2492,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7784,7 +7793,7 @@
                 "number": 26,
                 "pos": "rd",
                 "id": 33595,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7894,7 +7903,7 @@
                 "number": 28,
                 "pos": "sk2",
                 "id": 1126,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -7941,7 +7950,7 @@
                 "number": 72,
                 "pos": "sk3",
                 "id": 2492,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -7955,12 +7964,44 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jackson Starr",
-        "updated_at": "2026-10-06T01:44:58.076Z",
-        "fetched_at": "2026-10-06T02:03:54Z"
+        "lineup_source": "Last Game (2026-10-05)",
+        "updated_at": "2026-10-06T14:08:37.887Z",
+        "fetched_at": "2026-10-06T15:03:06Z"
     },
     "DET": {
         "f1": [
+            {
+                "name": "Lucas Raymond",
+                "number": 23,
+                "pos": "lw",
+                "id": 31783,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Dylan Larkin",
+                "number": 71,
+                "pos": "c",
+                "id": 2522,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": true,
+                "movement": "new"
+            },
+            {
+                "name": "Viktor Arvidsson",
+                "number": 33,
+                "pos": "rw",
+                "id": 2453,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "f2": [
             {
                 "name": "Alex DeBrincat",
                 "number": 93,
@@ -7969,39 +8010,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Andrew Copp",
-                "number": 18,
-                "pos": "c",
-                "id": 2457,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Lucas Raymond",
-                "number": 23,
-                "pos": "rw",
-                "id": 31783,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
-                "name": "Viktor Arvidsson",
-                "number": 33,
-                "pos": "lw",
-                "id": 2453,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Emmitt Finnie",
@@ -8018,7 +8027,7 @@
                 "number": null,
                 "pos": "rw",
                 "id": 38141,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8036,14 +8045,14 @@
                 "movement": null
             },
             {
-                "name": "J.T. Compher",
-                "number": 37,
+                "name": "Andrew Copp",
+                "number": 18,
                 "pos": "c",
-                "id": 2751,
-                "ppUnit": null,
+                "id": 2457,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Keegan Kolesar",
@@ -8058,20 +8067,20 @@
         ],
         "f4": [
             {
+                "name": "Carter Mazur",
+                "number": 43,
+                "pos": "lw",
+                "id": 34532,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Nate Danielson",
                 "number": 29,
                 "pos": "c",
                 "id": 31508,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Mason Appleton",
-                "number": 22,
-                "pos": "rw",
-                "id": 4582,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8179,7 +8188,7 @@
                 "number": 71,
                 "pos": "ir2",
                 "id": 2522,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
@@ -8195,20 +8204,20 @@
         ],
         "pk1": [
             {
-                "name": "J.T. Compher",
-                "number": 37,
+                "name": "Andrew Copp",
+                "number": 18,
                 "pos": "sk1",
-                "id": 2751,
-                "ppUnit": null,
+                "id": 2457,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Andrew Copp",
-                "number": 18,
+                "name": "Michael Rasmussen",
+                "number": 27,
                 "pos": "sk2",
-                "id": 2457,
-                "ppUnit": 1,
+                "id": 2784,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -8233,20 +8242,20 @@
         ],
         "pk2": [
             {
-                "name": "Mason Appleton",
-                "number": 22,
+                "name": "Emmitt Finnie",
+                "number": null,
                 "pos": "sk1",
-                "id": 4582,
-                "ppUnit": null,
+                "id": 33612,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Michael Rasmussen",
-                "number": 27,
+                "name": "Keegan Kolesar",
+                "number": 55,
                 "pos": "sk2",
-                "id": 2784,
-                "ppUnit": 2,
+                "id": 3790,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -8269,9 +8278,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-04)",
-        "updated_at": "2026-10-05T13:52:16.275Z",
-        "fetched_at": "2026-10-05T14:02:50Z"
+        "lineup_source": "Ansar Khan",
+        "updated_at": "2026-10-06T14:34:45.389Z",
+        "fetched_at": "2026-10-06T15:03:06Z"
     },
     "UTA": {
         "f1": [
@@ -8659,7 +8668,7 @@
                 "number": 93,
                 "pos": "rw",
                 "id": 31870,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8674,7 +8683,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Vladislav Namestnikov",
@@ -8691,7 +8700,7 @@
                 "number": 9,
                 "pos": "rw",
                 "id": 2888,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8760,7 +8769,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -8818,7 +8827,7 @@
                 "number": 9,
                 "pos": "sk2",
                 "id": 2888,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -8879,9 +8888,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ken Wiebe",
-        "updated_at": "2026-10-05T23:18:54.323Z",
-        "fetched_at": "2026-10-06T00:02:37Z"
+        "lineup_source": "Last Game (2026-10-05)",
+        "updated_at": "2026-10-06T14:11:33.762Z",
+        "fetched_at": "2026-10-06T15:03:06Z"
     },
     "BUF": {
         "f1": [
@@ -10024,19 +10033,19 @@
         ],
         "g": [
             {
-                "name": "Justus Annunen",
-                "number": 29,
-                "pos": "g1",
-                "id": 29146,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": true
-            },
-            {
                 "name": "Juuse Saros",
                 "number": 74,
-                "pos": "g2",
+                "pos": "g1",
                 "id": 2557,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Matthew Murray",
+                "number": null,
+                "pos": "g2",
+                "id": 27664,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -10049,7 +10058,7 @@
                 "pos": "ir1",
                 "id": 29146,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             }
         ],
@@ -10130,7 +10139,7 @@
             }
         ],
         "lineup_source": "Max Herz",
-        "updated_at": "2026-10-05T16:51:26.444Z",
-        "fetched_at": "2026-10-06T02:03:54Z"
+        "updated_at": "2026-10-06T15:01:21.013Z",
+        "fetched_at": "2026-10-06T15:03:06Z"
     }
 }
