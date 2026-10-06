@@ -2788,19 +2788,19 @@
         ],
         "g": [
             {
-                "name": "Adin Hill",
-                "number": 33,
+                "name": "Carter Hart",
+                "number": 79,
                 "pos": "g1",
-                "id": 2906,
+                "id": 3874,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Carter Hart",
-                "number": 79,
+                "name": "Adin Hill",
+                "number": 33,
                 "pos": "g2",
-                "id": 3874,
+                "id": 2906,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -2884,7 +2884,7 @@
         ],
         "lineup_source": "Last Game (2026-10-04)",
         "updated_at": "2026-10-05T14:07:20.612Z",
-        "fetched_at": "2026-10-05T17:25:07Z"
+        "fetched_at": "2026-10-06T02:03:54Z"
     },
     "CHI": {
         "f1": [
@@ -7814,22 +7814,22 @@
         ],
         "g": [
             {
-                "name": "Linus Ullmark",
-                "number": 35,
+                "name": "Samuel Ersson",
+                "number": 33,
                 "pos": "g1",
-                "id": 2534,
+                "id": 29149,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Samuel Ersson",
-                "number": 33,
+                "name": "Linus Ullmark",
+                "number": 35,
                 "pos": "g2",
-                "id": 29149,
+                "id": 2534,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "ir": [
@@ -7865,6 +7865,15 @@
                 "number": 85,
                 "pos": "ir4",
                 "id": 30807,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Linus Ullmark",
+                "number": 35,
+                "pos": "ir5",
+                "id": 2534,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -7947,8 +7956,8 @@
             }
         ],
         "lineup_source": "Jackson Starr",
-        "updated_at": "2026-10-05T16:20:40.902Z",
-        "fetched_at": "2026-10-06T00:02:37Z"
+        "updated_at": "2026-10-06T01:44:58.076Z",
+        "fetched_at": "2026-10-06T02:03:54Z"
     },
     "DET": {
         "f1": [
@@ -9395,19 +9404,19 @@
         ],
         "g": [
             {
-                "name": "Jordan Binnington",
-                "number": 50,
+                "name": "Joel Hofer",
+                "number": 30,
                 "pos": "g1",
-                "id": 1984,
+                "id": 28910,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Joel Hofer",
-                "number": 30,
+                "name": "Jordan Binnington",
+                "number": 50,
                 "pos": "g2",
-                "id": 28910,
+                "id": 1984,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -9520,7 +9529,7 @@
         ],
         "lineup_source": "Lou Korac",
         "updated_at": "2026-10-05T17:23:45.682Z",
-        "fetched_at": "2026-10-05T17:25:07Z"
+        "fetched_at": "2026-10-06T02:03:54Z"
     },
     "CGY": {
         "f1": [
@@ -10015,22 +10024,22 @@
         ],
         "g": [
             {
-                "name": "Juuse Saros",
-                "number": 74,
-                "pos": "g1",
-                "id": 2557,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Justus Annunen",
                 "number": 29,
-                "pos": "g2",
+                "pos": "g1",
                 "id": 29146,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": true
+            },
+            {
+                "name": "Juuse Saros",
+                "number": 74,
+                "pos": "g2",
+                "id": 2557,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false
             }
         ],
         "ir": [
@@ -10122,6 +10131,6 @@
         ],
         "lineup_source": "Max Herz",
         "updated_at": "2026-10-05T16:51:26.444Z",
-        "fetched_at": "2026-10-05T17:25:07Z"
+        "fetched_at": "2026-10-06T02:03:54Z"
     }
 }
