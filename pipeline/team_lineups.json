@@ -3032,18 +3032,18 @@
                 "id": 28523,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Artyom Levshunov",
                 "number": 55,
                 "pos": "rd",
                 "id": 38138,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -3055,7 +3055,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ian Cole",
@@ -3065,7 +3065,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -3077,17 +3077,17 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Sam Rinzel",
                 "number": 6,
                 "pos": "rd",
                 "id": 34789,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -3126,15 +3126,6 @@
                 "pos": "ir2",
                 "id": 4622,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Bowen Byram",
-                "number": 24,
-                "pos": "ir3",
-                "id": 28523,
-                "ppUnit": 1,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -3210,14 +3201,14 @@
                 "number": 55,
                 "pos": "sk4",
                 "id": 38138,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Charlie Roumeliotis",
-        "updated_at": "2026-10-05T17:02:56.570Z",
-        "fetched_at": "2026-10-05T17:25:07Z"
+        "lineup_source": "Scott Powers",
+        "updated_at": "2026-10-06T16:19:40.173Z",
+        "fetched_at": "2026-10-06T17:02:58Z"
     },
     "PHI": {
         "f1": [
@@ -3884,11 +3875,11 @@
         ],
         "f2": [
             {
-                "name": "Victor Eklund",
-                "number": 73,
+                "name": "Brayden Schenn",
+                "number": 10,
                 "pos": "lw",
-                "id": 38469,
-                "ppUnit": 2,
+                "id": 773,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3904,11 +3895,11 @@
                 "movement": null
             },
             {
-                "name": "Brayden Schenn",
-                "number": 10,
+                "name": "Victor Eklund",
+                "number": 73,
                 "pos": "rw",
-                "id": 773,
-                "ppUnit": 1,
+                "id": 38469,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3916,10 +3907,10 @@
         ],
         "f3": [
             {
-                "name": "Simon Holmstrom",
-                "number": 92,
+                "name": "Anthony Duclair",
+                "number": 11,
                 "pos": "lw",
-                "id": 30654,
+                "id": 2380,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -3936,10 +3927,10 @@
                 "movement": null
             },
             {
-                "name": "Anthony Duclair",
-                "number": 11,
+                "name": "Simon Holmstrom",
+                "number": 92,
                 "pos": "rw",
-                "id": 2380,
+                "id": 30654,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4151,9 +4142,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-03)",
-        "updated_at": "2026-10-05T01:05:23.873Z",
-        "fetched_at": "2026-10-06T15:03:06Z"
+        "lineup_source": "Stefen Rosner",
+        "updated_at": "2026-10-06T16:18:20.315Z",
+        "fetched_at": "2026-10-06T17:02:58Z"
     },
     "COL": {
         "f1": [
@@ -8349,10 +8340,10 @@
         ],
         "f3": [
             {
-                "name": "Jack McBain",
-                "number": 22,
+                "name": "Lawson Crouse",
+                "number": 67,
                 "pos": "lw",
-                "id": 28796,
+                "id": 2476,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8369,10 +8360,10 @@
                 "movement": null
             },
             {
-                "name": "Lawson Crouse",
-                "number": 67,
+                "name": "Jack McBain",
+                "number": 22,
                 "pos": "rw",
-                "id": 2476,
+                "id": 28796,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8573,9 +8564,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-04)",
-        "updated_at": "2026-10-05T13:55:01.122Z",
-        "fetched_at": "2026-10-05T14:02:50Z"
+        "lineup_source": "Cole Bagley",
+        "updated_at": "2026-10-06T16:21:06.511Z",
+        "fetched_at": "2026-10-06T17:02:58Z"
     },
     "WPG": {
         "f1": [
