@@ -244,7 +244,8 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
             <TabsContent value="games" className="mt-0 flex flex-col gap-2">
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-micro font-medium uppercase tracking-label text-fg-3 [&>span]:whitespace-nowrap">
                     <span className="text-fg-1">
-                        {label} {filters.scope === 'playoffs' ? 'playoffs' : 'regular season'}
+                        <span className="sm:hidden">{shortSeasonTag(label)}</span>
+                        <span className="max-sm:hidden">{label}</span> {filters.scope === 'playoffs' ? 'playoffs' : 'regular season'}
                     </span>
                     <span aria-hidden="true" className="text-fg-disabled">
                         ·

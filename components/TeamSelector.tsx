@@ -64,7 +64,10 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                     aria-label="Choose a team"
                     onOpenAutoFocus={e => {
                         e.preventDefault();
-                        (e.currentTarget as HTMLElement | null)?.querySelector<HTMLInputElement>('input')?.focus();
+                        const panel = e.currentTarget as HTMLElement | null;
+                        // Touch: no keyboard over the list until the search box is tapped.
+                        if (window.matchMedia('(pointer: coarse)').matches) panel?.focus();
+                        else panel?.querySelector<HTMLInputElement>('input')?.focus();
                     }}
                     className={cn(
                         'z-[70] flex flex-col overflow-hidden rounded-card border border-line-strong bg-surface-1 shadow-card animate-pop-in focus:outline-none',
