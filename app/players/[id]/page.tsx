@@ -47,7 +47,7 @@ function Fact({ k, v }: { k: string; v: React.ReactNode }) {
     return (
         <div className="min-w-0">
             <p className="text-micro uppercase tracking-label text-fg-3">{k}</p>
-            <p className="truncate text-body text-fg-1">{v}</p>
+            <p className="whitespace-nowrap text-body text-fg-1">{v}</p>
         </div>
     );
 }
@@ -172,13 +172,13 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                 </h1>
                             </div>
                         </div>
-                        <div className="grid max-w-2xl grid-cols-3 gap-x-5 gap-y-3 sm:grid-cols-6">
+                        <div className="flex flex-wrap gap-x-8 gap-y-3 md:gap-x-10">
                             <Fact k="Age" v={age ?? '—'} />
                             <Fact k="Height" v={feetInches(profile?.heightIn ?? null)} />
                             <Fact k="Weight" v={profile?.weightLb ? `${profile.weightLb} lb` : '—'} />
                             <Fact k={goalie ? 'Catches' : 'Shoots'} v={profile?.shoots ?? '—'} />
                             <Fact k="Born" v={profile?.birthPlace || '—'} />
-                            <Fact k="Draft" v={profile?.draft ? `${profile.draft.year} · ${profile.draft.team} #${profile.draft.overall}` : 'Undrafted'} />
+                            <Fact k="Draft" v={profile?.draft ? `${profile.draft.year} · ${profile.draft.team} · round ${profile.draft.round}, #${profile.draft.overall} overall` : 'Undrafted'} />
                         </div>
                         <div className="grid max-w-3xl grid-cols-2 gap-3 md:grid-cols-4">
                             <Tile
