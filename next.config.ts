@@ -163,8 +163,17 @@ const nextConfig: NextConfig = {
     "/teams/[teamAbbr]": RUNTIME_SCHEDULE,
     "/opengraph-image": OG_RUNTIME,
     "/api/odds-history": ["public/data/SiteHistory/*.csv"],
-    // The game page reads pony xG per shot and the graded pregame call.
-    "/games/[id]": ["public/data/game_xg/*.json", "data/prediction_history.json", "public/data/odds_closing.json", "public/data/season_projections_history.json"],
+    // The game page reads pony xG per shot (nightly file, else the xG v2
+    // artifacts to score live shots) and the graded pregame call.
+    "/games/[id]": [
+      "public/data/game_xg/*.json",
+      "pipeline/models/xg2_booster.json",
+      "pipeline/models/xg2_calibrators.json",
+      "pipeline/bu/xg/models/handedness.json",
+      "data/prediction_history.json",
+      "public/data/odds_closing.json",
+      "public/data/season_projections_history.json",
+    ],
     "/playoffs": PLAYOFFS_RAW_CSVS.filter((f) =>
       sourceMentions(PLAYOFFS_PAGE, path.basename(f)),
     ),

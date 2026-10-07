@@ -21,6 +21,7 @@ interface Col {
     fmt?: (v: number) => string;
     /** Signed, coloured green/red. */
     signed?: boolean;
+    /** Needs pony xG: blank (—) until the game has any. */
     model?: boolean;
 }
 
@@ -28,6 +29,8 @@ const pct = (a: number, b: number) => (a + b ? a / (a + b) : null);
 const f2 = (v: number) => v.toFixed(2);
 const f1p = (v: number) => `${(v * 100).toFixed(1)}%`;
 const sgn = (v: number, d = 2) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(d)}`;
+/** A model column's value, or null while no shot of the game has pony xG (0.00 would read as a real number). */
+const cell = <R,>(hasXg: boolean, c: { value: (r: R) => number | null; model?: boolean }, r: R) => (c.model && !hasXg ? null : c.value(r));
 
 /** Columns for one skater against an opponent / with a teammate ("for" is the chosen skater's team). */
 const PAIR_COLS: { key: string; label: string; title: string; value: (r: PairRow) => number | null; fmt?: (v: number) => string; signed?: boolean; model?: boolean }[] = [
@@ -51,7 +54,7 @@ const COLS: Record<'ind' | 'ice' | 'use', Col[]> = {
         { key: 'sog', label: 'SOG', title: 'Shots on goal', value: r => r.sog },
         { key: 'icf', label: 'iCF', title: 'Shot attempts', value: r => r.iCF },
         { key: 'ixg', label: 'ixG', title: 'Individual pony xG', value: r => r.ixg, fmt: f2, model: true },
-        { key: 'gax', label: 'GAx', title: 'Goals above expected (G − ixG)', value: r => r.g - r.ixg, fmt: v => sgn(v), signed: true },
+        { key: 'gax', label: 'GAx', title: 'Goals above expected (G − ixG)', value: r => r.g - r.ixg, fmt: v => sgn(v), signed: true, model: true },
         { key: 'hit', label: 'HIT', title: 'Hits', value: r => r.hits },
         { key: 'blk', label: 'BLK', title: 'Shots blocked', value: r => r.blocks },
         { key: 'tk', label: 'TK', title: 'Takeaways', value: r => r.takeaways },
@@ -88,6 +91,7 @@ const COLS: Record<'ind' | 'ice' | 'use', Col[]> = {
 
 function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
     const { m } = useGame();
+    const hasXg = m.events.some(e => e.xg != null);
     return (
         <TableScroller label={`${title} table`}>
             <table className="w-full border-separate border-spacing-0 text-caption tabular-nums">
@@ -112,7 +116,7 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
                                 </span>
                             </th>
                             {PAIR_COLS.map(c => {
-                                const v = c.value(r);
+                                const v = cell(hasXg, c, r);
                                 return (
                                     <td
                                         key={c.key}
@@ -132,6 +136,7 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
 
 export function Skaters() {
     const { m } = useGame();
+    const hasXg = m.events.some(e => e.xg != null);
     const [side, setSide] = React.useState<Side>('away');
     const [view, setView] = React.useState<View>('ind');
     const [strength, setStrength] = React.useState<PlayerStrength>('all');
@@ -147,8 +152,8 @@ export function Skaters() {
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
     const col = cols.find(c => c.key === sort.key) ?? cols[0];
     const sorted = [...rows].sort((a, b) => {
-        const va = col.value(a);
-        const vb = col.value(b);
+        const va = cell(hasXg, col, a);
+        const vb = cell(hasXg, col, b);
         if (va == null) return 1;
         if (vb == null) return -1;
         return sort.dir === 'desc' ? vb - va : va - vb;
@@ -268,7 +273,7 @@ export function Skaters() {
                                         </span>
                                     </th>
                                     {cols.map(c => {
-                                        const v = c.value(r);
+                                        const v = cell(hasXg, c, r);
                                         return (
                                             <td
                                                 key={c.key}

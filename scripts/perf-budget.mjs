@@ -121,6 +121,9 @@ export const RUNTIME_TRACE_REQUIREMENTS = {
         'public/data/team_goalies.json', 'public/data/goalie_season_lines.json', 'public/data/goalie_ratings.json',
         'public/data/injuries.json', 'public/data/player_ratings.json', 'public/data/team_lineups.json', 'public/data/gamestats.csv'],
     '/api/odds-history': ['public/data/SiteHistory/*.csv'],
+    '/games/[id]': ['public/data/game_xg/*.json', 'pipeline/models/xg2_booster.json', 'pipeline/models/xg2_calibrators.json',
+        'pipeline/bu/xg/models/handedness.json', 'data/prediction_history.json', 'public/data/odds_closing.json',
+        'public/data/season_projections_history.json', ...STAMP_FILES],
     '/opengraph-image': ['data/predictions_detailed.csv'],
 };
 

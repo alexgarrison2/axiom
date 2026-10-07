@@ -262,6 +262,7 @@ def stage_rescore_xg(state, rescore_all=False):
     adj = df["xg_raw"].astype(float).copy()
     if talent_map and "player_id" in df.columns:
         adj = adj * df["player_id"].map(talent_map).fillna(1.0)
+    factor = 1.0
     if "is_goal" in df.columns:
         tot_xg, tot_g = float(adj.sum()), float(pd.to_numeric(df["is_goal"], errors="coerce").fillna(0).sum())
         if tot_xg > 0 and tot_g > 0:
@@ -280,7 +281,9 @@ def stage_rescore_xg(state, rescore_all=False):
         print(f"  Updated {path} (xg_raw + adjusted xG)")
     else:
         print(f"  {path}: xG unchanged — not rewritten")
+    # league_factor: the game page scores live shots with xG v2 and applies this same factor (lib/game/fetch.ts).
     record_source("xg_model", hash=mh, mode=xg_info["mode"], v1_fallback_games=xg_info["v1_fallback_games"],
+                  league_factor=round(factor, 6), league_factor_season=str(SEASON_ID),
                   **{k: v for k, v in v2_info.items() if k != "v2_column"}, **v1_info)
 
     agg = df.groupby(["game_id", "team_id"])["xG"].sum().rename("xG_sum").reset_index()

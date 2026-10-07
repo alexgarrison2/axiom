@@ -3,13 +3,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getPredictions } from '@/utils/data';
 import { buildGame, type RawFeeds } from './build';
+import { loadArtifacts, scoreGame, type XgArtifacts } from './xg';
 import type { GameModel, GameOdds, Pregame, SeasonOdds, Side } from './types';
 
 /**
  * Server side of the game page: the four NHL game feeds (Data Cache, 30s
  * while a game can still change, a day once it is final), pony xG per shot
- * from public/data/game_xg/<season>.json, and the pregame pony xG call from
- * the graded history (or tonight's slate).
+ * (the nightly public/data/game_xg/<season>.json, else scored live from the
+ * play-by-play), and the pregame pony xG call from the graded history (or
+ * tonight's slate).
  */
 
 const UA = { 'User-Agent': 'pony-xg (game page)' };
@@ -38,13 +40,67 @@ function readSeasonXg(season: string): Record<string, [number, number][]> | null
 
 const xgCache = new Map<string, { at: number; data: Record<string, [number, number][]> | null }>();
 
-function gameXg(season: string, id: number): Map<number, number> | null {
+function nightlyXg(season: string, id: number): Map<number, number> | null {
     const hit = xgCache.get(season);
     const fresh = hit && Date.now() - hit.at < 10 * 60_000;
     const data = fresh ? hit.data : readSeasonXg(season);
     if (!fresh) xgCache.set(season, { at: Date.now(), data });
     const rows = data?.[String(id)];
     return rows ? new Map(rows) : null;
+}
+
+const readJson = (file: string) => JSON.parse(fs.readFileSync(file, 'utf8'));
+
+// The committed xG v2 artifacts, parsed once per instance (null when unreadable: the page then waits for the nightly file).
+let artifacts: XgArtifacts | null | undefined;
+function xgArtifacts(): XgArtifacts | null {
+    if (artifacts !== undefined) return artifacts;
+    try {
+        artifacts = loadArtifacts(
+            readJson(path.join(process.cwd(), 'pipeline', 'models', 'xg2_booster.json')),
+            readJson(path.join(process.cwd(), 'pipeline', 'models', 'xg2_calibrators.json')),
+            readJson(path.join(process.cwd(), 'pipeline', 'bu', 'xg', 'models', 'handedness.json')),
+        );
+    } catch (e) {
+        console.error('[game] xG v2 artifacts unavailable; live xG off', e);
+        artifacts = null;
+    }
+    return artifacts;
+}
+
+/** The league normalisation the nightly run applied to this season's xG (manifest), else 1. */
+function leagueFactor(season: string): number {
+    try {
+        const src = readJson(path.join(process.cwd(), 'public', 'data', 'manifest.json'))?.sources?.xg_model;
+        const f = Number(src?.league_factor);
+        return String(src?.league_factor_season) === season && Number.isFinite(f) && f > 0 ? f : 1;
+    } catch {
+        return 1;
+    }
+}
+
+const round4 = (v: number) => Math.round(v * 1e4) / 1e4;
+
+/**
+ * Per-shot xG keyed by NHL event id. The nightly run's values once it has
+ * scored the game; until then (a game in progress, or final but not yet
+ * scraped) the same model scored here from the play-by-play, rounded and
+ * normalised the way the pipeline does it.
+ */
+function gameXg(pbp: RawFeeds['pbp']): Map<number, number> | null {
+    const season = String(pbp.season);
+    const nightly = nightlyXg(season, Number(pbp.id));
+    if (nightly) return nightly;
+    const art = xgArtifacts();
+    if (!art) return null;
+    try {
+        const factor = leagueFactor(season);
+        const live = scoreGame(pbp, art);
+        return live.size ? new Map([...live].map(([e, x]) => [e, round4(round4(x) * factor)])) : null;
+    } catch (e) {
+        console.error(`[game] live xG failed for ${pbp.id}`, e);
+        return null;
+    }
 }
 
 interface HistoryRow {
@@ -192,5 +248,5 @@ export async function getGame(idStr: string): Promise<GameModel | null> {
         date: pbp.gameDate,
         teams: { away: { tri: pbp.awayTeam?.abbrev }, home: { tri: pbp.homeTeam?.abbrev } },
     });
-    return buildGame({ pbp, landing, box, shifts, rightRail }, gameXg(String(pbp.season), id), pregame, { odds, outlook });
+    return buildGame({ pbp, landing, box, shifts, rightRail }, gameXg(pbp), pregame, { odds, outlook });
 }
