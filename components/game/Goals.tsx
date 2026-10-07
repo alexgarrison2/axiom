@@ -62,7 +62,7 @@ function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: n
             <div className="relative shrink-0">
                 <div className="h-14 w-14 overflow-hidden rounded-full border-2 bg-surface-2 md:h-16 md:w-16" style={{ borderColor: colors[side] }}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}
-                    {p?.headshot ? <img src={p.headshot} alt="" width={64} height={64} loading="lazy" className="h-full w-full object-cover" /> : null}
+                    {p?.headshot ? <img src={p.headshot} alt="" width={64} height={64} loading="lazy" className="headshot h-full w-full" /> : null}
                 </div>
             </div>
             <div className={cn('flex min-w-0 flex-1 flex-col gap-1', !away && 'md:items-end')}>

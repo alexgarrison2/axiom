@@ -53,7 +53,7 @@ export function TipFace({ p, color, size = 36 }: { p: Player | undefined; color:
     return (
         <span className="block shrink-0 overflow-hidden rounded-full border-2 bg-surface-2" style={{ borderColor: color, width: size, height: size }}>
             {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}
-            {p?.headshot ? <img src={p.headshot} alt="" width={size} height={size} className="h-full w-full object-cover" /> : null}
+            {p?.headshot ? <img src={p.headshot} alt="" width={size} height={size} className="headshot h-full w-full" /> : null}
         </span>
     );
 }

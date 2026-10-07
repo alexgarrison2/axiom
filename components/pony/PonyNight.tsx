@@ -48,7 +48,7 @@ function Row({ r, rank, players, reach }: { r: (string | number)[]; rank: number
             <span className="text-right text-micro tabular-nums text-fg-3">{rank}</span>
             <span className="block h-9 w-9 overflow-hidden rounded-full border-2 bg-surface-2" style={{ borderColor: teamPalette(team).primary }}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshot */}
-                {p?.[4] ? <img src={p[4]} alt="" width={36} height={36} loading="lazy" className="h-full w-full object-cover" /> : null}
+                {p?.[4] ? <img src={p[4]} alt="" width={36} height={36} loading="lazy" className="headshot h-full w-full" /> : null}
             </span>
             <span className="min-w-0 leading-tight">
                 <Link href={`/players/${id}`} className="block truncate font-bold text-fg-1 underline-offset-4 hover:text-brand hover:underline">

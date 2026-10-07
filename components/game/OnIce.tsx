@@ -16,7 +16,7 @@ function Face({ src, color }: { src: string | null; color: string }) {
     return (
         <span className="block h-7 w-7 shrink-0 overflow-hidden rounded-full border bg-surface-2" style={{ borderColor: color }}>
             {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}
-            {src ? <img src={src} alt="" width={28} height={28} loading="lazy" className="h-full w-full object-cover" /> : null}
+            {src ? <img src={src} alt="" width={28} height={28} loading="lazy" className="headshot h-full w-full" /> : null}
         </span>
     );
 }

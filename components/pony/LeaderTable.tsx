@@ -112,7 +112,7 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
                                     <Link href={`/players/${r.player.id}`} className="flex min-w-0 items-center gap-2.5 rounded-control outline-none focus-visible:outline-2 focus-visible:outline-brand">
                                         <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 bg-surface-2" style={{ borderColor: ring }}>
                                             {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}
-                                            {r.player.headshot ? <img src={r.player.headshot} alt="" width={36} height={36} loading="lazy" className="h-full w-full object-cover" /> : null}
+                                            {r.player.headshot ? <img src={r.player.headshot} alt="" width={36} height={36} loading="lazy" className="headshot h-full w-full" /> : null}
                                         </span>
                                         <span className="min-w-0 leading-tight">
                                             <span className="block truncate font-bold text-fg-1 group-hover:text-brand">

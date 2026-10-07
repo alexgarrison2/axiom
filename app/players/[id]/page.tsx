@@ -149,7 +149,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                             {profile?.headshot ? (
                                 <span className="block h-20 w-20 shrink-0 overflow-hidden rounded-full border-[3px] bg-surface-2 md:h-24 md:w-24" style={{ borderColor: color }}>
                                     {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshot */}
-                                    <img src={profile.headshot} alt="" width={96} height={96} className="h-full w-full object-cover" />
+                                    <img src={profile.headshot} alt="" width={96} height={96} className="headshot h-full w-full" />
                                 </span>
                             ) : null}
                             <div className="min-w-0">

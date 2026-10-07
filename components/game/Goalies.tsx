@@ -33,7 +33,7 @@ export function Goalies() {
                                         <header className={cn('flex items-center gap-3', side === 'home' && 'flex-row-reverse text-right')}>
                                             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 bg-surface-2" style={{ borderColor: colors[side] }}>
                                                 {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}
-                                                {g.player.headshot ? <img src={g.player.headshot} alt="" width={56} height={56} loading="lazy" className="h-full w-full object-cover" /> : null}
+                                                {g.player.headshot ? <img src={g.player.headshot} alt="" width={56} height={56} loading="lazy" className="headshot h-full w-full" /> : null}
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="truncate font-bold text-goalie">{playerName(g.player)}</p>
