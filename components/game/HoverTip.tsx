@@ -11,7 +11,7 @@ type Tip = { x: number; y: number; node: React.ReactNode };
  * A card that follows the pointer over a chart mark. `bind(node)` spreads the
  * pointer handlers onto the mark; `tip` renders the card (portalled to body,
  * flipped away from the viewport edges). Touch: a tap shows it, the next tap
- * elsewhere replaces it. Keyboard: focusing the mark shows the card beside it.
+ * elsewhere replaces it.
  */
 export function useHoverTip() {
     const [tip, setTip] = React.useState<Tip | null>(null);
@@ -19,12 +19,6 @@ export function useHoverTip() {
         onPointerEnter: (e: React.PointerEvent) => setTip({ x: e.clientX, y: e.clientY, node }),
         onPointerMove: (e: React.PointerEvent) => setTip({ x: e.clientX, y: e.clientY, node }),
         onPointerLeave: () => setTip(null),
-        // Keyboard: a focused mark shows its card beside it (the mark needs tabIndex).
-        onFocus: (e: React.FocusEvent<Element>) => {
-            const r = e.currentTarget.getBoundingClientRect();
-            setTip({ x: r.right, y: r.top + r.height / 2, node });
-        },
-        onBlur: () => setTip(null),
     });
     const el = tip && typeof document !== 'undefined' ? createPortal(<TipCard tip={tip} />, document.body) : null;
     return { bind, tip: el };
