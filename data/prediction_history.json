@@ -38840,5 +38840,73 @@
         "market_p": 0.5697
       }
     }
+  },
+  {
+    "gameId": 2026020052,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-06",
+    "homeTeam": "Kings",
+    "awayTeam": "Panthers",
+    "homeScore": 1,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 3.01,
+    "awayXg": 3.14,
+    "homeWinProb": 47.8,
+    "predictedWinner": "Panthers",
+    "actualWinner": "Panthers",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2285,
+    "logLoss": 0.6501,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-07T01:57:00Z",
+    "startUtc": "2026-10-07T02:00:00Z",
+    "marketHomeProb": 48.1,
+    "modelHomeProb": 47.7,
+    "homeOdds": -102.0,
+    "awayOdds": -118.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 47.7,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.405,
+        "ll": 0.9039,
+        "naive_ll": 0.826,
+        "market_p": 0.3903
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.711,
+        "ll": 0.3411,
+        "naive_ll": 0.3327,
+        "market_p": 0.7034
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.449,
+        "ll": 0.8007,
+        "naive_ll": 0.8208,
+        "market_p": 0.4546
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.327,
+        "ll": 1.1178,
+        "naive_ll": 1.0937,
+        "market_p": 0.3237
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.491,
+        "ll": 0.7113,
+        "naive_ll": 0.7266,
+        "market_p": 0.4888
+      }
+    }
   }
 ]
