@@ -9,9 +9,10 @@ import { equalScale, minApart, placeLabels, rates, ticks, type Box, type LabelIn
 /**
  * With or without you, after HockeyViz: for each of his most-used 5v5
  * teammates three points on raw rates (xGF/60 across, xGA/60 down with less
- * against at the top): together (filled dot), him without the teammate (ring)
- * and the teammate without him (diamond), joined by a faint line that passes
- * through his overall mark (+). Faint diagonals are equal xG differential.
+ * against at the top): together (cyan dot), him without the teammate (amber ring)
+ * and the teammate without him (magenta diamond), each apart point joined to
+ * the together point by a faint line in its colour; his overall mark is the
+ * +. Faint diagonals are equal xG differential.
  * Hover or tap a teammate for the numbers; tap again or elsewhere to close.
  * On a phone the card sits under the chart, in flow.
  */
@@ -50,7 +51,7 @@ function Glyph({ kind, x, y, r = R, className, strokeWidth = 1.5 }: { kind: 'wit
 function Swatch({ kind }: { kind: 'with' | 'him' | 'mate' }) {
     return (
         <svg viewBox="0 0 12 12" width={12} height={12} aria-hidden="true" className="shrink-0">
-            <Glyph kind={kind} x={6} y={6} r={4} className={kind === 'with' ? 'fill-fg-1' : kind === 'him' ? 'stroke-fg-1' : 'stroke-fg-2'} />
+            <Glyph kind={kind} x={6} y={6} r={4} className={kind === 'with' ? 'fill-brand' : kind === 'him' ? 'stroke-amber' : 'stroke-model'} />
         </svg>
     );
 }
@@ -180,10 +181,10 @@ export function Wowy({ data, first, last, gp, prior, seasonTag }: { data: WowyPl
 
     const kindClass = (on: boolean, faded: boolean) => (on ? 'brand' : faded ? 'faded' : 'rest');
     const cls = {
-        line: { brand: 'stroke-brand', rest: 'stroke-fg-3', faded: 'stroke-fg-3' },
-        with: { brand: 'fill-brand', rest: 'fill-fg-1', faded: 'fill-fg-3' },
-        him: { brand: 'stroke-brand', rest: 'stroke-fg-1', faded: 'stroke-fg-3' },
-        mate: { brand: 'stroke-brand', rest: 'stroke-fg-2', faded: 'stroke-fg-3' },
+        // Each kind keeps its own colour (together cyan, him apart amber, mate apart magenta); others fade to grey.
+        with: { brand: 'fill-brand', rest: 'fill-brand', faded: 'fill-fg-3' },
+        him: { brand: 'stroke-amber', rest: 'stroke-amber', faded: 'stroke-fg-3' },
+        mate: { brand: 'stroke-model', rest: 'stroke-model', faded: 'stroke-fg-3' },
     };
 
     const card = act ? (
@@ -296,20 +297,18 @@ export function Wowy({ data, first, last, gp, prior, seasonTag }: { data: WowyPl
                             </text>
                         ))}
 
-                        {/* Connectors: mate apart — together — him apart (through his overall mark). */}
+                        {/* Connectors from the together point, each in the colour of the apart point it reaches. */}
                         {pts.map(p => {
                             const on = active === p.m.id;
                             const faded = active != null && !on;
-                            const chain = [p.o, p.w, p.h].filter((v): v is { f: number; a: number } => v != null);
+                            if (!p.w) return null;
+                            const seg = (to: { f: number; a: number } | null, cls: string) =>
+                                to ? <line x1={X(p.w!.f)} y1={Y(p.w!.a)} x2={X(to.f)} y2={Y(to.a)} strokeWidth={on ? 1.5 : 1} className={faded ? 'stroke-fg-3' : cls} opacity={on ? 0.9 : faded ? 0.1 : 0.3} /> : null;
                             return (
-                                <polyline
-                                    key={`l${p.m.id}`}
-                                    points={chain.map(v => `${X(v.f).toFixed(1)},${Y(v.a).toFixed(1)}`).join(' ')}
-                                    fill="none"
-                                    strokeWidth={on ? 1.5 : 1}
-                                    className={cls.line[kindClass(on, faded)]}
-                                    opacity={on ? 0.9 : faded ? 0.12 : 0.35}
-                                />
+                                <g key={`l${p.m.id}`}>
+                                    {seg(p.h, 'stroke-amber')}
+                                    {seg(p.o, 'stroke-model')}
+                                </g>
                             );
                         })}
                         {hub ? (
