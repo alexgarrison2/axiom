@@ -7,6 +7,8 @@ import { compactForClient } from '@/lib/matchup/parse';
 import { addDays, slateDate } from '@/lib/matchup/format';
 import { validDate, isFinalState, slateTitle, type ArchiveSlate } from '@/lib/matchup/archive';
 import { getArchiveSlate } from '@/lib/matchup/archive-server';
+import { trimGame } from '@/app/api/scores/route';
+import type { LiveMap } from '@/lib/matchup/lifecycle';
 
 /*
  * Rendered per request so /?date= paints the requested slate on the server
@@ -33,6 +35,36 @@ function requested(sp: Record<string, string | string[] | undefined>, today: str
     return s >= FIRST_DATE && s <= addDays(today, 5 * 366) ? s : null;
 }
 
+/**
+ * Scores for a slate that has started, so the first paint sorts and draws the cards as the
+ * browser's first live update will (a game the file still calls live may be final): no
+ * reorder or resize when the scores land. Same feed and cache as /api/scores; a slow or
+ * failed feed just leaves it to the browser.
+ */
+async function startedScores(date: string | null, games: { id: string; date: string; startTimeUtc: string }[]): Promise<LiveMap | null> {
+    if (!date) return null;
+    const ids = new Set(games.filter(g => g.date === date).map(g => g.id));
+    const now = Date.now();
+    if (!games.some(g => g.date === date && Date.parse(g.startTimeUtc) <= now)) return null;
+    try {
+        const res = await fetch(`https://api-web.nhle.com/v1/score/${date}`, {
+            next: { revalidate: 20 },
+            signal: AbortSignal.timeout(1500),
+            headers: { 'User-Agent': 'pony-xg (live scores)' },
+        });
+        if (!res.ok) return null;
+        const body = (await res.json()) as { games?: Parameters<typeof trimGame>[0][] };
+        const out: LiveMap = {};
+        for (const g of body.games ?? []) {
+            const t = trimGame(g);
+            if (t && ids.has(t.id)) out[t.id] = t;
+        }
+        return Object.keys(out).length ? out : null;
+    } catch {
+        return null;
+    }
+}
+
 async function slateDates(): Promise<string[]> {
     const predictions = await loadPredictions();
     return [...new Set(predictions.map(p => p.date))].sort();
@@ -55,13 +87,14 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     const yesterday = addDays(today, -1);
 
     const teams = [...new Set(predictions.flatMap(p => [p.home.team.triCode, p.away.team.triCode]))];
-    const [allOdds, implications, series, archive, yArchive] = await Promise.all([
+    const [allOdds, implications, series, archive, yArchive, initialLive] = await Promise.all([
         getPlayoffOdds(),
         getImplications(),
         getPlayoffSeries(predictions),
         initialDate && !dates.includes(initialDate) ? getArchiveSlate(initialDate, today) : Promise.resolve<ArchiveSlate | null>(null),
         // The Yesterday chip: only while yesterday has finals and isn't already a slate day.
         dates.includes(yesterday) || initialDate === yesterday ? Promise.resolve<ArchiveSlate | null>(null) : getArchiveSlate(yesterday, today),
+        startedScores(initialDate, predictions),
     ]);
     const playoffOdds = Object.fromEntries(teams.filter(t => allOdds[t] != null).map(t => [t, allOdds[t]]));
 
@@ -84,6 +117,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                 archive={archive}
                 extraDays={extraDays}
                 series={series}
+                initialLive={initialLive}
             />
         </main>
     );

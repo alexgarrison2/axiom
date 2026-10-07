@@ -10,7 +10,7 @@ import { BiggestGames } from '@/components/matchup/SlateStrips';
 import { PonyNight } from '@/components/pony/PonyNight';
 import { useLiveScores } from '@/hooks/useLiveScores';
 import { XL_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
-import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
+import { cardAnchor, defaultDate, sortSlate, type LiveMap } from '@/lib/matchup/lifecycle';
 import { bothOpeners } from '@/lib/matchup/pills';
 import { hasPrediction } from '@/lib/matchup/edge';
 import { railHeading, railLabel, slateDate, weekdayDate } from '@/lib/matchup/format';
@@ -36,6 +36,8 @@ export interface PredictionsViewerProps {
     extraDays?: { date: string; count: number }[];
     /** Playoff series scores keyed "AWAY|HOME" (postseason only). */
     series?: Record<string, { away: number; home: number }>;
+    /** Server-fetched scores for the first slate when it has started (until the browser's own poll lands). */
+    initialLive?: LiveMap | null;
 }
 
 const noopSubscribe = () => () => {};
@@ -68,6 +70,7 @@ export default function PredictionsViewer({
     archive = null,
     extraDays = [],
     series,
+    initialLive = null,
 }: PredictionsViewerProps) {
     const router = useRouter();
     // A cached page may have been rendered on an earlier day: "today" is re-derived in the browser.
@@ -88,7 +91,9 @@ export default function PredictionsViewer({
         const allOpeners = games.length > 1 && games.every(bothOpeners);
         return allOpeners ? games.map(p => ({ ...p, slateAllOpeners: true })) : games;
     }, [predictions, date]);
-    const live = useLiveScores(date, dayGames);
+    const polled = useLiveScores(date, dayGames);
+    // The server's scores stand in for the first slate until the browser's own arrive (same feed).
+    const live = useMemo(() => (initialLive && date === initialDate ? { ...initialLive, ...polled } : polled), [initialLive, date, initialDate, polled]);
     const slate = useMemo(() => sortSlate(dayGames, live), [dayGames, live]);
     // Until the first scores arrive the cards don't know a started game's score.
     const scoresPending = Object.keys(live).length === 0;

@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { IntentLink } from './IntentLink';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -26,55 +27,80 @@ function Underline({ active }: { active: boolean }) {
  * (Standings, the playoff archive, News, How it works) sit under "More", as on phones.
  */
 function TabletMore({ items, pathname }: { items: NavItem[]; pathname: string | null }) {
-    const [open, setOpen] = React.useState(false);
-    const root = React.useRef<HTMLLIElement>(null);
+    const [pos, setPos] = React.useState<{ top: number; right: number } | null>(null);
+    const button = React.useRef<HTMLButtonElement>(null);
+    const menu = React.useRef<HTMLUListElement>(null);
+    const open = pos != null;
     const active = items.some(i => isItemActive(i, pathname));
+    const close = React.useCallback((refocus = false) => {
+        setPos(null);
+        if (refocus) button.current?.focus();
+    }, []);
 
-    React.useEffect(() => setOpen(false), [pathname]);
+    React.useEffect(() => close(), [pathname, close]);
     React.useEffect(() => {
         if (!open) return;
-        const away = (e: PointerEvent) => {
-            if (!root.current?.contains(e.target as Node)) setOpen(false);
-        };
+        menu.current?.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
         const esc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setOpen(false);
+            if (e.key === 'Escape') close(true);
         };
-        document.addEventListener('pointerdown', away);
+        const resize = () => close();
         document.addEventListener('keydown', esc);
+        window.addEventListener('resize', resize);
         return () => {
-            document.removeEventListener('pointerdown', away);
             document.removeEventListener('keydown', esc);
+            window.removeEventListener('resize', resize);
         };
-    }, [open]);
+    }, [open, close]);
+
+    const toggle = () => {
+        if (open) return close();
+        const r = button.current?.getBoundingClientRect();
+        if (r) setPos({ top: r.bottom, right: Math.max(8, window.innerWidth - r.right) });
+    };
 
     return (
-        <li ref={root} className="relative lg:hidden">
-            <button type="button" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen(o => !o)} className={linkClass(active)}>
+        <li className="relative lg:hidden">
+            <button ref={button} type="button" aria-expanded={open} aria-haspopup="true" onClick={toggle} className={linkClass(active)}>
                 More
                 <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('ml-1 h-3 w-3 transition-transform', open && 'rotate-180')}>
                     <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <Underline active={active} />
             </button>
-            {open ? (
-                <ul className="absolute right-0 top-full z-50 min-w-48 rounded-control border border-line-strong bg-surface-1 py-1 shadow-card animate-fade-in">
-                    {items.map(item => {
-                        const on = isActive(item.href, pathname);
-                        return (
-                            <li key={item.key}>
-                                <IntentLink
-                                    href={item.href}
-                                    aria-current={on ? 'page' : undefined}
-                                    onClick={() => setOpen(false)}
-                                    className={cn('flex min-h-11 items-center px-4 text-caption font-medium uppercase tracking-[0.12em] transition-colors', on ? 'text-brand' : 'text-fg-1 hover:text-brand')}
-                                >
-                                    {item.label}
-                                </IntentLink>
-                            </li>
-                        );
-                    })}
-                </ul>
-            ) : null}
+            {open
+                ? createPortal(
+                      <>
+                          {/* A transparent catcher: the tap that closes the menu goes nowhere else. */}
+                          <div aria-hidden="true" className="fixed inset-0 z-[60]" onClick={() => close()} />
+                          <ul
+                              ref={menu}
+                              className="fixed z-[61] min-w-48 rounded-control border border-line-strong bg-surface-1 py-1 shadow-card animate-fade-in"
+                              style={{ top: pos.top, right: pos.right }}
+                          >
+                              {items.map(item => {
+                                  const on = isActive(item.href, pathname);
+                                  return (
+                                      <li key={item.key}>
+                                          <IntentLink
+                                              href={item.href}
+                                              aria-current={on ? 'page' : undefined}
+                                              onClick={() => close()}
+                                              className={cn(
+                                                  'flex min-h-11 items-center px-4 text-caption font-medium uppercase tracking-[0.12em] transition-colors',
+                                                  on ? 'text-brand' : 'text-fg-1 hover:text-brand',
+                                              )}
+                                          >
+                                              {item.label}
+                                          </IntentLink>
+                                      </li>
+                                  );
+                              })}
+                          </ul>
+                      </>,
+                      document.body,
+                  )
+                : null}
         </li>
     );
 }
