@@ -42,8 +42,9 @@ function DayIcon({ g }: { g: SchedGame }) {
 /**
  * A month of the schedule: each game day shows the opponent's crest, "@" for
  * road games, the result (or the model's win % for a game ahead, magenta),
- * and an amber underline for back-to-back and 3-in-4 density. Home days
- * carry a faint wash of the team's colour.
+ * and a small amber B2B on the second night of a back-to-back (the wider
+ * 3-in-4 / 4-in-6 windows live in the rhythm strip and the game card). Home
+ * days carry a faint wash of the team's colour.
  */
 export function MonthCalendar({ month, months, games, focus, lens, today, teamColor, selectedId, onSelect, onHover, onMonth }: MonthCalendarProps) {
     const y = Number(month.slice(0, 4));
@@ -103,9 +104,8 @@ export function MonthCalendar({ month, months, games, focus, lens, today, teamCo
                         );
                     const res = resultText(g);
                     const dim = !inFocus(g, focus) || !inLens(g, lens);
-                    const dense = g.dense.includes('5in8') || g.dense.includes('4in6') ? 3 : g.dense.includes('3in4') ? 2.5 : g.dense.includes('b2b') ? 2 : 0;
                     const picked = g.id === selectedId;
-                    const label = `${g.home ? 'vs' : 'at'} ${g.opp}, ${date}${res ? `, ${res.text}` : g.winPct ? `, model ${Math.round(g.winPct.pct)}%` : ''}`;
+                    const label = `${g.home ? 'vs' : 'at'} ${g.opp}, ${date}${g.b2b ? ', back-to-back' : ''}${res ? `, ${res.text}` : g.winPct ? `, model ${Math.round(g.winPct.pct)}%` : ''}`;
                     return (
                         <button
                             key={date}
@@ -123,12 +123,21 @@ export function MonthCalendar({ month, months, games, focus, lens, today, teamCo
                             )}
                             style={!g.onRoad ? { backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${teamColor} 16%, transparent), transparent 75%)` } : undefined}
                         >
-                            <span className="flex w-full items-center justify-between px-0.5 text-micro leading-none tabular-nums">
+                            <span className="flex w-full items-center justify-between gap-0.5 px-0.5 text-micro leading-none tabular-nums max-sm:px-0">
                                 <span className={cn('text-fg-3', picked && 'text-brand')}>
                                     {day}
                                     {g.home ? null : <span className="ml-0.5 text-fg-2">@</span>}
                                 </span>
-                                <DayIcon g={g} />
+                                <span className="flex min-w-0 items-center gap-1">
+                                    {g.b2b ? (
+                                        <>
+                                            <span className="font-semibold tracking-normal text-warn/80 max-[439px]:hidden sm:tracking-wide">B2B</span>
+                                            {/* Phone cells are too narrow for the word: a small amber dot. */}
+                                            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-warn/80 min-[440px]:hidden" />
+                                        </>
+                                    ) : null}
+                                    <DayIcon g={g} />
+                                </span>
                             </span>
                             {/* eslint-disable-next-line @next/next/no-img-element -- static SVG crest */}
                             <img src={`/logos/${g.opp}.svg`} alt="" width={26} height={26} decoding="async" className="h-[24px] w-[24px] object-contain md:h-[28px] md:w-[28px]" />
@@ -144,7 +153,6 @@ export function MonthCalendar({ month, months, games, focus, lens, today, teamCo
                                     <span className="text-fg-3">{g.et.replace(/:00/, '').replace(/ (AM|PM)/, '')}</span>
                                 )}
                             </span>
-                            {dense ? <span aria-hidden="true" className="absolute inset-x-0 bottom-0 bg-warn" style={{ height: dense, opacity: 0.85 }} /> : null}
                         </button>
                     );
                 })}
