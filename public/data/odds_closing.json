@@ -1683,27 +1683,27 @@
   "sources": [
    "bovada"
   ],
-  "fetched_at": "2026-10-07T01:56:00Z",
-  "Penguins_puckline": -185,
+  "fetched_at": "2026-10-07T05:01:27Z",
+  "Penguins_puckline": -183,
   "Penguins_puckline_spread": "+1.5",
-  "Capitals_puckline": 160,
+  "Capitals_puckline": 158,
   "Capitals_puckline_spread": "-1.5",
   "total_over": -112,
   "total_line": "6.5",
   "total_under": -108,
   "Penguins_1p_ml": 110,
   "Capitals_1p_ml": -145,
-  "Capitals": -160,
-  "Penguins": 135,
-  "home_ml": -160,
-  "away_ml": 135,
+  "Capitals": -155,
+  "Penguins": 133,
+  "home_ml": -155,
+  "away_ml": 133,
   "Penguins_three_way": 195,
-  "Capitals_three_way": 100,
+  "Capitals_three_way": 101,
   "three_way_tie": 325,
   "Penguins_1p_three_way": 205,
   "Capitals_1p_three_way": 150,
   "1p_three_way_tie": 190,
-  "captured_at": "2026-10-07T01:56:00Z"
+  "captured_at": "2026-10-07T05:01:27Z"
  },
  "2026020054": {
   "game_id": 2026020054,
@@ -1717,7 +1717,7 @@
   "sources": [
    "bovada"
   ],
-  "fetched_at": "2026-10-06T21:02:22Z",
+  "fetched_at": "2026-10-07T05:01:27Z",
   "Avalanche_puckline": 135,
   "Avalanche_puckline_spread": "-1.5",
   "Jets_puckline": -160,
@@ -1729,10 +1729,10 @@
   "Avalanche": -175,
   "home_ml": 150,
   "away_ml": -175,
-  "Avalanche_1p_three_way": 145,
+  "Avalanche_1p_three_way": 150,
   "Jets_1p_three_way": 215,
   "1p_three_way_tie": 180,
-  "captured_at": "2026-10-06T21:02:22Z"
+  "captured_at": "2026-10-07T05:01:27Z"
  },
  "2026020055": {
   "game_id": 2026020055,
@@ -1767,5 +1767,49 @@
   "Ducks_1p_three_way": 185,
   "1p_three_way_tie": 195,
   "captured_at": "2026-10-07T03:03:46Z"
+ },
+ "2026020059": {
+  "game_id": 2026020059,
+  "game_date": "2026-10-08",
+  "start_time_utc": "2026-10-08T23:00:00Z",
+  "home_team": "Senators",
+  "away_team": "Flyers",
+  "home_abbrev": "OTT",
+  "away_abbrev": "PHI",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-07T05:01:27Z",
+  "Senators": -122,
+  "Flyers": 102,
+  "home_ml": -122,
+  "away_ml": 102,
+  "total_line": "5.5",
+  "total_over": -120,
+  "total_under": 100,
+  "captured_at": "2026-10-07T05:01:27Z"
+ },
+ "2026020063": {
+  "game_id": 2026020063,
+  "game_date": "2026-10-08",
+  "start_time_utc": "2026-10-09T00:00:00Z",
+  "home_team": "Blues",
+  "away_team": "Sharks",
+  "home_abbrev": "STL",
+  "away_abbrev": "SJS",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-07T05:01:27Z",
+  "Blues": -122,
+  "Sharks": 102,
+  "home_ml": -122,
+  "away_ml": 102,
+  "total_line": "5.5",
+  "total_over": -115,
+  "total_under": -105,
+  "captured_at": "2026-10-07T05:01:27Z"
  }
 }
