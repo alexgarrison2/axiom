@@ -3,6 +3,7 @@
  * fixtures; lib/game/fetch.ts does the fetching.
  */
 import type { EventType, GameEvent, GameModel, GameOdds, GameState, Player, Pos, Pregame, SeasonOdds, Shift, Side, Situation, Star, Strength } from './types';
+import { formatClock, periodLength, readClock } from './clock';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Raw = any;
@@ -242,11 +243,12 @@ export function buildGame(
     const raw = String(pbp.gameState ?? 'FUT');
     const state: GameState = raw === 'OFF' || raw === 'FINAL' ? 'final' : raw === 'LIVE' || raw === 'CRIT' ? 'live' : 'pre';
     const lastPeriod = pbp.periodDescriptor?.number ?? 1;
+    const clock = readClock(lastPeriod, pbp.clock?.timeRemaining, !!pbp.clock?.inIntermission, periodLength(lastPeriod, otLength));
     const end =
         state === 'final'
             ? Math.max(3600, ...events.map(e => e.t))
             : state === 'live'
-              ? periodStart(lastPeriod, otLength) + (lastPeriod <= 3 ? 1200 : otLength) - mmss(pbp.clock?.timeRemaining)
+              ? periodStart(clock.period, otLength) + periodLength(clock.period, otLength) - (clock.seconds ?? 0)
               : 0;
     const outcomeType = pbp.gameOutcome?.lastPeriodType;
 
@@ -275,7 +277,7 @@ export function buildGame(
         venue: pbp.venue?.default ?? null,
         state,
         outcome: state === 'final' ? (outcomeType === 'OT' || outcomeType === 'SO' ? outcomeType : 'REG') : null,
-        live: state === 'live' ? { period: lastPeriod, remaining: pbp.clock?.timeRemaining ?? '', intermission: !!pbp.clock?.inIntermission } : null,
+        live: state === 'live' ? { period: clock.period, remaining: clock.seconds != null ? formatClock(clock.seconds) : '', intermission: clock.intermission } : null,
         otLength,
         end,
         teams: { away: team(pbp.awayTeam, 'away'), home: team(pbp.homeTeam, 'home') },

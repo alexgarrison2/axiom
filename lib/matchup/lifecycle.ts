@@ -3,6 +3,7 @@
  * score feed (app/api/scores) with the CSV's game_state as the fallback.
  */
 import type { GameState, Prediction } from '../../types/prediction';
+import { formatClock, otLengthOf, periodLength, readClock } from '@/lib/game/clock';
 
 export interface LiveSide {
     score: number | null;
@@ -48,10 +49,12 @@ export function liveClock(g: LiveGame | null | undefined): string {
     if (!g || g.period == null) return 'Live';
     const pt = g.periodType ?? (g.period > 3 ? 'OT' : 'REG');
     if (pt === 'SO') return 'Shootout';
-    const periodName = pt === 'OT' ? (g.period > 4 ? `${g.period - 3}OT` : 'OT') : `P${g.period}`;
-    if (g.intermission) return pt === 'OT' ? 'OT INT' : `${ORD[g.period] ?? `P${g.period}`} INT`;
-    if (g.clock === '00:00' || g.clock === '0:00') return `End ${periodName}`;
-    return g.clock ? `${periodName} ${g.clock.replace(/^0(\d):/, '$1:')}` : periodName;
+    const otLength = otLengthOf(g.id);
+    const c = readClock(g.period, g.clock, g.intermission, periodLength(g.period, otLength));
+    const name = (p: number) => (p <= 3 ? `P${p}` : p > 4 ? `${p - 3}OT` : 'OT');
+    if (c.intermission) return c.period >= 4 ? 'OT INT' : `${ORD[c.period] ?? `P${c.period}`} INT`;
+    if (c.seconds === 0) return `End ${name(c.period)}`;
+    return c.seconds != null ? `${name(c.period)} ${formatClock(c.seconds)}` : name(c.period);
 }
 
 /** "FINAL", "FINAL/OT", "FINAL/SO". */
