@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { inPeriod, isUnblocked, matchTeamStrength, periodLabel, shortName, type TeamStrength } from '@/lib/game/analytics';
 import { SIDES, type GameEvent, type Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
+import { useWidth } from './Pulse';
 import { RinkMarkings } from './Rink';
 
 type Kind = 'goal' | 'shot' | 'miss' | 'block';
@@ -86,8 +87,8 @@ function Heat({ side, events, color }: { side: Side; events: GameEvent[]; color:
 
 const RESULT: Record<string, string> = { goal: 'Goal', shot: 'Saved', miss: 'Missed', block: 'Blocked' };
 
-/** Hover card: anchored to the mark, flipped toward the centre so it never leaves the rink. */
-function ShotCard({ e }: { e: GameEvent }) {
+/** Hover card: anchored to the mark, flipped toward the centre so it never leaves the rink. `inline`: in the flow under the rink (phones). */
+function ShotCard({ e, inline = false }: { e: GameEvent; inline?: boolean }) {
     const { m, colors, byId, label } = useGame();
     const left = ((e.x! + 101) / 202) * 100;
     const top = ((-e.y! + 43.5) / 87) * 100;
@@ -102,12 +103,19 @@ function ShotCard({ e }: { e: GameEvent }) {
     return (
         <div
             role="status"
-            className="pointer-events-none absolute z-10 w-56 rounded-control border border-line-strong bg-surface-1/95 p-2.5 text-caption shadow-[0_8px_24px_-8px_rgba(0,0,0,0.8)] backdrop-blur"
-            style={{
-                left: `${left}%`,
-                top: `${top}%`,
-                transform: `translate(${left > 50 ? 'calc(-100% - 12px)' : '12px'}, ${top > 50 ? 'calc(-100% - 8px)' : '8px'})`,
-            }}
+            className={cn(
+                'rounded-control border border-line-strong bg-surface-1/95 p-2.5 text-caption',
+                inline ? 'mt-2' : 'pointer-events-none absolute z-10 w-56 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.8)] backdrop-blur',
+            )}
+            style={
+                inline
+                    ? undefined
+                    : {
+                          left: `${left}%`,
+                          top: `${top}%`,
+                          transform: `translate(${left > 50 ? 'calc(-100% - 12px)' : '12px'}, ${top > 50 ? 'calc(-100% - 8px)' : '8px'})`,
+                      }
+            }
         >
             <p className="flex items-center justify-between gap-2">
                 <span className="truncate font-bold" style={{ color: colors[e.side] }}>
@@ -168,6 +176,27 @@ export function Shots() {
     const [hoverId, setHoverId] = React.useState<number | null>(null);
     const [pinId, setPinId] = React.useState<number | null>(null);
     const card = shown.find(e => e.id === (hoverId ?? pinId)) ?? null;
+    // Phones: a tapped shot's card sits under the rink (a floating one would cover half of it).
+    const [rinkRef, rinkW] = useWidth<HTMLDivElement>();
+    const inline = rinkW > 0 && rinkW < 640 && hoverId == null;
+    // Touch: the marks are a few pixels wide, so a tap takes the nearest shot within a fingertip.
+    const lastType = React.useRef('mouse');
+    const tapNearest = (ev: React.MouseEvent<SVGSVGElement>) => {
+        const r = ev.currentTarget.getBoundingClientRect();
+        const ft = r.width / 202;
+        const fx = (ev.clientX - r.left) / ft - 101;
+        const fy = (ev.clientY - r.top) / ft - 43.5;
+        let best: GameEvent | null = null;
+        let bd = 22 / ft;
+        for (const e of shown) {
+            const dd = Math.hypot(e.x! - fx, -e.y! - fy);
+            if (dd < bd) {
+                bd = dd;
+                best = e;
+            }
+        }
+        setPinId(p => (best && p !== best.id ? best.id : null));
+    };
 
     return (
         <GameSection
@@ -229,13 +258,23 @@ export function Shots() {
 
                 {view === 'map' ? (
                     <div className="p-card">
-                        <div className="relative">
-                        <svg viewBox="-101 -43.5 202 87" className="block w-full" onClick={() => setPinId(null)} role="img" aria-label={`${shown.length} shot attempts. ${m.teams.away.tri} shoot left, ${m.teams.home.tri} shoot right.`}>
+                        <div ref={rinkRef} className="relative">
+                        <svg
+                            viewBox="-101 -43.5 202 87"
+                            className="block w-full"
+                            onPointerDown={ev => {
+                                lastType.current = ev.pointerType;
+                            }}
+                            onClick={ev => (lastType.current === 'mouse' ? setPinId(null) : tapNearest(ev))}
+                            role="img"
+                            aria-label={`${shown.length} shot attempts. ${m.teams.away.tri} shoot left, ${m.teams.home.tri} shoot right.`}
+                        >
                             <RinkMarkings />
-                            <text x={-96} y={2} className="fill-fg-3" fontSize={4} fontWeight={700} textAnchor="start" opacity={0.6}>
+                            {/* End labels: a few pixels tall on a phone, where the totals underneath already name each end. */}
+                            <text x={-96} y={2} className="fill-fg-3 max-sm:hidden" fontSize={4} fontWeight={700} textAnchor="start" opacity={0.6}>
                                 {m.teams.away.tri}
                             </text>
-                            <text x={96} y={2} className="fill-fg-3" fontSize={4} fontWeight={700} textAnchor="end" opacity={0.6}>
+                            <text x={96} y={2} className="fill-fg-3 max-sm:hidden" fontSize={4} fontWeight={700} textAnchor="end" opacity={0.6}>
                                 {m.teams.home.tri}
                             </text>
                             {/* Goals drawn last so they sit on top. */}
@@ -244,9 +283,12 @@ export function Shots() {
                                 .map(e => (
                                     <g
                                         key={e.id}
-                                        onPointerEnter={() => setHoverId(e.id)}
+                                        onPointerEnter={ev => {
+                                            if (ev.pointerType === 'mouse') setHoverId(e.id);
+                                        }}
                                         onPointerLeave={() => setHoverId(h => (h === e.id ? null : h))}
                                         onClick={ev => {
+                                            if (lastType.current !== 'mouse') return;
                                             ev.stopPropagation();
                                             setPinId(p => (p === e.id ? null : e.id));
                                         }}
@@ -258,8 +300,9 @@ export function Shots() {
                                     </g>
                                 ))}
                         </svg>
-                        {card ? <ShotCard e={card} /> : null}
+                        {card && !inline ? <ShotCard e={card} /> : null}
                         </div>
+                        {card && inline ? <ShotCard e={card} inline /> : null}
                         <div className="mt-2 grid grid-cols-2 gap-4 text-caption tabular-nums">
                             {SIDES.map(side => {
                                 const evs = base.filter(e => e.side === side);
@@ -270,7 +313,9 @@ export function Shots() {
                                             {m.teams[side].tri}
                                         </span>
                                         <span className="text-model">{unb.reduce((a, e) => a + (e.xg ?? 0), 0).toFixed(2)} xG</span>
-                                        <span className="text-fg-2">
+                                        {/* Phones wrap before the dot, never inside a count. */}
+                                        <span className="text-fg-2 sm:hidden">{`${unb.length}\u00a0unblocked ·\u00a0${evs.filter(e => e.type === 'block').length}\u00a0blocked`}</span>
+                                        <span className="hidden text-fg-2 sm:inline">
                                             {unb.length} unblocked · {evs.filter(e => e.type === 'block').length} blocked
                                         </span>
                                     </p>

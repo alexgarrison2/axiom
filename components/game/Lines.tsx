@@ -138,11 +138,27 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
     // Focus (a hovered box or Minutes row): his boxes and his other-line partners stay lit, the rest fade.
     const partners = new Set(focus != null ? links.filter(l => l.a.id === focus || l.b.id === focus).flatMap(l => [l.a.id, l.b.id]) : []);
     const dim = (id: number) => focus != null && id !== focus && !partners.has(id);
+    // Touch has no hover: a tap on a box lights him (again, or open ice, lets go).
+    const lastType = React.useRef('mouse');
 
     return (
         <div ref={ref} className="min-w-0">
             {width ? (
-                <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`${m.teams[side].name} player usage: lines, pairs, special-teams units and goalie`} className="block font-mono">
+                <svg
+                    viewBox={`0 0 ${W} ${H}`}
+                    width="100%"
+                    // Under 300px (320 phones) the layout scales down as a whole; the height follows so no bands open above and below.
+                    height={width < W ? (H * width) / W : H}
+                    role="img"
+                    aria-label={`${m.teams[side].name} player usage: lines, pairs, special-teams units and goalie`}
+                    className="block font-mono"
+                    onPointerDown={e => {
+                        lastType.current = e.pointerType;
+                    }}
+                    onClick={() => {
+                        if (lastType.current !== 'mouse') setFocus(null);
+                    }}
+                >
                     {titles.map(t => (
                         <text key={t.text} x={pad} y={t.y} className="fill-fg-3 text-micro uppercase" letterSpacing="0.08em">
                             {t.text}
@@ -177,8 +193,17 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                             key={`${n.ctx}-${n.id}-${n.y}`}
                             opacity={dim(n.id) ? 0.3 : 1}
                             className="transition-opacity"
-                            onPointerEnter={() => setFocus(n.id)}
-                            onPointerLeave={() => setFocus(null)}
+                            onPointerEnter={e => {
+                                if (e.pointerType === 'mouse') setFocus(n.id);
+                            }}
+                            onPointerLeave={e => {
+                                if (e.pointerType === 'mouse') setFocus(null);
+                            }}
+                            onClick={e => {
+                                if (lastType.current === 'mouse') return;
+                                e.stopPropagation();
+                                setFocus(focus === n.id ? null : n.id);
+                            }}
                         >
                             <text x={n.x + n.w / 2} y={n.y - 4} textAnchor="middle" className={focus === n.id ? 'fill-brand text-micro font-semibold' : 'fill-fg-1 text-micro'}>
                                 {label(n.id)}
@@ -263,19 +288,14 @@ function Minutes({ side, focus, setFocus }: FocusProps) {
             {groups.map((list, gi) => (
                 <ol key={gi} className="flex flex-col gap-1.5" aria-label={gi === 0 ? 'Defence minutes' : 'Forward minutes'}>
                     {list.map((r, i) => {
-                        const b = bind(<MinutesTip r={r} color={colors[side]} rank={`${i + 1}${['st', 'nd', 'rd'][i] ?? 'th'} ${gi === 0 ? 'D' : 'F'} in TOI`} />);
+                        const b = bind(<MinutesTip r={r} color={colors[side]} rank={`${i + 1}${['st', 'nd', 'rd'][i] ?? 'th'} ${gi === 0 ? 'D' : 'F'} in TOI`} />, {
+                            enter: () => setFocus(r.player.id),
+                            leave: () => setFocus(null),
+                        });
                         return (
                             <li
                                 key={r.player.id}
-                                onPointerEnter={e => {
-                                    b.onPointerEnter(e);
-                                    setFocus(r.player.id);
-                                }}
-                                onPointerMove={b.onPointerMove}
-                                onPointerLeave={() => {
-                                    b.onPointerLeave();
-                                    setFocus(null);
-                                }}
+                                {...b}
                                 className={`-mx-1 grid grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-2 rounded-control px-1 text-caption tabular-nums hover:bg-surface-2 ${focus === r.player.id ? 'bg-surface-2' : ''}`}
                             >
                                 <span className="flex items-center gap-1.5">

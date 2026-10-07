@@ -13,6 +13,7 @@ import type { Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
 import { TipFace } from './HoverTip';
 import { JerseyNumber } from './Jersey';
+import { useWidth } from './Pulse';
 import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
 
 /*
@@ -165,6 +166,10 @@ export function GameScore() {
     const boxRef = React.useRef<HTMLDivElement>(null);
     const cardRef = React.useRef<HTMLDivElement>(null);
     const [cardSize, setCardSize] = React.useState({ w: 336, h: 320 });
+    const [panelRef, panelW] = useWidth<HTMLDivElement>();
+    const [scaleRef, scaleW] = useWidth<HTMLSpanElement>();
+    // Phones: a tapped card opens in place under its row instead of floating over the rows.
+    const inline = panelW > 0 && panelW < 640;
 
     const data = React.useMemo(() => gameScores(m, side, PONY), [m, side]);
     const forwards = data.skaters.filter(r => r.player.pos !== 'D');
@@ -189,6 +194,9 @@ export function GameScore() {
     // At most ~6 ticks a side: a game's ±1.5 in halves, a season's ±25 in fives.
     const step = [0.25, 0.5, 1, 2, 5, 10, 20].find(v => d / v <= 6) ?? 50;
     for (let v = -Math.floor(d / step) * step; v <= d + 1e-9; v += step) ticks.push(Math.round(v * 4) / 4);
+    // Every gridline keeps its label while there is room; narrow scales label every second (or fourth) one, always through 0.
+    const tickPx = scaleW && ticks.length > 1 ? scaleW / (ticks.length - 1) : Infinity;
+    const labelEvery = tickPx >= 34 ? 1 : tickPx * 2 >= 34 ? 2 : 4;
 
     React.useLayoutEffect(() => {
         const r = cardRef.current?.getBoundingClientRect();
@@ -259,7 +267,8 @@ export function GameScore() {
         const i = rowIndex++;
         const active = tip?.key === rowKey;
         const faded = tip != null && !active;
-        return (
+        const open = inline && active && tip?.pinned;
+        const el = (
             <div
                 key={rowKey}
                 role="button"
@@ -268,7 +277,7 @@ export function GameScore() {
                 aria-expanded={tip?.pinned && active ? true : undefined}
                 {...handlers(rowKey, card)}
                 className={cn(
-                    'grid cursor-pointer grid-cols-[8.5rem_minmax(0,1fr)] items-center gap-x-3 rounded-control outline-none transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-brand md:grid-cols-[12.5rem_minmax(0,1fr)]',
+                    'grid cursor-pointer grid-cols-[9rem_minmax(0,1fr)] items-center gap-x-2 rounded-control outline-none transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-brand min-[360px]:grid-cols-[9.5rem_minmax(0,1fr)] min-[360px]:gap-x-3 md:grid-cols-[12.5rem_minmax(0,1fr)]',
                     faded && 'opacity-35',
                     active && tip?.pinned && 'bg-surface-2',
                 )}
@@ -276,7 +285,7 @@ export function GameScore() {
             >
                 <span className="flex min-w-0 items-center gap-2 pl-1">
                     {name}
-                    <span className={cn('ml-auto w-11 text-right text-caption font-semibold tabular-nums', total < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(total)}</span>
+                    <span className={cn('ml-auto w-10 text-right text-caption font-semibold tabular-nums min-[360px]:w-11', total < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(total)}</span>
                 </span>
                 <svg viewBox={`0 0 ${VB} ${ROW_H}`} preserveAspectRatio="none" className="block h-full w-full overflow-visible" aria-hidden="true">
                     {ticks.map(t => (
@@ -288,6 +297,20 @@ export function GameScore() {
                     {children}
                 </svg>
             </div>
+        );
+        if (!open) return el;
+        return (
+            <React.Fragment key={rowKey}>
+                {el}
+                <div
+                    ref={cardRef}
+                    role="dialog"
+                    aria-label="Pony Score breakdown"
+                    className="my-1.5 rounded-card border border-brand/60 bg-surface-1 p-3.5 text-caption motion-safe:animate-in motion-safe:fade-in-0"
+                >
+                    {tip!.node}
+                </div>
+            </React.Fragment>
         );
     };
 
@@ -355,7 +378,7 @@ export function GameScore() {
                 />
             }
         >
-            <div className="panel p-card">
+            <div ref={panelRef} className="panel p-card">
                 {/* Legend: the four ideas, each with its offence and defence colour. */}
                 <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-micro uppercase tracking-label text-fg-3">
                     <span className="flex items-center gap-1.5 text-fg-2">
@@ -368,7 +391,7 @@ export function GameScore() {
                             {PARTS[o].label}
                         </span>
                     ))}
-                    <Link href="/methodology#pony-score" className="ml-auto underline-offset-4 hover:text-fg-1 hover:underline">
+                    <Link href="/methodology#pony-score" className="ml-auto underline-offset-4 hover:text-fg-1 hover:underline coarse:-my-3 coarse:inline-flex coarse:min-h-11 coarse:items-center">
                         Method
                     </Link>
                 </div>
@@ -405,18 +428,20 @@ export function GameScore() {
                         : null}
 
                     {/* Scale. */}
-                    <div className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-3 md:grid-cols-[12.5rem_minmax(0,1fr)]" aria-hidden="true">
+                    <div className="grid grid-cols-[9rem_minmax(0,1fr)] gap-x-2 min-[360px]:grid-cols-[9.5rem_minmax(0,1fr)] min-[360px]:gap-x-3 md:grid-cols-[12.5rem_minmax(0,1fr)]" aria-hidden="true">
                         <span />
-                        <span className="relative h-4 text-micro tabular-nums text-fg-3">
-                            {ticks.map(t => (
-                                <span key={t} className="absolute -translate-x-1/2" style={{ left: `${(x(t) / VB) * 100}%` }}>
-                                    {t > 0 ? `+${t}` : t < 0 ? `−${Math.abs(t)}` : '0'}
-                                </span>
-                            ))}
+                        <span ref={scaleRef} className="relative h-4 text-micro tabular-nums text-fg-3">
+                            {ticks.map(t =>
+                                Math.round(t / step) % labelEvery === 0 ? (
+                                    <span key={t} className="absolute -translate-x-1/2" style={{ left: `${(x(t) / VB) * 100}%` }}>
+                                        {t > 0 ? `+${t}` : t < 0 ? `−${Math.abs(t)}` : '0'}
+                                    </span>
+                                ) : null,
+                            )}
                         </span>
                     </div>
 
-                    {tip ? (
+                    {tip && !(inline && tip.pinned) ? (
                         <div
                             ref={cardRef}
                             role={tip.pinned ? 'dialog' : 'tooltip'}

@@ -161,9 +161,9 @@ export function Pulse() {
     };
 
     const domain = Math.max(3600, m.end);
-    const W = Math.max(width, 320);
+    const W = Math.max(width, 240);
     const padL = compact ? 30 : 40;
-    const padR = compact ? 40 : 54;
+    const padR = compact ? 46 : 54;
     const plot = W - padL - padR;
     const x = (t: number) => padL + (Math.min(t, domain) / domain) * plot;
 
@@ -294,28 +294,48 @@ export function Pulse() {
         const r = e.currentTarget.getBoundingClientRect();
         return Math.max(0, Math.min(m.end || domain, ((e.clientX - r.left) / r.width) * domain));
     };
+    // A click (or tap) at t: steps onto a goal or penalty right there, lets go of the held moment, or holds t.
+    const pick = (t: number) => {
+        const near = keyEvents.length ? keyEvents.reduce((b, k) => (Math.abs(k.t - t) < Math.abs(b.t - t) ? k : b)) : null;
+        if (near && Math.abs(x(near.t) - x(t)) < 14) {
+            setPinT(null);
+            select(near.id);
+        } else if (pinT != null && Math.abs(x(pinT) - x(t)) < 8) setPinT(null);
+        else {
+            select(null);
+            setPinT(t);
+        }
+    };
+    // Touch and pen: a horizontal drag scrubs (holding the moment under the finger), a tap acts like a click,
+    // and a vertical swipe is left to the browser so the page still scrolls.
+    const touch = React.useRef<{ x: number; y: number; scrub: boolean } | null>(null);
     const onMove = (e: React.PointerEvent<SVGRectElement>) => {
-        if (e.pointerType === 'mouse') setHover(tAt(e));
-        else if (e.buttons) setPinT(tAt(e));
+        if (e.pointerType === 'mouse') {
+            setHover(tAt(e));
+            return;
+        }
+        const t0 = touch.current;
+        if (!t0 || !e.buttons) return;
+        if (!t0.scrub) {
+            const dx = Math.abs(e.clientX - t0.x);
+            if (dx < 8 || dx < Math.abs(e.clientY - t0.y)) return;
+            t0.scrub = true;
+            select(null);
+        }
+        setPinT(tAt(e));
     };
     const onDown = (e: React.PointerEvent<SVGRectElement>) => {
-        // Touch and pen scrub by holding a moment (horizontal drags; vertical drags still scroll the page).
-        if (e.pointerType !== 'mouse') {
-            select(null);
-            setPinT(tAt(e));
-        }
+        if (e.pointerType !== 'mouse') touch.current = { x: e.clientX, y: e.clientY, scrub: false };
+    };
+    const onUp = (e: React.PointerEvent<SVGRectElement>) => {
+        const t0 = touch.current;
+        touch.current = null;
+        if (e.pointerType === 'mouse' || !t0 || t0.scrub || Math.hypot(e.clientX - t0.x, e.clientY - t0.y) > 10) return;
+        pick(tAt(e));
     };
     const onClick = (e: React.MouseEvent<SVGRectElement>) => {
         if (hover == null) return;
-        const near = keyEvents.length ? keyEvents.reduce((b, k) => (Math.abs(k.t - hover) < Math.abs(b.t - hover) ? k : b)) : null;
-        if (near && Math.abs(x(near.t) - x(hover)) < 14) {
-            setPinT(null);
-            select(near.id);
-        } else if (pinT != null && Math.abs(x(pinT) - x(hover)) < 8) setPinT(null);
-        else {
-            select(null);
-            setPinT(hover);
-        }
+        pick(hover);
         e.preventDefault();
     };
 
@@ -345,6 +365,18 @@ export function Pulse() {
     const metricLabel = (v: string) => [...BAR_METRICS, ...RACE_METRICS].find(o => o.value === v)?.label ?? v;
     const chipLeft = focusT != null ? x(focusT) : 0;
     const flip = chipLeft > W * 0.58;
+    // Narrow charts: the chip goes to the far side of the playhead and is held inside the panel.
+    const chipRef = React.useRef<HTMLDivElement>(null);
+    const [chipW, setChipW] = React.useState(180);
+    React.useLayoutEffect(() => {
+        const w = chipRef.current?.offsetWidth;
+        if (w && Math.abs(w - chipW) > 1) setChipW(w);
+    }, [focusT, selected, chipW]);
+    const chipPos: React.CSSProperties = !compact
+        ? flip
+            ? { right: W - chipLeft + 10 }
+            : { left: chipLeft + 10 }
+        : { left: chipLeft >= W / 2 ? Math.max(4, chipLeft - 10 - chipW) : Math.min(chipLeft + 10, W - chipW - 4) };
     const lastWin = win[win.length - 1][1];
     let deservedEndY = yWin(finalDeserved) + 4;
     if (Math.abs(deservedEndY - (yWin(lastWin) + 4)) < 13) deservedEndY += deservedEndY >= yWin(lastWin) + 4 ? 13 - (deservedEndY - yWin(lastWin) - 4) : -13;
@@ -427,6 +459,7 @@ export function Pulse() {
                         role="img"
                         aria-label={`Win probability, ${metricLabel(barMetric)} per minute and running ${metricLabel(raceMetric)} for ${m.teams.away.tri} at ${m.teams.home.tri}, ${goals.length} goals. A table of goals and penalties follows the chart.`}
                         className="block select-none font-mono tabular-nums"
+                        style={{ touchAction: 'pan-y pinch-zoom' }}
                     >
                         <defs>
                             {/* Strength windows: a hatch in the advantaged team's colour over its half of the bars. */}
@@ -611,9 +644,12 @@ export function Pulse() {
                             width={plot}
                             height={axisTop - winTop}
                             fill="transparent"
-                            style={{ touchAction: 'pan-y' }}
                             onPointerMove={onMove}
                             onPointerDown={onDown}
+                            onPointerUp={onUp}
+                            onPointerCancel={() => {
+                                touch.current = null;
+                            }}
                             onPointerLeave={() => setHover(null)}
                             onClick={onClick}
                             className="cursor-crosshair"
@@ -672,12 +708,16 @@ export function Pulse() {
                 {/* Playhead chip: the moment's clock, score and race values on each team's side, and the win read. */}
                 {width && readout && focusT != null ? (
                     <div
-                        className="pointer-events-none absolute z-10 w-max min-w-[11rem] rounded-card border border-line-strong bg-surface-1/95 px-2.5 py-1.5 text-caption tabular-nums shadow-[0_8px_24px_rgb(0_0_0/0.5)] backdrop-blur-sm"
-                        style={{ top: winTop + 12, ...(flip ? { right: W - chipLeft + 10 } : { left: chipLeft + 10 }) }}
+                        ref={chipRef}
+                        className={cn(
+                            'pointer-events-none absolute z-10 w-max min-w-[11rem] rounded-card border border-line-strong bg-surface-1/95 px-2.5 py-1.5 text-caption tabular-nums shadow-[0_8px_24px_rgb(0_0_0/0.5)] backdrop-blur-sm',
+                            compact && 'max-w-[min(17rem,calc(100%-8px))]',
+                        )}
+                        style={{ top: winTop + 12, ...chipPos }}
                     >
                         <p className="flex items-baseline justify-between gap-3">
                             <span className="text-fg-2">{clockText(focusT)}</span>
-                            {sel && hover == null && pinT == null ? <span className="truncate font-bold text-fg-1">{describe(sel)}</span> : null}
+                            {sel && hover == null && pinT == null ? <span className={cn('font-bold text-fg-1', compact ? 'text-right' : 'truncate')}>{describe(sel)}</span> : null}
                         </p>
                         <p className="mt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                             <span className="flex items-center gap-1.5">
@@ -786,7 +826,7 @@ export function Pulse() {
                         <span className="text-fg-3"> {clockText(big.event.t)}</span>
                     </span>
                 ) : null}
-                <Link href="/methodology#game-story" className="ml-auto text-micro uppercase tracking-label text-fg-3 underline-offset-4 hover:text-fg-1 hover:underline">
+                <Link href="/methodology#game-story" className="ml-auto text-micro uppercase tracking-label text-fg-3 underline-offset-4 hover:text-fg-1 hover:underline coarse:-my-3 coarse:inline-flex coarse:min-h-11 coarse:items-center">
                     Method
                 </Link>
             </div>
