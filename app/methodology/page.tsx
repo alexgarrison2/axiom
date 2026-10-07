@@ -627,6 +627,39 @@ export default function MethodologyPage() {
                             </p>
                         </Section>
 
+                        <Section id="isolated-impact" index={++i} title="Isolated impact">
+                            <p>
+                                Where on the ice a skater changes the shots, after HockeyViz&apos;s isolated impact. Every 5-on-5 stretch with no
+                                line change gives two rows, one per attacking team: the unblocked shots of that stretch, binned on the offensive half
+                                of the rink, per hour. One ridge regression fits all the cells at once, with an offence column for each attacking
+                                skater, a defence column for each defender, and the score, home ice, a third-period shell and the faceoff zone that
+                                started the shift as controls. A player&apos;s map is the difference his presence makes, cell by cell, against an
+                                average skater in his place with the same teammates and opponents, smoothed with a 10-foot kernel.
+                                <strong> Orange</strong> means more shots than average come from there, <strong>blue</strong> fewer: on offence
+                                orange is good, on defence blue is. The net is at the top and the shooter&apos;s left is on the left.
+                            </p>
+                            <p>
+                                The number on each map is the same regression on pony xG instead of shot counts: xG for (or against) per 60 he adds
+                                and the share of the league rate. The power play (5-on-4) and the penalty kill have their own regression. A
+                                season&apos;s maps use that season and the two before it, each game weighted down by half per year of age, so a map is
+                                stable in October and still moves with every game. Under 500 5-on-5 minutes the sample is thin and marked.
+                            </p>
+                            <p>
+                                The total is <strong>goals over a standard season</strong>: 1,000 minutes at 5-on-5, 125 on the power play and 125
+                                on the penalty kill with average teammates and opponents, so players with very different roles compare on one
+                                scale. Its parts: the four xG impacts; <strong>finishing</strong>, goals above xG on his own shots shrunk toward
+                                average (60 xG of prior), times his shot volume; <strong>drawing</strong> and <strong>taking</strong>, minor
+                                penalties per 60 against his position&apos;s average (shrunk with 600 minutes), at the league&apos;s net power-play
+                                xG per minor. Passing (&ldquo;setting&rdquo;) is left out: without pass data, the best proxy, how often teammates&apos;
+                                shots beat their own finishing with him on the ice, showed no out-of-sample signal.
+                            </p>
+                            <p>
+                                From one season to the next the 5-on-5 offence impact repeats at r = 0.50-0.55, defence 0.36-0.40, the power play
+                                0.31-0.53, the penalty kill 0.13-0.18, finishing 0.12-0.25, penalties drawn 0.58-0.64 and taken 0.69-0.71; the
+                                offence maps&apos; shape repeats (0.25 per player, about 0 for two random players), defence less (0.11). The 5-on-5
+                                impacts agree with IMPACT&apos;s even-strength ratings at r = 0.90 (offence) and 0.93 (defence).
+                            </p>
+                        </Section>
                         <Section id="props" index={++i} title="Player props">
                             <p>
                                 The Props page takes one stat at a time (shots on goal, goals, points, assists, power-play points). Each row is a skater

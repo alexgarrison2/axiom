@@ -16,6 +16,8 @@ import { readRatingsDoc } from '@/lib/players/server';
 import { Wowy } from '@/components/player/Wowy';
 import { loadWowy } from '@/lib/players/wowy-server';
 import { SEASON_ID } from '@/lib/season';
+import { IsolatedImpact } from '@/components/player/IsolatedImpact';
+import { loadIsolate } from '@/lib/players/isolate-server';
 
 /*
  * A player's page: the NHL profile (bio, action photo, draft, awards, career
@@ -155,6 +157,8 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
     // With or without you: skaters only, for the season the page shows.
     const wowySeason = cur?.s ?? SEASON_ID;
     const wowy = goalie ? null : loadWowy(wowySeason, pid);
+    // Isolated impact: skaters only, the season the page shows (fitted on it and the two before).
+    const isolate = goalie ? null : loadIsolate(wowySeason, pid);
 
     return (
         <main className="pb-tabbar">
@@ -315,6 +319,16 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         <p className="panel p-card text-caption text-fg-3">No Pony Score games yet this season.</p>
                     )}
                 </section>
+
+                {/* Isolated impact: where on the ice he changes shots for and against, and its parts in goals. */}
+                {isolate ? (
+                    <section aria-labelledby="isolate-h" className="flex flex-col gap-3">
+                        <h2 id="isolate-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
+                            Isolated impact
+                        </h2>
+                        <IsolatedImpact view={isolate} prior={wowySeason !== SEASON_ID} seasonTag={seasonLabel(wowySeason).replace(/^\d\d/, '')} />
+                    </section>
+                ) : null}
 
                 {/* With or without you: 5v5 with and apart from his most-used teammates. */}
                 {!goalie && (wowy || (gp && wowySeason === SEASON_ID)) ? (
