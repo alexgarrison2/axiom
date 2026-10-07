@@ -21,9 +21,15 @@ interface RhythmStripProps {
 // Vertical layout (px).
 const RIB_TOP = 6;
 const RIB_H = 30;
-const AXIS = 66;
+const AXIS = 72;
+/** Played games (and games with no forecast) are one fixed length. */
 const MARK_H = 15;
-const TRIP_Y = AXIS + MARK_H + 9;
+/** Games ahead: length from the axis encodes the model's win %, around a 50% guide. */
+const WIN_MID = 12;
+const WIN_MAX = 26;
+const WIN_PER_PT = 0.6; // px per percentage point: 40% → 6px, 50% → 12px, 70% → 24px
+const MARK_MAX = WIN_MAX;
+const TRIP_Y = AXIS + MARK_MAX + 9;
 const MONTH_Y = TRIP_Y + 31;
 const HEIGHT = MONTH_Y + 3;
 const PAD = 6;
@@ -45,6 +51,12 @@ const C = {
     lineStrong: 'var(--line-strong)',
 };
 
+/** Mark length: the win % on a diverging scale around the 50% guide for games ahead, fixed otherwise. */
+export function markLength(g: Pick<SchedGame, 'result' | 'winPct' | 'state'>): number {
+    if (g.result || g.state === 'live' || !g.winPct) return MARK_H;
+    return Math.min(WIN_MAX, Math.max(3, WIN_MID + (g.winPct.pct - 50) * WIN_PER_PT));
+}
+
 function markFill(g: SchedGame): { fill: string; opacity: number; stroke?: string } {
     if (g.result) {
         if (g.result.code === 'W') return { fill: C.pos, opacity: 0.9 };
@@ -52,16 +64,15 @@ function markFill(g: SchedGame): { fill: string; opacity: number; stroke?: strin
         return { fill: C.neg, opacity: 0.85 };
     }
     if (g.state === 'live') return { fill: 'transparent', opacity: 1, stroke: C.pos };
-    if (g.winPct) {
-        const t = Math.min(1, Math.max(0, (g.winPct.pct - 30) / 40));
-        return { fill: C.model, opacity: 0.16 + 0.7 * t };
-    }
+    if (g.winPct) return { fill: C.model, opacity: 0.8 };
     return { fill: 'transparent', opacity: 1, stroke: C.dim };
 }
 
 /**
  * The season on one day axis: home games above the line, road games below,
- * rest as spacing. Amber bands are 3-in-4 / 4-in-6 / 5-in-8 windows (they
+ * rest as spacing. A game ahead is a magenta bar whose length from the axis
+ * is the model's win % (dotted guides mark 50%: favourites pass them,
+ * underdogs fall short); played games are fixed-length result marks. Amber bands are 3-in-4 / 4-in-6 / 5-in-8 windows (they
  * stack, so denser reads stronger), an amber tie joins back-to-backs, the
  * ice-grey ribbon on top is rolling difficulty, and brackets under the road
  * marks are road trips. Hover (mouse) or tap a game; tap a bracket for its trip.
@@ -112,6 +123,8 @@ export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId,
     }, [schedule.bands]);
 
     const todayDay = dayNumber(today);
+    const firstAhead = games.find(g => !g.result && g.winPct);
+    const guideFrom = firstAhead ? x(dayOf(firstAhead)) - markW : null;
     const showToday = todayDay > d0 && todayDay < d1 && games.some(g => g.state !== 'final');
 
     const nearest = (px: number): SchedGame | null => {
@@ -199,10 +212,19 @@ export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId,
                             );
                         })}
 
+                    {/* 50% guides for the games ahead, home side and road side */}
+                    {guideFrom != null ? (
+                        <g stroke={C.model} strokeOpacity={0.35} strokeDasharray="1 3">
+                            <line x1={guideFrom} x2={W - PAD} y1={AXIS - 2.5 - WIN_MID} y2={AXIS - 2.5 - WIN_MID} />
+                            <line x1={guideFrom} x2={W - PAD} y1={AXIS + 2.5 + WIN_MID} y2={AXIS + 2.5 + WIN_MID} />
+                        </g>
+                    ) : null}
+
                     {/* games */}
                     {games.map(g => {
                         const gxv = x(dayOf(g));
-                        const y = g.home ? AXIS - 2.5 - MARK_H : AXIS + 2.5;
+                        const h = markLength(g);
+                        const y = g.home ? AXIS - 2.5 - h : AXIS + 2.5;
                         const f = markFill(g);
                         const dim = !inFocus(g, focus) || !inLens(g, lens);
                         const hot = g.id === activeId;
@@ -212,20 +234,20 @@ export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId,
                                     x={gxv - markW / 2}
                                     y={y}
                                     width={markW}
-                                    height={MARK_H}
+                                    height={h}
                                     rx={Math.min(1.5, markW / 3)}
                                     fill={f.fill}
                                     fillOpacity={f.opacity}
                                     stroke={f.stroke}
                                     strokeWidth={f.stroke ? 1 : 0}
                                 />
-                                {g.event ? <circle cx={gxv} cy={g.home ? y - 5 : y + MARK_H + 5} r={2.2} fill={C.warn} /> : null}
+                                {g.event ? <circle cx={gxv} cy={g.home ? y - 5 : y + h + 5} r={2.2} fill={C.warn} /> : null}
                                 {hot ? (
                                     <rect
                                         x={gxv - markW / 2 - 2.5}
                                         y={y - 2.5}
                                         width={markW + 5}
-                                        height={MARK_H + 5}
+                                        height={h + 5}
                                         rx={2.5}
                                         fill="none"
                                         stroke={g.id === selectedId ? C.brand : C.ink}
@@ -238,7 +260,7 @@ export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId,
                     })}
 
                     {/* today */}
-                    {showToday ? <line x1={x(todayDay)} x2={x(todayDay)} y1={AXIS - MARK_H - 8} y2={AXIS + MARK_H + 8} stroke={C.ink} strokeOpacity={0.55} strokeDasharray="2 2" /> : null}
+                    {showToday ? <line x1={x(todayDay)} x2={x(todayDay)} y1={AXIS - MARK_MAX - 6} y2={AXIS + MARK_MAX + 6} stroke={C.ink} strokeOpacity={0.55} strokeDasharray="2 2" /> : null}
 
                     {/* road trips */}
                     {schedule.trips.map(t => {

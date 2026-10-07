@@ -39,10 +39,19 @@ function Swatch({ kind }: { kind: 'home' | 'road' | 'w' | 'l' | 'model' | 'dense
             );
         case 'w':
         case 'l':
-        case 'model':
             return (
                 <svg aria-hidden="true" viewBox="0 0 16 12" className={box}>
-                    <rect x="5" y="1" width="5" height="10" rx="1" fill={kind === 'w' ? 'rgb(var(--pos-rgb))' : kind === 'l' ? 'rgb(var(--neg-rgb))' : 'rgb(var(--model-rgb))'} />
+                    <rect x="5" y="1" width="5" height="10" rx="1" fill={kind === 'w' ? 'rgb(var(--pos-rgb))' : 'rgb(var(--neg-rgb))'} />
+                </svg>
+            );
+        case 'model':
+            // Length = win %: an underdog short of the dotted 50% guide, a favourite past it.
+            return (
+                <svg aria-hidden="true" viewBox="0 0 22 12" className="h-3 w-[22px] shrink-0">
+                    <line x1="0" x2="22" y1="5.5" y2="5.5" stroke="rgb(var(--model-rgb))" strokeOpacity="0.6" strokeDasharray="1 2" />
+                    <line x1="0" x2="22" y1="12" y2="12" stroke="var(--line-strong)" />
+                    <rect x="4" y="8" width="4" height="4" rx="0.75" fill="rgb(var(--model-rgb))" fillOpacity="0.8" />
+                    <rect x="13" y="1" width="4" height="11" rx="0.75" fill="rgb(var(--model-rgb))" fillOpacity="0.8" />
                 </svg>
             );
         case 'dense':
@@ -72,7 +81,7 @@ const LEGEND: [Parameters<typeof Swatch>[0]['kind'], string][] = [
     ['road', 'Road'],
     ['w', 'Win'],
     ['l', 'Loss'],
-    ['model', 'Pony %'],
+    ['model', 'Pony win %'],
     ['dense', 'Density'],
     ['diff', 'Difficulty'],
     ['trip', 'Trip'],
