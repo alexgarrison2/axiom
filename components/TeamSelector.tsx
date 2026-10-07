@@ -76,7 +76,8 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                         'md:w-[720px] md:max-h-[min(80vh,640px,var(--radix-popover-content-available-height))]',
                     )}
                 >
-                    <div className="flex items-center gap-2 border-b border-line px-3 py-1">
+                    {/* Below lg the focused search lights the divider under it instead of a ring that cuts the panel's rounded top. */}
+                    <div className="flex items-center gap-2 border-b border-line px-3 py-1 max-lg:focus-within:border-brand/60">
                         <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-fg-3" />
                         <input
                             type="search"
@@ -84,7 +85,7 @@ export default function TeamSelector({ current, className }: TeamSelectorProps) 
                             onChange={e => setQ(e.target.value)}
                             placeholder="SEARCH"
                             aria-label="Search teams"
-                            className="min-h-10 w-full bg-transparent text-base text-fg-1 outline-none placeholder:tracking-label placeholder:text-fg-3 coarse:min-h-11"
+                            className="min-h-10 w-full bg-transparent text-base text-fg-1 outline-none placeholder:tracking-label placeholder:text-fg-3 coarse:min-h-11 max-lg:focus-visible:!outline-none"
                         />
                         <Popover.Close className="inline-flex h-8 min-w-8 items-center justify-center rounded-control px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:h-11 coarse:min-w-11">
                             Close

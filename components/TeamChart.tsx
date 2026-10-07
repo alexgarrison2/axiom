@@ -90,6 +90,24 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
         return [m1.signed ? lo - pad : Math.max(0, lo - pad), hi + pad];
     }, [data, m1, m2]);
 
+    // Touch: the tooltip sits in the half of the plot away from the line under the finger, never on the dot.
+    const [coarse, setCoarse] = React.useState(false);
+    const [tipY, setTipY] = React.useState(4);
+    React.useEffect(() => setCoarse(window.matchMedia('(pointer: coarse)').matches), []);
+    const placeTip = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!coarse || data.length < 2) return;
+        const r = e.currentTarget.getBoundingClientRect();
+        // Plot runs from the 52px y-axis (less the -12 margin) to 8px from the right edge.
+        const t = Math.min(1, Math.max(0, (e.clientX - r.left - 40) / Math.max(1, r.width - 48)));
+        const d = data[Math.round(t * (data.length - 1))];
+        const vals = [d?.v, d?.v2].filter((v): v is number => v != null);
+        const all = data.flatMap(p => [p.v, p.v2]).filter((v): v is number => v != null);
+        const [lo, hi] = domain[0] === 'auto' ? [Math.min(...all), Math.max(...all)] : (domain as [number, number]);
+        const top = Math.max(...vals.map(v => (v - lo) / (hi - lo || 1)));
+        // Line in the upper half: tooltip just above the x axis; otherwise at the top.
+        setTipY(Number.isFinite(top) && top > 0.5 ? r.height - 24 - (m2 ? 84 : 64) : 4);
+    };
+
     const avg = leagueAverages[m1.value];
     const last = [...data].reverse().find(d => d.v != null);
 
@@ -166,7 +184,7 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                         </span>
                     ) : null}
                 </figcaption>
-                <div className="h-[280px] w-full md:h-[420px]">
+                <div className="h-[280px] w-full md:h-[420px]" onPointerDown={placeTip} onPointerMove={placeTip}>
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={data} margin={{ top: 12, right: 8, left: -12, bottom: 0 }}>
                             <defs>
@@ -193,7 +211,7 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                                 width={52}
                                 tickFormatter={(v: number) => m1.format(v)}
                             />
-                            <Tooltip content={<ChartTip m1={m1} m2={m2} color={primaryColor} />} cursor={{ stroke: 'var(--line-strong)', strokeDasharray: '4 4' }} />
+                            <Tooltip content={<ChartTip m1={m1} m2={m2} color={primaryColor} />} position={coarse ? { y: tipY } : undefined} cursor={{ stroke: 'var(--line-strong)', strokeDasharray: '4 4' }} />
                             {Number.isFinite(avg) ? (
                                 <ReferenceLine
                                     y={avg}

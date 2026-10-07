@@ -80,8 +80,9 @@ export default function FilterControls({ filters, setFilters, goalies, opponents
                     ]}
                 />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
-                <Field label="Goalie">
+            {/* One divider under the pair (each Field's own would stop at its column). */}
+            <div className="grid grid-cols-2 gap-3 max-md:border-b max-md:border-line">
+                <Field label="Goalie" className="max-md:border-b-0">
                     <select aria-label="Starting goalie" className={selectCls} value={filters.goalie} onChange={e => set('goalie', e.target.value)}>
                         <option value="All">Any</option>
                         {goalies.map(g => (
@@ -91,7 +92,7 @@ export default function FilterControls({ filters, setFilters, goalies, opponents
                         ))}
                     </select>
                 </Field>
-                <Field label="Opponent">
+                <Field label="Opponent" className="max-md:border-b-0">
                     <select aria-label="Opponent" className={selectCls} value={filters.opponent} onChange={e => set('opponent', e.target.value)}>
                         <option value="All">Any</option>
                         {opponents.map(o => (

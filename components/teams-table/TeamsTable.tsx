@@ -29,7 +29,7 @@ import { FilterSheet } from '@/components/ui/filter-sheet';
 import { Field, RangeFields } from './FilterFields';
 import { HeaderCell, type SortDir } from './HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from './table-style';
-import { TableScroller } from './TableScroller';
+import { PINNED_HEAD_HIDE, StickyHead, TableScroller } from './TableScroller';
 
 /** Column groups left out of the server HTML; revealed one per idle task after hydration. */
 const DEFERRED_GROUPS = COLUMN_GROUPS.filter(g => !SSR_GROUPS.includes(g.name));
@@ -88,6 +88,13 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const [loadError, setLoadError] = React.useState<string | null>(null);
     const [hydrated, setHydrated] = React.useState(false);
     const captionId = React.useId();
+    // Pinned header copy (below lg): follows the table's horizontal scroll and fades with it.
+    const headRef = React.useRef<HTMLDivElement>(null);
+    const [headMore, setHeadMore] = React.useState(false);
+    const onScrollX = React.useCallback((left: number, more: boolean) => {
+        if (headRef.current) headRef.current.scrollLeft = left;
+        setHeadMore(prev => (prev === more ? prev : more));
+    }, []);
 
     if (initial) primeCache(leagueUrl(initial.season), initial);
 
@@ -345,6 +352,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     }));
     const active = activeFilterCount(filters);
     const chips = activeChips(filters, setFilters);
+    const phoneChips = activeChips(filters, setFilters, true);
 
     if (!payload) {
         return (
@@ -384,6 +392,45 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const paired = !!model?.paired;
     const teamColClass = !paired ? '[--team-col:76px] md:[--team-col:96px]' : filters.withStarter ? '[--team-col:132px] md:[--team-col:184px]' : '[--team-col:80px] md:[--team-col:128px]';
 
+    const colgroup = (
+        <colgroup>
+            <col style={{ width: 'var(--team-col)' }} />
+            {columns.map(({ col }) => (
+                <col key={col.key} style={{ width: colWidth(col) }} />
+            ))}
+        </colgroup>
+    );
+    const headRows = (
+        <>
+            <tr>
+                <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-4 border-b-0')} />
+                {groupSpans.map(g => (
+                    <th key={g.name} scope="colgroup" colSpan={g.n} className={cn(HEAD_CELL, 'h-4 overflow-hidden border-b-0 border-r px-2 text-left leading-4')}>
+                        <span className="text-micro font-medium uppercase leading-4 tracking-wide text-fg-2">{g.name}</span>
+                    </th>
+                ))}
+            </tr>
+            <tr>
+                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 px-2 text-left top-4')}>
+                    <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Team</span>
+                </th>
+                {columns.map(({ col, groupEnd }) => (
+                    <HeaderCell
+                        key={col.key}
+                        label={col.label}
+                        title={col.title}
+                        direction={model?.paired ? undefined : activeSort.key === col.key ? activeSort.dir : null}
+                        onSort={model?.paired ? undefined : () => onSort(col.key)}
+                        className={cn(HEAD_CELL, 'top-4', groupEnd && 'border-r')}
+                        dense
+                    />
+                ))}
+            </tr>
+        </>
+    );
+    const tableCls = cn('table-fixed border-separate border-spacing-0 text-caption tabular-nums', teamColClass);
+    const tableStyle = { width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + colWidth(c.col), 0)}px)`, minWidth: '100%' };
+
     return (
         <section aria-label="League table" className="flex flex-col gap-1.5">
             <PageHeading
@@ -407,7 +454,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                 <FilterSheet title="Columns" triggerLabel="Columns">
                     <ColumnPicker hidden={hidden} setHidden={setHidden} ratingsMissing={ratingsMissing} sheet />
                 </FilterSheet>
-                {chips.length > 0 ? <ActiveChips chips={chips} /> : null}
+                {phoneChips.length > 0 ? <ActiveChips chips={phoneChips} /> : null}
             </div>
             <FilterBar filters={filters} setF={setF} setFilters={setFilters} allowPlayoffs={allowPlayoffs} allowBracket={allowBracket} chips={chips} perGameOpen={perGameOpen} />
             <ColumnPicker
@@ -434,50 +481,27 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                 </p>
             ) : null}
 
-            {/* Bordered panel: the caption bar stays put, only the table scrolls (both axes). */}
-            <div className="-mx-4 overflow-hidden border-y border-line bg-surface-1 md:mx-0 md:rounded-card md:border-x">
-                <TableScroller label={`${payload.seasonLabel} team table`}>
-                    <table
-                        aria-labelledby={captionId}
-                        className={cn('table-fixed border-separate border-spacing-0 text-caption tabular-nums', teamColClass)}
-                        style={{ width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + colWidth(c.col), 0)}px)`, minWidth: '100%' }}
-                        aria-busy={pending || undefined}
-                    >
+            {/* Bordered panel: the caption bar stays put, only the table scrolls (both axes). Below lg (and on short
+                screens) the page scrolls the rows and a pinned copy of the header follows the table sideways. */}
+            <div
+                className={cn(
+                    '-mx-4 overflow-hidden border-y border-line bg-surface-1 max-lg:overflow-clip md:mx-0 md:rounded-card md:border-x [@media(max-height:500px)]:overflow-clip',
+                    headMore && 'max-lg:edge-fade-right',
+                )}
+            >
+                <StickyHead ref={headRef} className="bg-bg">
+                    <table className={tableCls} style={tableStyle}>
+                        {colgroup}
+                        <thead>{headRows}</thead>
+                    </table>
+                </StickyHead>
+                <TableScroller label={`${payload.seasonLabel} team table`} pageScroll fade={false} onScrollX={onScrollX}>
+                    <table aria-labelledby={captionId} className={tableCls} style={tableStyle} aria-busy={pending || undefined}>
                         <caption id={captionId} className="sr-only">
                             {captionParts}
                         </caption>
-                        <colgroup>
-                            <col style={{ width: 'var(--team-col)' }} />
-                            {columns.map(({ col }) => (
-                                <col key={col.key} style={{ width: colWidth(col) }} />
-                            ))}
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-4 border-b-0')} />
-                                {groupSpans.map(g => (
-                                    <th key={g.name} scope="colgroup" colSpan={g.n} className={cn(HEAD_CELL, 'h-4 overflow-hidden border-b-0 border-r px-2 text-left leading-4')}>
-                                        <span className="text-micro font-medium uppercase leading-4 tracking-wide text-fg-2">{g.name}</span>
-                                    </th>
-                                ))}
-                            </tr>
-                            <tr>
-                                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 px-2 text-left top-4')}>
-                                    <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Team</span>
-                                </th>
-                                {columns.map(({ col, groupEnd }) => (
-                                    <HeaderCell
-                                        key={col.key}
-                                        label={col.label}
-                                        title={col.title}
-                                        direction={model?.paired ? undefined : activeSort.key === col.key ? activeSort.dir : null}
-                                        onSort={model?.paired ? undefined : () => onSort(col.key)}
-                                        className={cn(HEAD_CELL, 'top-4', groupEnd && 'border-r')}
-                                        dense
-                                    />
-                                ))}
-                            </tr>
-                        </thead>
+                        {colgroup}
+                        <thead className={PINNED_HEAD_HIDE}>{headRows}</thead>
                         <tbody className={cn(pending && 'opacity-60 transition-opacity')}>
                             {sorted.length === 0 ? (
                                 <tr>
@@ -888,7 +912,7 @@ function ColumnPicker({
                                     {cols.map(k => {
                                         const c = COLUMN_BY_KEY.get(k)!;
                                         return (
-                                            <FilterChip key={k} className="min-h-6 px-2 !tracking-wide" selected={!hiddenSet.has(k)} onSelectedChange={() => toggle(k)} title={c.title}>
+                                            <FilterChip key={k} className={cn('min-h-6 px-2 !tracking-wide', sheet && 'min-w-11 justify-center')} selected={!hiddenSet.has(k)} onSelectedChange={() => toggle(k)} title={c.title}>
                                                 {c.label}
                                             </FilterChip>
                                         );
@@ -903,12 +927,14 @@ function ColumnPicker({
     );
 }
 
-function activeChips(f: TableFilters, set: React.Dispatch<React.SetStateAction<TableFilters>>) {
+/** `complete`: one chip per counted filter (phones, where the controls sit in a sheet); the desktop bar shows its own controls for location and L10. */
+function activeChips(f: TableFilters, set: React.Dispatch<React.SetStateAction<TableFilters>>, complete = false) {
     const out: { key: string; label: string; clear: () => void }[] = [];
     const reset = <K extends keyof TableFilters>(k: K) => () => set(prev => ({ ...prev, [k]: DEFAULT_FILTERS[k] }));
     if (f.scope !== 'regular') out.push({ key: 'scope', label: 'Playoffs', clear: reset('scope') });
     if (f.view !== 'all') out.push({ key: 'view', label: f.view === 'today' ? 'Today' : f.view === 'tomorrow' ? 'Tomorrow' : 'Bracket', clear: reset('view') });
-    if (f.recent !== 'All' && f.recent !== 10) out.push({ key: 'recent', label: `L${f.recent}`, clear: reset('recent') });
+    if (complete && f.location !== 'All') out.push({ key: 'location', label: f.location, clear: reset('location') });
+    if (f.recent !== 'All' && (complete || f.recent !== 10)) out.push({ key: 'recent', label: `L${f.recent}`, clear: reset('recent') });
     if (f.period !== 'All') out.push({ key: 'period', label: f.period, clear: reset('period') });
     if (f.divisions.length) out.push({ key: 'divisions', label: f.divisions.map(d => DIVISION_LABEL[d]).join('+'), clear: () => set(prev => ({ ...prev, divisions: [] })) });
     if (f.position !== 'All') out.push({ key: 'position', label: f.position === 'In' ? 'In spot' : 'Out of spot', clear: reset('position') });

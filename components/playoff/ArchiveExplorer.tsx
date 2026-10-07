@@ -276,10 +276,15 @@ function fmtGameDate(date: string) {
 function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open: boolean; onOpen: () => void; controls: string }) {
     const homeWon = (g.home_score ?? 0) > (g.away_score ?? 0);
     return (
-        <li className={cn('flex min-h-8 flex-wrap items-center gap-x-3 border-t border-line/60 px-3 text-caption first:border-t-0 even:bg-line/35', open && '!bg-brand/[0.06]')}>
-            <span className="w-7 font-bold text-fg-1">G{g.n}</span>
+        <li
+            className={cn(
+                'flex min-h-8 flex-wrap items-center gap-x-3 border-t border-line/60 px-3 text-caption first:border-t-0 even:bg-line/35 max-[359px]:flex-nowrap max-[359px]:gap-x-2 max-[359px]:pl-2 max-[359px]:pr-0',
+                open && '!bg-brand/[0.06]',
+            )}
+        >
+            <span className="w-7 font-bold text-fg-1 max-[359px]:w-6">G{g.n}</span>
             <span className="hidden w-24 text-fg-3 sm:inline">{fmtGameDate(g.date)}</span>
-            <span className="flex items-center gap-1.5 tabular-nums">
+            <span className="flex items-center gap-1.5 tabular-nums max-[359px]:gap-1">
                 <Crest tri={g.away} size={22} className="drop-shadow-none" />
                 <span className={cn(!homeWon ? 'font-bold text-fg-1' : 'text-fg-2')}>
                     {g.away} {g.away_score}
@@ -303,14 +308,19 @@ function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open:
                     aria-expanded={open}
                     aria-controls={controls}
                     onClick={onOpen}
-                    className="ml-auto inline-flex min-h-8 items-center gap-1 text-micro font-medium uppercase tracking-[0.14em] text-brand hover:underline coarse:min-h-11"
+                    className="ml-auto inline-flex min-h-8 items-center gap-1 text-micro font-medium uppercase tracking-[0.14em] text-brand hover:underline coarse:min-h-11 max-[359px]:min-w-10 max-[359px]:shrink-0 max-[359px]:justify-center max-[359px]:text-[20px]"
                 >
                     {open ? (
                         'Hide'
                     ) : (
                         <>
-                            <span className="sm:hidden">Map ▸</span>
+                            <span className="max-[359px]:hidden sm:hidden">Map ▸</span>
                             <span className="max-sm:hidden">Shot map ▸</span>
+                            {/* Under 360px: the arrow alone keeps the row on one line. */}
+                            <span className="min-[360px]:hidden">
+                                <span className="sr-only">Shot map</span>
+                                <span aria-hidden="true">▸</span>
+                            </span>
                         </>
                     )}
                     <span className="sr-only"> for game {g.n}</span>

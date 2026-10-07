@@ -10,7 +10,7 @@ import type { Boxscores, BoxRow } from '@/utils/team-stats/team-types';
 import type { GameRow, PeriodFilter } from '@/utils/team-stats/types';
 import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
-import { TableScroller } from '@/components/teams-table/TableScroller';
+import { PINNED_HEAD_HIDE, StickyHead, TableScroller } from '@/components/teams-table/TableScroller';
 import { flags, gameGsax, resultLabel, resultTone, score, stat, totals } from './game-log-model';
 
 /** Into the full game page (/games/[id]): goals, pulse, shots, skaters, lines, matchups. */
@@ -169,6 +169,41 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
     const onSort = (key: string) => setSort(s => (s?.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: 'desc' }));
     const cols = COLS.filter(c => !(period !== 'All' && c.fullGame));
 
+    const headRef = React.useRef<HTMLDivElement>(null);
+    const tableCls = 'table-fixed border-separate border-spacing-0 font-mono text-caption tabular-nums';
+    const tableStyle = { width: GAME_COL + cols.reduce((w, c) => w + c.width, 0), minWidth: '100%' };
+    const colgroup = (
+        <colgroup>
+            <col style={{ width: GAME_COL }} />
+            {cols.map(c => (
+                <col key={c.key} style={{ width: c.width }} />
+            ))}
+        </colgroup>
+    );
+    const headCells = (
+        <>
+            <HeaderCell
+                label="Game"
+                title="Date and opponent"
+                align="left"
+                direction={sort?.key === 'date' ? sort.dir : null}
+                onSort={() => onSort('date')}
+                className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] pl-2')}
+            />
+            {cols.map(c => (
+                <HeaderCell
+                    key={c.key}
+                    label={c.label}
+                    title={c.title}
+                    align={UNSORTABLE.has(c.key) ? 'left' : 'center'}
+                    direction={UNSORTABLE.has(c.key) ? undefined : sort?.key === c.key ? sort.dir : null}
+                    onSort={UNSORTABLE.has(c.key) ? undefined : () => onSort(c.key)}
+                    className={HEAD_CELL}
+                />
+            ))}
+        </>
+    );
+
     const xgPct = t.xgf + t.xga > 0 ? (t.xgf / (t.xgf + t.xga)) * 100 : null;
     const summary: [string, React.ReactNode, React.ReactNode?][] = [
         ['Record', `${t.w}-${t.l}-${t.otl}`],
@@ -249,97 +284,79 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                         })}
                     </ol>
 
-                    {/* md+: dense table */}
-                    <TableScroller label={`${seasonLabel} game log table`} className="hidden rounded-card border border-line bg-surface-1 md:block">
-                        <table
-                            className="table-fixed border-separate border-spacing-0 font-mono text-caption tabular-nums"
-                            style={{ width: GAME_COL + cols.reduce((w, c) => w + c.width, 0), minWidth: '100%' }}
-                        >
-                            <caption className="sr-only">{seasonLabel} game log. The first-column buttons show each boxscore.</caption>
-                            <colgroup>
-                                <col style={{ width: GAME_COL }} />
-                                {cols.map(c => (
-                                    <col key={c.key} style={{ width: c.width }} />
-                                ))}
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <HeaderCell
-                                        label="Game"
-                                        title="Date and opponent"
-                                        align="left"
-                                        direction={sort?.key === 'date' ? sort.dir : null}
-                                        onSort={() => onSort('date')}
-                                        className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] pl-2')}
-                                    />
-                                    {cols.map(c => (
-                                        <HeaderCell
-                                            key={c.key}
-                                            label={c.label}
-                                            title={c.title}
-                                            align={UNSORTABLE.has(c.key) ? 'left' : 'center'}
-                                            direction={UNSORTABLE.has(c.key) ? undefined : sort?.key === c.key ? sort.dir : null}
-                                            onSort={UNSORTABLE.has(c.key) ? undefined : () => onSort(c.key)}
-                                            className={HEAD_CELL}
-                                        />
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sorted.map(g => {
-                                    const isOpen = open.has(g.id);
-                                    return (
-                                        <React.Fragment key={g.id}>
-                                            <tr className="group">
-                                                <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 border-b p-0 text-left font-normal')}>
-                                                    <button
-                                                        type="button"
-                                                        aria-expanded={isOpen}
-                                                        aria-controls={`box-${g.id}`}
-                                                        onClick={() => toggle(g.id)}
-                                                        className="flex h-8 w-full items-center gap-2 px-2 text-left focus-visible:outline-offset-[-2px]"
-                                                    >
-                                                        <svg aria-hidden="true" viewBox="0 0 12 12" className={cn('h-2.5 w-2.5 shrink-0 text-fg-3 transition-transform', isOpen && 'rotate-90 text-brand')}>
-                                                            <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-                                                        </svg>
-                                                        <span className="w-11 shrink-0 text-micro uppercase text-fg-3">{shortDate(g.date)}</span>
-                                                        <Crest tri={g.opp} size={24} className="drop-shadow-none" />
-                                                        <span className="whitespace-nowrap font-bold text-fg-1">
-                                                            <span className="font-normal text-fg-3">{g.home ? 'vs' : '@'}</span> {g.opp}
-                                                        </span>
-                                                        <span className="sr-only">, show boxscore</span>
-                                                    </button>
-                                                </th>
-                                                {cols.map(c => (
-                                                    <td
-                                                        key={c.key}
-                                                        className={cn(
-                                                            CELL_BG,
-                                                            'h-8 border-b border-line px-1.5 text-center text-fg-1',
-                                                            c.tone?.(g, period),
-                                                            UNSORTABLE.has(c.key) && 'truncate text-left text-fg-2',
-                                                        )}
-                                                    >
-                                                        {c.render(g, period)}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                            {isOpen ? (
-                                                <tr>
-                                                    <td id={`box-${g.id}`} colSpan={cols.length + 1} className="border-b border-line bg-bg/60 p-0">
-                                                        <div className="sticky left-0 max-w-[min(100vw-4rem,1000px)] px-3 py-2.5" style={{ borderLeft: `2px solid ${teamColor}` }}>
-                                                            <GameLink id={g.id} />
-                                                            <Boxscore rows={box?.games[g.id]} players={box?.players} state={boxState} />
-                                                        </div>
-                                                    </td>
+                    {/* md+: dense table. Below lg (and on short screens) the page scrolls the rows under a pinned header copy. */}
+                    <div className="hidden overflow-hidden rounded-card border border-line bg-surface-1 max-lg:overflow-clip md:block [@media(max-height:500px)]:overflow-clip">
+                        <StickyHead ref={headRef} className="bg-bg">
+                            <table className={tableCls} style={tableStyle}>
+                                {colgroup}
+                                <thead>
+                                    <tr>{headCells}</tr>
+                                </thead>
+                            </table>
+                        </StickyHead>
+                        <TableScroller label={`${seasonLabel} game log table`} pageScroll onScrollX={left => headRef.current && (headRef.current.scrollLeft = left)}>
+                            <table className={tableCls} style={tableStyle}>
+                                <caption className="sr-only">{seasonLabel} game log. The first-column buttons show each boxscore.</caption>
+                                {colgroup}
+                                <thead className={PINNED_HEAD_HIDE}>
+                                    <tr>{headCells}</tr>
+                                </thead>
+                                <tbody>
+                                    {sorted.map(g => {
+                                        const isOpen = open.has(g.id);
+                                        return (
+                                            <React.Fragment key={g.id}>
+                                                <tr className="group">
+                                                    <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 border-b p-0 text-left font-normal')}>
+                                                        <button
+                                                            type="button"
+                                                            aria-expanded={isOpen}
+                                                            aria-controls={`box-${g.id}`}
+                                                            onClick={() => toggle(g.id)}
+                                                            className="flex h-8 w-full items-center gap-2 px-2 text-left focus-visible:outline-offset-[-2px]"
+                                                        >
+                                                            <svg aria-hidden="true" viewBox="0 0 12 12" className={cn('h-2.5 w-2.5 shrink-0 text-fg-3 transition-transform', isOpen && 'rotate-90 text-brand')}>
+                                                                <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+                                                            </svg>
+                                                            <span className="w-11 shrink-0 text-micro uppercase text-fg-3">{shortDate(g.date)}</span>
+                                                            <Crest tri={g.opp} size={24} className="drop-shadow-none" />
+                                                            <span className="whitespace-nowrap font-bold text-fg-1">
+                                                                <span className="font-normal text-fg-3">{g.home ? 'vs' : '@'}</span> {g.opp}
+                                                            </span>
+                                                            <span className="sr-only">, show boxscore</span>
+                                                        </button>
+                                                    </th>
+                                                    {cols.map(c => (
+                                                        <td
+                                                            key={c.key}
+                                                            className={cn(
+                                                                CELL_BG,
+                                                                'h-8 border-b border-line px-1.5 text-center text-fg-1',
+                                                                c.tone?.(g, period),
+                                                                UNSORTABLE.has(c.key) && 'truncate text-left text-fg-2',
+                                                            )}
+                                                        >
+                                                            {c.render(g, period)}
+                                                        </td>
+                                                    ))}
                                                 </tr>
-                                            ) : null}
-                                        </React.Fragment>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </TableScroller>
+                                                {isOpen ? (
+                                                    <tr>
+                                                        <td id={`box-${g.id}`} colSpan={cols.length + 1} className="border-b border-line bg-bg/60 p-0">
+                                                            <div className="sticky left-0 max-w-[min(100vw-4rem,1000px)] px-3 py-2.5" style={{ borderLeft: `2px solid ${teamColor}` }}>
+                                                                <GameLink id={g.id} />
+                                                                <Boxscore rows={box?.games[g.id]} players={box?.players} state={boxState} />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ) : null}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </TableScroller>
+                    </div>
                 </>
             )}
         </div>
@@ -389,7 +406,8 @@ function Boxscore({ rows, players, state }: { rows: BoxRow[] | undefined; player
                 </p>
             ) : null}
             <ScrollRegion label="Skater boxscore">
-                <table className="w-full min-w-[400px] font-mono text-caption tabular-nums">
+                {/* Phones: fits the card (names truncate) so the names never scroll away. */}
+                <table className="w-full min-w-[400px] font-mono text-caption tabular-nums max-sm:min-w-0 max-sm:[&_td]:px-1.5 max-sm:[&_th]:px-1.5">
                     <caption className="sr-only">Skater boxscore</caption>
                     <thead>
                         <tr>
@@ -406,8 +424,10 @@ function Boxscore({ rows, players, state }: { rows: BoxRow[] | undefined; player
                             return (
                                 <tr key={r[0]} className="border-t border-line">
                                     <th scope="row" className="h-7 px-2 text-left font-normal text-fg-1">
-                                        {num ? <span className="mr-1.5 text-fg-3">{num}</span> : null}
-                                        {name}
+                                        <span className="max-sm:block max-sm:max-w-[8rem] max-sm:truncate max-[359px]:max-w-[5.5rem]">
+                                            {num ? <span className="mr-1.5 text-fg-3">{num}</span> : null}
+                                            {name}
+                                        </span>
                                     </th>
                                     <td className="px-2 text-right">{r[1]}</td>
                                     <td className="px-2 text-right">{r[2]}</td>

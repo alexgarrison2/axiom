@@ -258,6 +258,7 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
                 size="sm"
                 block
                 className="md:w-auto md:self-start"
+                optionClassName="max-sm:px-1.5 max-sm:tracking-[0.06em]"
             />
 
             {state.error && state.key === selected ? (
@@ -528,6 +529,7 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
         for (const p of points) if (p.s.teamTriCode === tri) d += ` H ${x(p.s.elapsedSeconds)} V ${y(p.cum)}`;
         return `${d} H ${x(maxTime)}`;
     };
+    const goalPoints = points.filter(p => p.s.isGoal);
     const ticks = isSeries ? Array.from({ length: Math.ceil(maxTime / 3600) }, (_, i) => (i + 1) * 3600) : [1200, 2400, 3600];
     const yStep = yMax > 8 ? 2 : 1;
     return (
@@ -547,7 +549,27 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
             </p>
             <div className="relative">
                 <ScrollRegion ref={boxRef} label="Expected goals flow chart" className="rounded-control border border-line bg-surface-2/40">
-                    <svg viewBox={`0 0 ${w} ${h}`} className={cn('w-full', !fit && 'min-w-[640px]')} role="img" aria-label={`Cumulative xG: ${game.awayTriCode} ${fmt(totals[game.awayTriCode] ?? 0)}, ${game.homeTriCode} ${fmt(totals[game.homeTriCode] ?? 0)}`}>
+                    <svg viewBox={`0 0 ${w} ${h}`} className={cn('w-full', !fit && 'min-w-[640px]')}
+                        data-flow-goal=""
+                        onClick={e => {
+                            // Touch: the goal nearest the tap (within ~24px) opens its card; anywhere else closes it.
+                            if (!window.matchMedia('(pointer: coarse)').matches) return;
+                            const r = e.currentTarget.getBoundingClientRect();
+                            const k = w / r.width;
+                            const px = (e.clientX - r.left) * k;
+                            const py = (e.clientY - r.top) * k;
+                            let best: PlayoffShotEvent | null = null;
+                            let dist = (24 * k) ** 2;
+                            for (const g of goalPoints) {
+                                const d = (x(g.s.elapsedSeconds) - px) ** 2 + (y(g.cum) - py) ** 2;
+                                if (d < dist) {
+                                    dist = d;
+                                    best = g.s;
+                                }
+                            }
+                            setPicked(cur => (best && cur !== best ? best : null));
+                        }}
+                        role="img" aria-label={`Cumulative xG: ${game.awayTriCode} ${fmt(totals[game.awayTriCode] ?? 0)}, ${game.homeTriCode} ${fmt(totals[game.homeTriCode] ?? 0)}`}>
                         {Array.from({ length: Math.floor(yMax / yStep) + 1 }, (_, i) => i * yStep).map(v => (
                             <g key={v}>
                                 <line x1={pad.left} x2={w - pad.right} y1={y(v)} y2={y(v)} stroke="rgb(var(--text-3-rgb))" strokeDasharray="3 6" opacity="0.35" />
@@ -566,30 +588,22 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
                         ))}
                         <path d={path(game.awayTriCode)} fill="none" stroke={awayColor} strokeWidth={fit ? 2.5 : 3.5} />
                         <path d={path(game.homeTriCode)} fill="none" stroke={homeColor} strokeWidth={fit ? 2.5 : 3.5} />
-                        {points
-                            .filter(p => p.s.isGoal)
-                            .map(p => {
-                                const cx = x(p.s.elapsedSeconds);
-                                const cy = y(p.cum);
-                                const clip = `clip-${game.gameId}-${p.s.gameId ?? ''}-${p.s.eventId}`;
-                                return (
-                                    <g
-                                        key={clip}
-                                        data-flow-goal=""
-                                        onClick={() => {
-                                            if (window.matchMedia('(pointer: coarse)').matches) setPicked(cur => (cur === p.s ? null : p.s));
-                                        }}
-                                    >
-                                        <title>{`${p.s.playerName} (${p.s.teamTriCode}) · ${shotClock(p.s, isSeries)} · xG ${fmt(p.s.xG)}`}</title>
-                                        <circle cx={cx} cy={cy} r={mark.ring} fill={p.s.teamTriCode === game.awayTriCode ? awayColor : homeColor} />
-                                        <clipPath id={clip}>
-                                            <circle cx={cx} cy={cy} r={mark.face} />
-                                        </clipPath>
-                                        <circle cx={cx} cy={cy} r={mark.face} fill="rgb(var(--surface-1-rgb))" />
-                                        <image href={headshot(p.s.playerId)} x={cx - mark.face} y={cy - mark.face} width={mark.face * 2} height={mark.face * 2} clipPath={`url(#${clip})`} />
-                                    </g>
-                                );
-                            })}
+                        {goalPoints.map(p => {
+                            const cx = x(p.s.elapsedSeconds);
+                            const cy = y(p.cum);
+                            const clip = `clip-${game.gameId}-${p.s.gameId ?? ''}-${p.s.eventId}`;
+                            return (
+                                <g key={clip}>
+                                    <title>{`${p.s.playerName} (${p.s.teamTriCode}) · ${shotClock(p.s, isSeries)} · xG ${fmt(p.s.xG)}`}</title>
+                                    <circle cx={cx} cy={cy} r={mark.ring} fill={p.s.teamTriCode === game.awayTriCode ? awayColor : homeColor} />
+                                    <clipPath id={clip}>
+                                        <circle cx={cx} cy={cy} r={mark.face} />
+                                    </clipPath>
+                                    <circle cx={cx} cy={cy} r={mark.face} fill="rgb(var(--surface-1-rgb))" />
+                                    <image href={headshot(p.s.playerId)} x={cx - mark.face} y={cy - mark.face} width={mark.face * 2} height={mark.face * 2} clipPath={`url(#${clip})`} />
+                                </g>
+                            );
+                        })}
                     </svg>
                 </ScrollRegion>
                 {picked ? (
@@ -707,12 +721,12 @@ function GameTables({ game }: { game: PlayoffGameAnalysis }) {
                 ))}
             </div>
 
-            <ScrollRegion label="Skater box score" className="panel">
-                <table className="table-dense min-w-[760px]">
+            <ScrollRegion label="Skater box score" stickyStart className="panel">
+                <table className="table-dense min-w-[760px] max-sm:min-w-0">
                     <caption className="sr-only">Skaters, sortable</caption>
                     <thead>
                         <tr>
-                            <th scope="col" className="sticky left-0 z-10 bg-surface-2 px-3 text-left text-micro font-semibold uppercase tracking-[0.06em] text-fg-2">
+                            <th scope="col" className="sticky left-0 z-10 bg-surface-2 px-3 text-left text-micro font-semibold uppercase tracking-[0.06em] text-fg-2 max-lg:!z-[3] max-sm:px-2">
                                 Skater
                             </th>
                             {SKATER_COLUMNS.map(c => (
@@ -728,11 +742,15 @@ function GameTables({ game }: { game: PlayoffGameAnalysis }) {
                             const box = p.assists != null;
                             return (
                                 <tr key={p.playerId} className="hover:bg-surface-2/50">
-                                    <th scope="row" className="sticky left-0 z-10 bg-surface-1 px-3 text-left font-normal">
+                                    <th
+                                        scope="row"
+                                        // Below lg the table scrolls under this column: opaque zebra and hover (the table-dense ones are translucent).
+                                        className="sticky left-0 z-10 bg-surface-1 px-3 text-left font-normal max-lg:!bg-surface-1 max-sm:px-2 max-lg:[tr:hover>&]:!bg-[color-mix(in_srgb,var(--line)_80%,var(--surface-1))] max-lg:[tr:nth-child(even)>&]:!bg-[color-mix(in_srgb,var(--line)_35%,var(--surface-1))]"
+                                    >
                                         <span className="flex items-center gap-2">
                                             <TeamLogo tri={p.teamTriCode} size={16} />
                                             <span className="min-w-0">
-                                                <span className="block max-w-[10rem] truncate font-semibold text-fg-1">{p.name}</span>
+                                                <span className="block max-w-[10rem] truncate font-semibold text-fg-1 max-sm:max-w-[6rem]">{p.name}</span>
                                                 <span className="block text-micro text-fg-3">
                                                     {p.position || '—'}
                                                     {p.number ? ` · #${p.number}` : ''}

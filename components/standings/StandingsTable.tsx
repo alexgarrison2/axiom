@@ -122,6 +122,8 @@ const GP_VIS = 'hidden sm:table-cell';
 const recVis = (proj: boolean) => (proj ? 'hidden md:table-cell' : 'hidden sm:table-cell');
 const WIDE_VIS = 'hidden lg:table-cell';
 const D24_VIS = 'hidden md:table-cell';
+/** Under 360px the Cup column gives its width to the rest; a row tap shows it. */
+const CUP_VIS = 'max-[359px]:hidden';
 
 /** Which movement columns have data (24H change, 30D sparkline). */
 interface MoveCols {
@@ -191,7 +193,7 @@ function ConferenceTable({
                                         <abbr title="Wins the division" className="no-underline">Div</abbr>
                                     </th>
                                 ) : null}
-                                <th scope="col" className={cn(cell, 'w-12 text-right')}>
+                                <th scope="col" className={cn(cell, CUP_VIS, 'w-12 text-right')}>
                                     <abbr title="Wins the Stanley Cup" className="no-underline">Cup</abbr>
                                 </th>
                             </>
@@ -215,7 +217,7 @@ function ConferenceTable({
                                             {cols.d24 ? <td className={D24_VIS} /> : null}
                                             {full && cols.trend ? <td className={WIDE_VIS} /> : null}
                                             {full ? <td className={WIDE_VIS} /> : null}
-                                            <td />
+                                            <td className={CUP_VIS} />
                                         </>
                                     ) : null}
                                 </tr>
@@ -324,15 +326,15 @@ function Row({
                             </td>
                         ) : null}
                         {full ? <td className={cn(cell, WIDE_VIS, 'text-right text-fg-2')}>{p ? fmtSimPct(p.divisionPct) : <Dash />}</td> : null}
-                        <td className={cn(cell, 'text-right text-fg-2')}>{p ? fmtSimPct(p.cupPct) : <Dash />}</td>
+                        <td className={cn(cell, CUP_VIS, 'text-right text-fg-2')}>{p ? fmtSimPct(p.cupPct) : <Dash />}</td>
                     </>
                 ) : null}
             </tr>
             {open ? (
                 <>
                     <tr className="lg:hidden">
-                        <td colSpan={span} className="!h-auto border-b border-line !bg-bg/50 !px-3 py-2">
-                            <dl className="flex flex-wrap gap-x-5 gap-y-1.5">
+                        <td colSpan={span} className="!h-auto border-b border-line !bg-bg/50 !px-3 py-3">
+                            <dl className="flex flex-wrap gap-x-5 gap-y-2">
                                 <Detail label="GP" className="sm:hidden">
                                     {r.gp}
                                 </Detail>
@@ -358,6 +360,11 @@ function Row({
                                     </Detail>
                                 ) : null}
                                 {full && p ? <Detail label="Div">{fmtSimPct(p.divisionPct)}</Detail> : null}
+                                {showProjections && p ? (
+                                    <Detail label="Cup" className="min-[360px]:hidden">
+                                        {fmtSimPct(p.cupPct)}
+                                    </Detail>
+                                ) : null}
                             </dl>
                         </td>
                     </tr>
