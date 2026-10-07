@@ -55,7 +55,7 @@ describe('brand and team asset budgets', () => {
         const rule = list.find((r) => r.source.startsWith('/logos/'));
         expect(rule).toEqual({ source: '/logos/:team([A-Z]{3})_dark.svg', destination: '/logos/:team.svg' });
         const teams = fs.readdirSync(path.join(root, 'public/logos')).filter((f) => /^[A-Z]{3}\.svg$/.test(f));
-        expect(teams.length).toBe(33); // 32 clubs + NHL shield
+        expect(teams.length).toBe(34); // 32 clubs + NHL shield + OPP (a team season's pooled opponents)
     });
 
     it('keeps network logos tiny (TBS used to embed a 1200px PNG)', () => {

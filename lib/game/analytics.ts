@@ -495,7 +495,7 @@ export interface SkaterRow {
 }
 
 export function skaterRows(m: GameModel, side: Side, f: PlayerStrength, period: PeriodFilter = 'all'): SkaterRow[] {
-    const segs = segments(m).filter(s => (period === 'all' ? true : periodOf(s.a) === period) && segMatches(s, side, f));
+    const segs = segments(m).filter(s => (period === 'all' ? true : periodOfM(m, s.a) === period) && segMatches(s, side, f));
     const length = Math.max(m.end, 1);
     const toiAll = new Map<number, number>();
     for (const s of segments(m)) for (const sd of SIDES) for (const id of s.skaters[sd]) toiAll.set(id, (toiAll.get(id) ?? 0) + (s.b - s.a));
@@ -655,6 +655,21 @@ function periodOf(t: number): number {
     return t < 3600 ? Math.floor(t / 1200) + 1 : 4;
 }
 
+/** Time into its own game: a merged season (m.starts) runs every game on one clock. */
+export function localT(m: GameModel, t: number): number {
+    const st = m.starts;
+    if (!st?.length) return t;
+    let lo = 0;
+    let hi = st.length - 1;
+    while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (st[mid] <= t) lo = mid;
+        else hi = mid - 1;
+    }
+    return t - st[lo];
+}
+const periodOfM = (m: GameModel, t: number) => periodOf(localT(m, t));
+
 /* ── Units: forward lines, D pairs, PP and PK groups ───────────────────── */
 
 export interface Unit {
@@ -702,9 +717,9 @@ export function units(m: GameModel, side: Side, kind: UnitKind, per: PeriodFilte
     for (const s of segs) {
         const k = keyOf(s);
         // A stint continues across a change elsewhere on the ice, not across an intermission.
-        const cont = k != null && prev.k === k && prev.b === s.a && periodOf(s.a) === periodOf(prev.b - 0.01);
+        const cont = k != null && prev.k === k && prev.b === s.a && periodOfM(m, s.a) === periodOfM(m, prev.b - 0.01);
         prev = { k, b: s.b };
-        if (!k || (per !== 'all' && periodOf(s.a) !== per)) continue;
+        if (!k || (per !== 'all' && periodOfM(m, s.a) !== per)) continue;
         const u = acc.get(k) ?? { ids: k.split('-').map(Number), toi: 0, cf: 0, ca: 0, xgf: 0, xga: 0, gf: 0, ga: 0, sf: 0, sa: 0, stints: 0, oz: 0, nz: 0, dz: 0 };
         u.toi += s.b - s.a;
         if (!cont) {
@@ -918,7 +933,7 @@ export function pairRows(m: GameModel, playerId: number, f: PlayerStrength, peri
         }
         return r;
     };
-    const ok = (s: Segment, t: number) => s.skaters[side].includes(playerId) && segMatches(s, side, f) && (period === 'all' || (period === 4 ? t >= 3600 : periodOf(t) === period));
+    const ok = (s: Segment, t: number) => s.skaters[side].includes(playerId) && segMatches(s, side, f) && (period === 'all' || (period === 4 ? localT(m, t) >= 3600 : periodOfM(m, t) === period));
     for (const s of segments(m)) {
         if (!ok(s, s.a)) continue;
         for (const id of s.skaters[other(side)]) row('opp', id)!.toi += s.b - s.a;
@@ -1453,7 +1468,7 @@ export interface TeamOnIce {
 export function teamOnIce(m: GameModel, side: Side, f: PlayerStrength, period: PeriodFilter = 'all'): TeamOnIce {
     const t: TeamOnIce = { toi: 0, toiEv: 0, toiPp: 0, toiSh: 0, cf: 0, ca: 0, sf: 0, sa: 0, gf: 0, ga: 0, xgf: 0, xga: 0 };
     for (const s of segments(m)) {
-        if ((period !== 'all' && periodOf(s.a) !== period) || !segMatches(s, side, f)) continue;
+        if ((period !== 'all' && periodOfM(m, s.a) !== period) || !segMatches(s, side, f)) continue;
         const d = s.b - s.a;
         t.toi += d;
         const st = segStrength(s, side);

@@ -147,7 +147,8 @@ export function Shots() {
     const [period, setPeriod] = React.useState<string>('all');
     const [kinds, setKinds] = React.useState<Set<Kind>>(new Set(['goal', 'shot', 'miss']));
     const [player, setPlayer] = React.useState<string>('all');
-    const [view, setView] = React.useState<'map' | 'heat'>('map');
+    // A merged season (thousands of shots) opens on density; a game on the map.
+    const [view, setView] = React.useState<'map' | 'heat'>(m.starts?.length ? 'heat' : 'map');
 
     const per = period === 'all' ? 'all' : Number(period);
     const base = m.events.filter(e => (e.type === 'goal' || e.type === 'shot' || e.type === 'miss' || e.type === 'block') && e.x != null && matchTeamStrength(e, strength) && inPeriod(e, per));

@@ -186,8 +186,9 @@ export function GameScore() {
     const d = Math.ceil(reach * 2) / 2;
     const x = (v: number) => VB / 2 + (v / d) * (VB / 2 - 6);
     const ticks: number[] = [];
-    const step = d > 2 ? 1 : 0.5;
-    for (let v = -d; v <= d + 1e-9; v += step) ticks.push(Math.round(v * 2) / 2);
+    // At most ~6 ticks a side: a game's ±1.5 in halves, a season's ±25 in fives.
+    const step = [0.25, 0.5, 1, 2, 5, 10, 20].find(v => d / v <= 6) ?? 50;
+    for (let v = -Math.floor(d / step) * step; v <= d + 1e-9; v += step) ticks.push(Math.round(v * 4) / 4);
 
     React.useLayoutEffect(() => {
         const r = cardRef.current?.getBoundingClientRect();

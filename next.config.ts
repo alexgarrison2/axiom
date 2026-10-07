@@ -160,13 +160,22 @@ const nextConfig: NextConfig = {
     // the pipeline's season schedule at request time (both fail soft, so a
     // missing file would silently drop the Next game line on Vercel).
     "/news": RUNTIME_SCHEDULE,
-    "/teams/[teamAbbr]": RUNTIME_SCHEDULE,
+    "/teams/[teamAbbr]": [...RUNTIME_SCHEDULE, "public/data/pony/2*.json"],
     "/opengraph-image": OG_RUNTIME,
     "/api/odds-history": ["public/data/SiteHistory/*.csv"],
     // The game page reads pony xG per shot (nightly file, else the xG v2
     // artifacts and shooting talent to score live shots) and the graded pregame call.
     "/players/pony": ["public/data/pony/*.json"],
     "/players/[id]": ["public/data/pony/*.json", "public/data/player_ratings.json", "public/data/player_bio.json"],
+    "/api/game-pack/[id]": [
+      "public/data/player_ratings.json",
+      "public/data/game_xg/*.json",
+      "pipeline/models/xg2_booster.json",
+      "pipeline/models/xg2_calibrators.json",
+      "pipeline/bu/xg/models/handedness.json",
+      "pipeline/shooting_talent.json",
+      "data/prediction_history.json",
+    ],
     "/games/[id]": [
       "public/data/player_ratings.json",
       "public/data/game_xg/*.json",

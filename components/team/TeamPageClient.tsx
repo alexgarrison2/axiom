@@ -11,6 +11,7 @@ import { unpackGames } from '@/utils/team-stats/game-row';
 import { seasonGames, seasonLabel } from '@/utils/team-stats/season';
 import type { TeamPayload } from '@/utils/team-stats/team-types';
 import GamesLogTable from './GamesLogTable';
+import type { SeasonGame } from './TeamBreakdown';
 import { signed } from '@/utils/team-stats/format';
 import { DEFAULT_GAME_FILTERS, applyGameFilters, countGameFilters, totals, type TeamGameFilters } from './game-log-model';
 
@@ -32,14 +33,20 @@ const SkaterGrid = dynamic(() => import('./SkaterGrid'), {
 // Only needed once the sheet opens / the tab is picked.
 const FilterControls = dynamic(() => import('./FilterControls'), { loading: () => <p className="label py-4">Loading</p> });
 const GoaliesPanel = dynamic(() => import('./GoaliesPanel'), { loading: () => <div className="panel h-64 animate-pulse" role="status" aria-label="Loading goalies" /> });
+const TeamBreakdown = dynamic(() => import('./TeamBreakdown').then(m => m.TeamBreakdown), {
+    ssr: false,
+    loading: () => <div className="panel h-64 animate-pulse" role="status" aria-label="Loading the breakdown" />,
+});
 
-const TABS = ['games', 'charts', 'skaters', 'goalies'] as const;
+const TABS = ['games', 'charts', 'skaters', 'goalies', 'breakdown'] as const;
 type Tab = (typeof TABS)[number];
 
 interface TeamPageClientProps {
     initial: TeamPayload;
     /** Seasons offered by the switcher, newest first. */
     seasons: string[];
+    /** Per season: the games the Breakdown tab can merge (those with a pony xG build). */
+    breakdown: Record<string, SeasonGame[]>;
 }
 
 /**
@@ -47,7 +54,7 @@ interface TeamPageClientProps {
  * ?tab=), game-log filters in a sheet with quick chips, and the lazily
  * loaded Charts / Skaters tabs. The hero above it is server-rendered.
  */
-export default function TeamPageClient({ initial, seasons }: TeamPageClientProps) {
+export default function TeamPageClient({ initial, seasons, breakdown }: TeamPageClientProps) {
     const tri = initial.team.tri;
     const [tab, setTab] = React.useState<Tab>('games');
     const [season, setSeason] = React.useState(initial.season);
@@ -141,9 +148,10 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                     <TabsTrigger value="charts">Charts</TabsTrigger>
                     <TabsTrigger value="skaters">Skaters</TabsTrigger>
                     <TabsTrigger value="goalies">Goalies</TabsTrigger>
+                    <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
                 </TabsList>
                 {/* One row on phones: season + quick chips scroll sideways instead of wrapping. */}
-                {tab === 'games' || tab === 'charts' ? (
+                {tab === 'games' || tab === 'charts' || tab === 'breakdown' ? (
                     <div className="-mx-4 flex w-[calc(100%+2rem)] min-w-0 flex-nowrap items-center gap-2 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 [&>*]:shrink-0">
                         <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={seasons.map(s => ({ value: s, label: seasonLabel(s) }))} />
                         {tab === 'games' ? (
@@ -245,6 +253,10 @@ export default function TeamPageClient({ initial, seasons }: TeamPageClientProps
                     currentSeasonGames={seasonGames(seasons[0])}
                     prevSeasonGames={prev ? seasonGames(prev) : 82}
                 />
+            </TabsContent>
+
+            <TabsContent value="breakdown" className="mt-0">
+                {tab === 'breakdown' ? <TeamBreakdown key={`${tri}-${season}`} tri={tri} games={breakdown[season] ?? []} /> : null}
             </TabsContent>
 
             <TabsContent value="goalies" className="mt-0">
