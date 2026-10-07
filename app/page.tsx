@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { cache } from 'react';
 import { getImplications, getPlayoffOdds, getPlayoffSeries, getPredictions } from '@/utils/data';
 import PredictionsViewer from '@/components/PredictionsViewer';
-import { defaultDate } from '@/lib/matchup/lifecycle';
+import { homeDate } from '@/lib/matchup/lifecycle';
 import { compactForClient } from '@/lib/matchup/parse';
 import { addDays, slateDate } from '@/lib/matchup/format';
 import { validDate, isFinalState, slateTitle, type ArchiveSlate } from '@/lib/matchup/archive';
@@ -70,10 +70,19 @@ async function slateDates(): Promise<string[]> {
     return [...new Set(predictions.map(p => p.date))].sort();
 }
 
+/** Today's games from the score feed when the prediction file no longer (or not yet) has them. */
+const offFileToday = cache(async (today: string, dates: string[]): Promise<ArchiveSlate | null> => {
+    if (dates.includes(today)) return null;
+    const slate = await getArchiveSlate(today, today);
+    return slate.games.length ? slate : null;
+});
+
 /** Dated title that follows ?date=, e.g. "NHL predictions for Thu, Oct 1 | Pony xG". */
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
     const today = slateDate();
-    const date = requested(await searchParams, today) ?? defaultDate(await slateDates(), today) ?? today;
+    const dates = await slateDates();
+    const asked = requested(await searchParams, today);
+    const date = asked ?? homeDate(dates, today, (await offFileToday(today, dates))?.games.length ?? 0) ?? today;
     return { title: { absolute: slateTitle(date, today) } };
 }
 
@@ -83,7 +92,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     const today = slateDate();
     const dates = [...new Set(predictions.map(p => p.date))].sort();
     const asked = requested(sp, today);
-    const initialDate = asked ?? defaultDate(dates, today);
+    // Midnight to 3am ET: the night that just ended is off the file but still today's slate.
+    const todaySlate = await offFileToday(today, dates);
+    const initialDate = asked ?? homeDate(dates, today, todaySlate?.games.length ?? 0);
     const yesterday = addDays(today, -1);
 
     const teams = [...new Set(predictions.flatMap(p => [p.home.team.triCode, p.away.team.triCode]))];
@@ -91,7 +102,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         getPlayoffOdds(),
         getImplications(),
         getPlayoffSeries(predictions),
-        initialDate && !dates.includes(initialDate) ? getArchiveSlate(initialDate, today) : Promise.resolve<ArchiveSlate | null>(null),
+        initialDate && !dates.includes(initialDate)
+            ? initialDate === today && todaySlate
+                ? Promise.resolve(todaySlate)
+                : getArchiveSlate(initialDate, today)
+            : Promise.resolve<ArchiveSlate | null>(null),
         // The Yesterday chip: only while yesterday has finals and isn't already a slate day.
         dates.includes(yesterday) || initialDate === yesterday ? Promise.resolve<ArchiveSlate | null>(null) : getArchiveSlate(yesterday, today),
         startedScores(initialDate, predictions),
@@ -102,7 +117,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     const ySlate = initialDate === yesterday ? archive : yArchive;
     const yFinals = ySlate?.games.filter(g => isFinalState(g.state)).length ?? 0;
     if (yFinals && !dates.includes(yesterday)) extraDays.push({ date: yesterday, count: ySlate!.games.length });
-    if (archive && initialDate && initialDate !== yesterday) extraDays.push({ date: initialDate, count: archive.games.length });
+    // Today's chip while its games are off the file (the night that just ended, before 3am ET).
+    if (todaySlate) extraDays.push({ date: today, count: todaySlate.games.length });
+    if (archive && initialDate && initialDate !== yesterday && initialDate !== today) extraDays.push({ date: initialDate, count: archive.games.length });
 
     return (
         <main className="page pt-4 md:pb-12 md:pt-7 [&>*]:max-w-[1192px] xl:max-w-[1620px] xl:px-8 xl:[&>*]:max-w-none">

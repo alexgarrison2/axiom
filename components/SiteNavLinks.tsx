@@ -34,7 +34,7 @@ function TabletMore({ items, pathname }: { items: NavItem[]; pathname: string | 
     const active = items.some(i => isItemActive(i, pathname));
     const close = React.useCallback((refocus = false) => {
         setPos(null);
-        if (refocus) button.current?.focus();
+        if (refocus) button.current?.focus({ preventScroll: true });
     }, []);
 
     React.useEffect(() => close(), [pathname, close]);

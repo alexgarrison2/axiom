@@ -141,3 +141,14 @@ export function defaultDate(dates: string[], today: string): string | null {
     if (dates.includes(today)) return today;
     return dates.find(d => d > today) ?? dates[dates.length - 1];
 }
+
+/**
+ * The slate the home page opens on. Between midnight and the 3am ET rollover the overnight
+ * refresh has already dropped the night that just ended from the prediction file, but it is
+ * still "tonight": when today has games outside the file (`todayGames`, from the score feed),
+ * open on it rather than jumping to tomorrow.
+ */
+export function homeDate(dates: string[], today: string, todayGames: number): string | null {
+    if (!dates.includes(today) && todayGames > 0) return today;
+    return defaultDate(dates, today);
+}
