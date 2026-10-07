@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { teamPalette } from '@/components/ui/team-color';
 import { legibleOn } from '@/components/ui/color';
-import { Breakdown } from '@/components/pony/LeaderTable';
-import { PonyTrend, type TrendGame } from '@/components/player/PonyTrend';
+import { PonyGames } from '@/components/player/PonyGames';
+import type { TrendGame } from '@/components/player/PonyTrend';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
 import { GS_PARTS, type GsPart } from '@/lib/game/analytics';
 import { leaderboard, loadPonySeason, playerGames, ponySeasons, DEFAULT_FILTERS, type GoalieGame, type SkaterGame } from '@/lib/pony/data';
-import { IDEAS, PARTS, signed } from '@/lib/pony/parts';
+import { signed } from '@/lib/pony/parts';
 import { ageOn, playerProfile, type SeasonLine } from '@/lib/players/landing';
 import { readRatingsDoc } from '@/lib/players/server';
 import { Wowy } from '@/components/player/Wowy';
@@ -257,46 +257,21 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         ) : null}
                     </div>
                     {gp ? (
-                        <div className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-                            <div className="panel p-card">
-                                <p className="mb-2 flex items-center justify-between text-micro uppercase tracking-label text-fg-3">
-                                    <span>Game by game</span>
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="h-0.5 w-4 rounded-full bg-model" /> 5-game average
-                                    </span>
+                        <PonyGames
+                            trend={trend}
+                            color={color}
+                            avgParts={avgParts}
+                            avg={avg}
+                            group={group}
+                            goalieSummary={
+                                <p key="gsax" className="text-caption text-fg-2">
+                                    {games.goalie.reduce((a, r) => a + r.sa, 0)} shots, {games.goalie.reduce((a, r) => a + r.ga, 0)} goals against,{' '}
+                                    <span className="text-model">{games.goalie.reduce((a, r) => a + r.xga, 0).toFixed(1)} xGA</span>.
                                 </p>
-                                <PonyTrend games={trend} color={color} />
-                            </div>
-                            <div className="panel flex flex-col gap-3 p-card">
-                                <p className="text-micro uppercase tracking-label text-fg-3">{goalie ? 'Goals saved above expected' : 'Average night'}</p>
-                                {avgParts ? (
-                                    <>
-                                        <Breakdown row={{ parts: avgParts, goalie: null, avg }} reach={Math.max(0.25, Math.ceil(Math.max(...[0, 1].map(s => Object.values(avgParts).filter(v => (s ? v < 0 : v > 0)).reduce((a, v) => a + Math.abs(v), 0))) * 8) / 8)} className="h-4" />
-                                        <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 text-caption tabular-nums">
-                                            {IDEAS.map(([o, d]) => (
-                                                <div key={o} className="contents">
-                                                    {[o, d].map(k => (
-                                                        <span key={k} className="flex items-center justify-between gap-2">
-                                                            <span className="flex items-center gap-1.5 text-fg-2">
-                                                                <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: PARTS[k].color }} />
-                                                                {PARTS[k].label}
-                                                            </span>
-                                                            <span className={Math.abs(avgParts[k]) < 0.005 ? 'text-fg-3' : 'text-fg-1'}>{signed(avgParts[k])}</span>
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <p className="text-micro text-fg-3">Offence left column, defence right; goals per game above an average {group === 'D' ? 'defenceman' : 'forward'}.</p>
-                                    </>
-                                ) : (
-                                    <p className="text-caption text-fg-2">
-                                        {games.goalie.reduce((a, r) => a + r.sa, 0)} shots, {games.goalie.reduce((a, r) => a + r.ga, 0)} goals against,{' '}
-                                        <span className="text-model">{games.goalie.reduce((a, r) => a + r.xga, 0).toFixed(1)} xGA</span>.
-                                    </p>
-                                )}
-                                {best && worst ? (
-                                    <div className="mt-auto grid grid-cols-2 gap-3 border-t border-line pt-3 text-caption">
+                            }
+                            footer={
+                                best && worst ? (
+                                    <div key="extremes" className="mt-auto grid grid-cols-2 gap-3 border-t border-line pt-3 text-caption">
                                         <Link href={`/games/${best.game}`} className="group">
                                             <p className="text-micro uppercase tracking-label text-fg-3">Best</p>
                                             <p className="text-fg-1 group-hover:text-brand">
@@ -312,9 +287,9 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                             <p className="text-micro text-fg-3">{worst.date}</p>
                                         </Link>
                                     </div>
-                                ) : null}
-                            </div>
-                        </div>
+                                ) : null
+                            }
+                        />
                     ) : (
                         <p className="panel p-card text-caption text-fg-3">No Pony Score games yet this season.</p>
                     )}
