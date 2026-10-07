@@ -19,6 +19,7 @@ import { SEASON_ID } from '@/lib/season';
 import { IsolatedImpact } from '@/components/player/IsolatedImpact';
 import { AwardShelf } from '@/components/player/AwardShelf';
 import { loadIsolate } from '@/lib/players/isolate-server';
+import PlayerSwitcher from '@/components/player/PlayerSwitcher';
 
 /*
  * A player's page: the NHL profile (bio, action photo, draft, awards, career
@@ -164,6 +165,23 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
     return (
         <main className="pb-tabbar">
             <div className="page flex flex-col gap-8 py-5 md:py-7">
+                {/* Breadcrumb and player switcher, placed as on the team page (8px under the bar, 8px over the hero). */}
+                <nav aria-label="Breadcrumb" className="-mb-6 -mt-3 flex items-center justify-between gap-3">
+                    <ol className="flex min-w-0 items-center gap-1.5 text-micro font-medium uppercase tracking-label">
+                        <li>
+                            <Link href="/players" className="inline-flex min-h-8 items-center text-fg-3 hover:text-brand coarse:min-h-11">
+                                Players
+                            </Link>
+                        </li>
+                        <li aria-hidden="true" className="text-fg-disabled">
+                            /
+                        </li>
+                        <li aria-current="page" className="truncate text-fg-1">
+                            {last || first}
+                        </li>
+                    </ol>
+                    <PlayerSwitcher current={pid} name={`${first} ${last}`.trim()} team={team} />
+                </nav>
                 {/* Hero: the action photo bleeding off the right, the name and the night-to-night headline on the left. */}
                 <section className="relative overflow-hidden rounded-card border border-line bg-surface-1" style={{ boxShadow: `inset 0 3px 0 ${color}` }}>
                     {profile?.hero ? (
