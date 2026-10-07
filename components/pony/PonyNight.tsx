@@ -45,23 +45,23 @@ function Row({ r, rank, players, reach }: { r: (string | number)[]; rank: number
     const x = (v: number) => 50 + (v / reach) * 48;
     return (
         // Phone-width panels give the name the room: a shorter bar (same scale, same parts) and tighter gaps.
-        <li className="grid grid-cols-[1rem_2rem_minmax(0,1fr)_2.5rem_3.25rem] items-center gap-x-2 py-1.5 [@container(min-width:18rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_3.5rem_3.5rem] [@container(min-width:26rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_5.5rem_3.5rem] [@container(min-width:26rem)]:gap-x-2.5">
+        <li className="grid grid-cols-[1rem_2rem_minmax(0,1fr)_2.5rem_3.25rem] items-center gap-x-2 py-1.5 coarse:relative [@container(min-width:18rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_3.5rem_3.5rem] [@container(min-width:26rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_5.5rem_3.5rem] [@container(min-width:26rem)]:gap-x-2.5">
             <span className="text-right text-micro tabular-nums text-fg-3">{rank}</span>
             <span className="block h-8 w-8 overflow-hidden rounded-full border-2 bg-surface-2 [@container(min-width:18rem)]:h-9 [@container(min-width:18rem)]:w-9" style={{ borderColor: teamPalette(team).primary }}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshot */}
                 {p?.[4] ? <img src={p[4]} alt="" width={36} height={36} loading="lazy" className="headshot h-full w-full" /> : null}
             </span>
             <span className="min-w-0 leading-tight">
-                {/* Touch: the name's target also covers the headshot and the row's top padding; the game line keeps its own. */}
+                {/* Touch: the whole row opens the player; the game line sits above it as its own target, a small gap under the name. */}
                 <Link
                     href={`/players/${id}`}
-                    className="block font-bold text-fg-1 underline-offset-4 hover:text-brand hover:underline coarse:relative coarse:after:absolute coarse:after:-left-10 coarse:after:-top-1.5 coarse:after:bottom-0 coarse:after:right-0 coarse:after:content-['']"
+                    className="block font-bold text-fg-1 underline-offset-4 hover:text-brand hover:underline coarse:after:absolute coarse:after:inset-0 coarse:after:content-['']"
                 >
                     <span className="block truncate">{p ? `${p[0].charAt(0)}. ${p[1]}` : id}</span>
                 </Link>
                 <Link
                     href={`/games/${game}`}
-                    className="flex items-center gap-1 whitespace-nowrap text-micro text-fg-3 hover:text-fg-1 coarse:relative coarse:after:absolute coarse:after:-bottom-1.5 coarse:after:left-0 coarse:after:right-0 coarse:after:top-0 coarse:after:content-['']"
+                    className="flex items-center gap-1 whitespace-nowrap text-micro text-fg-3 hover:text-fg-1 coarse:relative coarse:z-10 coarse:mt-1 coarse:w-fit"
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element -- team logo */}
                     <img src={`/logos/${team}.svg`} alt="" width={14} height={14} className="h-3.5 w-3.5" />
@@ -110,7 +110,7 @@ export function PonyNight({ date }: { date: string }) {
                 <h2 id="pony-night-h" className="heading-section">
                     Pony score
                 </h2>
-                <Link href={`/players/pony?from=${date}&to=${date}&season=${seasonOf(date)}`} className="text-micro uppercase tracking-label text-fg-3 underline-offset-4 hover:text-fg-1 hover:underline coarse:relative coarse:after:absolute coarse:after:-inset-x-2 coarse:after:-inset-y-3.5 coarse:after:content-['']">
+                <Link href={`/players/pony?from=${date}&to=${date}&season=${seasonOf(date)}`} className="text-micro uppercase tracking-label text-fg-3 underline-offset-4 hover:text-fg-1 hover:underline coarse:-my-3.5 coarse:inline-flex coarse:min-h-11 coarse:items-center">
                     Full night
                 </Link>
             </div>
