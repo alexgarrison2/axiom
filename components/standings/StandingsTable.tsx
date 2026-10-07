@@ -258,54 +258,123 @@ function Row({
     cut: boolean;
 }) {
     const p = r.proj;
+    // Below the width where every column shows, a tap on the row opens the hidden ones (GP, W-L-O, range, 24H, 30D, Div).
+    const [open, setOpen] = React.useState(false);
+    // The detail cell spans the columns showing at this width (hidden cells are not columns).
+    const [span, setSpan] = React.useState(1);
+    const rowRef = React.useRef<HTMLTableRowElement>(null);
+    const narrow = full ? '(max-width: 1023px)' : showProjections ? '(max-width: 767px)' : '(max-width: 639px)';
+    const toggle = () => {
+        if (!window.matchMedia(narrow).matches) return;
+        setSpan(Array.from(rowRef.current?.cells ?? []).filter(c => getComputedStyle(c).display !== 'none').length || 1);
+        setOpen(o => !o);
+    };
+    const trend = full && cols.trend && r.trend.length > 1;
     return (
-        <tr className={cn(cut && '[&>*]:border-t [&>*]:border-dashed [&>*]:border-t-brand/70')}>
-            <td className={cn(cell, 'text-right text-fg-3')}>
-                {cut ? <span className="sr-only">Playoff line. </span> : null}
-                {rank}
-            </td>
-            <th scope="row" className={cn(cell, 'text-left font-normal')}>
-                <Link href={`/teams/${r.tri}`} prefetch={false} className="group inline-flex min-h-8 items-center gap-2 coarse:min-h-11">
-                    <Crest tri={r.tri} size={26} className="drop-shadow-none" />
-                    <span className="font-bold text-fg-1 group-hover:text-brand">{r.tri}</span>
-                    {full ? <span className="hidden truncate text-fg-3 lg:inline">{r.short}</span> : null}
-                </Link>
-            </th>
-            <td className={cn(cell, GP_VIS, 'text-right text-fg-2')}>{r.gp}</td>
-            <td className={cn(cell, recVis(showProjections), 'text-right text-fg-2')}>
-                {r.w}-{r.l}-{r.otl}
-            </td>
-            <td className={cn(cell, 'text-right font-bold text-fg-1')}>{r.pts}</td>
-            {showProjections ? (
+        <>
+            <tr
+                ref={rowRef}
+                className={cn(cut && '[&>*]:border-t [&>*]:border-dashed [&>*]:border-t-brand/70', 'max-lg:cursor-pointer')}
+                onClick={e => {
+                    if (!(e.target as Element).closest('a,button')) toggle();
+                }}
+            >
+                <td className={cn(cell, 'text-right text-fg-3')}>
+                    {cut ? <span className="sr-only">Playoff line. </span> : null}
+                    <button type="button" aria-expanded={open} aria-label={`${rank}, ${r.tri} details`} onClick={toggle} className="w-full text-right lg:hidden">
+                        {rank}
+                    </button>
+                    <span className="hidden lg:inline">{rank}</span>
+                </td>
+                <th scope="row" className={cn(cell, 'text-left font-normal')}>
+                    <Link href={`/teams/${r.tri}`} prefetch={false} className="group inline-flex min-h-8 items-center gap-2 coarse:min-h-11">
+                        <Crest tri={r.tri} size={26} className="drop-shadow-none" />
+                        <span className="font-bold text-fg-1 group-hover:text-brand">{r.tri}</span>
+                        {full ? <span className="hidden truncate text-fg-3 lg:inline">{r.short}</span> : null}
+                    </Link>
+                </th>
+                <td className={cn(cell, GP_VIS, 'text-right text-fg-2')}>{r.gp}</td>
+                <td className={cn(cell, recVis(showProjections), 'text-right text-fg-2')}>
+                    {r.w}-{r.l}-{r.otl}
+                </td>
+                <td className={cn(cell, 'text-right font-bold text-fg-1')}>{r.pts}</td>
+                {showProjections ? (
+                    <>
+                        <td className={cell}>{p ? <ProjCell avg={p.avgPoints} lo={p.p10} hi={p.p90} domain={domain} /> : <Dash />}</td>
+                        <td className={cell}>{p ? <OddsBar pct={p.playoffPct} /> : <Dash />}</td>
+                        {cols.d24 ? (
+                            <td className={cn(cell, D24_VIS, 'text-right')}>
+                                <Delta value={r.delta24} />
+                            </td>
+                        ) : null}
+                        {full && cols.trend ? (
+                            <td className={cn(cell, WIDE_VIS)}>
+                                <div className="flex justify-end">
+                                    {r.trend.length > 1 ? (
+                                        <>
+                                            <Sparkline values={r.trend} width={64} height={18} />
+                                            <span className="sr-only">
+                                                Playoff odds over the last {r.trend.length} days: from {fmtSimPct(r.trend[0])} to {fmtSimPct(r.trend[r.trend.length - 1])}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <Dash />
+                                    )}
+                                </div>
+                            </td>
+                        ) : null}
+                        {full ? <td className={cn(cell, WIDE_VIS, 'text-right text-fg-2')}>{p ? fmtSimPct(p.divisionPct) : <Dash />}</td> : null}
+                        <td className={cn(cell, 'text-right text-fg-2')}>{p ? fmtSimPct(p.cupPct) : <Dash />}</td>
+                    </>
+                ) : null}
+            </tr>
+            {open ? (
                 <>
-                    <td className={cell}>{p ? <ProjCell avg={p.avgPoints} lo={p.p10} hi={p.p90} domain={domain} /> : <Dash />}</td>
-                    <td className={cell}>{p ? <OddsBar pct={p.playoffPct} /> : <Dash />}</td>
-                    {cols.d24 ? (
-                        <td className={cn(cell, D24_VIS, 'text-right')}>
-                            <Delta value={r.delta24} />
-                        </td>
-                    ) : null}
-                    {full && cols.trend ? (
-                        <td className={cn(cell, WIDE_VIS)}>
-                            <div className="flex justify-end">
-                                {r.trend.length > 1 ? (
-                                    <>
+                    <tr className="lg:hidden">
+                        <td colSpan={span} className="!h-auto border-b border-line !bg-bg/50 !px-3 py-2">
+                            <dl className="flex flex-wrap gap-x-5 gap-y-1.5">
+                                <Detail label="GP" className="sm:hidden">
+                                    {r.gp}
+                                </Detail>
+                                <Detail label="W-L-O" className={showProjections ? 'md:hidden' : 'sm:hidden'}>
+                                    {r.w}-{r.l}-{r.otl}
+                                </Detail>
+                                {showProjections && p ? (
+                                    <Detail label="80%" className="sm:hidden">
+                                        {Math.round(p.p10)}–{Math.round(p.p90)} PTS
+                                    </Detail>
+                                ) : null}
+                                {showProjections && cols.d24 ? (
+                                    <Detail label="24H" className="md:hidden">
+                                        <Delta value={r.delta24} />
+                                    </Detail>
+                                ) : null}
+                                {trend ? (
+                                    <Detail label="30D">
                                         <Sparkline values={r.trend} width={64} height={18} />
                                         <span className="sr-only">
-                                            Playoff odds over the last {r.trend.length} days: from {fmtSimPct(r.trend[0])} to {fmtSimPct(r.trend[r.trend.length - 1])}
+                                            from {fmtSimPct(r.trend[0])} to {fmtSimPct(r.trend[r.trend.length - 1])}
                                         </span>
-                                    </>
-                                ) : (
-                                    <Dash />
-                                )}
-                            </div>
+                                    </Detail>
+                                ) : null}
+                                {full && p ? <Detail label="Div">{fmtSimPct(p.divisionPct)}</Detail> : null}
+                            </dl>
                         </td>
-                    ) : null}
-                    {full ? <td className={cn(cell, WIDE_VIS, 'text-right text-fg-2')}>{p ? fmtSimPct(p.divisionPct) : <Dash />}</td> : null}
-                    <td className={cn(cell, 'text-right text-fg-2')}>{p ? fmtSimPct(p.cupPct) : <Dash />}</td>
+                    </tr>
+                    {/* Keeps the zebra (nth-child) parity of the rows below. */}
+                    <tr hidden aria-hidden="true" />
                 </>
             ) : null}
-        </tr>
+        </>
+    );
+}
+
+function Detail({ label, className, children }: { label: string; className?: string; children: React.ReactNode }) {
+    return (
+        <div className={cn('flex items-center gap-1.5', className)}>
+            <dt className="text-micro uppercase tracking-label text-fg-3">{label}</dt>
+            <dd className="font-semibold tabular-nums text-fg-1">{children}</dd>
+        </div>
     );
 }
 

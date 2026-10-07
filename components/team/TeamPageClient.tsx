@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Segmented } from '@/components/ui/segmented';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { FilterSheet } from '@/components/ui/filter-sheet';
+import { shortSeasonTag } from '@/components/ui/stat-chip';
+import { scrollBehavior } from '@/lib/scroll';
 import { fetchJsonCached, teamUrl } from '@/utils/team-stats/client-cache';
 import { unpackGames } from '@/utils/team-stats/game-row';
 import { seasonGames, seasonLabel } from '@/utils/team-stats/season';
@@ -127,6 +129,51 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
     const label = seasonLabel(season);
     const prev = seasons.find(s => s !== seasons[0]);
 
+    // Phones: "26-27" labels (as on the Skaters tab) so Filters and the quick chips fit beside the season.
+    const seasonOptions = React.useMemo(
+        () =>
+            seasons.map(s => ({
+                value: s,
+                label: (
+                    <>
+                        <span className="sm:hidden">{shortSeasonTag(seasonLabel(s))}</span>
+                        <span className="max-sm:hidden">{seasonLabel(s)}</span>
+                    </>
+                ),
+                ariaLabel: seasonLabel(s),
+            })),
+        [seasons],
+    );
+
+    // Phones: the five tabs scroll sideways; fade the edge that hides more, keep the picked tab in view.
+    const tabsRef = React.useRef<HTMLDivElement>(null);
+    const [tabsEdges, setTabsEdges] = React.useState({ start: false, end: false });
+    const updateTabsFade = React.useCallback(() => {
+        const el = tabsRef.current;
+        if (!el) return;
+        const start = el.scrollLeft > 4;
+        const end = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+        setTabsEdges(prev => (prev.start === start && prev.end === end ? prev : { start, end }));
+    }, []);
+    React.useEffect(() => {
+        updateTabsFade();
+        const el = tabsRef.current;
+        if (!el || typeof ResizeObserver === 'undefined') return;
+        const ro = new ResizeObserver(updateTabsFade);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [updateTabsFade]);
+    React.useEffect(() => {
+        const el = tabsRef.current;
+        const active = el?.querySelector<HTMLElement>('[data-state=active]');
+        if (!el || !active || el.scrollWidth <= el.clientWidth) return;
+        const left = active.offsetLeft - el.offsetLeft;
+        if (left < el.scrollLeft || left + active.offsetWidth > el.scrollLeft + el.clientWidth) {
+            el.scrollTo({ left: Math.max(0, left - (el.clientWidth - active.offsetWidth) / 2), behavior: scrollBehavior() });
+        }
+    }, [tab]);
+    const tabsFade = tabsEdges.start && tabsEdges.end ? 'max-sm:edge-fade-x' : tabsEdges.end ? 'max-sm:edge-fade-right' : tabsEdges.start ? 'max-sm:edge-fade-left' : undefined;
+
     const changeSeason = (s: string) => {
         setSeason(s);
         setError(null);
@@ -143,7 +190,7 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
             className="flex flex-col gap-2.5"
         >
             <div className="flex flex-wrap items-center gap-2">
-                <TabsList aria-label="Team sections">
+                <TabsList ref={tabsRef} onScroll={updateTabsFade} aria-label="Team sections" className={tabsFade}>
                     <TabsTrigger value="games">Games</TabsTrigger>
                     <TabsTrigger value="charts">Charts</TabsTrigger>
                     <TabsTrigger value="skaters">Skaters</TabsTrigger>
@@ -153,16 +200,16 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
                 {/* One row on phones: season + quick chips scroll sideways instead of wrapping. */}
                 {tab === 'games' || tab === 'charts' || tab === 'breakdown' ? (
                     <div className="-mx-4 flex w-[calc(100%+2rem)] min-w-0 flex-nowrap items-center gap-2 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 [&>*]:shrink-0">
-                        <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={seasons.map(s => ({ value: s, label: seasonLabel(s) }))} />
+                        <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={seasonOptions} />
                         {tab === 'games' ? (
                             <>
-                                <FilterChip selected={filters.recent === 10} onSelectedChange={on => setFilters(f => ({ ...f, recent: on ? 10 : 'All' }))}>
+                                <FilterChip className="max-sm:order-2" selected={filters.recent === 10} onSelectedChange={on => setFilters(f => ({ ...f, recent: on ? 10 : 'All' }))}>
                                     L10
                                 </FilterChip>
-                                <FilterChip selected={filters.location === 'Home'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Home' : 'All' }))}>
+                                <FilterChip className="max-sm:order-2" selected={filters.location === 'Home'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Home' : 'All' }))}>
                                     Home
                                 </FilterChip>
-                                <FilterChip selected={filters.location === 'Away'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Away' : 'All' }))}>
+                                <FilterChip className="max-sm:order-2" selected={filters.location === 'Away'} onSelectedChange={on => setFilters(f => ({ ...f, location: on ? 'Away' : 'All' }))}>
                                     Away
                                 </FilterChip>
                                 <FilterSheet
@@ -170,6 +217,7 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
                                     title="Filters"
                                     onReset={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
                                     applyLabel={`${filtered.length} GP`}
+                                    triggerClassName="max-sm:order-1"
                                 >
                                     <FilterControls filters={filters} setFilters={setFilters} goalies={goalieNames} opponents={opponents} hasPlayoffs={hasPlayoffs} />
                                 </FilterSheet>
@@ -177,7 +225,7 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
                                     <button
                                         type="button"
                                         onClick={() => setFilters({ ...DEFAULT_GAME_FILTERS, ranges: {} })}
-                                        className="min-h-[34px] px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:min-h-11"
+                                        className="min-h-[34px] px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:min-h-11 max-sm:order-3"
                                     >
                                         Clear
                                     </button>

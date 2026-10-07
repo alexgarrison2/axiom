@@ -6,6 +6,9 @@ import { FilterChip } from '@/components/ui/filter-chip';
 import { cn } from '@/lib/utils';
 import { RANGE_FILTERS, type GameLevelFilters, type RangeKey, type TriState } from '@/utils/team-stats/filter';
 
+/** Segmented props for a filter sheet: on phones (bottom sheet) the options share the full row. */
+export const SHEET_SEGMENTED = { className: 'max-md:flex max-md:w-full', optionClassName: 'max-md:flex-1' } as const;
+
 /** Labelled block inside a filter sheet: 1-2 word mono label, then the control. */
 export function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
     const id = React.useId();
@@ -23,6 +26,7 @@ export function TriField({ label, value, onChange, labels = ['Any', 'Yes', 'No']
     return (
         <Field label={label}>
             <Segmented
+                {...SHEET_SEGMENTED}
                 label={label}
                 size="sm"
                 value={value}

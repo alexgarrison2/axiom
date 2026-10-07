@@ -36,7 +36,7 @@ export interface SeasonGame {
 }
 
 const SELECT =
-    'h-8 min-w-0 rounded-control border border-line bg-surface-1 px-2 text-caption uppercase tracking-wide text-fg-1 hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand coarse:h-11';
+    'h-8 min-w-0 rounded-control border border-line bg-surface-1 px-2 text-caption uppercase tracking-wide text-fg-1 hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand coarse:h-11 max-md:text-base max-md:normal-case max-md:tracking-normal';
 
 const packs = new Map<number, Promise<GameModel | null>>();
 function pack(id: number) {
@@ -51,9 +51,9 @@ function pack(id: number) {
     return packs.get(id)!;
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, className, children }: { label: string; className?: string; children: React.ReactNode }) {
     return (
-        <label className="flex min-w-0 flex-col gap-1">
+        <label className={cn('flex min-w-0 flex-col gap-1', className)}>
             <span className="text-micro uppercase tracking-label text-fg-3">{label}</span>
             {children}
         </label>
@@ -136,8 +136,8 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
     return (
         <div className="flex flex-col gap-8">
             <div className="panel z-20 flex flex-col gap-3 p-card lg:sticky lg:top-[calc(var(--appbar-h)+var(--vv-top,0px)+8px)] lg:shadow-[0_12px_32px_rgb(0_0_0/0.45)]">
-                <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4 lg:grid-cols-8">
-                    <Field label="Games">
+                <div className="grid grid-cols-6 gap-x-2 gap-y-2 sm:grid-cols-4 sm:gap-x-3 lg:grid-cols-8">
+                    <Field label="Games" className="max-sm:col-span-4">
                         <span className="flex items-center gap-1.5">
                             <select className={cn(SELECT, 'w-full')} value={f.lo} onChange={e => set({ lo: Number(e.target.value), hi: Math.max(f.hi, Number(e.target.value)) })} aria-label="From game">
                                 {games.map(g => (
@@ -156,7 +156,7 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
                             </select>
                         </span>
                     </Field>
-                    <Field label="Last">
+                    <Field label="Last" className="max-sm:col-span-2">
                         <select className={SELECT} value={f.last} onChange={e => set({ last: Number(e.target.value) })}>
                             <option value={0}>All</option>
                             {[5, 10, 20, 40].filter(k => k < n).map(k => (
@@ -166,14 +166,14 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
                             ))}
                         </select>
                     </Field>
-                    <Field label="Venue">
+                    <Field label="Venue" className="max-sm:col-span-2">
                         <select className={SELECT} value={f.venue} onChange={e => set({ venue: e.target.value as Filters['venue'] })}>
                             <option value="all">All</option>
                             <option value="home">Home</option>
                             <option value="road">Road</option>
                         </select>
                     </Field>
-                    <Field label="Result">
+                    <Field label="Result" className="max-sm:col-span-2">
                         <select className={SELECT} value={f.result} onChange={e => set({ result: e.target.value as Filters['result'] })}>
                             <option value="all">All</option>
                             <option value="W">Wins</option>
@@ -181,7 +181,7 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
                             <option value="OTL">OT / SO losses</option>
                         </select>
                     </Field>
-                    <Field label="Versus">
+                    <Field label="Versus" className="max-sm:col-span-2">
                         <select className={SELECT} value={f.vs} onChange={e => set({ vs: e.target.value })}>
                             <option value="all">Anyone</option>
                             <optgroup label="Conference">
@@ -204,13 +204,13 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
                             </optgroup>
                         </select>
                     </Field>
-                    <Field label="From">
+                    <Field label="From" className="max-sm:col-span-3">
                         <input type="date" className={cn(SELECT, 'normal-case')} value={f.from} min={games[0]?.date} max={games[n - 1]?.date} onChange={e => set({ from: e.target.value })} />
                     </Field>
-                    <Field label="To">
+                    <Field label="To" className="max-sm:col-span-3">
                         <input type="date" className={cn(SELECT, 'normal-case')} value={f.to} min={games[0]?.date} max={games[n - 1]?.date} onChange={e => set({ to: e.target.value })} />
                     </Field>
-                    <div className="flex items-end">
+                    <div className="flex items-end max-sm:col-span-6 max-sm:empty:hidden">
                         {dirty ? (
                             <button type="button" onClick={() => setF(init)} className="h-8 rounded-control px-2.5 text-micro uppercase tracking-label text-fg-3 hover:text-fg-1 coarse:h-11">
                                 Clear filters

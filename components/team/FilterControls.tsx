@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Segmented } from '@/components/ui/segmented';
-import { Field, RangeFields, TriField } from '@/components/teams-table/FilterFields';
+import { Field, RangeFields, SHEET_SEGMENTED, TriField } from '@/components/teams-table/FilterFields';
 import type { PeriodFilter } from '@/utils/team-stats/types';
 import type { Recent, TeamGameFilters } from './game-log-model';
 
@@ -24,6 +24,7 @@ export default function FilterControls({ filters, setFilters, goalies, opponents
             {hasPlayoffs ? (
                 <Field label="Games">
                     <Segmented
+                        {...SHEET_SEGMENTED}
                         label="Games"
                         size="sm"
                         value={filters.scope}
@@ -37,6 +38,7 @@ export default function FilterControls({ filters, setFilters, goalies, opponents
             ) : null}
             <Field label="Recent">
                 <Segmented
+                    {...SHEET_SEGMENTED}
                     label="Recent"
                     size="sm"
                     value={String(filters.recent)}
@@ -52,6 +54,7 @@ export default function FilterControls({ filters, setFilters, goalies, opponents
             </Field>
             <Field label="Location">
                 <Segmented
+                    {...SHEET_SEGMENTED}
                     label="Location"
                     size="sm"
                     value={filters.location}
@@ -65,6 +68,7 @@ export default function FilterControls({ filters, setFilters, goalies, opponents
             </Field>
             <Field label="Result">
                 <Segmented
+                    {...SHEET_SEGMENTED}
                     label="Result"
                     size="sm"
                     value={filters.result}
@@ -100,6 +104,7 @@ export default function FilterControls({ filters, setFilters, goalies, opponents
             </div>
             <Field label="Period">
                 <Segmented
+                    {...SHEET_SEGMENTED}
                     label="Period"
                     size="sm"
                     value={filters.period}

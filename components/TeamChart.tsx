@@ -105,7 +105,7 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
     return (
         <div className="panel flex flex-col gap-3 p-card">
             <div className="flex flex-wrap items-end gap-2">
-                <label className="flex min-w-[10rem] flex-1 flex-col gap-1 sm:max-w-[15rem]">
+                <label className="flex min-w-[10rem] flex-1 flex-col gap-1 max-sm:min-w-[7rem] sm:max-w-[15rem]">
                     <span className="label flex items-center gap-2">
                         Metric <span aria-hidden="true" className="inline-block h-0.5 w-4 rounded" style={{ background: primaryColor }} />
                     </span>
@@ -117,7 +117,7 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                         ))}
                     </select>
                 </label>
-                <label className="flex min-w-[10rem] flex-1 flex-col gap-1 sm:max-w-[15rem]">
+                <label className="flex min-w-[10rem] flex-1 flex-col gap-1 max-sm:min-w-[7rem] sm:max-w-[15rem]">
                     <span className="label flex items-center gap-2">
                         Vs <span aria-hidden="true" className="inline-block w-4 border-t-2 border-dashed" style={{ borderColor: COMPARE_COLOR }} />
                     </span>
@@ -130,10 +130,11 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                         ))}
                     </select>
                 </label>
-                <Segmented label="Home or away games" size="sm" value={loc} onChange={setLoc} options={(['All', 'Home', 'Away'] as Loc[]).map(v => ({ value: v, label: v }))} />
+                <Segmented label="Home or away games" size="sm" optionClassName="max-sm:px-2" value={loc} onChange={setLoc} options={(['All', 'Home', 'Away'] as Loc[]).map(v => ({ value: v, label: v }))} />
                 <Segmented
                     label="Cumulative or rolling"
                     size="sm"
+                    optionClassName="max-sm:px-2"
                     value={mode}
                     onChange={setMode}
                     options={[
@@ -142,7 +143,7 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                     ]}
                 />
                 {mode === 'rolling' ? (
-                    <label className="flex min-h-8 items-center gap-2 text-micro uppercase tracking-label text-fg-3">
+                    <label className="flex min-h-8 items-center gap-2 text-micro uppercase tracking-label text-fg-3 coarse:min-h-11">
                         Window
                         <input type="range" min={3} max={25} value={win} onChange={e => setWin(Number(e.target.value))} className="w-32 accent-[rgb(var(--brand-rgb))]" aria-valuetext={`${win} games`} />
                         <span className="w-6 tabular-nums text-fg-1">{win}</span>

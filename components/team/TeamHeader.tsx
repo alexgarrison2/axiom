@@ -113,8 +113,8 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                         const prev = gp === 0 && prevKpis ? prevKpis[k.key] : null;
                         const rank = cur != null ? (kpis?.ranked ? kpis.ranks[k.key] : null) : prev != null ? prevKpis!.ranks[k.key] : null;
                         return (
-                            <div key={k.key} className="tile min-w-0 bg-bg/40 px-2 py-1.5 md:px-3 md:py-2">
-                                <dt className="flex items-center gap-1 truncate text-micro font-medium uppercase tracking-[0.1em] text-fg-3 md:tracking-label">
+                            <div key={k.key} className="tile min-w-0 bg-bg/40 px-2 py-1.5 max-[359px]:px-1.5 md:px-3 md:py-2">
+                                <dt className="flex items-center gap-1 truncate text-micro font-medium uppercase tracking-[0.1em] text-fg-3 max-[359px]:tracking-normal md:tracking-label">
                                     {k.label}
                                 </dt>
                                 <dd className={cn('font-display text-[17px] font-bold leading-6 tabular-nums md:text-[22px] md:leading-7', cur != null ? 'text-fg-1' : 'text-fg-3')}>

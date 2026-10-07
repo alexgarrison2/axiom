@@ -159,9 +159,32 @@ function SeriesDetail({ series: s, archive }: { series: ArchiveSeries; archive: 
     const teamNames = Object.fromEntries(Object.entries(archive.teams).map(([k, v]) => [k, v.short]));
     const colors = clashSafePair(s.top.tri, s.bottom.tri);
     const h2h = archive.h2h[`${s.top.tri}_${s.bottom.tri}`] ?? archive.h2h[`${s.bottom.tri}_${s.top.tri}`] ?? [];
+    // Below lg the panel opens under the totals: bring its top (game picker, then the map) into view, again as
+    // the lazily loaded panel grows (until the viewer touches the page); closing stays put.
+    const settle = React.useRef(0);
+    React.useEffect(() => {
+        const el = analysisRef.current;
+        if (!el || typeof ResizeObserver === 'undefined') return;
+        const stop = () => (settle.current = 0);
+        const ro = new ResizeObserver(() => {
+            if (settle.current > Date.now()) scrollIntoViewSafe(el, { block: 'start' });
+        });
+        ro.observe(el);
+        window.addEventListener('touchstart', stop, { passive: true });
+        window.addEventListener('wheel', stop, { passive: true });
+        return () => {
+            ro.disconnect();
+            window.removeEventListener('touchstart', stop);
+            window.removeEventListener('wheel', stop);
+        };
+    }, []);
     const open = (id: string) => {
+        const opening = analysisId !== id;
         setAnalysisId(prev => (prev === id ? null : id));
-        requestAnimationFrame(() => scrollIntoViewSafe(analysisRef.current, { block: 'nearest' }));
+        const narrow = window.matchMedia('(max-width: 1023px)').matches;
+        if (narrow && !opening) return;
+        if (narrow) settle.current = Date.now() + 2000;
+        requestAnimationFrame(() => scrollIntoViewSafe(analysisRef.current, { block: narrow ? 'start' : 'nearest' }));
     };
 
     return (
@@ -282,7 +305,14 @@ function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open:
                     onClick={onOpen}
                     className="ml-auto inline-flex min-h-8 items-center gap-1 text-micro font-medium uppercase tracking-[0.14em] text-brand hover:underline coarse:min-h-11"
                 >
-                    {open ? 'Hide' : 'Shot map ▸'}
+                    {open ? (
+                        'Hide'
+                    ) : (
+                        <>
+                            <span className="sm:hidden">Map ▸</span>
+                            <span className="max-sm:hidden">Shot map ▸</span>
+                        </>
+                    )}
                     <span className="sr-only"> for game {g.n}</span>
                 </button>
             ) : null}

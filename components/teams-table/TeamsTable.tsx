@@ -25,7 +25,8 @@ import {
     COLUMN_BY_KEY, COLUMN_GROUPS, DEFAULT_HIDDEN, SSR_GROUPS, HEAT_BAD, HEAT_FULL_GP, HEAT_GOOD, HEAT_MAX_ALPHA, PRESETS, columnValue, heatTint, leaguePercentile, sampleWeight,
     type StatColumn,
 } from './columns';
-import { RangeFields } from './FilterFields';
+import { FilterSheet } from '@/components/ui/filter-sheet';
+import { Field, RangeFields } from './FilterFields';
 import { HeaderCell, type SortDir } from './HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from './table-style';
 import { TableScroller } from './TableScroller';
@@ -331,6 +332,17 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const onSort = (key: string) =>
         setSort(s => (s.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: key === 'ranking' ? 'asc' : 'desc' }));
 
+    // Phones: "26-27" season labels so the switcher sits beside the heading (as on the team page).
+    const seasonOptions = TEAM_SEASONS.map(s => ({
+        value: s,
+        label: (
+            <>
+                <span className="sm:hidden">{shortSeasonTag(seasonLabel(s))}</span>
+                <span className="max-sm:hidden">{seasonLabel(s)}</span>
+            </>
+        ),
+        ariaLabel: seasonLabel(s),
+    }));
     const active = activeFilterCount(filters);
     const chips = activeChips(filters, setFilters);
 
@@ -382,11 +394,21 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                         <span aria-hidden="true" className="hidden items-center gap-2 whitespace-nowrap text-micro font-medium uppercase tracking-label text-fg-3 md:flex">
                             {captionParts}
                         </span>
-                        <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={TEAM_SEASONS.map(s => ({ value: s, label: seasonLabel(s) }))} />
+                        <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={seasonOptions} />
                     </div>
                 }
             />
 
+            {/* Phones and tablets (incl. landscape phones): every filter and column choice in two sheets; the active filters stay on the page. */}
+            <div className="flex flex-wrap items-center gap-2 lg:hidden">
+                <FilterSheet activeCount={active} onReset={() => setFilters({ ...DEFAULT_FILTERS, ranges: {} })}>
+                    <FilterBar filters={filters} setF={setF} setFilters={setFilters} allowPlayoffs={allowPlayoffs} allowBracket={allowBracket} chips={chips} perGameOpen sheet />
+                </FilterSheet>
+                <FilterSheet title="Columns" triggerLabel="Columns">
+                    <ColumnPicker hidden={hidden} setHidden={setHidden} ratingsMissing={ratingsMissing} sheet />
+                </FilterSheet>
+                {chips.length > 0 ? <ActiveChips chips={chips} /> : null}
+            </div>
             <FilterBar filters={filters} setF={setF} setFilters={setFilters} allowPlayoffs={allowPlayoffs} allowBracket={allowBracket} chips={chips} perGameOpen={perGameOpen} />
             <ColumnPicker
                 hidden={hidden}
@@ -606,8 +628,9 @@ function Legend({ clinch }: { clinch: boolean }) {
 
 const CLINCH_SHORT: Record<string, string> = { x: 'Playoffs', y: 'Conf', z: 'Div', p: 'Pres', e: 'Out' };
 
-/** One filter control; its label is the accessible name (the options read for themselves). */
-function Group({ label, children }: { label: string; children: React.ReactNode }) {
+/** One filter control; its label is the accessible name (the options read for themselves). In the phone sheet it is a labelled Field. */
+function Group({ label, sheet, children }: { label: string; sheet?: boolean; children: React.ReactNode }) {
+    if (sheet) return <Field label={label}>{children}</Field>;
     return (
         <div role="group" aria-label={label} title={label} className="flex min-w-0 items-center">
             {children}
@@ -621,11 +644,12 @@ const hasPerGame = (f: TableFilters) => f.ppg !== 'All' || f.ppga !== 'All' || f
 const CHIP = 'min-h-7 px-2.5 tracking-wide coarse:min-h-9';
 
 /**
- * Every filter, always on screen: no drawer, no extra taps. Per-game filters
- * (PP goal, first goal, ranges) open inline under the bar.
+ * Every filter, always on screen from lg up: no drawer, no extra taps.
+ * Per-game filters (PP goal, first goal, ranges) open inline under the bar.
+ * On phones the same controls stack in a bottom sheet (`sheet`).
  */
 function FilterBar({
-    filters, setF, setFilters, allowPlayoffs, allowBracket, chips, perGameOpen,
+    filters, setF, setFilters, allowPlayoffs, allowBracket, chips, perGameOpen, sheet,
 }: {
     filters: TableFilters;
     setF: <K extends keyof TableFilters>(k: K, v: TableFilters[K]) => void;
@@ -634,6 +658,7 @@ function FilterBar({
     allowBracket: boolean;
     chips: { key: string; label: string; clear: () => void }[];
     perGameOpen: boolean;
+    sheet?: boolean;
 }) {
     const more = perGameOpen;
     const views: { value: TableView; label: string }[] = [
@@ -643,135 +668,170 @@ function FilterBar({
         ...(allowBracket ? [{ value: 'bracket' as const, label: 'Bracket' }] : []),
     ];
     const pairedView = filters.view === 'today' || filters.view === 'tomorrow';
-    return (
-        <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                {allowPlayoffs ? (
-                    <Group label="Games">
-                        <Segmented
-                            label="Games"
-                            size="sm"
-                            value={filters.scope}
-                            onChange={v => setF('scope', v)}
-                            options={[
-                                { value: 'regular', label: 'Regular' },
-                                { value: 'playoffs', label: 'Playoffs' },
-                            ]}
-                        />
-                    </Group>
-                ) : null}
-                <Group label="Teams">
-                    <Segmented label="Teams" size="sm" value={filters.view} onChange={v => setF('view', v)} options={views} />
-                </Group>
-                <Group label="Location">
+    const chipCls = sheet ? undefined : CHIP;
+    const controls = (
+        <>
+            {allowPlayoffs ? (
+                <Group label="Games" sheet={sheet}>
                     <Segmented
-                        label="Location"
+                        label="Games"
                         size="sm"
-                        value={filters.location}
-                        onChange={v => setF('location', v)}
+                        block={sheet}
+                        value={filters.scope}
+                        onChange={v => setF('scope', v)}
                         options={[
-                            { value: 'All', label: 'All' },
-                            { value: 'Home', label: 'Home' },
-                            { value: 'Away', label: 'Away' },
+                            { value: 'regular', label: 'Regular' },
+                            { value: 'playoffs', label: 'Playoffs' },
                         ]}
                     />
                 </Group>
-                <Group label="Recent">
-                    <Segmented
-                        label="Recent"
-                        size="sm"
-                        value={String(filters.recent)}
-                        onChange={v => setF('recent', (v === 'All' ? 'All' : Number(v)) as Recent)}
-                        options={[
-                            { value: 'All', label: 'Season' },
-                            { value: '5', label: 'L5' },
-                            { value: '10', label: 'L10' },
-                            { value: '20', label: 'L20' },
-                        ]}
-                    />
-                </Group>
-                <Group label="Period">
-                    <Segmented
-                        label="Period"
-                        size="sm"
-                        value={filters.period}
-                        onChange={v => setF('period', v)}
-                        options={(['All', '1st', '2nd', '3rd', 'OT'] as PeriodFilter[]).map(p => ({ value: p, label: p === 'All' ? 'Game' : p }))}
-                    />
-                </Group>
-                <Group label="Playoff spot">
-                    <Segmented
-                        label="Playoff spot"
-                        size="sm"
-                        value={filters.position}
-                        onChange={v => setF('position', v)}
-                        options={[
-                            { value: 'All', label: 'All' },
-                            { value: 'In', label: 'In' },
-                            { value: 'Out', label: 'Out' },
-                        ]}
-                    />
-                </Group>
-                <Group label="Division">
-                    <div role="group" aria-label="Division" className="flex flex-wrap gap-1">
-                        {DIVISIONS.map(d => (
-                            <FilterChip
-                                key={d}
-                                className={CHIP}
-                                selected={filters.divisions.includes(d)}
-                                onSelectedChange={() => setF('divisions', filters.divisions.includes(d) ? filters.divisions.filter(x => x !== d) : [...filters.divisions, d])}
-                            >
-                                <span title={DIVISION_LABEL[d]}>{DIVISION_LABEL[d].slice(0, 3)}</span>
+            ) : null}
+            <Group label="Teams" sheet={sheet}>
+                <Segmented label="Teams" size="sm" block={sheet} value={filters.view} onChange={v => setF('view', v)} options={views} />
+            </Group>
+            <Group label="Location" sheet={sheet}>
+                <Segmented
+                    label="Location"
+                    size="sm"
+                    block={sheet}
+                    value={filters.location}
+                    onChange={v => setF('location', v)}
+                    options={[
+                        { value: 'All', label: 'All' },
+                        { value: 'Home', label: 'Home' },
+                        { value: 'Away', label: 'Away' },
+                    ]}
+                />
+            </Group>
+            <Group label="Recent" sheet={sheet}>
+                <Segmented
+                    label="Recent"
+                    size="sm"
+                    block={sheet}
+                    value={String(filters.recent)}
+                    onChange={v => setF('recent', (v === 'All' ? 'All' : Number(v)) as Recent)}
+                    options={[
+                        { value: 'All', label: 'Season' },
+                        { value: '5', label: 'L5' },
+                        { value: '10', label: 'L10' },
+                        { value: '20', label: 'L20' },
+                    ]}
+                />
+            </Group>
+            <Group label="Period" sheet={sheet}>
+                <Segmented
+                    label="Period"
+                    size="sm"
+                    block={sheet}
+                    value={filters.period}
+                    onChange={v => setF('period', v)}
+                    options={(['All', '1st', '2nd', '3rd', 'OT'] as PeriodFilter[]).map(p => ({ value: p, label: p === 'All' ? 'Game' : p }))}
+                />
+            </Group>
+            <Group label="Playoff spot" sheet={sheet}>
+                <Segmented
+                    label="Playoff spot"
+                    size="sm"
+                    block={sheet}
+                    value={filters.position}
+                    onChange={v => setF('position', v)}
+                    options={[
+                        { value: 'All', label: 'All' },
+                        { value: 'In', label: 'In' },
+                        { value: 'Out', label: 'Out' },
+                    ]}
+                />
+            </Group>
+            <Group label="Division" sheet={sheet}>
+                <div role="group" aria-label="Division" className={cn('flex flex-wrap', sheet ? 'gap-1.5' : 'gap-1')}>
+                    {DIVISIONS.map(d => (
+                        <FilterChip
+                            key={d}
+                            className={chipCls}
+                            selected={filters.divisions.includes(d)}
+                            onSelectedChange={() => setF('divisions', filters.divisions.includes(d) ? filters.divisions.filter(x => x !== d) : [...filters.divisions, d])}
+                        >
+                            <span title={DIVISION_LABEL[d]}>{DIVISION_LABEL[d].slice(0, 3)}</span>
+                        </FilterChip>
+                    ))}
+                </div>
+            </Group>
+            {pairedView ? (
+                <Group label="Split by" sheet={sheet}>
+                    <div role="group" aria-label="Split by" className="flex flex-wrap gap-1.5">
+                        {([['withLocation', 'Home/Away'], ['withStarter', 'Starter'], ['withDow', 'Weekday']] as const).map(([k, label]) => (
+                            <FilterChip key={k} className={chipCls} selected={filters[k]} onSelectedChange={() => setFilters(f => ({ ...f, [k]: !f[k] }))}>
+                                {label}
                             </FilterChip>
                         ))}
                     </div>
                 </Group>
-                {pairedView ? (
-                    <Group label="Split by">
-                        <div role="group" aria-label="Split by" className="flex flex-wrap gap-1.5">
-                            {([['withLocation', 'Home/Away'], ['withStarter', 'Starter'], ['withDow', 'Weekday']] as const).map(([k, label]) => (
-                                <FilterChip key={k} className={CHIP} selected={filters[k]} onSelectedChange={() => setFilters(f => ({ ...f, [k]: !f[k] }))}>
-                                    {label}
-                                </FilterChip>
-                            ))}
-                        </div>
-                    </Group>
-                ) : null}
+            ) : null}
+        </>
+    );
+    const perGame = ([['ppg', 'PP goal', ['Any', 'Yes', 'No']], ['ppga', 'PP goal against', ['Any', 'Yes', 'No']], ['scoredFirst', 'First goal', ['Any', 'For', 'Against']]] as const).map(([k, label, names]) => (
+        <Group key={k} label={label} sheet={sheet}>
+            <Segmented
+                label={label}
+                size="sm"
+                block={sheet}
+                value={filters[k]}
+                onChange={v => setF(k, v)}
+                options={(['All', 'Yes', 'No'] as const).map((value, i) => ({ value, label: names[i] }))}
+            />
+        </Group>
+    ));
+    const ranges = <RangeFields ranges={filters.ranges} onChange={(k, v) => setFilters(f => ({ ...f, ranges: { ...f.ranges, [k]: v } }))} />;
+
+    if (sheet) {
+        return (
+            <div>
+                {controls}
+                {perGame}
+                <div className="py-3">{ranges}</div>
             </div>
+        );
+    }
+    return (
+        <div className="hidden flex-col gap-2 lg:flex">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">{controls}</div>
             {more ? (
                 <div className="panel flex flex-col gap-3 px-3 py-3">
-                    <div className="flex flex-wrap gap-x-5 gap-y-2.5">
-                        {([['ppg', 'PP goal', ['Any', 'Yes', 'No']], ['ppga', 'PP goal against', ['Any', 'Yes', 'No']], ['scoredFirst', 'First goal', ['Any', 'For', 'Against']]] as const).map(([k, label, names]) => (
-                            <Group key={k} label={label}>
-                                <Segmented
-                                    label={label}
-                                    size="sm"
-                                    value={filters[k]}
-                                    onChange={v => setF(k, v)}
-                                    options={(['All', 'Yes', 'No'] as const).map((value, i) => ({ value, label: names[i] }))}
-                                />
-                            </Group>
-                        ))}
-                    </div>
-                    <RangeFields ranges={filters.ranges} onChange={(k, v) => setFilters(f => ({ ...f, ranges: { ...f.ranges, [k]: v } }))} />
+                    <div className="flex flex-wrap gap-x-5 gap-y-2.5">{perGame}</div>
+                    {ranges}
                 </div>
             ) : null}
-            {chips.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
-                    {chips.map(c => (
-                        <FilterChip key={c.key} className={CHIP} selected removable onClick={c.clear} aria-label={`Remove filter: ${c.label}`}>
-                            {c.label}
-                        </FilterChip>
-                    ))}
-                </div>
-            ) : null}
+            {chips.length > 0 ? <ActiveChips chips={chips} /> : null}
+        </div>
+    );
+}
+
+/** The removable summary of every active filter. */
+function ActiveChips({ chips }: { chips: { key: string; label: string; clear: () => void }[] }) {
+    return (
+        <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+            {chips.map(c => (
+                <FilterChip key={c.key} className={CHIP} selected removable onClick={c.clear} aria-label={`Remove filter: ${c.label}`}>
+                    {c.label}
+                </FilterChip>
+            ))}
         </div>
     );
 }
 
 /** Every column starts on. Presets narrow to one topic; chips below hide or show single columns. */
-function ColumnPicker({ hidden, setHidden, ratingsMissing, extra }: { hidden: string[]; setHidden: React.Dispatch<React.SetStateAction<string[]>>; ratingsMissing: boolean; extra?: React.ReactNode }) {
-    const [open, setOpen] = React.useState(false);
+function ColumnPicker({
+    hidden, setHidden, ratingsMissing, extra, sheet,
+}: {
+    hidden: string[];
+    setHidden: React.Dispatch<React.SetStateAction<string[]>>;
+    ratingsMissing: boolean;
+    extra?: React.ReactNode;
+    /** Phone sheet: presets, then every group's chips, always open. */
+    sheet?: boolean;
+}) {
+    const [isOpen, setOpen] = React.useState(false);
+    const open = sheet || isOpen;
     const hiddenSet = new Set(hidden);
     const allKeys = COLUMN_GROUPS.flatMap(g => g.cols).filter(k => !(ratingsMissing && COLUMN_BY_KEY.get(k)?.rating));
     const shown = allKeys.filter(k => !hiddenSet.has(k)).length;
@@ -779,37 +839,49 @@ function ColumnPicker({ hidden, setHidden, ratingsMissing, extra }: { hidden: st
     const setGroup = (cols: string[], on: boolean) => setHidden(h => (on ? h.filter(k => !cols.includes(k)) : [...new Set([...h, ...cols])]));
     const preset = (cols: string[]) => setHidden(allKeys.filter(k => !cols.includes(k)));
     const isPreset = (cols: string[]) => allKeys.every(k => cols.includes(k) === !hiddenSet.has(k));
+    const chipCls = sheet ? undefined : CHIP;
+    const presets = (
+        <>
+            <FilterChip className={chipCls} selected={isPreset(allKeys.filter(k => !DEFAULT_HIDDEN.includes(k)))} onSelectedChange={() => setHidden(DEFAULT_HIDDEN)}>
+                Default
+            </FilterChip>
+            <FilterChip className={chipCls} selected={hidden.length === 0} onSelectedChange={() => setHidden([])}>
+                All
+            </FilterChip>
+            {PRESETS.map(pr => (
+                <FilterChip key={pr.key} className={chipCls} selected={isPreset(pr.cols)} onSelectedChange={() => preset(pr.cols)}>
+                    {pr.label}
+                </FilterChip>
+            ))}
+        </>
+    );
     return (
-        <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-                <span className="mr-1 text-micro uppercase tracking-wide text-fg-3">Columns</span>
-                <FilterChip className={CHIP} selected={isPreset(allKeys.filter(k => !DEFAULT_HIDDEN.includes(k)))} onSelectedChange={() => setHidden(DEFAULT_HIDDEN)}>
-                    Default
-                </FilterChip>
-                <FilterChip className={CHIP} selected={hidden.length === 0} onSelectedChange={() => setHidden([])}>
-                    All
-                </FilterChip>
-                {PRESETS.map(pr => (
-                    <FilterChip key={pr.key} className={CHIP} selected={isPreset(pr.cols)} onSelectedChange={() => preset(pr.cols)}>
-                        {pr.label}
-                    </FilterChip>
-                ))}
-                <span className="ml-auto flex items-center gap-1">
-                    {extra}
-                    <FilterChip className={CHIP} selected={open} onSelectedChange={setOpen} aria-expanded={open} count={shown}>
-                        Customize
-                    </FilterChip>
-                </span>
-            </div>
+        <div className={sheet ? 'flex flex-col' : 'hidden flex-col gap-2 lg:flex'}>
+            {sheet ? (
+                <Field label="Preset">
+                    <div className="flex flex-wrap gap-1.5">{presets}</div>
+                </Field>
+            ) : (
+                <div className="flex flex-wrap items-center gap-1">
+                    <span className="mr-1 text-micro uppercase tracking-wide text-fg-3">Columns</span>
+                    {presets}
+                    <span className="ml-auto flex items-center gap-1">
+                        {extra}
+                        <FilterChip className={CHIP} selected={open} onSelectedChange={setOpen} aria-expanded={open} count={shown}>
+                            Customize
+                        </FilterChip>
+                    </span>
+                </div>
+            )}
             {open ? (
-                <div className="panel grid gap-x-6 gap-y-3 px-3 py-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className={cn('grid gap-x-6', sheet ? 'gap-y-4 py-3' : 'panel gap-y-3 px-3 py-3 md:grid-cols-2 xl:grid-cols-3')}>
                     {COLUMN_GROUPS.map(g => {
                         const cols = g.cols.filter(k => !(ratingsMissing && COLUMN_BY_KEY.get(k)?.rating));
                         if (!cols.length) return null;
                         const on = cols.every(k => !hiddenSet.has(k));
                         return (
                             <div key={g.name} role="group" aria-label={g.name} className="flex flex-col gap-1.5">
-                                <button type="button" onClick={() => setGroup(cols, !on)} className="self-start text-micro font-medium uppercase tracking-wide text-fg-2 hover:text-fg-1">
+                                <button type="button" onClick={() => setGroup(cols, !on)} className={cn('self-start text-micro font-medium uppercase tracking-wide text-fg-2 hover:text-fg-1', sheet && 'min-h-10')}>
                                     {g.name} <span className="text-fg-3">{on ? '· hide all' : '· show all'}</span>
                                 </button>
                                 <div className="flex flex-wrap gap-1">
