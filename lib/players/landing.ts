@@ -14,6 +14,8 @@ export interface SeasonLine {
     league: string;
     team: string;
     gameType: number;
+    /** The feed's order within a season (1 = first club, 2 = traded-to club, 11+ = tournaments). */
+    seq: number;
     gp: number;
     // skaters
     g?: number;
@@ -56,6 +58,8 @@ export interface Profile {
     draft: { year: number; team: string; round: number; pick: number; overall: number } | null;
     seasons: SeasonLine[];
     career: SeasonLine | null;
+    /** NHL playoff career totals (careerTotals.playoffs), null without playoff games. */
+    careerPlayoffs: SeasonLine | null;
     awards: { name: string; seasons: number[] }[];
 }
 
@@ -63,7 +67,7 @@ type Raw = Record<string, unknown> & {
     firstName?: L;
     lastName?: L;
     seasonTotals?: Record<string, unknown>[];
-    careerTotals?: { regularSeason?: Record<string, unknown> };
+    careerTotals?: { regularSeason?: Record<string, unknown>; playoffs?: Record<string, unknown> };
     draftDetails?: Record<string, unknown>;
     awards?: { trophy?: L; seasons?: { seasonId: number }[] }[];
     birthCity?: L;
@@ -78,6 +82,7 @@ function line(r: Record<string, unknown>, goalie: boolean): SeasonLine {
         league: String(r.leagueAbbrev ?? 'NHL'),
         team: t(r.teamName as L) || t(r.teamCommonName as L),
         gameType: Number(r.gameTypeId ?? 2),
+        seq: num(r.sequence) ?? 0,
         gp: num(r.gamesPlayed) ?? 0,
     };
     if (goalie) {
@@ -121,7 +126,8 @@ export async function playerProfile(id: number): Promise<Profile | null> {
           }
         : null;
     const career = d.careerTotals?.regularSeason ? { ...line(d.careerTotals.regularSeason, goalie), season: 0, league: 'NHL', team: 'Career' } : null;
-    if (career && !goalie && career.p == null && career.g != null && career.a != null) career.p = career.g + career.a;
+    const careerPlayoffs = d.careerTotals?.playoffs && num(d.careerTotals.playoffs.gamesPlayed) ? { ...line(d.careerTotals.playoffs, goalie), season: 0, league: 'NHL', team: 'Career', gameType: 3 } : null;
+    for (const c of [career, careerPlayoffs]) if (c && !goalie && c.p == null && c.g != null && c.a != null) c.p = c.g + c.a;
     return {
         id: Number(d.playerId),
         first: t(d.firstName),
@@ -144,6 +150,7 @@ export async function playerProfile(id: number): Promise<Profile | null> {
         draft,
         seasons: (d.seasonTotals ?? []).map(r => line(r, goalie)),
         career,
+        careerPlayoffs,
         awards: (d.awards ?? []).map(a => ({ name: t(a.trophy), seasons: (a.seasons ?? []).map(s => s.seasonId) })),
     };
 }

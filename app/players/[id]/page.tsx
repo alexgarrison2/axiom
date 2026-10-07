@@ -7,7 +7,6 @@ import { legibleOn } from '@/components/ui/color';
 import { PonyGames } from '@/components/player/PonyGames';
 import { GameLog } from '@/components/player/GameLog';
 import type { TrendGame } from '@/components/player/PonyTrend';
-import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
 import { GS_PARTS, type GsPart } from '@/lib/game/analytics';
 import { leaderboard, loadPonySeason, playerGames, ponySeasons, DEFAULT_FILTERS, type GoalieGame, type SkaterGame } from '@/lib/pony/data';
@@ -19,6 +18,8 @@ import { loadWowy } from '@/lib/players/wowy-server';
 import { SEASON_ID } from '@/lib/season';
 import { IsolatedImpact } from '@/components/player/IsolatedImpact';
 import { AwardShelf } from '@/components/player/AwardShelf';
+import { CareerTable } from '@/components/player/CareerTable';
+import { CareerSwitch } from '@/components/player/CareerSwitch';
 import { loadIsolate } from '@/lib/players/isolate-server';
 import PlayerSwitcher from '@/components/player/PlayerSwitcher';
 
@@ -32,10 +33,6 @@ type Params = { id: string };
 type Search = Record<string, string | string[] | undefined>;
 
 const PANEL = '#0a0e15';
-// Below lg the wide tables scroll sideways under a pinned first column.
-const PIN = 'max-lg:sticky max-lg:left-0 max-lg:z-10 max-lg:bg-surface-1';
-// The pinned cell's right hairline (a pseudo-element: collapsed table cells drop box-shadow).
-const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:after:inset-y-0 max-lg:after:right-0 max-lg:after:w-px max-lg:after:bg-line-strong max-lg:after:content-['']";
 // Flat panel fill under pinned columns, so the pinned cells match it.
 const FLAT = 'max-lg:bg-none max-lg:bg-surface-1';
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
@@ -153,6 +150,8 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
     const imp = impactRow(pid);
     const nhl = (profile?.seasons ?? []).filter(s => s.league === 'NHL' && s.gameType === 2);
     const other = (profile?.seasons ?? []).filter(s => s.league !== 'NHL' && s.gameType === 2);
+    const nhlPlayoffs = (profile?.seasons ?? []).filter(s => s.league === 'NHL' && s.gameType === 3);
+    const otherPlayoffs = (profile?.seasons ?? []).filter(s => s.league !== 'NHL' && s.gameType === 3);
     const thisSeason = nhl.find(s => String(s.season) === cur?.s) ?? nhl[nhl.length - 1] ?? null;
     const age = ageOn(profile?.birthDate ?? null);
     const seasonQ = (s: string) => (s === seasons[0] ? `/players/${pid}` : `/players/${pid}?season=${s}`);
@@ -351,20 +350,15 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                 {/* Career by season (NHL), then other leagues. */}
                 {nhl.length ? (
                     <section aria-labelledby="career-h" className="flex flex-col gap-3">
-                        <h2 id="career-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
-                            Career
-                        </h2>
-                        <CareerTable lines={nhl} career={profile?.career ?? null} goalie={goalie} />
-                        {other.length ? (
-                            <details className={cn('group panel max-lg:overflow-hidden', FLAT)}>
-                                <summary className="cursor-pointer list-none px-card py-3 text-micro uppercase tracking-label text-fg-3 hover:text-fg-1">
-                                    Before the NHL and other leagues · {other.length} seasons
-                                </summary>
-                                <div className="border-t border-line">
-                                    <CareerTable lines={other} career={null} goalie={goalie} bare showLeague />
-                                </div>
-                            </details>
-                        ) : null}
+                        <CareerSwitch
+                            initial={sp.career === 'playoffs' ? 'playoffs' : 'regular'}
+                            regular={<CareerViews nhl={nhl} other={other} career={profile?.career ?? null} goalie={goalie} birthDate={profile?.birthDate ?? null} />}
+                            playoffs={
+                                nhlPlayoffs.length ? (
+                                    <CareerViews nhl={nhlPlayoffs} other={otherPlayoffs} career={profile?.careerPlayoffs ?? null} goalie={goalie} birthDate={profile?.birthDate ?? null} />
+                                ) : null
+                            }
+                        />
                     </section>
                 ) : null}
 
@@ -381,74 +375,21 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
     );
 }
 
-function CareerTable({ lines, career, goalie, bare, showLeague }: { lines: SeasonLine[]; career: SeasonLine | null; goalie: boolean; bare?: boolean; showLeague?: boolean }) {
-    const cols: [string, (s: SeasonLine) => React.ReactNode][] = goalie
-        ? [
-              ['GP', s => s.gp],
-              ['W', s => s.w ?? '—'],
-              ['L', s => s.l ?? '—'],
-              ['OTL', s => s.otl ?? '—'],
-              ['GAA', s => (s.gaa != null ? s.gaa.toFixed(2) : '—')],
-              ['SV%', s => (s.svPct != null ? s.svPct.toFixed(3).replace(/^0/, '') : '—')],
-              ['SO', s => s.so ?? '—'],
-          ]
-        : [
-              ['GP', s => s.gp],
-              ['G', s => s.g ?? '—'],
-              ['A', s => s.a ?? '—'],
-              ['P', s => s.p ?? '—'],
-              ['+/−', s => (s.pm != null ? (s.pm > 0 ? `+${s.pm}` : s.pm) : '—')],
-              ['PIM', s => s.pim ?? '—'],
-              ['PPG', s => s.ppg ?? '—'],
-              ['SOG', s => s.shots ?? '—'],
-              ['S%', s => (s.shPct != null ? `${(s.shPct * 100).toFixed(1)}` : '—')],
-              ['TOI', s => s.toi ?? '—'],
-          ];
+/** One career view (regular season or playoffs): the NHL table, then the other leagues behind a tap. */
+function CareerViews({ nhl, other, career, goalie, birthDate }: { nhl: SeasonLine[]; other: SeasonLine[]; career: SeasonLine | null; goalie: boolean; birthDate: string | null }) {
     return (
-        <ScrollRegion label={showLeague ? 'Other leagues' : 'NHL career'} stickyStart className={cn(!bare && cn('panel', FLAT))}>
-            <table className="w-full min-w-[40rem] border-collapse text-caption tabular-nums">
-                <thead>
-                    <tr className="border-b border-line text-micro uppercase tracking-label text-fg-3">
-                        <th className={cn('px-3 py-2 text-left font-semibold', PIN, PIN_EDGE)}>Season</th>
-                        <th className="px-2 py-2 text-left font-semibold">{showLeague ? 'League · team' : 'Team'}</th>
-                        {cols.map(([k]) => (
-                            <th key={k} className="px-2 py-2 text-right font-semibold">
-                                {k}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {[...lines].reverse().map((s, i) => (
-                        <tr key={`${s.season}-${s.team}-${i}`} className="border-b border-line/60">
-                            <td className={cn('px-3 py-1.5 text-fg-2', PIN, PIN_EDGE)}>{seasonLabel(s.season)}</td>
-                            <td className="px-2 text-fg-1">{showLeague ? `${s.league} · ${s.team}` : s.team}</td>
-                            {cols.map(([k, f]) => (
-                                <td key={k} className="px-2 text-right text-fg-1">
-                                    {f(s)}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-                {career ? (
-                    <tfoot>
-                        <tr className="border-t border-line-strong font-semibold">
-                            <td className="px-3 py-2 uppercase tracking-label text-fg-1 max-lg:hidden" colSpan={2}>
-                                NHL career
-                            </td>
-                            {/* Below lg the label takes the pinned season cell (a two-column cell can't pin). */}
-                            <td className={cn('px-3 py-2 uppercase tracking-label text-fg-1 lg:hidden', PIN, PIN_EDGE)}>Career</td>
-                            <td className="lg:hidden" />
-                            {cols.map(([k, f]) => (
-                                <td key={k} className="px-2 text-right text-fg-1">
-                                    {f(career)}
-                                </td>
-                            ))}
-                        </tr>
-                    </tfoot>
-                ) : null}
-            </table>
-        </ScrollRegion>
+        <>
+            <CareerTable lines={nhl} career={career} goalie={goalie} birthDate={birthDate} />
+            {other.length ? (
+                <details className={cn('group panel max-lg:overflow-hidden', FLAT)}>
+                    <summary className="cursor-pointer list-none px-card py-3 text-micro uppercase tracking-label text-fg-3 hover:text-fg-1">
+                        Before the NHL and other leagues · {other.length} seasons
+                    </summary>
+                    <div className="border-t border-line">
+                        <CareerTable lines={other} career={null} goalie={goalie} birthDate={birthDate} bare showLeague />
+                    </div>
+                </details>
+            ) : null}
+        </>
     );
 }
