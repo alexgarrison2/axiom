@@ -250,7 +250,7 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
                             {focusChip}
                         </FilterChip>
                     ) : null}
-                    <ProjectedRecord p={projection} range={projRange} daysOff={daysOff(games, focus)} className="w-full md:ml-auto md:w-auto md:justify-end" />
+                    <ProjectedRecord p={projection} range={projRange} daysOff={daysOff(games, focus)} mi={totals.mi} className="w-full md:ml-auto md:w-auto md:justify-end" />
                 </div>
                 <RhythmStrip
                     schedule={schedule}

@@ -12,10 +12,10 @@ const Dot = () => (
 /**
  * One line for the focused month / trip / season: the record so far, the
  * model's projected record and expected points of those possible (magenta),
- * quietly the likely range of points (10th-90th percentile), and the days
- * off in it.
+ * quietly the likely range of points (10th-90th percentile), the days off
+ * in it and the miles traveled.
  */
-export function ProjectedRecord({ p, range, daysOff, className }: { p: RecordProjection; range?: [number, number] | null; daysOff?: number | null; className?: string }) {
+export function ProjectedRecord({ p, range, daysOff, mi, className }: { p: RecordProjection; range?: [number, number] | null; daysOff?: number | null; mi?: number | null; className?: string }) {
     if (!p.games) return null;
     const projected = p.record && p.pts != null;
     const lo = range ?? p.range;
@@ -50,15 +50,25 @@ export function ProjectedRecord({ p, range, daysOff, className }: { p: RecordPro
                     </span>
                 </>
             ) : null}
-            {daysOff != null ? (
-                // On phones this item takes its own line, so its separator shows only where the line holds everything.
-                <span className="max-md:basis-full">
+            {daysOff != null || mi != null ? (
+                // On phones these take their own line, so their separator shows only where one line holds everything.
+                <span className="flex flex-wrap items-baseline gap-x-2 max-md:basis-full">
                     {p.played || projected ? (
                         <span className="max-md:hidden">
-                            <Dot />{' '}
+                            <Dot />
                         </span>
                     ) : null}
-                    <span className="font-bold tabular-nums text-fg-1">{daysOff}</span> {daysOff === 1 ? 'day' : 'days'} off
+                    {daysOff != null ? (
+                        <span>
+                            <span className="font-bold tabular-nums text-fg-1">{daysOff}</span> {daysOff === 1 ? 'day' : 'days'} off
+                        </span>
+                    ) : null}
+                    {daysOff != null && mi != null ? <Dot /> : null}
+                    {mi != null ? (
+                        <span>
+                            <span className="font-bold tabular-nums text-fg-1">{Math.round(mi).toLocaleString('en-US')}</span> mi traveled
+                        </span>
+                    ) : null}
                 </span>
             ) : null}
         </p>
