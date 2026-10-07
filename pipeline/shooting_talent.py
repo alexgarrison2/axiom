@@ -1,30 +1,24 @@
 """
-Shooting talent - a SEPARATE, leak-free finishing feature (C6).
+Shooting talent - a leak-free per-shooter finishing multiplier (C6).
 
-What changed
-------------
 The old version multiplied every shot's xG by the shooter's goals/xG ratio
 over the current and last two seasons.  That leaked outcomes into the model
 inputs: a 2022-23 shot carried the player's 2025-26 finishing, this season's
 goals raised this season's xG, and goalie GSAx absorbed shooter variance.
 
 Now:
-* The shot model's raw output is kept in ``xg_raw`` and ``xG`` is NOT
-  multiplied.  The game model, backtests and goalie ratings use raw xG.
 * Talent is estimated per (player, season S) from seasons S-1, S-2, S-3 only
   (weights 0.5 / 0.3 / 0.2), never from the season it is applied to, using raw
   xG, measured against each season's league 5v5 goals/xG so the average
-  multiplier is ~1.  It is written to shooting_talent.json;
-  ``talent_multipliers`` gives the per-shot factor (talent xG = xg_raw x
-  multiplier) for display or as a candidate feature.
+  multiplier is ~1.  It is written to shooting_talent.json.
+* The shot model's output stays in ``xg_raw``, which the game model, backtests
+  and goalie ratings read.  Published ``xG`` (refresh_pipeline.stage_rescore_xg)
+  is ``xg_raw x talent_multipliers(...) x league factor``; the game page applies
+  the same saved map to live shots (lib/game/xg.ts publishedXg).
 
 Bayesian shrinkage (conjugate gamma-Poisson):
     multiplier = (weighted goals + PRIOR_XG) / (weighted league-scaled xG + PRIOR_XG)
 clipped to [TALENT_FLOOR, TALENT_CEILING].
-
-refresh_pipeline.py keeps calling:
-    talent = compute_shooting_talent()
-    apply_shooting_talent(shots_df, talent)
 """
 
 from __future__ import annotations
@@ -152,8 +146,8 @@ def load_shooting_talent(pipeline_dir=None):
 
 def talent_multipliers(shots_df, talent_map) -> pd.Series:
     """Per-shot multiplier from the shooter's PRIOR-seasons talent for the
-    shot's season (1.0 when unknown).  ``xg_raw * multiplier`` is the
-    talent-adjusted xG, available as a separate feature / display value."""
+    shot's season (1.0 when unknown).  Published xG is ``xg_raw * multiplier``
+    times the league factor."""
     if not talent_map:
         return pd.Series(1.0, index=shots_df.index)
     if not isinstance(next(iter(talent_map.values())), dict):
@@ -166,19 +160,6 @@ def talent_multipliers(shots_df, talent_map) -> pd.Series:
         if sel.any():
             mult[sel] = pid[sel].map(m).fillna(1.0)
     return mult
-
-
-def apply_shooting_talent(shots_df, talent_map):
-    """Record the shot model's raw output in ``xg_raw`` and leave ``xG``
-    unchanged: no finishing outcome is multiplied into model inputs any more.
-    The talent itself stays available through ``talent_multipliers`` and
-    shooting_talent.json.  Modifies and returns ``shots_df``."""
-    shots_df['xg_raw'] = pd.to_numeric(shots_df['xG'], errors='coerce')
-    mult = talent_multipliers(shots_df, talent_map)
-    n = int((mult != 1.0).sum())
-    print(f"  Shooting talent: xG kept raw (xg_raw); {n}/{len(shots_df)} shots have a prior-season "
-          f"talent multiplier (separate feature, not applied)")
-    return shots_df
 
 
 if __name__ == '__main__':

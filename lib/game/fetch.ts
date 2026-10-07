@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getPredictions } from '@/utils/data';
 import { buildGame, type RawFeeds } from './build';
-import { loadArtifacts, scoreGame, type XgArtifacts } from './xg';
+import { loadArtifacts, publishedXg, type XgArtifacts } from './xg';
 import type { GameModel, GameOdds, Pregame, SeasonOdds, Side } from './types';
 
 /**
@@ -79,13 +79,21 @@ function leagueFactor(season: string): number {
     }
 }
 
-const round4 = (v: number) => Math.round(v * 1e4) / 1e4;
+/** The shooting-talent multipliers the nightly run applied to this season's xG (pipeline/shooting_talent.json), else none. */
+function shootingTalent(season: string): Map<number, number> {
+    try {
+        const m = readJson(path.join(process.cwd(), 'pipeline', 'shooting_talent.json'))?.by_season?.[season.slice(0, 4)] ?? {};
+        return new Map(Object.entries(m).map(([pid, v]) => [Number(pid), Number(v)]));
+    } catch {
+        return new Map();
+    }
+}
 
 /**
  * Per-shot xG keyed by NHL event id. The nightly run's values once it has
  * scored the game; until then (a game in progress, or final but not yet
- * scraped) the same model scored here from the play-by-play, rounded and
- * normalised the way the pipeline does it.
+ * scraped) the same model scored here from the play-by-play, with the
+ * pipeline's shooting talent and league normalisation.
  */
 function gameXg(pbp: RawFeeds['pbp']): Map<number, number> | null {
     const season = String(pbp.season);
@@ -94,9 +102,8 @@ function gameXg(pbp: RawFeeds['pbp']): Map<number, number> | null {
     const art = xgArtifacts();
     if (!art) return null;
     try {
-        const factor = leagueFactor(season);
-        const live = scoreGame(pbp, art);
-        return live.size ? new Map([...live].map(([e, x]) => [e, round4(round4(x) * factor)])) : null;
+        const live = publishedXg(pbp, art, shootingTalent(season), leagueFactor(season));
+        return live.size ? live : null;
     } catch (e) {
         console.error(`[game] live xG failed for ${pbp.id}`, e);
         return null;

@@ -345,8 +345,10 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
 * Season shot file (`pipeline/nhl_season_<yyyy>_<yyyy>_shots.csv`, from
   `refresh_pipeline.stage_rescore_xg`): `xg_raw` is the raw output of the
   **active** shot model (no shooting talent, no league normalisation), and
-  `xG` / `xG_flurry_adj` are `xg_raw` x shooting talent x league
-  normalisation. The active model is chosen by `PONYXG_XG`
+  `xG` / `xG_flurry_adj` are `xg_raw` x shooting talent (the shooter's
+  multiplier for the shot's season from `shooting_talent.json`, seasons S-1..S-3
+  only; 1 when unknown) x league normalisation, the factor the game page applies
+  with the same talent map to live shots. The active model is chosen by `PONYXG_XG`
   (`pipeline/bu/xg/live.py`): `v1` (`xg_model_xgb.pkl`; empty-net shots get
   the constant 0.52), `shadow` (`xg_raw` from v1, plus the additive column
   `xg_raw_v2` from xG v2, `pipeline/models/xg2_*.json`) or `v2` (the
@@ -356,8 +358,8 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   `"xg_version": "v2"`, so the published xG and the game model switch
   together; an explicit flag always wins. `xg_raw_v2` / `xg_raw_v1` are NaN
   until scored. `manifest.json` `sources.xg_model` records `mode`, `hash`,
-  `v2_signature`, `v1_fallback_games`, `v2_unmatched_events` and
-  `v1_shadow_hash`.
+  `v2_signature`, `v1_fallback_games`, `v2_unmatched_events`,
+  `v1_shadow_hash`, `league_factor` and `league_factor_season`.
 * SiteHistory gains `sim_status`, `sim_home%` (the raw simulator's home win %) and
   `sim_markets` (JSON: `{v, reg[3], reg_px[3], pl {spread, home, away, px[2]}, tot {line, over,
   push, under, px[2]}, p1[3], p1_px3[3], p1_2w[2], p1_px2[2], total}`, percentages and the posted

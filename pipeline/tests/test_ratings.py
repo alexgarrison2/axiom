@@ -124,11 +124,9 @@ def test_shooting_talent_uses_prior_seasons_only():
     assert t.loc[2026, 'goals'] == pytest.approx(0.5 * 40 + 0.3 * 10)
 
 
-def test_apply_shooting_talent_keeps_xg_raw():
-    df = pd.DataFrame({'game_id': [2026020001, 2026020001], 'player_id': [1, 2], 'xG': [0.2, 0.1]})
-    out = ST.apply_shooting_talent(df.copy(), {2026: {1: 1.3}})
-    assert list(out['xG']) == [0.2, 0.1] and list(out['xg_raw']) == [0.2, 0.1]
-    assert list(ST.talent_multipliers(out, {2026: {1: 1.3}})) == [1.3, 1.0]
+def test_talent_multipliers_use_the_shots_season():
+    df = pd.DataFrame({'game_id': [2026020001, 2026020001, 2025020001], 'player_id': [1, 2, 1]})
+    assert list(ST.talent_multipliers(df, {2025: {1: 0.9}, 2026: {1: 1.3}})) == [1.3, 1.0, 0.9]
 
 
 def test_roster_changes_added_and_lost_without_network():
