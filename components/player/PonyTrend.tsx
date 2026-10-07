@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWidth } from '@/components/game/Pulse';
 import { cn } from '@/lib/utils';
@@ -23,18 +24,16 @@ export interface TrendGame {
  * A season of Pony Scores: one signed bar per game in the team colour (dim
  * below zero), the five-game rolling average as a magenta line, and a card on
  * hover. Click a bar to open the game. On touch the first tap (or a sideways
- * scrub) shows the card, a second tap on the same bar or on the card opens it.
+ * scrub) shows the card and a second tap on the same bar opens the game; on a
+ * phone the card sits under the chart, in flow, with its own Game link.
  */
 export function PonyTrend({ games, color }: { games: TrendGame[]; color: string }) {
     const [ref, width] = useWidth<HTMLDivElement>();
     const [hover, setHover] = React.useState<number | null>(null);
     const router = useRouter();
-    const cardRef = React.useRef<HTMLDivElement>(null);
     // Touch: the bar whose card was already showing when this tap began (a second tap opens it).
     const armed = React.useRef<number | null>(null);
     const touch = React.useRef(false);
-    // Compact card's top, in px from the chart's top (null until measured).
-    const [cardTop, setCardTop] = React.useState<number | null>(null);
     const W = Math.max(width, 280);
     const H = 180;
     const padL = 34;
@@ -53,7 +52,7 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
     const hg = hover != null ? games[hover] : null;
     const hx = hover != null ? padL + step * (hover + 0.5) : 0;
 
-    // Too narrow for the card beside the bar (phones): it spans the chart, above it (below near the app bar).
+    // Too narrow for the card beside the bar (phones): it opens under the chart, covering nothing.
     const compact = W < 480;
 
     const at = (e: React.PointerEvent<SVGRectElement>) => {
@@ -80,23 +79,6 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
         document.addEventListener('pointerdown', off);
         return () => document.removeEventListener('pointerdown', off);
     }, [showing, ref]);
-
-    // Compact card: above the chart when it fits, else below, else the roomier side; always kept
-    // between the app bar and the tab bar (on a short screen it then overlaps the chart's top).
-    React.useLayoutEffect(() => {
-        if (!showing || !compact || !ref.current || !cardRef.current) return;
-        const r = ref.current.getBoundingClientRect();
-        const css = getComputedStyle(document.documentElement);
-        const top = (parseFloat(css.getPropertyValue('--appbar-h')) || 56) + 8;
-        const bottom = window.innerHeight - (parseFloat(css.getPropertyValue('--tabbar-h')) || 0) - 8;
-        const h = cardRef.current.offsetHeight;
-        const above = r.top - 8 - top;
-        const below = bottom - (r.bottom + 8);
-        const want = above >= h || (below < h && above >= below) ? -(h + 8) : r.height + 8;
-        const lo = top - r.top;
-        const hi = bottom - h - r.top;
-        setCardTop(Math.max(lo, Math.min(want, hi)));
-    }, [showing, compact, ref]);
 
     return (
         // Sideways drags scrub the bars; vertical swipes still scroll the page.
@@ -149,13 +131,11 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
             )}
             {hg ? (
                 <div
-                    ref={cardRef}
-                    onClick={compact ? () => open(hg) : undefined}
                     className={cn(
-                        'absolute z-10 rounded-card border border-line-strong bg-surface-1/95 p-3 text-caption shadow-[0_12px_32px_rgb(0_0_0/0.55)] backdrop-blur-sm',
-                        compact ? cn('inset-x-0 mx-auto max-w-[19rem] cursor-pointer', cardTop == null && 'bottom-[calc(100%+8px)]') : 'pointer-events-none top-1 w-[19rem]',
+                        'rounded-card border border-line-strong bg-surface-1/95 p-3 text-caption',
+                        compact ? 'mt-3' : 'pointer-events-none absolute top-1 z-10 w-[19rem] shadow-[0_12px_32px_rgb(0_0_0/0.55)] backdrop-blur-sm',
                     )}
-                    style={compact ? (cardTop == null ? undefined : { top: cardTop }) : hx > W * 0.6 ? { right: W - hx + 12 } : { left: hx + 12 }}
+                    style={compact ? undefined : hx > W * 0.6 ? { right: W - hx + 12 } : { left: hx + 12 }}
                 >
                     <p className="flex items-baseline justify-between gap-2">
                         <span className="text-fg-2">
@@ -177,7 +157,19 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
                             ))}
                         </div>
                     ) : null}
-                    <p className="mt-2 text-micro uppercase tracking-label text-fg-3">5-game avg {signed(roll[hover!])} · <span className="coarse:hidden">click for the game</span><span className="hidden coarse:inline">tap again for the game</span></p>
+                    {compact ? (
+                        <p className="mt-2 flex items-center justify-between gap-2 text-micro uppercase tracking-label text-fg-3">
+                            5-game avg {signed(roll[hover!])}
+                            <Link href={`/games/${hg.game}`} className="-my-3 -mr-2 inline-flex min-h-11 items-center px-2 text-brand">
+                                Game ›
+                            </Link>
+                        </p>
+                    ) : (
+                        <p className="mt-2 text-micro uppercase tracking-label text-fg-3">
+                            5-game avg {signed(roll[hover!])} · <span className="coarse:hidden">click for the game</span>
+                            <span className="hidden coarse:inline">tap again for the game</span>
+                        </p>
+                    )}
                 </div>
             ) : null}
         </div>
