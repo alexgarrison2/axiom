@@ -23,6 +23,9 @@ Measured:
                  draws pool the offensive and defensive views (symmetric)
   block_xg       mean pony xG of 5v5 unblocked attempts by distance band: the
                  value of a blocked attempt from that far out
+  prod_mean60    the average forward's / defenceman's production per 60 minutes (offence and
+                 defence), from the last season's Pony Score rows: subtracted so production, like
+                 every other part, is measured against an average player at his position
   a1, a2, fin    goals per primary / secondary assist and per goal above xG: the coefficients of a
                  non-negative least-squares fit of each skater's IMPACT offence
                  (goals per 82) on his per-82 rates of goals-above-xG, xG,
@@ -223,6 +226,28 @@ def main() -> None:
             'ratings_pen_value': ratings.get('impact', {}).get('pen_value'),
         },
     }
+    # Production centring: the average forward's / defenceman's production per 60 minutes, from the last full
+    # season of Pony Score rows (scripts/pony_scores.ts). Stored rows are already centred by the previous
+    # constants, so the old centring is added back before averaging.
+    prior = os.path.join(ROOT, 'public', 'data', 'pony', f'{SEASONS[-1]}.json')
+    old = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    old_mean = old.get('prod_mean60') or {}
+    if os.path.exists(prior):
+        doc = json.load(open(prior))
+        ix = {c: i for i, c in enumerate(doc['skater_cols'])}
+        means = {}
+        for pos in ('F', 'D'):
+            rows = [r for r in doc['skaters'] if r[ix['pos']] == pos]
+            hours = sum(r[ix['toi']] for r in rows) / 3600
+            om = old_mean.get(pos, {})
+            means[pos] = {
+                'o': round((sum(r[ix['oProd']] for r in rows) + om.get('o', 0.0) * hours) / hours, 4),
+                'd': round((sum(r[ix['dProd']] for r in rows) + om.get('d', 0.0) * hours) / hours, 4),
+            }
+        out['prod_mean60'] = means
+        out['prod_mean_source'] = f'public/data/pony/{SEASONS[-1]}.json'
+    elif old_mean:
+        out['prod_mean60'] = old_mean
     with open(OUT, 'w') as fh:
         json.dump(out, fh, indent=1)
     print(json.dumps(out, indent=1))

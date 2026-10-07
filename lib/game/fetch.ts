@@ -4,6 +4,7 @@ import path from 'node:path';
 import { getPredictions } from '@/utils/data';
 import { buildGame, type RawFeeds } from './build';
 import { loadArtifacts, publishedXg, type XgArtifacts } from './xg';
+import { parseRatings, type EvRatings } from './ratings';
 import type { GameModel, GameOdds, Pregame, SeasonOdds, Side } from './types';
 
 /**
@@ -51,20 +52,13 @@ function nightlyXg(season: string, id: number): Map<number, number> | null {
 
 const readJson = (file: string) => JSON.parse(fs.readFileSync(file, 'utf8'));
 
-/** IMPACT EV ratings (xG/60 added, prevented) by player id, from public/data/player_ratings.json; empty if unreadable. */
-let ratingsCache: { at: number; map: Map<number, { evOff: number; evDef: number }> } | null = null;
-export function playerRatings(): Map<number, { evOff: number; evDef: number }> {
+/** IMPACT EV ratings by player id (public/data/player_ratings.json), an hour's cache; empty if unreadable. */
+let ratingsCache: { at: number; map: EvRatings } | null = null;
+export function playerRatings(): EvRatings {
     if (ratingsCache && Date.now() - ratingsCache.at < 3_600_000) return ratingsCache.map;
-    const map = new Map<number, { evOff: number; evDef: number }>();
+    let map: EvRatings = new Map();
     try {
-        const doc = readJson(path.join(process.cwd(), 'public', 'data', 'player_ratings.json')) as { columns: string[]; rows: unknown[][] };
-        const ix = (c: string) => doc.columns.indexOf(c);
-        const [iId, iOff, iDef] = [ix('id'), ix('ev_off') >= 0 ? ix('ev_off') : ix('off'), ix('ev_def') >= 0 ? ix('ev_def') : ix('def')];
-        for (const r of doc.rows) {
-            const off = Number(r[iOff]);
-            const def = Number(r[iDef]);
-            if (Number.isFinite(off) && Number.isFinite(def)) map.set(Number(r[iId]), { evOff: off, evDef: def });
-        }
+        map = parseRatings(readJson(path.join(process.cwd(), 'public', 'data', 'player_ratings.json')));
     } catch {
         /* no ratings: the usage term is zero */
     }

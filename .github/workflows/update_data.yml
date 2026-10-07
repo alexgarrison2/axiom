@@ -115,6 +115,19 @@ jobs:
           PONYXG_SEASON_SIM: ${{ vars.PONYXG_SEASON_SIM }}
         run: python pipeline/validate_outputs.py
 
+      # Pony Score: every finished game pony xG has scored, built with the game page's own code
+      # (scripts/pony_scores.ts; only new games, so a few seconds a run).
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Pony Score season data
+        continue-on-error: true
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx tsx scripts/pony_scores.ts
+
       - name: Commit and push data
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -141,6 +154,8 @@ jobs:
           # Player props: Bovada lines (+ per-day archive), per-game skater logs, the /props board
           add pipeline/player_props.json pipeline/prop_lines/*.csv pipeline/nhl_season_*_skater_games.csv \
               public/data/props.json public/data/props_detail.json public/data/game_xg/*.json
+          # Pony Score season data (per player-game) and the nightly top / bottom
+          add public/data/pony/*.json
           # Season game data (current season file names come from pipeline/season.py)
           add pipeline/nhl_season_*_gamestats.csv pipeline/nhl_season_*_shots.csv pipeline/nhl_season_*_shifts.csv \
               pipeline/pending_failed.json data/gamestats.csv public/data/gamestats.csv \

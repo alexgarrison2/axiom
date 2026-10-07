@@ -1221,6 +1221,8 @@ export interface PonyConstants {
     block_bands_ft: number[];
     block_xg: number[];
     assist: Record<'F' | 'D', { a1: number; a2: number; fin: number }>;
+    /** Average production per 60 minutes by position (offence, defence): subtracted so an average night scores zero. */
+    prod_mean60?: Record<'F' | 'D', { o: number; d: number }>;
 }
 
 export interface GameScoreRow {
@@ -1279,6 +1281,9 @@ const penUnits = (min: number | null) => (min === 2 ? 1 : min === 4 ? 2 : min ==
  * weight is measured from our own data (see PonyConstants) except the 1/5
  * share of on-ice results, which splits each on-ice chance evenly over the
  * five skaters.
+ *
+ * Production is measured against the average forward / defenceman per minute
+ * (prod_mean60), like every other part, so an average night scores about zero.
  *
  * Offence
  *   production   k·ixG (his own shots) + fin·(G − k·ixG) + a1·A1 + a2·A2
@@ -1400,8 +1405,11 @@ export function gameScores(m: GameModel, side: Side, C: PonyConstants): { skater
         x.xgaExp = evRate * x.toi5;
         x.ppXgfExp = 0.8 * ppRate * x.toiPp;
         x.pkXgaExp = ppRate * x.toiPk;
+        const mean = C.prod_mean60?.[pos] ?? { o: 0, d: 0 };
+        const hours = x.toi / 3600;
         const parts: Record<GsPart, number> = {
             oProd:
+                -mean.o * hours +
                 C.k * x.ixg +
                 w.fin * (x.g - C.k * x.ixg) +
                 w.a1 * x.a1 +
@@ -1412,7 +1420,7 @@ export function gameScores(m: GameModel, side: Side, C: PonyConstants): { skater
             oDrive: (C.k / 5) * (x.xgfOthers - x.xgfExp),
             oSpecial: (C.k / 5) * (x.ppXgfOthers - x.ppXgfExp),
             oUsage: (C.k / 5) * (x.oppDef - x.mateOff),
-            dProd: x.blockXg - C.pen_value * x.ptUnits,
+            dProd: x.blockXg - C.pen_value * x.ptUnits - mean.d * hours,
             dDrive: -(C.k / 5) * (x.xga - x.xgaExp),
             dSpecial: -(C.k / 5) * (x.pkXga - x.pkXgaExp),
             dUsage: (C.k / 5) * (x.oppOff - x.mateDef),

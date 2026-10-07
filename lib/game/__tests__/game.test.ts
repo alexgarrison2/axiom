@@ -131,7 +131,8 @@ describe('game model', () => {
         for (const r of skaters) expect(GS_PARTS.reduce((a, k) => a + r.parts[k], 0)).toBeCloseTo(r.total);
         const scorer = skaters.find(r => r.player.id === 21)!;
         expect(skaters[0].player.id).toBe(21);
-        expect(scorer.parts.oProd).toBeCloseTo(C.k * 0.3 + C.assist.F.fin * (1 - C.k * 0.3));
+        // Centred on the average forward's production per hour (he played the full 60:00).
+        expect(scorer.parts.oProd).toBeCloseTo(C.k * 0.3 + C.assist.F.fin * (1 - C.k * 0.3) - (C.prod_mean60?.F.o ?? 0));
         expect(skaters.find(r => r.player.id === 22)!.raw.a1).toBe(1);
         expect(goalies[0].total).toBeCloseTo(C.k * goalies[0].xga - goalies[0].ga);
     });
