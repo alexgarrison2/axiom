@@ -45,7 +45,7 @@ function Swatch({ kind }: { kind: 'home' | 'road' | 'w' | 'l' | 'model' | 'dense
                 </svg>
             );
         case 'model':
-            // Length = win %: an underdog short of the dotted 50% guide, a favourite past it.
+            // Length = win % (ahead) or the pregame call (played): an underdog short of the dotted 50% guide, a favourite past it.
             return (
                 <svg aria-hidden="true" viewBox="0 0 22 12" className="h-3 w-[22px] shrink-0">
                     <line x1="0" x2="22" y1="5.5" y2="5.5" stroke="rgb(var(--model-rgb))" strokeOpacity="0.6" strokeDasharray="1 2" />
@@ -265,7 +265,7 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
                 />
                 <div className="mt-1 flex items-start justify-between gap-3">
                     <ul className="flex flex-wrap gap-x-3 gap-y-1" aria-label="Key">
-                        {LEGEND.filter(([k]) => k !== 'model' || games.some(g => g.winPct)).map(([k, label]) => (
+                        {LEGEND.filter(([k]) => k !== 'model' || games.some(g => g.winPct || g.pregame != null)).map(([k, label]) => (
                             <li key={k} className="flex items-center gap-1 text-micro uppercase tracking-label text-fg-3">
                                 <Swatch kind={k} />
                                 {label}

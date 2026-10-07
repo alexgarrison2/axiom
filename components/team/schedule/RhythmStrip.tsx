@@ -51,10 +51,17 @@ const C = {
     lineStrong: 'var(--line-strong)',
 };
 
-/** Mark length: the win % on a diverging scale around the 50% guide for games ahead, fixed otherwise. */
-export function markLength(g: Pick<SchedGame, 'result' | 'winPct' | 'state'>): number {
-    if (g.result || g.state === 'live' || !g.winPct) return MARK_H;
-    return Math.min(WIN_MAX, Math.max(3, WIN_MID + (g.winPct.pct - 50) * WIN_PER_PT));
+/** Win % on a diverging scale around the 50% guide. */
+const winLength = (pct: number) => Math.min(WIN_MAX, Math.max(3, WIN_MID + (pct - 50) * WIN_PER_PT));
+
+/**
+ * Mark length: a game ahead by the model's win %, a played game by the win %
+ * we published before puck drop; fixed when there is neither.
+ */
+export function markLength(g: Pick<SchedGame, 'result' | 'winPct' | 'state' | 'pregame'>): number {
+    if (g.result) return g.pregame != null ? winLength(g.pregame) : MARK_H;
+    if (g.state === 'live' || !g.winPct) return MARK_H;
+    return winLength(g.winPct.pct);
 }
 
 function markFill(g: SchedGame): { fill: string; opacity: number; stroke?: string } {
@@ -72,7 +79,8 @@ function markFill(g: SchedGame): { fill: string; opacity: number; stroke?: strin
  * The season on one day axis: home games above the line, road games below,
  * rest as spacing. A game ahead is a magenta bar whose length from the axis
  * is the model's win % (dotted guides mark 50%: favourites pass them,
- * underdogs fall short); played games are fixed-length result marks. Amber bands are 3-in-4 / 4-in-6 / 5-in-8 windows (they
+ * underdogs fall short); a played game keeps that length from our frozen
+ * pregame call in its result colour (fixed length when none was archived). Amber bands are 3-in-4 / 4-in-6 / 5-in-8 windows (they
  * stack, so denser reads stronger), an amber tie joins back-to-backs, the
  * ice-grey ribbon on top is rolling difficulty, and brackets under the road
  * marks are road trips. Hover (mouse) or tap a game; tap a bracket for its trip.
@@ -123,8 +131,8 @@ export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId,
     }, [schedule.bands]);
 
     const todayDay = dayNumber(today);
-    const firstAhead = games.find(g => !g.result && g.winPct);
-    const guideFrom = firstAhead ? x(dayOf(firstAhead)) - markW : null;
+    const firstScaled = games.find(g => (g.result ? g.pregame != null : !!g.winPct));
+    const guideFrom = firstScaled ? x(dayOf(firstScaled)) - markW : null;
     const showToday = todayDay > d0 && todayDay < d1 && games.some(g => g.state !== 'final');
 
     const nearest = (px: number): SchedGame | null => {

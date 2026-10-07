@@ -133,6 +133,27 @@ function winPctFor(season: string, raw: RawGame[]): Map<string, WinPct> {
     return out;
 }
 
+/**
+ * Frozen pregame win % for played games, from the graded record
+ * (data/prediction_history.json, built from the per-day SiteHistory
+ * snapshots: the last one before puck drop). Retro backfills are not
+ * pregame calls and are left out.
+ */
+function pregameFor(season: string, raw: RawGame[]): Map<string, number> {
+    const out = new Map<string, number>();
+    const rows = readJson<{ gameId?: number; homeWinProb?: number; retro?: boolean; source?: string }[]>(path.join(ROOT, 'data', 'prediction_history.json'));
+    if (!Array.isArray(rows)) return out;
+    const byId = new Map(raw.map(g => [g.id, g]));
+    for (const r of rows) {
+        if (r.retro || r.source !== 'live_snapshot' || typeof r.homeWinProb !== 'number' || typeof r.gameId !== 'number') continue;
+        const g = byId.get(r.gameId);
+        if (!g || String(g.id).slice(0, 4) !== season.slice(0, 4)) continue;
+        out.set(`${g.id}|${g.home}`, r.homeWinProb);
+        out.set(`${g.id}|${g.away}`, Math.round((100 - r.homeWinProb) * 10) / 10);
+    }
+    return out;
+}
+
 /** 10th / 90th percentile of the season simulator's final points for a team (current season only). */
 function simPointsRange(tri: string, season: string): [number, number] | null {
     if (season !== SEASON_ID) return null;
@@ -187,7 +208,7 @@ export function buildSchedulePayload(tri: string, season: string, now = new Date
         const raw = loadScheduleDetail(season);
         if (!raw.length) return null;
         const { z, source } = strengthFor(season);
-        hit = { all: buildLeagueSchedules(raw, { strength: z, results: resultsFor(season), winPct: winPctFor(season, raw) }), source };
+        hit = { all: buildLeagueSchedules(raw, { strength: z, results: resultsFor(season), winPct: winPctFor(season, raw), pregame: pregameFor(season, raw) }), source };
         leagueCache.set(season, hit);
     }
     const own = hit.all.get(tri);

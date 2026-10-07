@@ -49,6 +49,8 @@ export interface ScheduleInputs {
     strength?: Record<string, number>;
     /** `${gameId}|${tri}` → the team's result. */
     results?: Map<string, TeamResult>;
+    /** `${gameId}|${tri}` → the team's frozen pregame win % (published before puck drop). */
+    pregame?: Map<string, number>;
     /** `${gameId}|${tri}` → the team's model win %. */
     winPct?: Map<string, WinPct>;
 }
@@ -132,6 +134,8 @@ export interface SchedGame {
     state: 'final' | 'live' | 'future';
     result: TeamResult | null;
     winPct: WinPct | null;
+    /** For a played game: the win % we published before puck drop (null when none was archived). */
+    pregame: number | null;
 }
 
 export interface Leg {
@@ -457,6 +461,7 @@ function buildTeam(
             state: result ? 'final' : live ? 'live' : 'future',
             result: result ?? null,
             winPct: result ? null : inputs.winPct?.get(key) ?? null,
+            pregame: result ? inputs.pregame?.get(key) ?? null : null,
         });
         localHours.push(localH);
 

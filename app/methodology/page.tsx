@@ -521,7 +521,8 @@ export default function MethodologyPage() {
                             <p>
                                 A team page&apos;s <strong>Schedule</strong> tab reads the NHL&apos;s full schedule with venues. The strip puts every game
                                 on one day axis (home above the line, road below), so rest shows as spacing; a game ahead is a magenta bar whose length is our
-                                win %, past the dotted 50% guide when we favour the team. <strong>Rest</strong> is whole days off
+                                win %, past the dotted 50% guide when we favour the team; a played game keeps the length of our frozen pregame call in
+                                its result colour. <strong>Rest</strong> is whole days off
                                 between game dates, for both teams; a <strong>back-to-back</strong> is no day off. The amber axis thickens inside
                                 denser windows: 3 games in 4 days, 4 in 6, 5 in 8. A <strong>rest edge</strong> is a game where the opponent is on
                                 the second night of a back-to-back and the team is not (a deficit is the reverse).

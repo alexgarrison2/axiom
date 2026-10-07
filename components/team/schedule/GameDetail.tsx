@@ -30,9 +30,9 @@ interface GameDetailProps {
 
 /**
  * One game: crests away left / home right with each side's rest under its
- * crest, then the start on three clocks (venue, ET, the team's body clock),
+ * crest, then the venue-local start (plus the team's body clock when it differs),
  * travel in, opponent rank and difficulty, the trip it belongs to, amber
- * situational chips, and the result or the model's win %.
+ * situational chips, and the result (with our frozen pregame call) or the model's win %.
  */
 export function GameDetail({ tri, schedule, game: g, onTrip, onClose, className }: GameDetailProps) {
     const away = g.home ? g.opp : tri;
@@ -72,6 +72,11 @@ export function GameDetail({ tri, schedule, game: g, onTrip, onClose, className 
                                 {g.home ? `${res.ga}-${res.gf}` : `${res.gf}-${res.ga}`}
                             </span>
                             <span className="label">{res.code === 'W' ? 'Win' : res.code === 'OTL' ? (res.ot === 'SO' ? 'SO loss' : 'OT loss') : 'Loss'}{res.code === 'W' && res.ot ? ` · ${res.ot}` : ''}</span>
+                            {g.pregame != null ? (
+                                <span className="mt-0.5 text-micro text-fg-3">
+                                    Pony had {tri} at <span className="font-bold tabular-nums text-model">{Math.round(g.pregame)}%</span>
+                                </span>
+                            ) : null}
                         </>
                     ) : g.winPct ? (
                         <>
@@ -106,11 +111,12 @@ export function GameDetail({ tri, schedule, game: g, onTrip, onClose, className 
                     {g.local} {g.localTz}
                     <span className="text-fg-3"> · {g.city}</span>
                 </Row>
-                <Row label="ET">{g.et}</Row>
-                <Row label="Body">
-                    <span className={cn(g.tags.includes('LATE') || g.tags.includes('EARLY') ? 'text-warn' : undefined)}>{g.body}</span>
-                    {g.tzDelta ? <span className="text-fg-3"> · {g.tzDelta > 0 ? '+' : '−'}{Math.abs(g.tzDelta)}h</span> : null}
-                </Row>
+                {g.body !== g.local ? (
+                    <Row label="Body">
+                        <span className={cn(g.tags.includes('LATE') || g.tags.includes('EARLY') ? 'text-warn' : undefined)}>{g.body}</span>
+                        {g.tzDelta ? <span className="text-fg-3"> · {g.tzDelta > 0 ? '+' : '−'}{Math.abs(g.tzDelta)}h</span> : null}
+                    </Row>
+                ) : null}
                 <Row label="Travel">
                     {g.mi ? (
                         <>
