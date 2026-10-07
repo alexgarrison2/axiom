@@ -31,7 +31,7 @@ function impactTag(season: string | null | undefined, home: boolean) {
 /** A team's player news under its lineup: open on desktop, one tap away on phones and tablets. */
 function TeamNews({ news, tri }: { news: PlayerNewsItem[]; tri: string }) {
     // Client-only (the card mounts its details on tap), so the viewport is known on first render.
-    const [open] = useState(() => typeof window === 'undefined' || window.matchMedia('(min-width: 1024px)').matches);
+    const [open] = useState(() => typeof window === 'undefined' || typeof window.matchMedia !== 'function' || window.matchMedia('(min-width: 1024px)').matches);
     // The count is what the list shows (it leaves out goalie-start items).
     const count = listedNews(news).length;
     if (!count) return null;

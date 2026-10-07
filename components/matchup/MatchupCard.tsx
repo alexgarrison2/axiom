@@ -43,6 +43,12 @@ export interface MatchupCardProps {
     noAnchor?: boolean;
     detailTab?: Tab;
     onDetailTab?: (t: Tab) => void;
+    /**
+     * The slate's live scores have not arrived yet. A started game then hides its goalie stat
+     * lines straight away (the score will hide them anyway), so the card does not shrink under
+     * the reader when the scores land.
+     */
+    scorePending?: boolean;
 }
 
 /** A final whose pregame forecast sat within 1 pt of 50: no lean, never graded. */
@@ -195,7 +201,7 @@ function FooterSide({ p, side, phase }: { p: Prediction; side: 'away' | 'home'; 
     );
 }
 
-export function MatchupCard({ p, live, implication, playoffOdds, highlighted, seriesScore, pinned = false, noAnchor = false, detailTab, onDetailTab }: MatchupCardProps) {
+export function MatchupCard({ p, live, implication, playoffOdds, highlighted, seriesScore, pinned = false, noAnchor = false, detailTab, onDetailTab, scorePending = false }: MatchupCardProps) {
     const [openState, setOpen] = useState(false);
     const open = pinned || openState;
     const ref = useRef<HTMLElement>(null);
@@ -290,7 +296,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
 
                 {/* Teams. The h2 is the matchup name only: it holds the expand toggle, whose hit area stretches over the card summary. */}
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 font-mono cq-sm:gap-2">
-                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!started} chip={awayChip} />
+                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!(scored || (started && scorePending))} chip={awayChip} />
                     {finalText ? (
                         <span id={resultId} className="sr-only">
                             {finalText}
@@ -357,7 +363,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                             </button>
                         )}
                     </h2>
-                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!started} chip={homeChip} />
+                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!(scored || (started && scorePending))} chip={homeChip} />
                 </div>
 
                 {forecast ? (

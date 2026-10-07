@@ -90,6 +90,8 @@ export default function PredictionsViewer({
     }, [predictions, date]);
     const live = useLiveScores(date, dayGames);
     const slate = useMemo(() => sortSlate(dayGames, live), [dayGames, live]);
+    // Until the first scores arrive the cards don't know a started game's score.
+    const scoresPending = Object.keys(live).length === 0;
     const swings = useMemo(() => (date ? biggestGames(implications, date) : []), [implications, date]);
     const offFile = archive && archive.date === date ? archive : null;
 
@@ -269,6 +271,7 @@ export default function PredictionsViewer({
                                         playoffOdds={playoffOdds}
                                         highlighted={target === cardAnchor(p)}
                                         seriesScore={series?.[`${p.away.team.triCode}|${p.home.team.triCode}`] ?? null}
+                                        scorePending={scoresPending}
                                     />
                                 </li>
                             ))}
