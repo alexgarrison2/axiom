@@ -124,7 +124,8 @@ export default function PredictionsViewer({
         (d: string, anchor: string) => {
             setDate(d);
             setTarget(anchor);
-            if (window.location.hash !== `#${anchor}`) router.replace(`/?date=${d}#${anchor}`, { scroll: false });
+            // The URL names the day only: no hash for Back to re-apply (same as a handled deep link).
+            if (new URLSearchParams(window.location.search).get('date') !== d || window.location.hash) router.replace(`/?date=${d}`, { scroll: false });
         },
         [router],
     );
