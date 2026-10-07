@@ -503,8 +503,7 @@ export default function MethodologyPage() {
                             <p>
                                 At puck drop the chart marks our call (PONY) and the de-vigged closing market (MKT). The coloured blocks in the strength
                                 row belong to the team with the extra skater (5v4, 5v3, 6v5 with the goalie pulled); amber ticks mark penalty calls. Dots
-                                at the edges of the bar lane are chances worth at least 0.20 xG that did not go in. In the running totals, the dashed lines
-                                rise to each team&apos;s pregame projection at 60:00, so you can see who is ahead of or behind the model&apos;s pace. The
+                                at the edges of the bar lane are chances worth at least 0.20 xG that did not go in. The
                                 Share view replaces the bars with a rolling five-minute xG share.
                             </p>
                         </Section>

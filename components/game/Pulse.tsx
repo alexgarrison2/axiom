@@ -214,10 +214,8 @@ export function Pulse() {
     const half = barH / 2;
     const axisY = barTop + half;
 
-    // Pregame pace: each side's projected goals (pony xG) reached at 60:00, drawn under the xG and goals races.
     const pg = m.pregame;
-    const pace = (raceMetric === 'xg' || raceMetric === 'goals') && pg?.homeXg != null && pg?.awayXg != null ? { away: pg.awayXg, home: pg.homeXg } : null;
-    const raceMax = Math.max(raceMetric === 'xg' ? 1 : 3, races.away[races.away.length - 1][1], races.home[races.home.length - 1][1], pace ? Math.max(pace.away, pace.home) : 0);
+    const raceMax = Math.max(raceMetric === 'xg' ? 1 : 3, races.away[races.away.length - 1][1], races.home[races.home.length - 1][1]);
     const yRace = (v: number) => raceTop + raceH - (v / raceMax) * raceH;
 
     const winPath = stepPath(win, x, yWin);
@@ -567,15 +565,8 @@ export function Pulse() {
                             {barMetric === 'share' ? '100%' : fmt(flowMetric, binMax)}
                         </text>
 
-                        {/* Running totals, over the pregame pace (dashed: each side's projection reached at 60:00). */}
+                        {/* Running totals. */}
                         <line x1={padL} x2={W - padR} y1={raceTop + raceH} y2={raceTop + raceH} className="stroke-line" />
-                        {pace
-                            ? SIDES.map(side => (
-                                  <line key={side} x1={x(0)} y1={yRace(0)} x2={x(3600)} y2={yRace(pace[side])} stroke={colors[side]} strokeWidth={1} strokeDasharray="2 4" opacity={0.6}>
-                                      <title>{`${m.teams[side].tri} pregame projection ${pace[side].toFixed(2)}`}</title>
-                                  </line>
-                              ))
-                            : null}
                         {SIDES.map(side => (
                             <path key={side} d={stepPath(races[side], x, yRace)} fill="none" stroke={colors[side]} strokeWidth={2} strokeLinejoin="round" />
                         ))}
