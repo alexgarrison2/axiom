@@ -38,10 +38,24 @@ export function PinnedTable({ label, head, children }: { label: string; head: Re
             const total = table.getBoundingClientRect().width;
             setCols(prev => (prev && prev.total === total && prev.widths.length === widths.length && prev.widths.every((w, i) => Math.abs(w - widths[i]) < 0.5) ? prev : { widths, total }));
         };
+        // Re-measure on size changes and on new rows or values (a team or view switch keeps the total width), once per frame.
+        let frame = 0;
+        const queue = () => {
+            if (!frame) frame = requestAnimationFrame(() => {
+                frame = 0;
+                measure();
+            });
+        };
         measure();
-        const ro = new ResizeObserver(measure);
+        const ro = new ResizeObserver(queue);
         ro.observe(table);
-        return () => ro.disconnect();
+        const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(queue) : null;
+        mo?.observe(table, { childList: true, subtree: true, characterData: true });
+        return () => {
+            cancelAnimationFrame(frame);
+            ro.disconnect();
+            mo?.disconnect();
+        };
     }, []);
 
     return (

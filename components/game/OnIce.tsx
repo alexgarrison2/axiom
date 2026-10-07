@@ -26,8 +26,9 @@ const zero = (v: number) => (v ? 'text-fg-1' : 'text-fg-3');
 
 /* Below lg the face and name stay pinned while the numbers scroll: opaque cells, a hairline and a soft shadow at the edge
    (an inset shadow, since collapsed borders do not travel with sticky cells). */
-const PIN_FACE = 'max-lg:sticky max-lg:left-0 max-lg:z-[1] max-lg:bg-surface-1';
-const PIN_NAME = 'max-lg:sticky max-lg:left-8 max-lg:z-[1] max-lg:bg-surface-1 max-lg:shadow-[inset_-1px_0_0_var(--line),4px_0_8px_-6px_rgba(0,0,0,0.8)]';
+// The face cell is a fixed 34px below lg (no UA right padding), so the name pins exactly at its edge.
+const PIN_FACE = 'max-lg:sticky max-lg:left-0 max-lg:z-[1] max-lg:bg-surface-1 max-lg:pr-0';
+const PIN_NAME = 'max-lg:sticky max-lg:left-[2.125rem] max-lg:z-[1] max-lg:bg-surface-1 max-lg:shadow-[inset_-1px_0_0_var(--line),4px_0_8px_-6px_rgba(0,0,0,0.8)]';
 
 function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[]; goalie: GoalieSnap | null }) {
     const { m, colors } = useGame();

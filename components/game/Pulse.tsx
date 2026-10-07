@@ -271,8 +271,11 @@ export function Pulse() {
         return { sc, rv, p, xp: stepAt(deserved, t) };
     };
 
+    // Set by the step buttons: on phones the chip is then brought into view (it can sit below a short screen's tab bar).
+    const stepped = React.useRef(false);
     const step = (dir: 1 | -1) => {
         if (!keyEvents.length) return;
+        stepped.current = true;
         setPinT(null);
         const i = keyEvents.findIndex(e => e.id === selected);
         const next = i < 0 ? (dir === 1 ? 0 : keyEvents.length - 1) : Math.min(keyEvents.length - 1, Math.max(0, i + dir));
@@ -377,12 +380,20 @@ export function Pulse() {
     const restT = m.state === 'pre' ? null : Math.max(0, m.end - 0.5);
     const iceT = focusT ?? restT;
 
-    /** A penalty's length, kept apart so the phone chip can clamp the description and still show it. */
-    const duration = (e: GameEvent) => (e.type === 'penalty' && e.minutes ? `${e.minutes}\u00a0min` : null);
-    const describe = (e: GameEvent, withDuration = true) => {
+    /**
+     * Phone chip: a penalty's team and length ride the clock line ("3rd 12:00 · SEA · 2 min"), so the clamped
+     * description is just the player and the infraction.
+     */
+    const chipTag = (e: GameEvent) => (e.type === 'penalty' ? [m.teams[e.side].tri, e.minutes ? `${e.minutes}\u00a0min` : null].filter(Boolean).join(' · ') : null);
+    const chipText = (e: GameEvent) => {
+        if (e.type !== 'penalty') return describe(e);
+        const p = e.player != null ? byId.get(e.player) : undefined;
+        return `${shortName(p)}${e.detail ? ` · ${e.detail.replace(/-/g, ' ')}` : ''}`;
+    };
+    const describe = (e: GameEvent) => {
         const p = e.player != null ? byId.get(e.player) : undefined;
         if (e.type === 'goal') return `Goal ${m.teams[e.side].tri} · ${shortName(p)}${e.strength !== 'ev' ? ` (${e.strength.toUpperCase()})` : ''}${e.emptyNet ? ' (EN)' : ''}`;
-        return `${m.teams[e.side].tri} penalty · ${shortName(p)}${e.detail ? ` · ${e.detail.replace(/-/g, ' ')}` : ''}${withDuration && e.minutes ? ` · ${e.minutes} min` : ''}`;
+        return `${m.teams[e.side].tri} penalty · ${shortName(p)}${e.detail ? ` · ${e.detail.replace(/-/g, ' ')}` : ''}${e.minutes ? ` · ${e.minutes} min` : ''}`;
     };
 
     // The verdict: how it ended against the pregame call and the market.
@@ -406,6 +417,20 @@ export function Pulse() {
         const w = chipRef.current?.offsetWidth;
         if (w && Math.abs(w - chipW) > 1) setChipW(w);
     }, [focusT, selected, chipW]);
+    React.useEffect(() => {
+        if (!stepped.current) return;
+        stepped.current = false;
+        const chip = chipRef.current;
+        if (!compact || !chip) return;
+        // Clear of the bottom tab bar (phones) and of the app bar plus section rail above.
+        const css = getComputedStyle(document.documentElement);
+        const px = (v: string, d: number) => parseFloat(css.getPropertyValue(v)) || d;
+        const bottom = window.innerHeight - (window.innerWidth < 768 ? px('--tabbar-h', 56) + 12 : 8);
+        const top = px('--appbar-h', 52) + px('--game-rail-h', 0) + 8;
+        const r = chip.getBoundingClientRect();
+        const d = r.bottom > bottom ? Math.min(r.bottom - bottom, r.top - top) : r.top < top ? r.top - top : 0;
+        if (d) window.scrollBy({ top: d, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }, [selected, compact]);
     const chipPos: React.CSSProperties = !compact
         ? flip
             ? { right: W - chipLeft + 10 }
@@ -795,9 +820,9 @@ export function Pulse() {
                                     {/* Phones: a penalty's length rides the clock line, so clamping the description never drops it. */}
                                     <span className="whitespace-nowrap text-fg-2">
                                         {clockText(focusT)}
-                                        {sel && hover == null && pinT == null && duration(sel) ? ` · ${duration(sel)}` : ''}
+                                        {sel && hover == null && pinT == null && chipTag(sel) ? ` · ${chipTag(sel)}` : ''}
                                     </span>
-                                    {sel && hover == null && pinT == null ? <span className="line-clamp-2 font-bold text-fg-1">{describe(sel, false)}</span> : null}
+                                    {sel && hover == null && pinT == null ? <span className="line-clamp-2 font-bold text-fg-1">{chipText(sel)}</span> : null}
                                 </>
                             ) : (
                                 <>
