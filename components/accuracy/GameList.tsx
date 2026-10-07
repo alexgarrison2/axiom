@@ -26,7 +26,9 @@ const DAY_H = 'min-h-14';
 const STRIP = 'rounded-card border border-dashed border-line-strong px-3 py-2';
 const LIST_UL = 'panel flex flex-col overflow-hidden';
 /** One grid for the header and every row so the columns line up: result, date, final, predicted, pick, how sure, chevron. */
-const COLS = 'md:grid-cols-[2rem_4.5rem_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_1.25rem]';
+const COLS =
+    // Tablet (md to lg) gives the final more room so the team, score and OT/PO tags never run into the projected score.
+    'md:max-lg:grid-cols-[2rem_3.5rem_minmax(0,2fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_1.25rem] lg:grid-cols-[2rem_4.5rem_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_1.25rem]';
 const SELECT = 'h-8 rounded-control border border-line-strong bg-surface-1 px-2 text-base uppercase tracking-[0.08em] text-fg-1 md:text-caption coarse:h-11';
 
 type ResultFilter = 'all' | 'hit' | 'miss';
@@ -35,6 +37,10 @@ const RESULT_OPTIONS: { value: ResultFilter; label: string; ariaLabel?: string }
     { value: 'hit', label: '✓', ariaLabel: 'Right' },
     { value: 'miss', label: '✕', ariaLabel: 'Wrong' },
 ];
+
+/** Touch: 44px result segments, drawn a little tighter so the first toolbar row still fits a 320px phone. */
+const RESULT_SEG = 'coarse:gap-0.5';
+const RESULT_OPT = 'coarse:min-w-11 coarse:px-2';
 
 const cache = new Map<string, Promise<GradedGame[]>>();
 function loadSeason(label: string): Promise<GradedGame[]> {
@@ -150,6 +156,8 @@ export function GameList({
     // Every row legacy: one LEGACY tag by the record instead of one per row.
     const allLegacy = legacyShown && rows.every(g => g.legacy);
 
+    /** Phones: no back-filled switch and no LEGACY tag, so expand-all shares the date row. */
+    const lone = !retroCount && !legacyShown;
     const excludedShown = type === 'playoffs' ? [] : excluded;
     const excludedNote = excludedShown.length ? <ExcludedList games={excludedShown} /> : null;
     if (loading)
@@ -191,8 +199,10 @@ export function GameList({
 
     return (
         <div className="flex flex-col gap-2">
-            {/* Phones: team and result share the first row, the date window gets its own, the rest sits under it. */}
-            <div className="panel flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2 max-sm:gap-x-2">
+            {/* Phones: team and result share the first row, the date window gets its own, and the back-filled switch,
+                LEGACY and expand-all share the last (the shown count is the KPI record, so it is read out, not drawn).
+                With neither switch nor tag, expand-all joins the date row instead of sitting alone. */}
+            <div className="panel flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2 max-sm:gap-x-2 max-[359.98px]:px-2">
                 <label htmlFor={teamId} className="sr-only">
                     Team
                 </label>
@@ -203,7 +213,7 @@ export function GameList({
                         setTeam(e.target.value);
                         refilter();
                     }}
-                    className={cn(SELECT, 'max-sm:flex-1 max-sm:tracking-[0.04em]')}
+                    className={cn(SELECT, 'max-sm:flex-1 max-sm:tracking-[0.04em] max-[359.98px]:tracking-normal')}
                 >
                     <option value="all">All teams</option>
                     {TEAM_CODES.map(t => (
@@ -221,6 +231,8 @@ export function GameList({
                         refilter();
                     }}
                     options={RESULT_OPTIONS}
+                    className={RESULT_SEG}
+                    optionClassName={RESULT_OPT}
                 />
                 {retroCount ? (
                     <button
@@ -233,11 +245,17 @@ export function GameList({
                         <span className={cn('relative inline-block h-4 w-7 rounded-full border transition-colors', includeRetro ? 'border-brand bg-brand/30' : 'border-line-strong bg-surface-2')}>
                             <span className={cn('absolute top-[1px] h-3 w-3 rounded-full transition-transform', includeRetro ? 'translate-x-[13px] bg-brand' : 'translate-x-[1px] bg-fg-2')} />
                         </span>
-                        Back-filled {retroCount.toLocaleString('en-US')}
+                        <span>
+                            <span className="max-[359.98px]:hidden">Back-filled</span>
+                            <abbr title="Back-filled" className="hidden no-underline max-[359.98px]:inline">
+                                BF
+                            </abbr>{' '}
+                            {retroCount.toLocaleString('en-US')}
+                        </span>
                     </button>
                 ) : null}
                 {dates.length > 2 ? (
-                    <div className="flex min-w-[14rem] flex-1 items-center gap-3 max-sm:order-1 max-sm:basis-full">
+                    <div className={cn('flex min-w-[14rem] flex-1 items-center gap-3 max-sm:order-1', lone ? 'max-sm:min-w-0' : 'max-sm:basis-full')}>
                         <span className="sr-only" id="date-window">
                             Dates
                         </span>
@@ -260,12 +278,12 @@ export function GameList({
                     </div>
                 ) : null}
                 {legacyShown ? (
-                    <GlossLink term="legacy" desc="Published by the previous site model" className="ml-auto max-sm:order-2">
+                    <GlossLink term="legacy" desc="Published by the previous site model" className="ml-auto max-sm:order-2 max-sm:ml-0">
                         <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">LEGACY</span>
                     </GlossLink>
                 ) : null}
-                <div className={cn('flex items-center gap-3 max-sm:order-2', !legacyShown && 'ml-auto')}>
-                    <p className="text-micro uppercase tracking-label text-fg-3" aria-live="polite">
+                <div className={cn('flex items-center gap-3 max-sm:ml-auto', lone ? 'max-sm:order-1' : 'max-sm:order-2', !legacyShown && 'ml-auto')}>
+                    <p className="text-micro uppercase tracking-label text-fg-3 max-sm:sr-only" aria-live="polite">
                         {rows.length.toLocaleString('en-US')} shown
                         {includeRetro ? <span className="ml-2 text-warn">+BF</span> : null}
                     </p>
@@ -518,7 +536,7 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
         </>
     );
     const final = (
-        <span className="flex min-w-0 items-center gap-2.5 text-body">
+        <span className="flex min-w-0 items-center gap-2.5 text-body md:max-lg:flex-wrap md:max-lg:gap-x-1.5 md:max-lg:gap-y-1">
             <Crest tri={g.away} size={28} className="drop-shadow-none" />
             <span className={cn('w-9 font-bold', !homeWon ? 'text-fg-1' : 'text-fg-3')}>{g.away}</span>
             <span className={cn('w-4 text-right font-display text-title font-bold tabular-nums', !homeWon ? 'text-fg-1' : 'text-fg-3')}>{g.awayScore}</span>
@@ -742,7 +760,7 @@ function ListSkeleton({ days, openRows, more, after }: { days: number; openRows:
         <div aria-busy="true" className="flex flex-col gap-2">
             <div aria-hidden="true" className="panel invisible flex items-center gap-x-4 px-3 py-2">
                 <span className={cn(SELECT, 'inline-block w-24')} />
-                <Segmented label="Result" size="sm" value="all" onChange={() => {}} options={RESULT_OPTIONS} />
+                <Segmented label="Result" size="sm" value="all" onChange={() => {}} options={RESULT_OPTIONS} className={RESULT_SEG} optionClassName={RESULT_OPT} />
             </div>
             <div aria-hidden="true" className="invisible">
                 <KpiStrip s={summarize([])} />

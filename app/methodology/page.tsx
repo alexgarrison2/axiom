@@ -44,6 +44,7 @@ const SECTIONS = [
     { id: 'game-story', label: 'Game story' },
     { id: 'pony-score', label: 'Pony score' },
     { id: 'players', label: 'Players & standings' },
+    { id: 'props', label: 'Player props' },
     { id: 'data-sources', label: 'Data sources' },
     { id: 'glossary', label: 'Glossary' },
 ];
@@ -74,7 +75,7 @@ function MetricsTable({ summary }: { summary: SeasonSummary }) {
     return (
         <ScrollRegion label={`${summary.season} validation metrics`} className="panel">
             {/* Phones: labels and headers wrap and the badge sits over its number, so log loss stays on screen. */}
-            <table className="table-dense min-w-[520px] max-sm:min-w-0 max-sm:[&_th]:!whitespace-normal">
+            <table className="table-dense min-w-[520px] max-sm:min-w-0 max-sm:[&_td]:!px-1.5 max-sm:[&_th]:!whitespace-normal max-sm:[&_th]:!px-1.5">
                 <caption className="sr-only">
                     {summary.season} {summary.gameType ?? ''} season: model versus baselines. Lower Brier and log loss are better.
                 </caption>
@@ -99,8 +100,8 @@ function MetricsTable({ summary }: { summary: SeasonSummary }) {
                                 <td className="text-right text-fg-1">{fmt(r.accuracy, 1, true)}</td>
                                 <td className="text-right text-fg-1">{fmt(r.brier, 4)}</td>
                                 <td className="text-right text-fg-1">
-                                    {b === 'baseline' ? <span className="mr-2 text-micro uppercase tracking-[0.1em] text-neg max-sm:mr-0 max-sm:block">beats model</span> : null}
-                                    {b === 'model' ? <span className="mr-2 text-micro uppercase tracking-[0.1em] text-pos max-sm:mr-0 max-sm:block">model better</span> : null}
+                                    {b === 'baseline' ? <span className="mr-2 text-micro uppercase tracking-[0.1em] text-neg max-sm:mr-0 max-sm:block max-sm:whitespace-normal max-sm:leading-[13px]">beats model</span> : null}
+                                    {b === 'model' ? <span className="mr-2 text-micro uppercase tracking-[0.1em] text-pos max-sm:mr-0 max-sm:block max-sm:whitespace-normal max-sm:leading-[13px]">model better</span> : null}
                                     {fmt(r.logLoss, 4)}
                                 </td>
                             </tr>
@@ -136,7 +137,7 @@ function WalkForwardTable({ rows: wf, market }: { rows: WalkForwardRow[]; market
     const hasHome = rows.some(r => r.homeRateLogLoss != null);
     return (
         <ScrollRegion label="Walk-forward backtest by season" className="panel">
-            <table className="table-dense min-w-[520px] max-sm:min-w-0 max-sm:[&_th]:!whitespace-normal">
+            <table className="table-dense min-w-[520px] max-sm:min-w-0 max-sm:[&_td]:!px-1.5 max-sm:[&_th]:!whitespace-normal max-sm:[&_th]:!px-1.5">
                 <caption className="sr-only">Walk-forward backtest: the model is trained only on seasons before each test season. Lower log loss is better.</caption>
                 <thead>
                     <tr>
@@ -720,8 +721,8 @@ export default function MethodologyPage() {
                                         >
                                             <dt className="flex items-baseline justify-between gap-3">
                                                 {e.anchors?.map(a => (
-                                                    // Out of the flow below lg so justify-between pairs the label with its title (in flow it centred the label).
-                                                    <span key={a} id={`term-${a}`} aria-hidden="true" className="w-0 scroll-mt-[calc(var(--appbar-h)+24px)] max-lg:absolute max-lg:scroll-mt-2" />
+                                                    // Out of the flow so justify-between pairs the label with its title (in flow it centred the label).
+                                                    <span key={a} id={`term-${a}`} aria-hidden="true" className="absolute w-0 scroll-mt-[calc(var(--appbar-h)+24px)] max-lg:scroll-mt-2" />
                                                 ))}
                                                 <span className="font-display text-body font-semibold text-fg-1 max-lg:shrink-0">{e.label}</span>
                                                 {e.title !== e.label ? <span className="text-right text-micro uppercase tracking-[0.1em] text-fg-3">{e.title}</span> : null}

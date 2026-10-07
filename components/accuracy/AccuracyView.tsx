@@ -23,6 +23,8 @@ export interface AccuracyViewProps {
     /** Season labels with data, newest first, e.g. ["2026-27", "2025-26"]. */
     seasons: string[];
     currentSeason: string;
+    /** Season to open on (from ?season=), so the server render already matches the URL. */
+    initialSeason?: string;
     /** Record straight from the graded list, per season and game type (reconciles a stale report). */
     tallies?: Record<string, Partial<Record<GameTypeKey, SeasonTally>>>;
     /** Finals for ledger bets still listed as pending. */
@@ -43,8 +45,8 @@ const dec4 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(4)
 /** Calibration and confidence tiers need at least this many games to show anything but noise. */
 const CHART_N = 30;
 
-export function AccuracyView({ report, ledger, seasons, currentSeason, tallies = {}, finals = {}, shapes }: AccuracyViewProps) {
-    const [season, setSeason] = React.useState<string>(currentSeason);
+export function AccuracyView({ report, ledger, seasons, currentSeason, initialSeason, tallies = {}, finals = {}, shapes }: AccuracyViewProps) {
+    const [season, setSeason] = React.useState<string>(initialSeason ?? currentSeason);
     const [type, setType] = React.useState<GameTypeKey>('all');
 
     // Honour /accuracy?season=2025-26 and #ledger deep links.

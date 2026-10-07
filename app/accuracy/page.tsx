@@ -19,7 +19,8 @@ export const metadata: Metadata = {
     alternates: { canonical: '/accuracy' },
 };
 
-export default function AccuracyPage() {
+export default async function AccuracyPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+    const asked = (await searchParams).season;
     const report = loadReport();
     const graded = loadGradedGames();
     const ledgerRaw = loadLedgerRaw();
@@ -29,6 +30,8 @@ export default function AccuracyPage() {
         .filter(s => /^\d{4}-\d{2}$/.test(s))
         .sort()
         .reverse();
+    // ?season=2025-26 renders that season from the start (no flash of the current one before hydration).
+    const initialSeason = typeof asked === 'string' && (asked === 'all' || seasons.includes(asked)) ? asked : CURRENT;
     // The current season is reconciled against the graded list so a report that lags a refresh never contradicts it.
     const tallies: Record<string, Record<GameTypeKey, SeasonTally>> = { [CURRENT]: tallyByType(graded, CURRENT, loadExcludedGames(CURRENT, graded)) };
     // Day count and newest-day picks per view (live picks), so the day list's placeholder matches it exactly.
@@ -45,7 +48,7 @@ export default function AccuracyPage() {
     return (
         <main className="pb-tabbar">
             <div className="page py-5 md:py-7">
-                <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} finals={finals} shapes={shapes} />
+                <AccuracyView initialSeason={initialSeason} report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} finals={finals} shapes={shapes} />
             </div>
         </main>
     );

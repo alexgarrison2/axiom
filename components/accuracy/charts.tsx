@@ -19,7 +19,7 @@ function useWidth(fallback = 480): [(el: HTMLDivElement | null) => void, number]
     const [w, setW] = React.useState(fallback);
     React.useEffect(() => {
         if (!el) return;
-        const set = () => setW(Math.max(280, Math.round(el.clientWidth)));
+        const set = () => setW(Math.max(200, Math.round(el.clientWidth)));
         set();
         if (typeof ResizeObserver === 'undefined') return;
         const ro = new ResizeObserver(set);
@@ -45,38 +45,90 @@ function Glow({ id, blur = 3 }: { id: string; blur?: number }) {
 }
 
 /**
- * Readout state for a chart. A mouse hovers as before; a finger taps or drags sideways to pin a
- * readout (vertical swipes still scroll the page), taps the same spot again or anywhere else to clear it.
+ * Readout state for a chart. A mouse hovers as before. A finger pins a readout with a tap (tap the
+ * same spot again, anywhere else, or scroll the page to clear it) or scrubs once a sideways drag
+ * has started; a vertical swipe that starts on the chart just scrolls.
  */
-function useReadout<T>() {
-    const [value, setValue] = React.useState<T | null>(null);
-    const box = React.useRef<SVGSVGElement>(null);
-    React.useEffect(() => {
-        if (value == null) return;
-        const off = (e: PointerEvent) => {
-            if (e.pointerType !== 'mouse' && !box.current?.contains(e.target as Node)) setValue(null);
-        };
-        document.addEventListener('pointerdown', off);
-        return () => document.removeEventListener('pointerdown', off);
-    }, [value]);
-    return [value, setValue, box] as const;
+interface Gesture {
+    /** Pointer down on the chart: remembers whether it is a finger and where a touch started. */
+    down: (e: { pointerType: string; clientX: number; clientY: number }) => void;
+    /** Pointer move: true when the readout should follow (a mouse, or a touch that has become a sideways scrub). */
+    follows: (e: { pointerType: string; clientX: number; clientY: number }) => boolean;
+    /** The browser took the touch (a scroll). */
+    cancel: () => void;
+    /** Click: true for a finger tap that was not the end of a scrub. */
+    tapped: () => boolean;
 }
 
-/** Pointer handlers for a scrub area over `count` evenly spaced points. */
-function scrubHandlers(count: number, hover: number | null, setHover: (i: number | null) => void) {
-    const at = (e: React.PointerEvent<SVGRectElement>) => {
-        const r = e.currentTarget.getBoundingClientRect();
-        return Math.max(0, Math.min(count - 1, Math.round(((e.clientX - r.left) / r.width) * (count - 1))));
+function useReadout<T>() {
+    const [value, set] = React.useState<T | null>(null);
+    const box = React.useRef<SVGSVGElement>(null);
+    const finger = React.useRef(false);
+    const drag = React.useRef<{ x: number; y: number; scrub: boolean } | null>(null);
+    React.useEffect(() => {
+        if (value == null || !finger.current) return;
+        const off = (e: PointerEvent) => {
+            if (!box.current?.contains(e.target as Node)) set(null);
+        };
+        const scrolled = () => set(null);
+        document.addEventListener('pointerdown', off);
+        window.addEventListener('scroll', scrolled, { passive: true });
+        return () => {
+            document.removeEventListener('pointerdown', off);
+            window.removeEventListener('scroll', scrolled);
+        };
+    }, [value]);
+    const gesture = React.useMemo<Gesture>(
+        () => ({
+            down: e => {
+                finger.current = e.pointerType !== 'mouse';
+                drag.current = finger.current ? { x: e.clientX, y: e.clientY, scrub: false } : null;
+            },
+            follows: e => {
+                if (e.pointerType === 'mouse') return true;
+                const d = drag.current;
+                if (!d) return false;
+                if (!d.scrub) {
+                    const dx = Math.abs(e.clientX - d.x);
+                    if (dx < 8 || dx <= Math.abs(e.clientY - d.y)) return false;
+                    d.scrub = true;
+                }
+                return true;
+            },
+            cancel: () => {
+                drag.current = null;
+            },
+            tapped: () => {
+                const scrubbed = drag.current?.scrub;
+                drag.current = null;
+                return finger.current && !scrubbed;
+            },
+        }),
+        [],
+    );
+    return [value, set, box, gesture] as const;
+}
+
+/** Pointer handlers for a scrub area over `count` evenly spaced points across the plot (`l`/`r` padding of a `w`-wide chart). */
+function scrubHandlers(count: number, plot: { l: number; r: number; w: number }, value: number | null, set: (i: number | null) => void, g: Gesture) {
+    const at = (e: React.PointerEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>) => {
+        const box = (e.currentTarget.ownerSVGElement ?? e.currentTarget).getBoundingClientRect();
+        const frac = (((e.clientX - box.left) / box.width) * plot.w - plot.l) / (plot.w - plot.l - plot.r);
+        return Math.max(0, Math.min(count - 1, Math.round(frac * (count - 1))));
     };
     return {
-        onPointerMove: (e: React.PointerEvent<SVGRectElement>) => setHover(at(e)),
-        onPointerDown: (e: React.PointerEvent<SVGRectElement>) => {
-            if (e.pointerType === 'mouse') return;
+        onPointerDown: (e: React.PointerEvent<SVGRectElement>) => g.down(e),
+        onPointerMove: (e: React.PointerEvent<SVGRectElement>) => {
+            if (g.follows(e)) set(at(e));
+        },
+        onPointerCancel: () => g.cancel(),
+        onClick: (e: React.MouseEvent<SVGRectElement>) => {
+            if (!g.tapped()) return;
             const i = at(e);
-            setHover(i === hover ? null : i);
+            set(i === value ? null : i);
         },
         onPointerLeave: (e: React.PointerEvent<SVGRectElement>) => {
-            if (e.pointerType === 'mouse') setHover(null);
+            if (e.pointerType === 'mouse') set(null);
         },
     };
 }
@@ -98,11 +150,11 @@ export function ReliabilityChart({ bins }: { bins: ReliabilityBin[] }) {
     const x = (v: number) => pad.l + v * (w - pad.l - pad.r);
     const y = (v: number) => pad.t + (1 - v) * (h - pad.t - pad.b);
     const maxN = Math.max(1, ...pts.map(p => p.n));
-    const [hover, setHover, svgRef] = useReadout<ReliabilityBin>();
+    const [hover, setHover, svgRef, gesture] = useReadout<ReliabilityBin>();
     const d = pts.map((p, i) => `${i ? 'L' : 'M'}${x(p.meanPred!).toFixed(1)},${y(p.actual!).toFixed(1)}`).join('');
-    // A finger picks the nearest dot anywhere on the plot (the dots are small); tapping it again clears it.
-    const onTouch = (e: React.PointerEvent<SVGSVGElement>) => {
-        if (e.pointerType === 'mouse' || !pts.length) return;
+    // A finger tap picks the nearest dot anywhere on the plot (the dots are small); tapping it again clears it.
+    const onTap = (e: React.MouseEvent<SVGSVGElement>) => {
+        if (!gesture.tapped() || !pts.length) return;
         const r = e.currentTarget.getBoundingClientRect();
         const px = ((e.clientX - r.left) / r.width) * w;
         const py = ((e.clientY - r.top) / r.height) * h;
@@ -121,7 +173,9 @@ export function ReliabilityChart({ bins }: { bins: ReliabilityBin[] }) {
                     className="block"
                     role="img"
                     aria-label="Calibration: predicted versus actual home win rate by probability bin"
-                    onPointerDown={onTouch}
+                    onPointerDown={e => gesture.down(e)}
+                    onPointerCancel={() => gesture.cancel()}
+                    onClick={onTap}
                 >
                     <Glow id={glow} />
                     {[0, 0.25, 0.5, 0.75, 1].map(v => (
@@ -255,7 +309,7 @@ export function RollingChart({ points }: { points: RollingPoint[] }) {
     const glow = React.useId().replace(/:/g, '');
     const h = 200;
     const pad = { l: 44, r: 10, t: 8, b: 22 };
-    const [hover, setHover, svgRef] = useReadout<number>();
+    const [hover, setHover, svgRef, gesture] = useReadout<number>();
     if (points.length < 2) return <p className="label">Needs 100 games</p>;
     const vals = points.flatMap(p => [p.model, p.market]);
     const lo = Math.floor(Math.min(...vals) * 100) / 100 - 0.005;
@@ -294,7 +348,8 @@ export function RollingChart({ points }: { points: RollingPoint[] }) {
                             <circle cx={x(hover!)} cy={y(hp.market)} r="3.5" fill={MARKET} />
                         </g>
                     ) : null}
-                    <rect x={pad.l} y={pad.t} width={w - pad.l - pad.r} height={h - pad.t - pad.b} fill="transparent" {...scrubHandlers(points.length, hover, setHover)} />
+                    {/* The hit area runs past both ends of the plot so the first and newest points are easy to reach. */}
+                    <rect x={pad.l - 10} y={pad.t} width={w - pad.l + 10} height={h - pad.t - pad.b} fill="transparent" {...scrubHandlers(points.length, { l: pad.l, r: pad.r, w }, hover, setHover, gesture)} />
                 </svg>
                 {hp ? (
                     <Tip className={cn('right-2 top-1', hover! > (points.length - 1) / 2 && 'coarse:left-12 coarse:right-auto')}>
@@ -327,7 +382,7 @@ export function UnitsChart({ points, className }: { points: { date: string; unit
     const grad = `${glow}-g`;
     const h = 180;
     const pad = { l: 36, r: 10, t: 8, b: 22 };
-    const [hover, setHover, svgRef] = useReadout<number>();
+    const [hover, setHover, svgRef, gesture] = useReadout<number>();
     if (points.length < 2) return null;
     const vals = [0, ...points.map(p => p.units)];
     const lo = Math.floor(Math.min(...vals)) - 1;
@@ -375,12 +430,12 @@ export function UnitsChart({ points, className }: { points: { date: string; unit
                         </g>
                     ) : null}
                     <rect
-                        x={pad.l}
+                        x={pad.l - 10}
                         y={pad.t}
-                        width={w - pad.l - pad.r}
+                        width={w - pad.l + 10}
                         height={h - pad.t - pad.b}
                         fill="transparent"
-                        {...scrubHandlers(points.length, hover, setHover)}
+                        {...scrubHandlers(points.length, { l: pad.l, r: pad.r, w }, hover, setHover, gesture)}
                     />
                 </svg>
                 {hp ? (
