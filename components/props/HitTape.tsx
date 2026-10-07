@@ -14,7 +14,7 @@ export interface HitTapeProps {
 
 const SIZES = {
     row: { bar: 6, gap: 2, h: 32, top: 0, bottom: 0 },
-    compact: { bar: 4, gap: 2, h: 30, top: 0, bottom: 0 },
+    compact: { bar: 4, gap: 1, h: 30, top: 0, bottom: 0 },
 } as const;
 
 /**

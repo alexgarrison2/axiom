@@ -62,7 +62,7 @@ function RateCell({ r, title, className }: { r: Rate; title: string; className?:
         <td className={cn(CELL_BG, 'h-11 border-b border-line px-1 text-center', className)} title={`${title}: ${r.hits} of ${r.n}`}>
             <span
                 className={cn(
-                    'mx-auto flex h-8 w-11 flex-col items-center justify-center rounded-chip leading-none md:w-12',
+                    'mx-auto flex h-8 w-11 flex-col items-center justify-center rounded-chip leading-none max-sm:w-10 md:w-12',
                     thin ? 'text-fg-3' : p >= 0.6 ? 'font-semibold text-fg-1' : 'text-fg-2',
                 )}
                 style={thin ? undefined : { background: `rgb(var(--brand-rgb) / ${(0.04 + 0.34 * p).toFixed(3)})` }}
@@ -83,7 +83,7 @@ function EdgeValue({ e }: { e: number | null }) {
     return (
         <span
             className={cn(
-                'inline-flex min-w-[2.75rem] justify-end rounded-chip px-1 py-0.5 font-semibold md:min-w-[3.25rem] md:px-1.5',
+                'inline-flex min-w-[2.75rem] justify-end rounded-chip px-1 py-0.5 font-semibold max-sm:min-w-[2.5rem] md:min-w-[3.25rem] md:px-1.5',
                 v > 0 ? 'text-pos' : v < 0 ? 'text-neg' : 'text-fg-2',
                 strong && 'bg-pos/10 shadow-[0_0_12px_rgb(var(--pos-rgb)/0.25)]',
             )}
@@ -134,6 +134,18 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
     const searchId = React.useId();
     const rootRef = React.useRef<HTMLDivElement>(null);
     const barRef = React.useRef<HTMLDivElement>(null);
+    // Below lg: the table's visible width (an opened row's detail pins to it) and no start fade over the pinned names.
+    const [narrow, setNarrow] = React.useState(false);
+    const viewRO = React.useRef<ResizeObserver | null>(null);
+    const regionRef = React.useCallback((el: HTMLDivElement | null) => {
+        viewRO.current?.disconnect();
+        if (!el || typeof ResizeObserver === 'undefined') return;
+        viewRO.current = new ResizeObserver(() => {
+            rootRef.current?.style.setProperty('--props-view-w', `${el.clientWidth}px`);
+            setNarrow(window.innerWidth < 1024);
+        });
+        viewRO.current.observe(el);
+    }, []);
 
     // The column labels pin under the sticky control bar on wide screens; track its height.
     React.useEffect(() => {
@@ -213,6 +225,42 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
     const colCount = 7 + (view === 'tonight' ? 3 : 0) + (showAtt ? 1 : 0) + (priced ? 3 : 0);
     const toggleOpen = React.useCallback((id: number) => setOpen(o => (o === id ? null : id)), []);
 
+    // Phones: the filter chips scroll with the page; only the stat and line stay pinned.
+    const chips = (className: string) => (
+        <div role="group" aria-label="Filters" className={cn('-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 scrollbar-hide md:mx-0 md:flex-wrap md:px-0', className)}>
+            {(['all', 'F', 'D'] as const).map(p => (
+                <FilterChip key={p} selected={filter.pos === p} onSelectedChange={() => update({ pos: p })}>
+                    {p === 'all' ? 'All' : p}
+                </FilterChip>
+            ))}
+            <FilterChip selected={filter.role === 'top6'} onSelectedChange={v => update({ role: v ? 'top6' : 'all' })} title="Top-six forwards and top-four defence on tonight's lines">
+                Top 6
+            </FilterChip>
+            <FilterChip selected={filter.role === 'pp1'} onSelectedChange={v => update({ role: v ? 'pp1' : 'all' })}>
+                PP1
+            </FilterChip>
+            <FilterChip selected={filter.hot} onSelectedChange={v => update({ hot: v })} title="Last 5 games at least 25 points above his season (or last season) rate">
+                Heating up
+            </FilterChip>
+            {priced ? (
+                <FilterChip selected={filter.priced} onSelectedChange={v => update({ priced: v })}>
+                    Priced
+                </FilterChip>
+            ) : null}
+            {(catKey === 'pts' || catKey === 'a') && view === 'tonight' ? (
+                <FilterChip
+                    selected={filter.boost}
+                    onSelectedChange={v => update({ boost: v })}
+                    count={boostCount}
+                    title="Plus money to record a point, skating with a linemate priced -200 or shorter"
+                    className={cn(!filter.boost && boostCount > 0 && 'border-warn/50 text-warn')}
+                >
+                    Elite linemate
+                </FilterChip>
+            ) : null}
+        </div>
+    );
+
     return (
         <div ref={rootRef} className="flex flex-col gap-4">
             <PageHeading
@@ -278,7 +326,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
             />
 
             {/* Sticky: the stat and line always stay named while the table scrolls. */}
-            <div ref={barRef} className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
+            <div ref={barRef} className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 [@media(max-height:500px)_and_(max-width:1023px)]:static -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
                 <div className="flex flex-wrap items-center gap-2">
                     <Segmented
                         label="Category"
@@ -305,39 +353,9 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
                         className="hidden placeholder:tracking-label md:ml-auto md:block md:w-56"
                     />
                 </div>
-                <div role="group" aria-label="Filters" className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 scrollbar-hide md:mx-0 md:flex-wrap md:px-0">
-                    {(['all', 'F', 'D'] as const).map(p => (
-                        <FilterChip key={p} selected={filter.pos === p} onSelectedChange={() => update({ pos: p })}>
-                            {p === 'all' ? 'All' : p}
-                        </FilterChip>
-                    ))}
-                    <FilterChip selected={filter.role === 'top6'} onSelectedChange={v => update({ role: v ? 'top6' : 'all' })} title="Top-six forwards and top-four defence on tonight's lines">
-                        Top 6
-                    </FilterChip>
-                    <FilterChip selected={filter.role === 'pp1'} onSelectedChange={v => update({ role: v ? 'pp1' : 'all' })}>
-                        PP1
-                    </FilterChip>
-                    <FilterChip selected={filter.hot} onSelectedChange={v => update({ hot: v })} title="Last 5 games at least 25 points above his season (or last season) rate">
-                        Heating up
-                    </FilterChip>
-                    {priced ? (
-                        <FilterChip selected={filter.priced} onSelectedChange={v => update({ priced: v })}>
-                            Priced
-                        </FilterChip>
-                    ) : null}
-                    {(catKey === 'pts' || catKey === 'a') && view === 'tonight' ? (
-                        <FilterChip
-                            selected={filter.boost}
-                            onSelectedChange={v => update({ boost: v })}
-                            count={boostCount}
-                            title="Plus money to record a point, skating with a linemate priced -200 or shorter"
-                            className={cn(!filter.boost && boostCount > 0 && 'border-warn/50 text-warn')}
-                        >
-                            Elite linemate
-                        </FilterChip>
-                    ) : null}
-                </div>
+                {chips('max-md:hidden')}
             </div>
+            {chips('md:hidden')}
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-micro font-medium uppercase tracking-label text-fg-3">
                 <p aria-live="polite">
@@ -372,7 +390,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
                     </button>
                 </div>
             ) : (
-                <ScrollRegion label={`${cat.label} props table`} className="rounded-card border border-line bg-surface-1 xl:overflow-visible">
+                <ScrollRegion ref={regionRef} stickyStart={narrow} label={`${cat.label} props table`} className="rounded-card border border-line bg-surface-1 xl:overflow-visible">
                     <table className="w-full font-mono text-caption tabular-nums lg:min-w-[1080px]">
                         <caption className="sr-only">
                             {cat.label} props, {view === 'tonight' ? "tonight's slate" : 'all skaters'}, sorted by {sortKey} {sortDir === 'desc' ? 'highest first' : 'lowest first'}. Hit rates count games over the
@@ -385,7 +403,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
                                 {view === 'tonight' ? head('toi', 'TOI', 'Expected minutes (recent games weighted)', 'hidden lg:table-cell', 'right') : null}
                                 {view === 'tonight' ? head('proj', 'Proj', `pony xG projected ${cat.stat} tonight (the mean behind the fair price)`, 'hidden md:table-cell', 'right') : null}
                                 {showAtt ? head('att', 'Att/G', 'Shot attempts per game, last 10: on net, missed and blocked', 'hidden lg:table-cell', 'right') : null}
-                                <th scope="col" className="border-b border-line px-2 text-left text-micro font-medium uppercase tracking-[0.06em] text-fg-3">
+                                <th scope="col" className="border-b border-line px-2 text-left text-micro font-medium uppercase tracking-[0.06em] text-fg-3 max-sm:px-1">
                                     <span className="hidden md:inline">Last 20</span>
                                     <span className="md:hidden">Games</span>
                                 </th>
@@ -457,13 +475,13 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
     return (
         <>
             <tr className="group">
-                <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-11 w-[9.5rem] min-w-[9.5rem] border-b border-line px-2 text-left font-normal md:w-64')}>
+                <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-11 w-[9.5rem] min-w-[9.5rem] border-b border-line px-2 text-left font-normal max-sm:px-1.5 md:w-64')}>
                     <button
                         type="button"
                         aria-expanded={open}
                         aria-controls={detailId}
                         onClick={() => onToggle(p.id)}
-                        className="flex w-full items-center gap-2 text-left focus-visible:outline-offset-[-2px]"
+                        className="flex w-full items-center gap-2 text-left focus-visible:outline-offset-[-2px] max-md:max-w-[10rem] max-sm:max-w-[9.5rem]"
                     >
                         <TeamLogo tri={p.team} size={22} />
                         <span className="flex min-w-0 flex-col">
@@ -479,7 +497,7 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
                                     </span>
                                 ) : null}
                             </span>
-                            <span className="flex min-w-0 items-center gap-1.5 text-micro text-fg-3">
+                            <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap text-micro text-fg-3 max-md:gap-1">
                                 <UnitChip unit={p.unit} pp={p.pp} move={p.move} />
                                 {view === 'tonight' && p.opp ? (
                                     <span className="uppercase md:hidden">
@@ -535,7 +553,7 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
                         {r.att?.toFixed(1) ?? '—'}
                     </td>
                 ) : null}
-                <td className={cn(CELL_BG, 'h-11 border-b border-line px-1.5 md:px-2')}>
+                <td className={cn(CELL_BG, 'h-11 border-b border-line px-1 md:px-2')}>
                     <HitTape log={p.log} cat={cat} line={line} className="hidden md:block" />
                     <HitTape log={p.log} cat={cat} line={line} games={10} size="compact" className="md:hidden" />
                 </td>
@@ -590,7 +608,10 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
             {open ? (
                 <tr id={detailId}>
                     <td colSpan={colCount} className="border-b border-line bg-surface-2 p-0">
-                        <PropDetail r={r} cat={cat} doc={doc} detail={detail} seasons={seasons} />
+                        {/* Below lg the detail stays on screen while a wide table scrolls sideways. */}
+                        <div className="max-lg:sticky max-lg:left-0 max-lg:w-[var(--props-view-w,100%)]">
+                            <PropDetail r={r} cat={cat} doc={doc} detail={detail} seasons={seasons} />
+                        </div>
                     </td>
                 </tr>
             ) : null}

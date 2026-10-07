@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { ScrollRegion } from '@/components/ui/scroll-region';
 import { TeamLogo } from '@/components/views/TeamLogo';
 import { cn } from '@/lib/utils';
 import { GameLog } from './GameLog';
@@ -177,6 +178,13 @@ export function PropDetail({ r, cat, doc, detail, seasons }: PropDetailProps) {
     const oppRest = side && rest ? rest[oppSide] : null;
     const prevGames = p.log.slice(-20).filter(x => x[8] === 1).length;
 
+    // A log wider than the screen opens on the newest games (the right end).
+    const logRef = React.useRef<HTMLDivElement>(null);
+    React.useEffect(() => {
+        const el = logRef.current;
+        if (el) el.scrollLeft = el.scrollWidth;
+    }, []);
+
     return (
         <div className="flex flex-col gap-6 p-4 md:p-5">
             <dl className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4 xl:grid-cols-8">
@@ -257,8 +265,14 @@ export function PropDetail({ r, cat, doc, detail, seasons }: PropDetailProps) {
                         </span>
                     }
                 >
-                    <div className="-mx-4 overflow-x-auto px-4 scrollbar-hide md:mx-0 md:px-0">
-                        <GameLog log={p.log} ext={ext} cat={cat} line={line} />
+                    <div className="relative -mx-4 md:mx-0">
+                        <ScrollRegion ref={logRef} label={`${cat.stat} log`} stickyStart className="px-4 scrollbar-hide md:px-0">
+                            <GameLog log={p.log} ext={ext} cat={cat} line={line} />
+                        </ScrollRegion>
+                        {/* Below lg the row labels stay put while the games scroll under them. */}
+                        <div className="pointer-events-none absolute left-0 top-0 bg-surface-2 pl-4 after:absolute after:inset-y-0 after:left-full after:w-3 after:bg-gradient-to-r after:from-surface-2 after:to-transparent after:content-[''] md:pl-0 lg:hidden">
+                            <GameLog log={p.log} ext={ext} cat={cat} line={line} labelsOnly />
+                        </div>
                     </div>
                 </Section>
 

@@ -8,6 +8,8 @@ export interface GameLogProps {
     ext: (ExtRow | null)[];
     cat: Category;
     line: Line;
+    /** Only the row labels, on the panel fill: pinned over the log's left edge while it scrolls (phones). */
+    labelsOnly?: boolean;
 }
 
 const BAR = 24;
@@ -52,7 +54,7 @@ const ROWS: Record<Category['key'], StatRow[]> = {
  * attempts drawn as a hollow column behind each SOG bar, pony xG as a magenta
  * tick on goal bars, and an aligned box score below (one column per game).
  */
-export function GameLog({ log, ext, cat, line }: GameLogProps) {
+export function GameLog({ log, ext, cat, line, labelsOnly }: GameLogProps) {
     const rows = log.slice(-20);
     const xs = ext.slice(-20);
     const stats = ROWS[cat.key];
@@ -69,7 +71,22 @@ export function GameLog({ log, ext, cat, line }: GameLogProps) {
     const hits = values.filter(v => v >= line.k).length;
     const cx = (i: number) => LABEL + i * COL + COL / 2;
 
-    if (!rows.length) return <p className="text-caption text-fg-3">No games logged</p>;
+    if (!rows.length) return labelsOnly ? null : <p className="text-caption text-fg-3">No games logged</p>;
+
+    if (labelsOnly) {
+        return (
+            <svg viewBox={`0 0 ${LABEL - 4} ${height}`} width={LABEL - 4} height={height} className="block font-mono" aria-hidden="true">
+                <text x={0} y={y(line.k - 0.5) + 4} className="fill-fg-2 text-micro uppercase">
+                    {line.label}
+                </text>
+                {stats.map((s, j) => (
+                    <text key={s.key} x={0} y={tableTop + j * ROW + 12} className={cn('text-micro uppercase', s.graded ? 'fill-fg-2' : 'fill-fg-3')}>
+                        {s.label}
+                    </text>
+                ))}
+            </svg>
+        );
+    }
 
     return (
         <svg
