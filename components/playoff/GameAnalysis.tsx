@@ -595,6 +595,7 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
                             return (
                                 <g key={clip}>
                                     <title>{`${p.s.playerName} (${p.s.teamTriCode}) · ${shotClock(p.s, isSeries)} · xG ${fmt(p.s.xG)}`}</title>
+                                    {picked === p.s ? <circle cx={cx} cy={cy} r={mark.ring + 3} fill="none" stroke="rgb(var(--text-1-rgb))" strokeWidth={1.5} /> : null}
                                     <circle cx={cx} cy={cy} r={mark.ring} fill={p.s.teamTriCode === game.awayTriCode ? awayColor : homeColor} />
                                     <clipPath id={clip}>
                                         <circle cx={cx} cy={cy} r={mark.face} />

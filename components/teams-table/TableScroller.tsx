@@ -68,14 +68,22 @@ export function TableScroller({ label, className, children, pageScroll, onScroll
  * The header rows of a page-scrolled table, pinned under the app bar below lg
  * (and on short viewports), kept in line with the table's horizontal scroll.
  * Render it right above the TableScroller inside the same box; the table's
- * own <thead> is hidden at those sizes (PINNED_HEAD_HIDE).
+ * own <thead> is hidden at those sizes (PINNED_HEAD_HIDE). The caller mirrors
+ * the table into it (TableScroller onScrollX -> ref.scrollLeft); a sideways
+ * swipe on the header itself moves the table (its next sibling region).
  */
 export const StickyHead = React.forwardRef<HTMLDivElement, { className?: string; children: React.ReactNode }>(function StickyHead({ className, children }, ref) {
+    const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const head = e.currentTarget;
+        const table = head.nextElementSibling;
+        if (table instanceof HTMLElement && Math.abs(table.scrollLeft - head.scrollLeft) >= 1) table.scrollLeft = head.scrollLeft;
+    };
     return (
         <div
             ref={ref}
+            onScroll={onScroll}
             className={cn(
-                'sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-[6] hidden overflow-hidden max-lg:block [@media(max-height:500px)]:block',
+                'sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-[6] hidden overflow-x-auto overflow-y-hidden overscroll-x-contain scrollbar-hide max-lg:block [@media(max-height:500px)]:block',
                 className,
             )}
         >

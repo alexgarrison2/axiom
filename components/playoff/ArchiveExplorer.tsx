@@ -308,7 +308,7 @@ function GameRow({ game: g, open, onOpen, controls }: { game: ArchiveGame; open:
                     aria-expanded={open}
                     aria-controls={controls}
                     onClick={onOpen}
-                    className="ml-auto inline-flex min-h-8 items-center gap-1 text-micro font-medium uppercase tracking-[0.14em] text-brand hover:underline coarse:min-h-11 max-[359px]:min-w-10 max-[359px]:shrink-0 max-[359px]:justify-center max-[359px]:text-[20px]"
+                    className="ml-auto inline-flex min-h-8 items-center gap-1 text-micro font-medium uppercase tracking-[0.14em] text-brand hover:underline coarse:min-h-11 max-sm:min-w-11 max-sm:justify-end max-[359px]:shrink-0 max-[359px]:justify-center max-[359px]:text-[20px]"
                 >
                     {open ? (
                         'Hide'
