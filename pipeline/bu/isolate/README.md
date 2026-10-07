@@ -34,6 +34,19 @@ Where on the ice a skater changes the shots, after HockeyViz's isolated impact
   shots, all strengths but empty net, window-weighted, minus 1) x shrunk own xG/60 x 1,250 / 60;
   drawing / taking = minor-equivalents per 60 shrunk to the position mean (600 min), minus the mean, x
   1,250 / 60 x the window's net 5v4 xG per minor called (0.130).
+* **Display levels** (round 2, owner: "the defence map is empty"): defence cells are only ~15% narrower than
+  offence (|cell| p90 0.0170 vs 0.0196, p99 0.033 vs 0.039 shots/60, 2026-27), and a split CV (offence / defence lambda on the
+  map target) picks equal strengths (20,000 / 20,000; PP / PK 10,000 / 10,000), so defence is not
+  over-shrunk.  The emptiness was the drawing: one linear level set shared by every type, its top set by
+  offence stars, the first threshold (code 22) above the median cell and a near-invisible first band, so
+  a typical defence map coloured a third of its cells at 20% opacity.  Now each map type has its own int8
+  scale and its own six levels, quantiles 0.5 / 0.65 / 0.78 / 0.88 / 0.95 / 0.99 of |cell| over the type's
+  qualified maps (`export.LEVEL_QUANTILES`), with a stronger opacity ramp: about half of a regular's map is
+  coloured (McDavid defence 0.32 -> 0.52, Matthews 0.24 -> 0.49, Makar 0.20 -> 0.39, Tanev 0.50 -> 0.64).
+* **Goal threat / penalties** (display): finishing (`fin_x`) and shooting (`ixg60`: 5v5 own xG per 60,
+  shrunk 300 min to the position mean; year over year 0.65-0.69 F, 0.70-0.75 D; not in the total, his
+  own shots are inside 5v5 offence), drawn and taken per 60 (YoY 0.76-0.80, 0.69-0.71), as position
+  densities on the page (`lib/players/isolate.ts` `density`).
 * **Left out**: *setting* (teammates' shots beating their own finishing with him on the ice, a ridge on
   on-ice teammates): 5-fold CV picks infinite shrinkage, i.e. no out-of-sample signal without pass
   data.  *Ice won / lost* and coaching terms are not modelled.

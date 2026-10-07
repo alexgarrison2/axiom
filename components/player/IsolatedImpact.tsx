@@ -5,8 +5,8 @@ import Link from 'next/link';
 import * as Popover from '@radix-ui/react-popover';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
-import { isoRings, levels, resample, ringsPath, type Pt } from '@/lib/players/isolate-contour';
-import { minutes, ordinal, PART_KEYS, PART_LABEL, sgn, sgnPct, THIN_MIN, windowLabel, type IsolateView, type MapKey, type PartKey } from '@/lib/players/isolate';
+import { isoRings, resample, ringsPath, type Pt } from '@/lib/players/isolate-contour';
+import { MAP_TYPE, minutes, ordinal, PART_KEYS, PART_LABEL, sgn, sgnPct, THIN_MIN, windowLabel, type Dist, type DistKey, type IsolateView, type MapKey, type PartKey } from '@/lib/players/isolate';
 
 /**
  * Isolated impact, after HockeyViz: where on the ice a skater changes his
@@ -14,18 +14,22 @@ import { minutes, ordinal, PART_KEYS, PART_LABEL, sgn, sgnPct, THIN_MIN, windowL
  * player in his place, with teammates, opponents, score and zone starts held
  * fixed. Half rinks with the net at the top, the shooter's left on the left:
  * orange where more unblocked shots come from than with an average skater,
- * blue where fewer. Each map carries its xG/60 impact; the parts list sums
- * to goals over a standard season. Hover (mouse) or tap a map or a part for
- * its numbers; tap again or elsewhere to close. 5v5 by default, the power
- * play and penalty kill behind the toggle.
+ * blue where fewer (on defence: shots against him, so blue is good). Each
+ * map type has its own contour levels, quantiles of the league's maps of
+ * that type, so a defence map is read on the defence scale and two players'
+ * maps of one type compare. Each map carries its xG/60 impact; the parts list
+ * sums to goals over a standard season; beside it the goal threat (finishing,
+ * shooting) and penalty (drawn, taken) distributions of his position with his
+ * dot. Hover (mouse) or tap any of them for its numbers; tap again or
+ * elsewhere to close. 5v5 by default, the power play and penalty kill behind
+ * the toggle.
  */
 
 const MORE = '#f39143';
 const FEWER = '#38c6e6';
 const PANEL = '#0a0e15';
-/** Band opacities, low to high; the thresholds are evenly spaced codes up to TOP. */
-const ALPHA = [0.2, 0.36, 0.53, 0.7, 0.88];
-const TOP = 110;
+/** Band opacities, low to high; the thresholds are the file's per-type levels (league quantiles). */
+const ALPHA = [0.22, 0.34, 0.47, 0.6, 0.75, 0.92];
 const W = 85;
 const H = 80;
 const CORNER = 28;
@@ -68,10 +72,11 @@ interface MapSpec {
     value: number;
     league: number;
     codes: number[] | null;
+    levels: number[];
 }
 
 /** Filled contour bands for one map's int8 codes. */
-function useBands(codes: number[] | null, nx: number, ny: number) {
+function useBands(codes: number[] | null, nx: number, ny: number, ts: number[]) {
     return React.useMemo(() => {
         if (!codes) return null;
         const lat = resample(codes, nx, ny, 4);
@@ -79,16 +84,15 @@ function useBands(codes: number[] | null, nx: number, ny: number) {
         const cellPx = 5 * lat.step;
         // lattice (i along the rink, j across) -> drawing: net at the top, the shooter's left on the left
         const to = ([i, j]: Pt): Pt => [W - j * cellPx, H - i * cellPx];
-        const ts = levels(TOP, ALPHA.length);
         return {
             more: ts.map(t => ringsPath(isoRings(lat, t), to, 1)),
             fewer: ts.map(t => ringsPath(isoRings(neg, t), to, 1)),
         };
-    }, [codes, nx, ny]);
+    }, [codes, nx, ny, ts]);
 }
 
 function RinkMap({ spec, nx, ny, thin, id }: { spec: MapSpec; nx: number; ny: number; thin: boolean; id: string }) {
-    const bands = useBands(spec.codes, nx, ny);
+    const bands = useBands(spec.codes, nx, ny, spec.levels);
     return (
         <svg viewBox={`-1 -1 ${W + 2} ${H + 2}`} className="block h-auto w-full select-none" aria-hidden="true">
             <defs>
@@ -99,7 +103,7 @@ function RinkMap({ spec, nx, ny, thin, id }: { spec: MapSpec; nx: number; ny: nu
             <path d={RINK} fill={PANEL} />
             <g clipPath={`url(#${id})`} opacity={thin ? 0.6 : 1}>
                 {bands
-                    ? ALPHA.map((a, k) => (
+                    ? ALPHA.slice(0, spec.levels.length).map((a, k) => (
                           <React.Fragment key={k}>
                               {bands.more[k] ? <path d={bands.more[k]} fill={mix(MORE, a)} fillRule="evenodd" /> : null}
                               {bands.fewer[k] ? <path d={bands.fewer[k]} fill={mix(FEWER, a)} fillRule="evenodd" /> : null}
@@ -118,7 +122,7 @@ function RinkMap({ spec, nx, ny, thin, id }: { spec: MapSpec; nx: number; ny: nu
     );
 }
 
-/** The legend: five bands each way, fewer (blue) to more (orange) shots. */
+/** The legend: six bands each way, fewer (blue) to more (orange) shots. */
 function Ramp() {
     return (
         <span className="flex items-center gap-1.5">
@@ -136,7 +140,10 @@ function Ramp() {
     );
 }
 
-type CardKey = PartKey;
+type CardKey = PartKey | 'shoot';
+type At = 'map' | 'row' | 'dist';
+const CARD_LABEL: Record<CardKey, string> = { ...PART_LABEL, shoot: 'Shooting' };
+const DIST_LABEL: Record<DistKey, string> = { fin: 'Finishing', shoot: 'Shooting', draw: 'Drawn', take: 'Taken' };
 
 /** The numbers behind one map or part: label / value pairs, no prose. */
 function NumbersCard({ k, v }: { k: CardKey; v: IsolateView }) {
@@ -148,15 +155,17 @@ function NumbersCard({ k, v }: { k: CardKey; v: IsolateView }) {
     if (k === 'evDef') rows.push(['xGA/60', xg(p.evDef)], ['vs league', sgnPct(p.evDef / L.ev_xg)], ['Shots/60', sgn(p.evDefSh, 1)], ['5v5 min', minutes(p.toi)]);
     if (k === 'pp') rows.push(['xGF/60', xg(p.ppOff)], ['vs league', sgnPct(p.ppOff / L.pp_xg)], ['PP min', minutes(p.toiPp)]);
     if (k === 'pk') rows.push(['xGA/60', xg(p.pkDef)], ['vs league', sgnPct(p.pkDef / L.pp_xg)], ['PK min', minutes(p.toiPk)]);
-    if (k === 'fin') rows.push(['Goals / xG', `×${p.finX.toFixed(2)}`]);
-    if (k === 'draw') rows.push(['Drawn/60', p.drawn60.toFixed(2)]);
-    if (k === 'take') rows.push(['Taken/60', p.taken60.toFixed(2)]);
-    rows.push(['Goals', sgn(p.goals[k], 1)]);
-    const pc = v.pct[k];
+    const lg = (d: Dist, f: (n: number) => string) => ['League', f(d.mid), p.pos === 'D' ? 'D' : 'F'] as [string, string, string];
+    if (k === 'fin') rows.push(['Goals / xG', `×${p.finX.toFixed(2)}`], lg(v.dists.fin, n => `×${n.toFixed(2)}`));
+    if (k === 'shoot') rows.push(['ixG/60', <span key="x" className="text-model">{p.ixg60.toFixed(2)}</span>], lg(v.dists.shoot, n => n.toFixed(2)), ['5v5 min', minutes(p.toi)]);
+    if (k === 'draw') rows.push(['Drawn/60', p.drawn60.toFixed(2)], lg(v.dists.draw, n => n.toFixed(2)));
+    if (k === 'take') rows.push(['Taken/60', p.taken60.toFixed(2)], lg(v.dists.take, n => n.toFixed(2)));
+    if (k !== 'shoot') rows.push(['Goals', sgn(p.goals[k], 1)]);
+    const pc = k === 'shoot' ? v.dists.shoot.pct : v.pct[k];
     if (pc != null) rows.push(['Rank', `${ordinal(pc)} pct`, p.pos === 'D' ? 'D' : 'F']);
     return (
         <div className="min-w-[11rem] text-caption tabular-nums">
-            <p className="mb-1 text-micro uppercase tracking-label text-fg-3">{PART_LABEL[k]}</p>
+            <p className="mb-1 text-micro uppercase tracking-label text-fg-3">{CARD_LABEL[k]}</p>
             <dl className="grid grid-cols-[auto_auto] gap-x-4 gap-y-0.5">
                 {rows.map(([a, b, c]) => (
                     <React.Fragment key={a}>
@@ -212,9 +221,9 @@ function Hover({ open, side, children, card }: { open: boolean; side: 'bottom' |
 export function IsolatedImpact({ view, prior, seasonTag }: { view: IsolateView; prior: boolean; seasonTag: string }) {
     const [strength, setStrength] = React.useState<Strength>('ev');
     // The hovered item (mouse): which card and where it sits (a map and its parts row share a card).
-    const [hover, setHover] = React.useState<{ k: CardKey; at: 'map' | 'row' } | null>(null);
+    const [hover, setHover] = React.useState<{ k: CardKey; at: At } | null>(null);
     // The tapped (touch, pen) or keyboard-opened item: its card sits in the flow under it.
-    const [tapped, setTapped] = React.useState<{ k: CardKey; at: 'map' | 'row' } | null>(null);
+    const [tapped, setTapped] = React.useState<{ k: CardKey; at: At } | null>(null);
     const pointer = React.useRef('');
     const rootRef = React.useRef<HTMLDivElement>(null);
     const uid = React.useId().replace(/:/g, '');
@@ -240,16 +249,16 @@ export function IsolatedImpact({ view, prior, seasonTag }: { view: IsolateView; 
     const maps: [MapSpec, MapSpec] =
         strength === 'ev'
             ? [
-                  { key: 'evOff', label: 'Offence', unit: 'xGF/60', value: p.evOff, league: view.league.ev_xg, codes: p.maps.evOff },
-                  { key: 'evDef', label: 'Defence', unit: 'xGA/60', value: p.evDef, league: view.league.ev_xg, codes: p.maps.evDef },
+                  { key: 'evOff', label: 'Offence', unit: 'xGF/60', value: p.evOff, league: view.league.ev_xg, codes: p.maps.evOff, levels: view.levels[MAP_TYPE.evOff] },
+                  { key: 'evDef', label: 'Defence', unit: 'xGA/60', value: p.evDef, league: view.league.ev_xg, codes: p.maps.evDef, levels: view.levels[MAP_TYPE.evDef] },
               ]
             : [
-                  { key: 'pp', label: 'Power play', unit: 'xGF/60', value: p.ppOff, league: view.league.pp_xg, codes: p.maps.pp },
-                  { key: 'pk', label: 'Penalty kill', unit: 'xGA/60', value: p.pkDef, league: view.league.pp_xg, codes: p.maps.pk },
+                  { key: 'pp', label: 'Power play', unit: 'xGF/60', value: p.ppOff, league: view.league.pp_xg, codes: p.maps.pp, levels: view.levels[MAP_TYPE.pp] },
+                  { key: 'pk', label: 'Penalty kill', unit: 'xGA/60', value: p.pkDef, league: view.league.pp_xg, codes: p.maps.pk, levels: view.levels[MAP_TYPE.pk] },
               ];
 
     // Mouse hovers; touch, pen and keyboard toggle a card in the flow under the item.
-    const handlers = (k: CardKey, at: 'map' | 'row') => ({
+    const handlers = (k: CardKey, at: At) => ({
         onPointerEnter: (e: React.PointerEvent) => e.pointerType === 'mouse' && setHover({ k, at }),
         onPointerLeave: (e: React.PointerEvent) => e.pointerType === 'mouse' && setHover(h => (h?.k === k && h.at === at ? null : h)),
         onPointerDown: (e: React.PointerEvent) => {
@@ -263,8 +272,8 @@ export function IsolatedImpact({ view, prior, seasonTag }: { view: IsolateView; 
             setTapped(t => (t?.k === k && t.at === at ? null : { k, at }));
         },
     });
-    const isOpen = (k: CardKey, at: 'map' | 'row') => tapped?.k === k && tapped.at === at;
-    const isMouseCard = (k: CardKey, at: 'map' | 'row') => hover?.k === k && hover.at === at && !isOpen(k, at);
+    const isOpen = (k: CardKey, at: At) => tapped?.k === k && tapped.at === at;
+    const isMouseCard = (k: CardKey, at: At) => hover?.k === k && hover.at === at && !isOpen(k, at);
     // The map and its parts row light up together.
     const lit = (k: CardKey) => tapped?.k === k || hover?.k === k;
 
@@ -336,61 +345,129 @@ export function IsolatedImpact({ view, prior, seasonTag }: { view: IsolateView; 
                     Method
                 </Link>
             </div>
-            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,17rem)_minmax(0,1fr)]">
+            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,19rem)_minmax(0,1fr)]">
                 {mapPane(maps[0], 'right', 'lg:order-1')}
                 {mapPane(maps[1], 'left', 'lg:order-3')}
-                {/* Parts: the total, then each component as a small signed bar. */}
-                <div className="flex min-w-0 flex-col gap-2 sm:col-span-2 lg:order-2 lg:col-span-1">
-                    <div className="flex items-end justify-between gap-3 border-b border-line pb-2">
-                        <div>
-                            <p className="text-micro uppercase tracking-label text-fg-3">Total</p>
-                            <p className="font-display text-display font-bold leading-none tabular-nums text-fg-1">{sgn(p.goals.total, 1)}</p>
+                {/* Centre: the total and its parts, then the goal threat and penalty distributions. */}
+                <div className="grid min-w-0 gap-x-6 gap-y-5 sm:col-span-2 sm:grid-cols-2 lg:order-2 lg:col-span-1 lg:grid-cols-1 lg:content-start">
+                    <div className="flex min-w-0 flex-col gap-2">
+                        <div className="flex items-end justify-between gap-3 border-b border-line pb-2">
+                            <div>
+                                <p className="text-micro uppercase tracking-label text-fg-3">Total</p>
+                                <p className="font-display text-display font-bold leading-none tabular-nums text-fg-1">{sgn(p.goals.total, 1)}</p>
+                            </div>
+                            <p className="pb-0.5 text-right text-micro uppercase tracking-label text-fg-3">
+                                Goals · std season
+                                {view.pct.total != null ? (
+                                    <span className="block normal-case tracking-normal text-fg-2">
+                                        {ordinal(view.pct.total)} pct {p.pos === 'D' ? 'D' : 'F'}
+                                    </span>
+                                ) : null}
+                            </p>
                         </div>
-                        <p className="pb-0.5 text-right text-micro uppercase tracking-label text-fg-3">
-                            Goals · std season
-                            {view.pct.total != null ? (
-                                <span className="block normal-case tracking-normal text-fg-2">
-                                    {ordinal(view.pct.total)} pct {p.pos === 'D' ? 'D' : 'F'}
-                                </span>
-                            ) : null}
-                        </p>
+                        <ul className="flex flex-col">
+                            {PART_KEYS.map(k => {
+                                const g = p.goals[k];
+                                const w = (Math.min(Math.abs(g), reach) / reach) * 50;
+                                return (
+                                    <li key={k}>
+                                        <Hover open={isMouseCard(k, 'row')} side="bottom" card={<NumbersCard k={k} v={view} />}>
+                                            <button
+                                                type="button"
+                                                {...handlers(k, 'row')}
+                                                aria-expanded={isOpen(k, 'row')}
+                                                className={cn(
+                                                    'grid w-full grid-cols-[6.5rem_minmax(0,1fr)_3rem] items-center gap-2 rounded-chip px-1 py-1 text-left text-caption outline-none hover:bg-surface-2/60 focus-visible:ring-2 focus-visible:ring-brand coarse:min-h-11',
+                                                    lit(k) && 'bg-surface-2/60',
+                                                )}
+                                            >
+                                                <span className="truncate text-fg-2">{PART_LABEL[k]}</span>
+                                                <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="block h-2.5 w-full" aria-hidden="true">
+                                                    <rect x={0} y={0} width={100} height={10} fill="var(--track)" />
+                                                    <rect x={g >= 0 ? 50 : 50 - w} y={1} width={w} height={8} fill={g >= 0 ? 'var(--text-1)' : 'var(--text-3)'} opacity={g >= 0 ? 0.75 : 0.6} />
+                                                    <line x1={50} x2={50} y1={0} y2={10} className="stroke-fg-3" vectorEffect="non-scaling-stroke" />
+                                                </svg>
+                                                <span className={cn('text-right tabular-nums', Math.abs(g) < 0.05 ? 'text-fg-3' : 'text-fg-1')}>{sgn(g, 1)}</span>
+                                            </button>
+                                        </Hover>
+                                        {isOpen(k, 'row') ? (
+                                            <FlowCard className="my-1">
+                                                <NumbersCard k={k} v={view} />
+                                            </FlowCard>
+                                        ) : null}
+                                    </li>
+                                );
+                            })}
+                        </ul>
                     </div>
-                    <ul className="flex flex-col">
-                        {PART_KEYS.map(k => {
-                            const g = p.goals[k];
-                            const w = (Math.min(Math.abs(g), reach) / reach) * 50;
-                            return (
-                                <li key={k}>
-                                    <Hover open={isMouseCard(k, 'row')} side="bottom" card={<NumbersCard k={k} v={view} />}>
-                                        <button
-                                            type="button"
-                                            {...handlers(k, 'row')}
-                                            aria-expanded={isOpen(k, 'row')}
-                                            className={cn(
-                                                'grid w-full grid-cols-[6.5rem_minmax(0,1fr)_3rem] items-center gap-2 rounded-chip px-1 py-1 text-left text-caption outline-none hover:bg-surface-2/60 focus-visible:ring-2 focus-visible:ring-brand coarse:min-h-11',
-                                                lit(k) && 'bg-surface-2/60',
-                                            )}
-                                        >
-                                            <span className="truncate text-fg-2">{PART_LABEL[k]}</span>
-                                            <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="block h-2.5 w-full" aria-hidden="true">
-                                                <rect x={0} y={0} width={100} height={10} fill="var(--track)" />
-                                                <rect x={g >= 0 ? 50 : 50 - w} y={1} width={w} height={8} fill={g >= 0 ? 'var(--text-1)' : 'var(--text-3)'} opacity={g >= 0 ? 0.75 : 0.6} />
-                                                <line x1={50} x2={50} y1={0} y2={10} className="stroke-fg-3" vectorEffect="non-scaling-stroke" />
-                                            </svg>
-                                            <span className={cn('text-right tabular-nums', Math.abs(g) < 0.05 ? 'text-fg-3' : 'text-fg-1')}>{sgn(g, 1)}</span>
-                                        </button>
-                                    </Hover>
-                                    {isOpen(k, 'row') ? (
-                                        <FlowCard className="my-1">
-                                            <NumbersCard k={k} v={view} />
-                                        </FlowCard>
-                                    ) : null}
-                                </li>
-                            );
-                        })}
-                    </ul>
+                    <div className="flex min-w-0 flex-col gap-3">
+                        {(
+                            [
+                                ['Goal threat', ['fin', 'shoot']],
+                                ['Penalties', ['draw', 'take']],
+                            ] as [string, DistKey[]][]
+                        ).map(([title, keys]) => (
+                            <div key={title} className="flex flex-col gap-0.5">
+                                <p className="px-1 text-micro uppercase tracking-label text-fg-3">{title}</p>
+                                {keys.map(k => {
+                                    const d = view.dists[k];
+                                    return (
+                                        <div key={k}>
+                                            <Hover open={isMouseCard(k, 'dist')} side="bottom" card={<NumbersCard k={k} v={view} />}>
+                                                <button
+                                                    type="button"
+                                                    {...handlers(k, 'dist')}
+                                                    aria-expanded={isOpen(k, 'dist')}
+                                                    aria-label={`${DIST_LABEL[k]}: ${d.pct != null ? `${ordinal(d.pct)} percentile` : 'thin sample'}`}
+                                                    className={cn(
+                                                        'grid w-full grid-cols-[6.5rem_minmax(0,1fr)_3rem] items-center gap-2 rounded-chip px-1 py-1 text-left text-caption outline-none hover:bg-surface-2/60 focus-visible:ring-2 focus-visible:ring-brand coarse:min-h-11',
+                                                        lit(k) && 'bg-surface-2/60',
+                                                    )}
+                                                >
+                                                    <span className="truncate text-fg-2">{DIST_LABEL[k]}</span>
+                                                    <Violin d={d} />
+                                                    <span className={cn('text-right tabular-nums', d.pct == null ? 'text-fg-3' : 'text-fg-1')}>{d.pct != null ? ordinal(d.pct) : '—'}</span>
+                                                </button>
+                                            </Hover>
+                                            {isOpen(k, 'dist') ? (
+                                                <FlowCard className="my-1">
+                                                    <NumbersCard k={k} v={view} />
+                                                </FlowCard>
+                                            ) : null}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
+    );
+}
+
+/**
+ * The league (his position) as a mirrored density, a hairline at its median
+ * and his dot. The shape stretches with the row; the dot is HTML so it stays
+ * round. Taken penalties read with fewer to the left (the axis is raw).
+ */
+function Violin({ d }: { d: Dist }) {
+    const n = d.dens.length;
+    const x = (i: number) => (i / (n - 1)) * 100;
+    const top = d.dens.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(2)},${(10 - v * 9).toFixed(2)}`).join('');
+    const bottom = d.dens
+        .map((v, i) => [x(i), 10 + v * 9] as const)
+        .reverse()
+        .map(([a, b]) => `L${a.toFixed(2)},${b.toFixed(2)}`)
+        .join('');
+    const at = (v: number) => Math.max(0, Math.min(100, ((v - d.lo) / (d.hi - d.lo)) * 100));
+    return (
+        <span className="relative block h-5 w-full" aria-hidden="true">
+            <svg viewBox="0 0 100 20" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+                <path d={`${top}${bottom}Z`} className="fill-fg-3" fillOpacity={0.28} />
+                <line x1={at(d.mid)} x2={at(d.mid)} y1={2} y2={18} className="stroke-fg-3" strokeOpacity={0.7} vectorEffect="non-scaling-stroke" />
+            </svg>
+            <span className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface-1 bg-fg-1" style={{ left: `${at(d.value)}%` }} />
+        </span>
     );
 }

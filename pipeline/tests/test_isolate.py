@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from bu.isolate import grid, model
+from bu.isolate import export, grid, model
 
 
 # ----------------------------------------------------------------------------- grid
@@ -147,3 +147,33 @@ def test_recency_weights_halve_per_half_life():
     assert w[0] == 1.0
     assert w[1] == pytest.approx(0.5, rel=1e-3)
     assert w[2] == pytest.approx(0.25, rel=1e-2)
+
+
+def test_levels_per_map_type_follow_that_types_distribution():
+    rng = np.random.default_rng(5)
+    off = rng.normal(0, 1.0, size=(200, 272))
+    dfn = rng.normal(0, 0.6, size=(200, 272))    # a narrower type (defence)
+    s_off, l_off = export.scale_levels(off)
+    s_def, l_def = export.scale_levels(dfn)
+    assert s_def < s_off                          # its own scale, not offence's
+    assert l_off == sorted(l_off) and len(set(l_off)) == len(l_off)
+    # in codes the two types' levels match: each map type is drawn on its own distribution
+    assert np.allclose(l_off, l_def, atol=4)
+    # the lowest band starts at the median cell: about half of a typical map is coloured
+    assert 0.4 < (np.abs(dfn) >= l_def[0] * s_def).mean() < 0.6
+    assert l_off[-1] <= 127
+
+
+def test_shooting_rate_is_shrunk_to_position_mean(world):
+    shooters = [p for p in sorted(world.shots["shooter_id"].unique()) if p > 0][:3]   # id 0 means no shooter
+    toi = pd.DataFrame({"s5_w": [36000.0, 600.0, 36000.0]}, index=shooters)
+    grp = pd.Series("F", index=shooters)
+    ix = model.shooting(world, toi, grp)
+    x = world.shots.groupby("shooter_id")["xg"].sum().reindex(shooters)
+    mins = toi["s5_w"] / 60.0
+    mu = x.sum() / mins.sum()
+    expect = (x + mu * model.VOL_PSEUDO_MIN) / (mins + model.VOL_PSEUDO_MIN) * 60.0
+    np.testing.assert_allclose(ix.to_numpy(), expect.to_numpy(), rtol=1e-9)
+    # the 10-minute sample is pulled most of the way to the position mean
+    raw = x / mins * 60.0
+    assert abs(ix[shooters[1]] - mu * 60) < abs(raw[shooters[1]] - mu * 60)

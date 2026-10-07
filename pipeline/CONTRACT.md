@@ -411,7 +411,10 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
 * `public/data/isolate/<season>.json` (`python -m bu.isolate build|refresh`, `pipeline/bu/isolate/README.md`;
   the player page's "Isolated impact"): `{version: 1, season, window: [season ids], asof, half_life_days,
   grid: {x0, cell, nx, ny, y0, sigma}, std: {ev, pp, pk}, league: {ev_xg, ev_sh, pp_xg, pp_sh, minor_value},
-  scale: {ev, st}, columns, rows}`.  One row per skater dressed (or rostered) in the season with >= 100
+  scale: {ev_off, ev_def, pp, pk}, levels: {ev_off, ev_def, pp, pk}, columns, rows}` (version 2; version 1 had
+  `scale: {ev, st}` and no `levels` / `ixg60`).  `levels` = contour thresholds in that type's codes: quantiles
+  0.5 / 0.65 / 0.78 / 0.88 / 0.95 / 0.99 of |cell| over the qualified maps of the type (>= 500 5v5 or 50 PP/PK
+  minutes), the same for every player.  One row per skater dressed (or rostered) in the season with >= 100
   5v5 minutes in the window, sorted by `g_total`; arrays in `columns` order:
 
   | column | meaning |
@@ -422,4 +425,5 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
   | `ev_off_sh`, `ev_def_sh` | unblocked shots/60 impacts (2 dp) = the sums of the 5v5 maps |
   | `g_ev_off`, `g_ev_def`, `g_pp`, `g_pk`, `g_fin`, `g_draw`, `g_take`, `g_total` | goals over a standard season (`std` minutes), + = good for his team; `g_total` is the sum |
   | `fin_x`, `drawn60`, `taken60` | finishing multiplier (goals / xG, shrunk), minors drawn / taken per 60 (shrunk) |
-  | `m_ev_off`, `m_ev_def`, `m_pp`, `m_pk` | maps: base64 int8 codes, `nx` x `ny` row-major (row 0 at `x0` ft from the centre line toward the end boards, column 0 at `y0`, the shooter's right boards); value = code x `scale.ev` (5v5) or `scale.st` (PP/PK) shots/60 per cell; "" under 20 minutes in that state |
+  | `ixg60` | 5v5 individual xG per 60, shrunk (display only: not in `g_total`) |
+  | `m_ev_off`, `m_ev_def`, `m_pp`, `m_pk` | maps: base64 int8 codes, `nx` x `ny` row-major (row 0 at `x0` ft from the centre line toward the end boards, column 0 at `y0`, the shooter's right boards); value = code x `scale[type]` shots/60 per cell; "" under 20 minutes in that state |

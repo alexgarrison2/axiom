@@ -2,8 +2,9 @@
 
 One row per skater who played (or is rostered) in the season with >= ``MIN_EV_MIN`` 5v5 minutes in
 the window.  Maps are the smoothed shot-rate impact maps (unblocked shots per 60 per 5 ft cell),
-rows x >= 20 ft only, int8-quantised against one scale per state and base64-encoded
-(``grid.b64``); special-teams maps are left out ("") under ``MIN_ST_MIN`` minutes in that state.
+rows x >= 20 ft only, int8-quantised against one scale per map type and base64-encoded
+(``grid.b64``), with contour levels per map type (``LEVEL_QUANTILES``); special-teams maps are left
+out ("") under ``MIN_ST_MIN`` minutes in that state.
 """
 from __future__ import annotations
 
@@ -21,11 +22,25 @@ from . import grid, inputs, model
 OUT_DIR = os.path.join(REPO_ROOT, "public", "data", "isolate")
 MIN_EV_MIN = 100.0
 MIN_ST_MIN = 20.0
+MIN_QUAL_EV = 500.0       # skaters whose maps set a type's scale and levels
+MIN_QUAL_ST = 50.0
+# Contour thresholds: quantiles of |cell| over the qualified maps of the type.  Finer near zero; the
+# lowest band starts at the median cell, so about half of a typical map is coloured.
+LEVEL_QUANTILES = (0.5, 0.65, 0.78, 0.88, 0.95, 0.99)
 COLS = ["id", "pos", "toi", "toi_cur", "toi_pp", "toi_pk",
         "ev_off", "ev_def", "pp_off", "pk_def", "ev_off_sh", "ev_def_sh",
         "g_ev_off", "g_ev_def", "g_pp", "g_pk", "g_fin", "g_draw", "g_take", "g_total",
-        "fin_x", "drawn60", "taken60",
+        "fin_x", "drawn60", "taken60", "ixg60",
         "m_ev_off", "m_ev_def", "m_pp", "m_pk"]
+
+
+def scale_levels(maps: np.ndarray) -> tuple[float, list[int]]:
+    """One map type's int8 scale (its 99.9th |cell| percentile is code 127) and contour levels in codes
+    (``LEVEL_QUANTILES`` of |cell|), from the qualified skaters' maps of that type."""
+    v = np.abs(np.asarray(maps, dtype=float)).ravel()
+    sc = float(np.quantile(v, 0.999) / 127.0) or 1e-6
+    lv = [int(max(1, round(float(np.quantile(v, q)) / sc))) for q in LEVEL_QUANTILES]
+    return sc, lv
 
 
 def window_seasons(season: str, n: int = model.WINDOW) -> list[str]:
@@ -62,6 +77,7 @@ def components(win: model.Window, ev: model.Fit, st: model.Fit) -> pd.DataFrame:
     df["g_total"] = df[parts].sum(axis=1)
     df["fin_x"] = fin["m"].reindex(idx).fillna(1.0)                     # finishing multiplier
     df["drawn60"], df["taken60"] = pen["drawn60"], pen["taken60"]
+    df["ixg60"] = model.shooting(win, toi, grp)
     df.attrs.update({"minor_value": value, "fin_scale": fin.attrs.get("scale", 1.0),
                      "ev_league": ev.league, "ev_league_sh": ev.league_sh, "pp_league": st.league,
                      "pp_league_sh": st.league_sh})
@@ -102,23 +118,25 @@ def build(lake: Lake, season: str, out_dir: str = OUT_DIR, asof=None) -> dict:
     ev_maps = {"o": grid.export_rows(ev.o_map), "d": grid.export_rows(ev.d_map)}
     st_maps = {"o": grid.export_rows(st.o_map), "d": grid.export_rows(st.d_map)}
 
-    def scale(maps, ids, index):
-        k = index.reindex(ids).dropna().astype(int).to_numpy()
-        v = np.abs(np.concatenate([maps["o"][k].ravel(), maps["d"][k].ravel()])) if len(k) else np.array([1.0])
-        return float(np.quantile(v, 0.998) / 127.0) or 1e-6
-
-    s_ev = scale(ev_maps, keep, ie)
-    s_st = scale(st_maps, [p for p in keep if comp.at[p, "toi_pp"] >= MIN_ST_MIN or comp.at[p, "toi_pk"] >= MIN_ST_MIN], is_)
+    # One quantisation scale and one set of contour levels per map type, from the qualified skaters
+    # of that type (>= MIN_QUAL_EV 5v5 / MIN_QUAL_ST PP or PK minutes): the same for every player in
+    # the file, so maps compare within a type, while a defence or PK map is drawn on its own (narrower)
+    # distribution instead of offence's.
+    types = {"ev_off": (ev_maps["o"], ie, "toi", MIN_EV_MIN, MIN_QUAL_EV),
+             "ev_def": (ev_maps["d"], ie, "toi", MIN_EV_MIN, MIN_QUAL_EV),
+             "pp": (st_maps["o"], is_, "toi_pp", MIN_ST_MIN, MIN_QUAL_ST),
+             "pk": (st_maps["d"], is_, "toi_pk", MIN_ST_MIN, MIN_QUAL_ST)}
+    scales, levels, codes = {}, {}, {}
+    for t, (maps, index, col, floor, qual) in types.items():
+        ids_t = [p for p in keep if index.get(p) is not None and comp.at[p, col] >= floor]
+        qk = [index[p] for p in ids_t if comp.at[p, col] >= qual] or [index[p] for p in ids_t]
+        sc, levels[t] = scale_levels(maps[qk] if qk else np.ones((1, 1)))
+        scales[t] = sc
+        codes[t] = {p: grid.b64(grid.quantize(maps[index[p]], sc)) for p in ids_t}
 
     rows = []
     for p in sorted(keep, key=lambda q: -comp.at[q, "g_total"]):
         c = comp.loc[p]
-        k = ie.get(p)
-        j = is_.get(p)
-        m_eo = grid.b64(grid.quantize(ev_maps["o"][k], s_ev)) if k is not None else ""
-        m_ed = grid.b64(grid.quantize(ev_maps["d"][k], s_ev)) if k is not None else ""
-        m_pp = grid.b64(grid.quantize(st_maps["o"][j], s_st)) if j is not None and c["toi_pp"] >= MIN_ST_MIN else ""
-        m_pk = grid.b64(grid.quantize(st_maps["d"][j], s_st)) if j is not None and c["toi_pk"] >= MIN_ST_MIN else ""
         g = "D" if pos.get(p) == "D" else "F"
         rows.append([int(p), g, _round(c["toi"], 0), _round(cur_toi.get(p, 0.0), 0), _round(c["toi_pp"], 0),
                      _round(c["toi_pk"], 0),
@@ -127,10 +145,11 @@ def build(lake: Lake, season: str, out_dir: str = OUT_DIR, asof=None) -> dict:
                      _round(c["g_ev_off"], 2), _round(c["g_ev_def"], 2), _round(c["g_pp"], 2), _round(c["g_pk"], 2),
                      _round(c["g_fin"], 2), _round(c["g_draw"], 2), _round(c["g_take"], 2),
                      _round(c["g_total"], 2), _round(c["fin_x"], 3),
-                     _round(c["drawn60"], 3), _round(c["taken60"], 3), m_eo, m_ed, m_pp, m_pk])
+                     _round(c["drawn60"], 3), _round(c["taken60"], 3), _round(c["ixg60"], 3),
+                     codes["ev_off"].get(p, ""), codes["ev_def"].get(p, ""), codes["pp"].get(p, ""), codes["pk"].get(p, "")])
     a = comp.attrs
     doc = {
-        "version": 1,
+        "version": 2,
         "season": season,
         "window": have,
         "asof": str(win.asof.date()),
@@ -141,7 +160,8 @@ def build(lake: Lake, season: str, out_dir: str = OUT_DIR, asof=None) -> dict:
         "league": {"ev_xg": round(a["ev_league"], 4), "ev_sh": round(a["ev_league_sh"], 3),
                    "pp_xg": round(a["pp_league"], 4), "pp_sh": round(a["pp_league_sh"], 3),
                    "minor_value": round(a["minor_value"], 4)},
-        "scale": {"ev": s_ev, "st": s_st},
+        "scale": scales,
+        "levels": levels,
         "columns": COLS,
         "rows": rows,
     }

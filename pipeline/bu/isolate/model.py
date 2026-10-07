@@ -442,6 +442,24 @@ def minor_value(win: Window) -> float:
     return total / n if n else 0.0
 
 
+def shooting(win: Window, toi: pd.DataFrame, group: pd.Series) -> pd.Series:
+    """5v5 individual xG per 60 (his own unblocked shots), recency-weighted and shrunk to the position
+    mean with ``VOL_PSEUDO_MIN`` minutes: how much shot threat he carries himself.  Display only: his
+    own shots are already inside the 5v5 offence impact, so it is not added to the total."""
+    st = win.stints
+    s = win.shots[~win.shots["empty_net_against"] & (win.shots["shooter_id"] > 0)]
+    k = s["stint"].to_numpy(np.int64)
+    five = ((st["n_home_sk"].to_numpy()[k] == 5) & (st["n_away_sk"].to_numpy()[k] == 5)
+            & (st["n_home_g"].to_numpy()[k] == 1) & (st["n_away_g"].to_numpy()[k] == 1))
+    s = s[five]
+    x = (s["xg"].fillna(0) * _rec(win, s["game_id"])).groupby(s["shooter_id"]).sum().reindex(toi.index).fillna(0.0)
+    mins = toi["s5_w"] / 60.0
+    grp = group.reindex(toi.index).fillna("F")
+    mu = {g: x[grp == g].sum() / max(mins[grp == g].sum(), 1e-9) for g in ("F", "D")}
+    mu_p = grp.map(mu).fillna(mu["F"])
+    return (x + mu_p * VOL_PSEUDO_MIN) / (mins + VOL_PSEUDO_MIN) * 60.0
+
+
 def penalties(win: Window, toi: pd.DataFrame, group: pd.Series, value: float) -> pd.DataFrame:
     p = win.pens
     r = _rec(win, p["game_id"])

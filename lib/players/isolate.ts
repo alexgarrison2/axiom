@@ -25,12 +25,19 @@ export interface IsolateDoc {
     grid: IsolateGrid;
     std: { ev: number; pp: number; pk: number };
     league: { ev_xg: number; ev_sh: number; pp_xg: number; pp_sh: number; minor_value: number };
-    scale: { ev: number; st: number };
+    /** Shots/60 per cell per code unit, per map type. */
+    scale: Record<MapType, number>;
+    /** Contour thresholds in that type's codes (quantiles of the league's cells), low to high. */
+    levels: Record<MapType, number[]>;
     columns: string[];
     rows: unknown[][];
 }
 
 export type MapKey = 'evOff' | 'evDef' | 'pp' | 'pk';
+export type MapType = 'ev_off' | 'ev_def' | 'pp' | 'pk';
+export const MAP_TYPE: Record<MapKey, MapType> = { evOff: 'ev_off', evDef: 'ev_def', pp: 'pp', pk: 'pk' };
+/** The distributions beside the parts: goal threat (finishing, shooting) and penalties (drawn, taken). */
+export type DistKey = 'fin' | 'shoot' | 'draw' | 'take';
 export type PartKey = 'evOff' | 'evDef' | 'pp' | 'pk' | 'fin' | 'draw' | 'take';
 export const PART_KEYS: PartKey[] = ['evOff', 'evDef', 'pp', 'pk', 'fin', 'draw', 'take'];
 export const PART_LABEL: Record<PartKey, string> = {
@@ -64,6 +71,8 @@ export interface IsolatePlayer {
     finX: number;
     drawn60: number;
     taken60: number;
+    /** 5v5 individual xG per 60 (his own shots), shrunk: display only, inside 5v5 offence already. */
+    ixg60: number;
     /** Map cells as int8 codes, row-major from x0 toward the end boards; null = too little time in the state. */
     maps: Record<MapKey, number[] | null>;
 }
@@ -75,13 +84,55 @@ export interface IsolateView {
     grid: IsolateGrid;
     std: IsolateDoc['std'];
     league: IsolateDoc['league'];
-    /** Shots/60 per cell per code unit, per state. */
     scale: IsolateDoc['scale'];
+    levels: IsolateDoc['levels'];
     player: IsolatePlayer;
     /** Percentile (0-100) among qualified skaters of his position; null when he is not qualified. */
     pct: Record<PartKey | 'total', number | null>;
     /** Qualified skaters of his position (the percentile base). */
     peers: number;
+    /** League (his position, qualified) density of each distribution metric, with his value and rank. */
+    dists: Record<DistKey, Dist>;
+}
+
+export interface Dist {
+    /** Axis range and the density sampled evenly across it (peak = 1). */
+    lo: number;
+    hi: number;
+    dens: number[];
+    value: number;
+    /** League (position) median. */
+    mid: number;
+    /** Percentile with "good" up: for taken, the share of peers who take more. */
+    pct: number | null;
+}
+
+/** Gaussian kernel density of `values` on `n` points over [lo, hi] (Silverman bandwidth), peak-normalised. */
+export function density(values: number[], lo: number, hi: number, n = 48): number[] {
+    const v = values.filter(Number.isFinite);
+    if (v.length < 2 || !(hi > lo)) return Array.from({ length: n }, () => 0);
+    const mean = v.reduce((a, b) => a + b, 0) / v.length;
+    const sd = Math.sqrt(v.reduce((a, b) => a + (b - mean) ** 2, 0) / (v.length - 1)) || (hi - lo) / 10;
+    const s = [...v].sort((a, b) => a - b);
+    const iqr = quantile(s, 0.75) - quantile(s, 0.25);
+    const h = 0.9 * Math.min(sd, iqr > 0 ? iqr / 1.34 : sd) * v.length ** -0.2;
+    const out = Array.from({ length: n }, (_, i) => {
+        const x = lo + ((hi - lo) * i) / (n - 1);
+        let d = 0;
+        for (const y of v) d += Math.exp(-0.5 * ((x - y) / h) ** 2);
+        return d;
+    });
+    const top = Math.max(...out);
+    return out.map(d => (top > 0 ? d / top : 0));
+}
+
+/** Linear-interpolated quantile of a sorted array. */
+export function quantile(sorted: number[], q: number): number {
+    if (!sorted.length) return 0;
+    const at = (sorted.length - 1) * q;
+    const i = Math.floor(at);
+    const f = at - i;
+    return i + 1 < sorted.length ? sorted[i] * (1 - f) + sorted[i + 1] * f : sorted[i];
 }
 
 /** Minutes of 5v5 in the window below which the maps read as a thin sample. */
@@ -132,6 +183,7 @@ function rowToPlayer(cols: string[], r: unknown[]): IsolatePlayer {
         finX: num(g('fin_x')) || 1,
         drawn60: num(g('drawn60')),
         taken60: num(g('taken60')),
+        ixg60: num(g('ixg60')),
         maps: {
             evOff: decodeCodes(String(g('m_ev_off') ?? '')),
             evDef: decodeCodes(String(g('m_ev_def') ?? '')),
@@ -180,6 +232,33 @@ export function isolateFor(doc: IsolateDoc | null, id: number): IsolateView | nu
         const at = cols.indexOf(c);
         pct[k] = qualified ? percentile(peers.map(r => num(r[at])), player.goals[k]) : null;
     }
+    const distCol: Record<DistKey, [string, number, boolean]> = {
+        fin: ['fin_x', player.finX, true],
+        shoot: ['ixg60', player.ixg60, true],
+        draw: ['drawn60', player.drawn60, true],
+        take: ['taken60', player.taken60, false],
+    };
+    const dists = {} as Record<DistKey, Dist>;
+    for (const k of Object.keys(distCol) as DistKey[]) {
+        const [c, value, up] = distCol[k];
+        const at = cols.indexOf(c);
+        const vals = at < 0 ? [] : peers.map(r => num(r[at])).filter(Number.isFinite);
+        const s = [...vals].sort((a, b) => a - b);
+        // axis: the 1st-99th percentile of the league, widened to keep his dot inside
+        let lo = Math.min(quantile(s, 0.01), value);
+        let hi = Math.max(quantile(s, 0.99), value);
+        const pad = (hi - lo) * 0.06 || 0.01;
+        lo -= pad;
+        hi += pad;
+        dists[k] = {
+            lo,
+            hi,
+            dens: density(vals, lo, hi),
+            value,
+            mid: quantile(s, 0.5),
+            pct: qualified && vals.length ? percentile(up ? vals : vals.map(v => -v), up ? value : -value) : null,
+        };
+    }
     return {
         season: doc.season,
         window: doc.window,
@@ -188,9 +267,11 @@ export function isolateFor(doc: IsolateDoc | null, id: number): IsolateView | nu
         std: doc.std,
         league: doc.league,
         scale: doc.scale,
+        levels: doc.levels,
         player,
         pct,
         peers: peers.length,
+        dists,
     };
 }
 

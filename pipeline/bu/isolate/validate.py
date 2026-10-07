@@ -77,8 +77,13 @@ def repeatability(a: dict, b: dict) -> dict:
         out[f"map_shape_{nm}"] = {"same_player": same, "random_pair": rand}
     ca, cb = a["comp"], b["comp"]
     ids = [p for p in both if p in ca.index and p in cb.index]
-    for c in ("g_ev_off", "g_ev_def", "g_pp", "g_pk", "g_fin", "g_draw", "g_take", "g_total"):
+    for c in ("g_ev_off", "g_ev_def", "g_pp", "g_pk", "g_fin", "g_draw", "g_take", "g_total", "ixg60", "fin_x",
+              "drawn60", "taken60"):
         out[c] = _r(ca.loc[ids, c], cb.loc[ids, c])
+    pos = b["win"].pos.set_index("player_id")["position"]
+    for g in ("F", "D"):
+        sub = [p for p in ids if (pos.get(p) == "D") == (g == "D")]
+        out[f"ixg60_{g}"] = _r(ca.loc[sub, "ixg60"], cb.loc[sub, "ixg60"])
     # special teams: skaters with >= 100 PP (PK) minutes in both
     sa, sb = a["st"], b["st"]
     ja = pd.Series(np.arange(len(sa.players)), index=sa.players)
@@ -119,6 +124,28 @@ def agreement(fit: model.Fit) -> dict:
     return out
 
 
+def _cv_split(des: model.Design, lam_o, lam_d, folds: int = 5) -> dict:
+    """5-fold CV loss for every (offence, defence) ridge strength pair, minus the best."""
+    fold = (pd.util.hash_array(des.game_id.astype(np.int64)) % folds).astype(int)
+    wy = des.w * des.y
+    Gs, rs, yy = [], [], []
+    for f in range(folds):
+        m = fold == f
+        Gs.append(model.gram(des.X[m], des.w[m]))
+        rs.append(des.X[m].T @ wy[m])
+        yy.append(float(np.sum(des.w[m] * des.y[m] ** 2)))
+    G, r, n = sum(Gs), sum(rs), des.n
+    out = {}
+    for a in lam_o:
+        for b in lam_d:
+            L = np.concatenate([np.full(n, a), np.full(n, b), np.full(len(des.cov), model.LAMBDA_COV)])
+            loss = sum(yy[f] - 2 * (bb := model.solve(G - Gs[f], L, r - rs[f])) @ rs[f] + bb @ Gs[f] @ bb
+                       for f in range(folds))
+            out[f"{a}/{b}"] = loss / float(des.w.sum())
+    best = min(out.values())
+    return {"best": min(out, key=out.get), "excess": {k: round(v - best, 5) for k, v in out.items()}}
+
+
 def run(lake: Lake, seasons=("20222023", "20232024", "20242025", "20252026")) -> dict:
     t0 = time.time()
     report: dict = {"min_minutes": MIN_MIN}
@@ -135,6 +162,11 @@ def run(lake: Lake, seasons=("20222023", "20232024", "20242025", "20252026")) ->
     fin = model.finishing(win, toi, grp)
     _, _, cv_set = model.setting(win, fin, folds=5)
     report["tuning"]["setting"] = cv_set
+    # defence over-shrunk?  Separate offence / defence strengths, CV on the map (shot-rate) target
+    report["tuning"]["ev_shots_off_def"] = _cv_split(model.build_design(win, "ev", target="sh"),
+                                                     [10000, 20000, 40000], [5000, 10000, 20000, 40000, 80000])
+    report["tuning"]["st_shots_off_def"] = _cv_split(model.build_design(win, "st", target="sh"),
+                                                     [5000, 10000, 20000], [2500, 5000, 10000, 20000, 40000])
     cur = "20262027"
     if os.path.isdir(os.path.dirname(lake.table_path("shifts", cur))):
         cw = ["20242025", "20252026", cur]

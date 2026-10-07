@@ -636,7 +636,12 @@ export default function MethodologyPage() {
                                 started the shift as controls. A player&apos;s map is the difference his presence makes, cell by cell, against an
                                 average skater in his place with the same teammates and opponents, smoothed with a 10-foot kernel.
                                 <strong> Orange</strong> means more shots than average come from there, <strong>blue</strong> fewer: on offence
-                                orange is good, on defence blue is. The net is at the top and the shooter&apos;s left is on the left.
+                                orange is good, on defence blue is. The net is at the top and the shooter&apos;s left is on the left. The
+                                defence map is the opponents&apos; shots in his own zone while he is on the ice. Each map type (5-on-5 offence,
+                                defence, power play, penalty kill) is drawn on its own scale: the bands are quantiles of that type&apos;s cells
+                                across the league&apos;s regulars, the faintest from the median cell up, the same for every player, so two
+                                defence maps compare directly. Defence effects are smaller and less repeatable than offence ones, so read a
+                                defence map&apos;s faint bands as tendency, not certainty.
                             </p>
                             <p>
                                 The number on each map is the same regression on pony xG instead of shot counts: xG for (or against) per 60 he adds
@@ -654,8 +659,16 @@ export default function MethodologyPage() {
                                 shots beat their own finishing with him on the ice, showed no out-of-sample signal.
                             </p>
                             <p>
+                                Beside the parts, <strong>goal threat</strong> and <strong>penalties</strong> show where he sits among the
+                                regulars at his position (forwards or defence, 500+ minutes): the league as a mirrored density with a line at its
+                                median, his dot, and his percentile, with fewer penalties taken ranking higher. Goal threat is finishing (goals per
+                                xG) and <strong>shooting</strong>, his own 5-on-5 xG per 60, shrunk with 300 minutes; shooting is shown, not
+                                added to the total, because his own shots already count in his 5-on-5 offence.
+                            </p>
+                            <p>
                                 From one season to the next the 5-on-5 offence impact repeats at r = 0.50-0.55, defence 0.36-0.40, the power play
-                                0.31-0.53, the penalty kill 0.13-0.18, finishing 0.12-0.25, penalties drawn 0.58-0.64 and taken 0.69-0.71; the
+                                0.31-0.53, the penalty kill 0.13-0.18, finishing 0.12-0.25, shooting 0.65-0.75, penalties drawn 0.58-0.64 and taken
+                                0.69-0.71; the
                                 offence maps&apos; shape repeats (0.25 per player, about 0 for two random players), defence less (0.11). The 5-on-5
                                 impacts agree with IMPACT&apos;s even-strength ratings at r = 0.90 (offence) and 0.93 (defence).
                             </p>
