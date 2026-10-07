@@ -59,11 +59,42 @@ export interface SkaterGame extends Common {
     pm: number;
     toiPp: number;
     toiPk: number;
+    /** Box-score extras (scripts/pony_scores.ts SKATER_EXTRA); null for a game stored before them. */
+    box: SkaterBox | null;
+}
+export interface SkaterBox {
+    ppp: number;
+    shp: number;
+    /** Shot attempts. */
+    att: number;
+    gv: number;
+    tk: number;
+    foW: number;
+    foL: number;
+    shifts: number;
+    /** 5v5 on-ice attempts and pony xG, for and against. */
+    cf5: number;
+    ca5: number;
+    xgf5: number;
+    xga5: number;
 }
 export interface GoalieGame extends Common {
     sa: number;
     ga: number;
     xga: number;
+    /** Box-score extras (GOALIE_EXTRA); null for a game stored before them. */
+    box: GoalieBox | null;
+}
+export interface GoalieBox {
+    /** High-danger shots and goals against. */
+    hdSa: number;
+    hdGa: number;
+    evSa: number;
+    evGa: number;
+    /** While his team is shorthanded. */
+    pkSa: number;
+    pkGa: number;
+    decision: 'W' | 'L' | 'O' | null;
 }
 
 export interface PonySeason {
@@ -139,7 +170,15 @@ export function loadPonySeason(season: string): PonySeason | null {
         return mine > theirs ? 'W' : g.outcome !== 'REG' ? 'OTL' : 'L';
     };
 
+    // Optional columns: a row stored before they existed is shorter, so a missing cell means no value.
+    const opt = (r: (string | number)[], i: number | undefined) => (i == null || i >= r.length || r[i] == null || r[i] === '' ? null : Number(r[i]));
     const sc = Object.fromEntries(doc.skater_cols.map((c, i) => [c, i]));
+    const skaterBox = (r: (string | number)[]): SkaterBox | null => {
+        const v = ['ppp', 'shp', 'att', 'gv', 'tk', 'fow', 'fol', 'shf', 'cf5', 'ca5', 'xgf5', 'xga5'].map(k => opt(r, sc[k]));
+        if (v.some(x => x == null)) return null;
+        const [ppp, shp, att, gv, tk, foW, foL, shifts, cf5, ca5, xgf5, xga5] = v as number[];
+        return { ppp, shp, att, gv, tk, foW, foL, shifts, cf5, ca5, xgf5, xga5 };
+    };
     const skaters: SkaterGame[] = [];
     for (const r of doc.skaters) {
         const g = games.get(Number(r[sc.game]));
@@ -169,9 +208,17 @@ export function loadPonySeason(season: string): PonySeason | null {
             pm: Number(r[sc.pm]),
             toiPp: Number(r[sc.toi_pp]),
             toiPk: Number(r[sc.toi_pk]),
+            box: skaterBox(r),
         });
     }
     const gc = Object.fromEntries(doc.goalie_cols.map((c, i) => [c, i]));
+    const goalieBox = (r: (string | number)[]): GoalieBox | null => {
+        const v = ['hd_sa', 'hd_ga', 'ev_sa', 'ev_ga', 'pk_sa', 'pk_ga'].map(k => opt(r, gc[k]));
+        if (v.some(x => x == null)) return null;
+        const [hdSa, hdGa, evSa, evGa, pkSa, pkGa] = v as number[];
+        const d = gc.dec != null ? String(r[gc.dec] ?? '') : '';
+        return { hdSa, hdGa, evSa, evGa, pkSa, pkGa, decision: d === 'W' || d === 'L' || d === 'O' ? d : null };
+    };
     const goalies: GoalieGame[] = [];
     for (const r of doc.goalies) {
         const g = games.get(Number(r[gc.game]));
@@ -191,6 +238,7 @@ export function loadPonySeason(season: string): PonySeason | null {
             sa: Number(r[gc.sa]),
             ga: Number(r[gc.ga]),
             xga: Number(r[gc.xga]),
+            box: goalieBox(r),
         });
     }
     const data: PonySeason = { season: doc.season, builtAt: doc.built_at, games, players, skaters, goalies };

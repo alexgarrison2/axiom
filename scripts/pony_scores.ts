@@ -17,7 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { buildGame, type RawFeeds } from '../lib/game/build';
-import { gameScores, GS_PARTS, skaterRows, type PonyConstants } from '../lib/game/analytics';
+import { gameScores, goalieRows, GS_PARTS, skaterRows, type PonyConstants } from '../lib/game/analytics';
 import { parseRatings } from '../lib/game/ratings';
 import type { GameModel, Side } from '../lib/game/types';
 import { SEASON_ID } from '../lib/season';
@@ -33,12 +33,32 @@ const FORCE = args.includes('--force');
 const LIMIT = Number(arg('--limit') ?? Infinity);
 const UA = { 'User-Agent': 'pony-xg (pony score build)' };
 
+/*
+ * Box-score columns appended after the Pony Score ones (the player page's game log).
+ * Appending keeps a stored file's rows: a run only adds these to games that lack
+ * them (re-reading the feeds), it never rescores a stored game.
+ *   ppp / shp     power-play / shorthanded points (goal strength from the scorer's side; an extra attacker is not a power play)
+ *   att           shot attempts (goals, shots, misses, blocked)
+ *   gv / tk       giveaways / takeaways
+ *   fow / fol     faceoffs won / lost
+ *   shf           shifts
+ *   cf5 ca5       5v5 on-ice shot attempts for / against
+ *   xgf5 xga5     5v5 on-ice pony xG for / against
+ * Goalies:
+ *   hd_sa hd_ga   high-danger shots / goals against (xG >= HD_XG)
+ *   ev_sa ev_ga   even strength;  pk_sa pk_ga  while his team is shorthanded
+ *   dec           decision from the boxscore: W, L, O or ''
+ */
+const SKATER_EXTRA = ['ppp', 'shp', 'att', 'gv', 'tk', 'fow', 'fol', 'shf', 'cf5', 'ca5', 'xgf5', 'xga5'] as const;
+const GOALIE_EXTRA = ['hd_sa', 'hd_ga', 'ev_sa', 'ev_ga', 'pk_sa', 'pk_ga', 'dec'] as const;
+
 export const SKATER_COLS = [
     'game', 'player', 'team', 'opp', 'home', 'pos', 'toi', 'ps',
     ...GS_PARTS,
     'g', 'a1', 'a2', 'sog', 'ixg', 'hit', 'blk', 'pim', 'pm', 'toi_pp', 'toi_pk',
+    ...SKATER_EXTRA,
 ] as const;
-export const GOALIE_COLS = ['game', 'player', 'team', 'opp', 'home', 'toi', 'sa', 'ga', 'xga', 'ps'] as const;
+export const GOALIE_COLS = ['game', 'player', 'team', 'opp', 'home', 'toi', 'sa', 'ga', 'xga', 'ps', ...GOALIE_EXTRA] as const;
 
 type Row = (string | number)[];
 interface SeasonDoc {
@@ -77,7 +97,43 @@ function readJson<T>(file: string): T | null {
     }
 }
 
-function rowsFor(m: GameModel, C: PonyConstants, doc: SeasonDoc) {
+/** Decisions by goalie id from the raw boxscore ('W', 'L', 'O'). */
+function decisions(box: unknown): Map<number, string> {
+    const out = new Map<number, string>();
+    const stats = (box as { playerByGameStats?: Record<string, { goalies?: { playerId?: number; decision?: string }[] }> } | null)?.playerByGameStats;
+    for (const t of Object.values(stats ?? {})) for (const g of t.goalies ?? []) if (g.playerId && g.decision) out.set(g.playerId, g.decision);
+    return out;
+}
+
+/** The appended box-score values (SKATER_EXTRA / GOALIE_EXTRA order) by player id, for one side. */
+function extrasFor(m: GameModel, side: Side, dec: Map<number, string>): { skaters: Map<number, Row>; goalies: Map<number, Row> } {
+    const all = skaterRows(m, side, 'all');
+    const five = new Map(skaterRows(m, side, '5v5').map(r => [r.player.id, r]));
+    const pts = new Map<number, { pp: number; sh: number }>();
+    for (const e of m.events) {
+        if (e.type !== 'goal' || e.side !== side || (e.strength !== 'pp' && e.strength !== 'sh')) continue;
+        for (const id of [e.player, ...e.assists]) {
+            if (id == null) continue;
+            const c = pts.get(id) ?? { pp: 0, sh: 0 };
+            c[e.strength] += 1;
+            pts.set(id, c);
+        }
+    }
+    const skaters = new Map<number, Row>();
+    for (const r of all) {
+        const f = five.get(r.player.id);
+        const p = pts.get(r.player.id);
+        skaters.set(r.player.id, [p?.pp ?? 0, p?.sh ?? 0, r.iCF, r.giveaways, r.takeaways, r.foW, r.foL, r.shifts, f?.cf ?? 0, f?.ca ?? 0, r3(f?.xgf ?? 0), r3(f?.xga ?? 0)]);
+    }
+    const goalies = new Map<number, Row>();
+    for (const g of goalieRows(m, side)) {
+        // byStrength is from the goalie's side: 'sh' = his team shorthanded.
+        goalies.set(g.player.id, [g.hdSa, g.hdGa, g.byStrength.ev.sa, g.byStrength.ev.ga, g.byStrength.sh.sa, g.byStrength.sh.ga, dec.get(g.player.id) ?? '']);
+    }
+    return { skaters, goalies };
+}
+
+function rowsFor(m: GameModel, C: PonyConstants, doc: SeasonDoc, dec: Map<number, string>) {
     const id = String(m.id);
     doc.games[id] = [m.date, m.teams.away.tri, m.teams.home.tri, m.teams.away.score, m.teams.home.score, m.outcome ?? 'REG'];
     for (const p of m.players) {
@@ -86,6 +142,7 @@ function rowsFor(m: GameModel, C: PonyConstants, doc: SeasonDoc) {
     for (const side of ['away', 'home'] as Side[]) {
         const opp = side === 'away' ? 'home' : 'away';
         const box = new Map(skaterRows(m, side, 'all').map(r => [r.player.id, r]));
+        const extra = extrasFor(m, side, dec);
         const { skaters, goalies } = gameScores(m, side, C);
         for (const s of skaters) {
             const b = box.get(s.player.id);
@@ -95,12 +152,30 @@ function rowsFor(m: GameModel, C: PonyConstants, doc: SeasonDoc) {
                 ...GS_PARTS.map(k => r3(s.parts[k])),
                 b?.g ?? 0, b?.a1 ?? 0, b?.a2 ?? 0, b?.sog ?? 0, r3(b?.ixg ?? 0), b?.hits ?? 0, b?.blocks ?? 0, b?.pim ?? 0, b?.plusMinus ?? 0,
                 Math.round(s.raw.toiPp), Math.round(s.raw.toiPk),
+                ...(extra.skaters.get(s.player.id) ?? SKATER_EXTRA.map(() => 0)),
             ]);
         }
         for (const g of goalies) {
             if (g.toi <= 0) continue;
-            doc.goalies.push([m.id, g.player.id, m.teams[side].tri, m.teams[opp].tri, side === 'home' ? 1 : 0, Math.round(g.toi), g.sa, g.ga, r3(g.xga), r3(g.total)]);
+            doc.goalies.push([
+                m.id, g.player.id, m.teams[side].tri, m.teams[opp].tri, side === 'home' ? 1 : 0, Math.round(g.toi), g.sa, g.ga, r3(g.xga), r3(g.total),
+                ...(extra.goalies.get(g.player.id) ?? [0, 0, 0, 0, 0, 0, '']),
+            ]);
         }
+    }
+}
+
+/** A stored game whose rows predate the appended columns: add them, leave every stored value as it is. */
+function augment(m: GameModel, doc: SeasonDoc, dec: Map<number, string>, oldSkater: number, oldGoalie: number) {
+    const ex = { away: extrasFor(m, 'away', dec), home: extrasFor(m, 'home', dec) };
+    const pick = (k: 'skaters' | 'goalies', player: number) => ex.away[k].get(player) ?? ex.home[k].get(player) ?? null;
+    for (const r of doc.skaters) {
+        if (Number(r[0]) !== m.id || r.length !== oldSkater) continue;
+        r.push(...(pick('skaters', Number(r[1])) ?? SKATER_EXTRA.map(() => 0)));
+    }
+    for (const r of doc.goalies) {
+        if (Number(r[0]) !== m.id || r.length !== oldGoalie) continue;
+        r.push(...(pick('goalies', Number(r[1])) ?? [0, 0, 0, 0, 0, 0, '']));
     }
 }
 
@@ -172,15 +247,23 @@ async function main() {
     fs.mkdirSync(outDir, { recursive: true });
     const outFile = path.join(outDir, `${SEASON}.json`);
     const prior = FORCE ? null : readJson<SeasonDoc>(outFile);
-    const doc: SeasonDoc = prior && prior.skater_cols?.join() === SKATER_COLS.join()
-        ? { ...prior, built_at: new Date().toISOString() }
+    // A file written before the appended columns keeps its rows; those games get the new columns added.
+    const prefix = (a: readonly string[] | undefined, b: readonly string[]) => !!a && a.length <= b.length && a.every((c, i) => c === b[i]);
+    const keep = prior && prefix(prior.skater_cols, SKATER_COLS) && prefix(prior.goalie_cols, GOALIE_COLS);
+    const oldSkater = keep ? prior.skater_cols.length : SKATER_COLS.length;
+    const oldGoalie = keep ? prior.goalie_cols.length : GOALIE_COLS.length;
+    const doc: SeasonDoc = keep
+        ? { ...prior, built_at: new Date().toISOString(), skater_cols: SKATER_COLS, goalie_cols: GOALIE_COLS }
         : { version: 1, season: SEASON, built_at: new Date().toISOString(), games: {}, players: {}, skater_cols: SKATER_COLS, skaters: [], goalie_cols: GOALIE_COLS, goalies: [] };
+    const stale = new Set<string>();
+    for (const r of doc.skaters) if (r.length < SKATER_COLS.length) stale.add(String(r[0]));
+    for (const r of doc.goalies) if (r.length < GOALIE_COLS.length) stale.add(String(r[0]));
 
     const todo = Object.keys(xgDoc)
-        .filter(id => /^\d{4}02\d{4}$/.test(id) && !doc.games[id])
+        .filter(id => /^\d{4}02\d{4}$/.test(id) && (!doc.games[id] || stale.has(id)))
         .sort()
         .slice(0, LIMIT);
-    console.log(`${SEASON}: ${Object.keys(doc.games).length} games stored, ${todo.length} to build`);
+    console.log(`${SEASON}: ${Object.keys(doc.games).length} games stored (${stale.size} missing box columns), ${todo.length} to build`);
 
     let done = 0;
     let skipped = 0;
@@ -200,7 +283,8 @@ async function main() {
             }
             const xg = new Map(xgDoc[id]);
             const m = buildGame({ pbp: p, shifts: shifts as RawFeeds['shifts'], box: box as RawFeeds['box'] }, xg, null, { ratings });
-            rowsFor(m, C, doc);
+            if (doc.games[id]) augment(m, doc, decisions(box), oldSkater, oldGoalie);
+            else rowsFor(m, C, doc, decisions(box));
             done++;
             if (done % 50 === 0) console.log(`  ${done} / ${todo.length}`);
         }

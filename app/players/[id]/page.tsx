@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { teamPalette } from '@/components/ui/team-color';
 import { legibleOn } from '@/components/ui/color';
 import { PonyGames } from '@/components/player/PonyGames';
+import { GameLog } from '@/components/player/GameLog';
 import type { TrendGame } from '@/components/player/PonyTrend';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
@@ -37,7 +38,6 @@ const PIN = 'max-lg:sticky max-lg:left-0 max-lg:z-10 max-lg:bg-surface-1';
 const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:after:inset-y-0 max-lg:after:right-0 max-lg:after:w-px max-lg:after:bg-line-strong max-lg:after:content-['']";
 // Flat panel fill under pinned columns, so the pinned cells match it.
 const FLAT = 'max-lg:bg-none max-lg:bg-surface-1';
-const PIN_HOVER = 'max-lg:group-hover:bg-[color-mix(in_srgb,var(--surface-2)_60%,var(--surface-1))]';
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 const seasonLabel = (s: string | number) => `${String(s).slice(0, 4)}-${String(s).slice(6)}`;
 const feetInches = (inches: number | null) => (inches ? `${Math.floor(inches / 12)}′${inches % 12}″` : '—');
@@ -344,104 +344,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         <h2 id="log-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
                             Game log
                         </h2>
-                        {/* The latest 25 games; a checkbox (no script) reveals the rest. */}
-                        <div className="group/log flex flex-col gap-2">
-                        <input id="log-all" type="checkbox" className="peer sr-only" />
-                        <ScrollRegion label="Game log" stickyStart className={cn('panel', FLAT)}>
-                            <table className="w-full min-w-[44rem] border-collapse text-caption tabular-nums">
-                                <thead>
-                                    <tr className="border-b border-line text-micro uppercase tracking-label text-fg-3">
-                                        <th className={cn('px-3 py-2 text-left font-semibold', PIN, PIN_EDGE)}>Date</th>
-                                        <th className="px-2 py-2 text-left font-semibold">Opp</th>
-                                        {/* Phones: the score follows the opponent instead of trailing the box score. */}
-                                        <th className="px-3 py-2 text-right font-semibold text-fg-1 md:hidden">{goalie ? 'GSAx' : 'Pony'}</th>
-                                        <th className="px-2 py-2 text-left font-semibold">Res</th>
-                                        <th className="px-2 py-2 text-right font-semibold">TOI</th>
-                                        {goalie ? (
-                                            <>
-                                                <th className="px-2 py-2 text-right font-semibold">SA</th>
-                                                <th className="px-2 py-2 text-right font-semibold">GA</th>
-                                                <th className="px-2 py-2 text-right font-semibold">SV%</th>
-                                                <th className="px-2 py-2 text-right font-semibold">xGA</th>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <th className="px-2 py-2 text-right font-semibold">G</th>
-                                                <th className="px-2 py-2 text-right font-semibold">A</th>
-                                                <th className="px-2 py-2 text-right font-semibold">P</th>
-                                                <th className="px-2 py-2 text-right font-semibold">SOG</th>
-                                                <th className="px-2 py-2 text-right font-semibold">ixG</th>
-                                                <th className="px-2 py-2 text-right font-semibold">+/−</th>
-                                            </>
-                                        )}
-                                        <th className="px-3 py-2 text-right font-semibold text-fg-1 max-md:hidden">{goalie ? 'GSAx' : 'Pony'}</th>
-                                        <th className="w-40 px-3 py-2" />
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {[...rows].reverse().map((r, i) => {
-                                        const s = r as SkaterGame;
-                                        const g = r as GoalieGame;
-                                        const reach = Math.max(1, ...rows.map(x => Math.abs(x.ps)));
-                                        return (
-                                            <tr key={r.game} className={cn('group border-b border-line/60 hover:bg-surface-2/60', i >= 25 && 'hidden group-has-[:checked]/log:table-row')}>
-                                                <td className={cn('px-3 py-1.5', PIN, PIN_EDGE, PIN_HOVER)}>
-                                                    <Link href={`/games/${r.game}`} className="text-fg-2 underline-offset-4 group-hover:text-fg-1 group-hover:underline coarse:py-1.5">
-                                                        {r.date.slice(5).replace('-', '/')}
-                                                    </Link>
-                                                </td>
-                                                <td className="px-2">
-                                                    <span className="flex items-center gap-1.5 text-fg-2">
-                                                        <span className="w-3 text-fg-3">{r.home ? 'vs' : '@'}</span>
-                                                        {/* eslint-disable-next-line @next/next/no-img-element -- team logo */}
-                                                        <img src={`/logos/${r.opp}.svg`} alt="" width={18} height={18} className="h-[18px] w-[18px]" />
-                                                        {r.opp}
-                                                    </span>
-                                                </td>
-                                                <td className={cn('px-3 text-right font-bold md:hidden', r.ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.ps)}</td>
-                                                <td className={cn('px-2', r.result === 'W' ? 'text-fg-1' : 'text-fg-3')}>{r.result}</td>
-                                                <td className="px-2 text-right text-fg-2">{mmss(r.toi)}</td>
-                                                {goalie ? (
-                                                    <>
-                                                        <td className="px-2 text-right text-fg-2">{g.sa}</td>
-                                                        <td className="px-2 text-right text-fg-2">{g.ga}</td>
-                                                        <td className="px-2 text-right text-fg-2">{g.sa ? ((g.sa - g.ga) / g.sa).toFixed(3).replace(/^0/, '') : '—'}</td>
-                                                        <td className="px-2 text-right text-model">{g.xga.toFixed(2)}</td>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <td className={cn('px-2 text-right', s.g ? 'font-bold text-fg-1' : 'text-fg-3')}>{s.g}</td>
-                                                        <td className={cn('px-2 text-right', s.a1 + s.a2 ? 'text-fg-1' : 'text-fg-3')}>{s.a1 + s.a2}</td>
-                                                        <td className={cn('px-2 text-right', s.g + s.a1 + s.a2 ? 'text-fg-1' : 'text-fg-3')}>{s.g + s.a1 + s.a2}</td>
-                                                        <td className="px-2 text-right text-fg-2">{s.sog}</td>
-                                                        <td className="px-2 text-right text-model">{s.ixg.toFixed(2)}</td>
-                                                        <td className="px-2 text-right text-fg-2">{s.pm > 0 ? `+${s.pm}` : s.pm}</td>
-                                                    </>
-                                                )}
-                                                <td className={cn('px-3 text-right font-bold max-md:hidden', r.ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.ps)}</td>
-                                                <td className="px-3">
-                                                    <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="block h-2.5 w-full" aria-hidden="true">
-                                                        <rect x={0} y={0} width={100} height={10} fill="var(--track)" />
-                                                        <rect x={Math.min(50, 50 + (r.ps / reach) * 48)} y={1} width={Math.abs((r.ps / reach) * 48)} height={8} fill={r.ps >= 0 ? color : 'var(--text-3)'} opacity={0.9} />
-                                                        <line x1={50} x2={50} y1={0} y2={10} className="stroke-fg-3" vectorEffect="non-scaling-stroke" />
-                                                    </svg>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </ScrollRegion>
-                        {rows.length > 25 ? (
-                            <label
-                                htmlFor="log-all"
-                                className="cursor-pointer self-center rounded-full border border-line px-4 py-2 text-micro coarse:py-3.5 uppercase tracking-label text-fg-2 hover:border-line-strong hover:text-fg-1 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-brand"
-                            >
-                                <span className="group-has-[:checked]/log:hidden">Show all {rows.length} games</span>
-                                <span className="hidden group-has-[:checked]/log:inline">Show the latest 25</span>
-                            </label>
-                        ) : null}
-                        </div>
+                        <GameLog rows={goalie ? games.goalie : games.skater} goalie={goalie} games={data?.games ?? new Map()} color={color} />
                     </section>
                 ) : null}
 
