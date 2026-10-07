@@ -10,6 +10,7 @@ import { tidyReason } from '@/components/accuracy/ledger-data';
 import { WinBar, WinBarLegend } from '@/components/ui/win-bar';
 import { HashScroll } from '@/components/ui/hash-scroll';
 import { SeasonTag, StatChip } from '@/components/ui/stat-chip';
+import { ScrollRegion } from '@/components/ui/scroll-region';
 import { parseReport, type MarketBacktest, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 
 export const revalidate = 3600;
@@ -71,8 +72,9 @@ function MetricsTable({ summary }: { summary: SeasonSummary }) {
         return d < 0 ? 'model' : d > 0 ? 'baseline' : 'tie';
     };
     return (
-        <div className="panel overflow-x-auto" role="region" aria-label={`${summary.season} validation metrics`} tabIndex={0}>
-            <table className="table-dense min-w-[520px]">
+        <ScrollRegion label={`${summary.season} validation metrics`} className="panel">
+            {/* Phones: labels and headers wrap and the badge sits over its number, so log loss stays on screen. */}
+            <table className="table-dense min-w-[520px] max-sm:min-w-0 max-sm:[&_th]:!whitespace-normal">
                 <caption className="sr-only">
                     {summary.season} {summary.gameType ?? ''} season: model versus baselines. Lower Brier and log loss are better.
                 </caption>
@@ -97,8 +99,8 @@ function MetricsTable({ summary }: { summary: SeasonSummary }) {
                                 <td className="text-right text-fg-1">{fmt(r.accuracy, 1, true)}</td>
                                 <td className="text-right text-fg-1">{fmt(r.brier, 4)}</td>
                                 <td className="text-right text-fg-1">
-                                    {b === 'baseline' ? <span className="mr-2 text-micro uppercase tracking-[0.1em] text-neg">beats model</span> : null}
-                                    {b === 'model' ? <span className="mr-2 text-micro uppercase tracking-[0.1em] text-pos">model better</span> : null}
+                                    {b === 'baseline' ? <span className="mr-2 text-micro uppercase tracking-[0.1em] text-neg max-sm:mr-0 max-sm:block">beats model</span> : null}
+                                    {b === 'model' ? <span className="mr-2 text-micro uppercase tracking-[0.1em] text-pos max-sm:mr-0 max-sm:block">model better</span> : null}
                                     {fmt(r.logLoss, 4)}
                                 </td>
                             </tr>
@@ -106,7 +108,7 @@ function MetricsTable({ summary }: { summary: SeasonSummary }) {
                     })}
                 </tbody>
             </table>
-        </div>
+        </ScrollRegion>
     );
 }
 
@@ -133,8 +135,8 @@ function WalkForwardTable({ rows: wf, market }: { rows: WalkForwardRow[]; market
     const hasLegacy = rows.some(r => r.legacyLogLoss != null);
     const hasHome = rows.some(r => r.homeRateLogLoss != null);
     return (
-        <div className="panel overflow-x-auto" role="region" aria-label="Walk-forward backtest by season" tabIndex={0}>
-            <table className="table-dense min-w-[520px]">
+        <ScrollRegion label="Walk-forward backtest by season" className="panel">
+            <table className="table-dense min-w-[520px] max-sm:min-w-0 max-sm:[&_th]:!whitespace-normal">
                 <caption className="sr-only">Walk-forward backtest: the model is trained only on seasons before each test season. Lower log loss is better.</caption>
                 <thead>
                     <tr>
@@ -174,28 +176,29 @@ function WalkForwardTable({ rows: wf, market }: { rows: WalkForwardRow[]; market
                     ))}
                 </tbody>
             </table>
-        </div>
+        </ScrollRegion>
     );
 }
 
 function Section({ id, index, title, children }: { id: string; index: number; title: string; children: React.ReactNode }) {
     return (
-        <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-[calc(var(--appbar-h)+16px)] border-t border-line pt-6">
+        // Below lg the page's scroll-padding alone clears the app bar (the margin on top of it left a gap of a whole line).
+        <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-[calc(var(--appbar-h)+16px)] border-t border-line pt-6 max-lg:scroll-mt-0">
             <h2 id={`${id}-h`} className="heading-section flex items-baseline gap-3">
                 <span aria-hidden="true" className="font-sans text-caption font-bold tracking-[0.14em] text-brand">
                     {String(index).padStart(2, '0')}
                 </span>
                 {title}
             </h2>
-            <div className="mt-3 max-w-[76ch] space-y-3 text-body-sm text-fg-2 [&_strong]:font-semibold [&_strong]:text-fg-1">{children}</div>
+            <div className="mt-3 max-w-[76ch] space-y-3 text-body-sm text-fg-2 max-md:text-body max-md:leading-[22px] [&_strong]:font-semibold [&_strong]:text-fg-1">{children}</div>
         </section>
     );
 }
 
-/** A legend row: the visual on the left, what it means on the right. */
+/** A legend row: the visual on the left, what it means on the right (phones: the visual over its text, which gets the full measure). */
 function Key({ sample, children }: { sample: React.ReactNode; children: React.ReactNode }) {
     return (
-        <div className="grid grid-cols-[6rem_minmax(0,1fr)] items-baseline gap-3 border-t border-line/60 py-2 first:border-t-0 sm:grid-cols-[9rem_minmax(0,1fr)]">
+        <div className="grid grid-cols-[6rem_minmax(0,1fr)] items-baseline gap-3 border-t border-line/60 py-2 first:border-t-0 max-sm:grid-cols-1 max-sm:gap-1.5 max-sm:py-2.5 sm:grid-cols-[9rem_minmax(0,1fr)]">
             <dt className="flex min-h-5 items-center">{sample}</dt>
             <dd>{children}</dd>
         </div>
@@ -284,7 +287,7 @@ export default function MethodologyPage() {
                                 <Key
                                     sample={
                                         <span className="text-micro font-bold tracking-[0.12em]">
-                                            <span className="text-pos">✓ PICK</span> <span className="text-neg">✕ PICK</span>
+                                            <span className="whitespace-nowrap text-pos">✓ PICK</span> <span className="whitespace-nowrap text-neg">✕ PICK</span>
                                         </span>
                                     }
                                 >
@@ -295,7 +298,7 @@ export default function MethodologyPage() {
                                 </Key>
                                 <Key
                                     sample={
-                                        <span className="flex items-center gap-2 font-display text-caption font-semibold uppercase">
+                                        <span className="flex flex-wrap items-center gap-x-2 font-display text-caption font-semibold uppercase">
                                             <span className="glow-blue">Conf</span>
                                             <span className="text-pos/60">Likely</span>
                                             <span className="text-fg-2">Proj</span>
@@ -568,7 +571,7 @@ export default function MethodologyPage() {
                                 sample. The same ratings feed the team tables (as even-strength <strong>NET</strong> = EV OFF + EV DEF), the Lines tab and
                                 the game model&apos;s lineup term.
                             </p>
-                            <p id="standings" className="scroll-mt-[calc(var(--appbar-h)+16px)]">
+                            <p id="standings" className="scroll-mt-[calc(var(--appbar-h)+16px)] max-lg:scroll-mt-0">
                                 <strong>Playoff odds</strong> come from simulating the rest of the season thousands of times with the same game model. On
                                 Standings:
                             </p>
@@ -682,7 +685,7 @@ export default function MethodologyPage() {
                                 </Key>
                                 <Key
                                     sample={
-                                        <a href="https://moneypuck.com" className="label text-brand underline underline-offset-4" rel="noopener noreferrer" target="_blank">
+                                        <a href="https://moneypuck.com" className="label text-brand underline underline-offset-4 coarse:-my-3 coarse:inline-block coarse:py-3" rel="noopener noreferrer" target="_blank">
                                             MoneyPuck
                                         </a>
                                     }
@@ -699,7 +702,7 @@ export default function MethodologyPage() {
                             </p>
                         </Section>
 
-                        <section id="glossary" aria-labelledby="glossary-h" className="scroll-mt-[calc(var(--appbar-h)+16px)] border-t border-line pt-6">
+                        <section id="glossary" aria-labelledby="glossary-h" className="scroll-mt-[calc(var(--appbar-h)+16px)] border-t border-line pt-6 max-lg:scroll-mt-0">
                             <h2 id="glossary-h" className="heading-section flex items-baseline gap-3">
                                 <span aria-hidden="true" className="font-sans text-caption font-bold tracking-[0.14em] text-brand">
                                     {String(++i).padStart(2, '0')}
@@ -713,16 +716,17 @@ export default function MethodologyPage() {
                                         <div
                                             key={key}
                                             id={`term-${key}`}
-                                            className="scroll-mt-[calc(var(--appbar-h)+16px)] border-t border-line/60 py-2 target:pl-2 target:shadow-[inset_2px_0_0_var(--brand)] has-[:target]:pl-2 has-[:target]:shadow-[inset_2px_0_0_var(--brand)]"
+                                            className="scroll-mt-[calc(var(--appbar-h)+16px)] border-t border-line/60 py-2 max-lg:scroll-mt-0 target:pl-2 target:shadow-[inset_2px_0_0_var(--brand)] has-[:target]:pl-2 has-[:target]:shadow-[inset_2px_0_0_var(--brand)]"
                                         >
                                             <dt className="flex items-baseline justify-between gap-3">
                                                 {e.anchors?.map(a => (
-                                                    <span key={a} id={`term-${a}`} aria-hidden="true" className="w-0 scroll-mt-[calc(var(--appbar-h)+24px)]" />
+                                                    // Out of the flow below lg so justify-between pairs the label with its title (in flow it centred the label).
+                                                    <span key={a} id={`term-${a}`} aria-hidden="true" className="w-0 scroll-mt-[calc(var(--appbar-h)+24px)] max-lg:absolute max-lg:scroll-mt-2" />
                                                 ))}
-                                                <span className="font-display text-body font-semibold text-fg-1">{e.label}</span>
+                                                <span className="font-display text-body font-semibold text-fg-1 max-lg:shrink-0">{e.label}</span>
                                                 {e.title !== e.label ? <span className="text-right text-micro uppercase tracking-[0.1em] text-fg-3">{e.title}</span> : null}
                                             </dt>
-                                            <dd className="mt-0.5 text-caption text-fg-2">
+                                            <dd className="mt-0.5 text-caption text-fg-2 max-md:text-body-sm max-md:leading-5">
                                                 {e.short}
                                                 {e.detail ? <span className="mt-0.5 block text-fg-3">{e.detail}</span> : null}
                                             </dd>

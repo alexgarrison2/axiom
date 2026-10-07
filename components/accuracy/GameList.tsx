@@ -191,7 +191,8 @@ export function GameList({
 
     return (
         <div className="flex flex-col gap-2">
-            <div className="panel flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2">
+            {/* Phones: team and result share the first row, the date window gets its own, the rest sits under it. */}
+            <div className="panel flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2 max-sm:gap-x-2">
                 <label htmlFor={teamId} className="sr-only">
                     Team
                 </label>
@@ -202,7 +203,7 @@ export function GameList({
                         setTeam(e.target.value);
                         refilter();
                     }}
-                    className={SELECT}
+                    className={cn(SELECT, 'max-sm:flex-1 max-sm:tracking-[0.04em]')}
                 >
                     <option value="all">All teams</option>
                     {TEAM_CODES.map(t => (
@@ -227,7 +228,7 @@ export function GameList({
                         role="switch"
                         aria-checked={includeRetro}
                         onClick={() => setIncludeRetro(v => !v)}
-                        className="inline-flex min-h-8 items-center gap-2 rounded-control text-micro font-medium uppercase tracking-[0.12em] text-fg-2 coarse:min-h-11"
+                        className="inline-flex min-h-8 items-center gap-2 rounded-control text-micro font-medium uppercase tracking-[0.12em] text-fg-2 max-sm:order-2 coarse:min-h-11"
                     >
                         <span className={cn('relative inline-block h-4 w-7 rounded-full border transition-colors', includeRetro ? 'border-brand bg-brand/30' : 'border-line-strong bg-surface-2')}>
                             <span className={cn('absolute top-[1px] h-3 w-3 rounded-full transition-transform', includeRetro ? 'translate-x-[13px] bg-brand' : 'translate-x-[1px] bg-fg-2')} />
@@ -236,7 +237,7 @@ export function GameList({
                     </button>
                 ) : null}
                 {dates.length > 2 ? (
-                    <div className="flex min-w-[14rem] flex-1 items-center gap-3">
+                    <div className="flex min-w-[14rem] flex-1 items-center gap-3 max-sm:order-1 max-sm:basis-full">
                         <span className="sr-only" id="date-window">
                             Dates
                         </span>
@@ -259,11 +260,11 @@ export function GameList({
                     </div>
                 ) : null}
                 {legacyShown ? (
-                    <GlossLink term="legacy" desc="Published by the previous site model" className="ml-auto">
+                    <GlossLink term="legacy" desc="Published by the previous site model" className="ml-auto max-sm:order-2">
                         <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">LEGACY</span>
                     </GlossLink>
                 ) : null}
-                <div className={cn('flex items-center gap-3', !legacyShown && 'ml-auto')}>
+                <div className={cn('flex items-center gap-3 max-sm:order-2', !legacyShown && 'ml-auto')}>
                     <p className="text-micro uppercase tracking-label text-fg-3" aria-live="polite">
                         {rows.length.toLocaleString('en-US')} shown
                         {includeRetro ? <span className="ml-2 text-warn">+BF</span> : null}
@@ -354,7 +355,7 @@ function KpiStrip({ s }: { s: SpanSummary }) {
 
 function Kpi({ label, term, value, sub, tone }: { label: string; term?: string; value: string; sub?: string; tone?: 'pos' | 'neg' }) {
     return (
-        <div className="panel flex min-w-0 flex-col gap-1.5 px-4 py-3">
+        <div className="panel flex min-w-0 flex-col gap-1.5 px-3 py-2.5 md:px-4 md:py-3">
             {term ? (
                 <GlossLink term={term} className="label self-start">
                     {label}
@@ -627,24 +628,27 @@ function ExcludedList({ games }: { games: ExcludedGame[] }) {
     return (
         <div className={cn(STRIP, 'flex flex-col gap-1.5')}>
             {[...groups.entries()].map(([reason, list]) => (
-                <div key={reason} className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                    <p className="label">
-                        <GlossLink term="no-pick" desc={reason}>
-                            No pregame pick
-                        </GlossLink>{' '}
-                        · {list.length}
-                    </p>
-                    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-fg-2">
-                        {list.map(g => (
-                            <li key={g.id} className="flex items-center gap-1.5">
-                                <span className="text-fg-3">{shortDate(g.date)}</span>
-                                <Crest tri={g.away} size={22} className="drop-shadow-none" />
-                                {g.away} @ {g.home}
-                                <Crest tri={g.home} size={22} className="drop-shadow-none" />
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <StripGroup
+                    key={reason}
+                    count={list.length}
+                    label={
+                        <p className="label">
+                            <GlossLink term="no-pick" desc={reason}>
+                                No pregame pick
+                            </GlossLink>{' '}
+                            · {list.length}
+                        </p>
+                    }
+                >
+                    {list.map(g => (
+                        <li key={g.id} className="flex items-center gap-1.5">
+                            <span className="text-fg-3">{shortDate(g.date)}</span>
+                            <Crest tri={g.away} size={22} className="drop-shadow-none" />
+                            {g.away} @ {g.home}
+                            <Crest tri={g.home} size={22} className="drop-shadow-none" />
+                        </li>
+                    ))}
+                </StripGroup>
             ))}
         </div>
     );
@@ -654,26 +658,59 @@ function ExcludedList({ games }: { games: ExcludedGame[] }) {
 function NoLeanList({ games }: { games: GradedGame[] }) {
     return (
         <div data-testid="no-lean" className={STRIP}>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                <p className="label">
-                    <GlossLink term="no-lean" desc="Forecast within 1 point of 50%, not graded as a pick">
-                        No lean
-                    </GlossLink>{' '}
-                    · {games.length}
-                </p>
-                <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-fg-2">
-                    {games.map(g => (
-                        <li key={g.id} className="flex items-center gap-1.5" title={`Pregame ${g.home} ${g.homeProb.toFixed(1)}%`}>
-                            <span className="text-fg-3">{shortDate(g.date)}</span>
-                            <Crest tri={g.away} size={22} className="drop-shadow-none" />
-                            {g.away} {g.awayScore}
-                            <span className="text-fg-3">@</span>
-                            <Crest tri={g.home} size={22} className="drop-shadow-none" />
-                            {g.home} {g.homeScore}
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            <StripGroup
+                count={games.length}
+                label={
+                    <p className="label">
+                        <GlossLink term="no-lean" desc="Forecast within 1 point of 50%, not graded as a pick">
+                            No lean
+                        </GlossLink>{' '}
+                        · {games.length}
+                    </p>
+                }
+            >
+                {games.map(g => (
+                    <li key={g.id} className="flex items-center gap-1.5" title={`Pregame ${g.home} ${g.homeProb.toFixed(1)}%`}>
+                        <span className="text-fg-3">{shortDate(g.date)}</span>
+                        <Crest tri={g.away} size={22} className="drop-shadow-none" />
+                        {g.away} {g.awayScore}
+                        <span className="text-fg-3">@</span>
+                        <Crest tri={g.home} size={22} className="drop-shadow-none" />
+                        {g.home} {g.homeScore}
+                    </li>
+                ))}
+            </StripGroup>
+        </div>
+    );
+}
+
+/** Strips longer than this fold behind their count on phones (a tap opens them); md and up always list every game. */
+const FOLD_N = 4;
+
+function StripGroup({ label, count, children }: { label: React.ReactNode; count: number; children: React.ReactNode }) {
+    const [open, setOpen] = React.useState(false);
+    const listId = React.useId();
+    const folds = count > FOLD_N;
+    return (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {label}
+            {folds ? (
+                <button
+                    type="button"
+                    aria-expanded={open}
+                    aria-controls={listId}
+                    aria-label={open ? 'Hide games' : 'Show games'}
+                    onClick={() => setOpen(o => !o)}
+                    className="-my-2.5 -mr-2 ml-auto inline-flex h-11 w-11 items-center justify-center text-fg-2 md:hidden"
+                >
+                    <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')}>
+                        <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </button>
+            ) : null}
+            <ul id={listId} className={cn('flex flex-wrap gap-x-4 gap-y-1 text-caption text-fg-2', folds && !open && 'max-md:hidden')}>
+                {children}
+            </ul>
         </div>
     );
 }

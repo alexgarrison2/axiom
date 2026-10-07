@@ -149,7 +149,7 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, tallies =
                 )}
             </section>
 
-            <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-3">
+            <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-3 max-lg:scroll-mt-0">
                 <Ledger
                     ledger={ledger}
                     gate={report.gate}
@@ -394,7 +394,8 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
     const bestLL = b.n >= SIGNAL_N ? Math.min(...rows.map(r => r.ll ?? Infinity)) : NaN;
     return (
         <ScrollRegion label={`Model versus baselines, ${seasonWord}`} className="panel">
-            <table className="table-dense min-w-[340px]">
+            {/* Under 360px the row labels wrap so the log loss column stays on screen. */}
+            <table className="table-dense min-w-[340px] max-[359.98px]:min-w-0">
                 <caption className="sr-only">Model versus baselines for {seasonWord}. Lower Brier and log loss are better.</caption>
                 <thead>
                     <tr>
@@ -414,7 +415,7 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
                             <span aria-hidden="true"> ↓</span>
                         </th>
                         <th scope="col" className="text-right">
-                            <GlossLink term="log-loss" desc="lower is better">
+                            <GlossLink term="log-loss" desc="lower is better" className="coarse:-mx-2 coarse:px-2">
                                 <abbr title="Log loss" className="no-underline">
                                     LL
                                 </abbr>
@@ -426,7 +427,7 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
                 <tbody>
                     {rows.map(r => (
                         <tr key={r.label}>
-                            <th scope="row" className="text-left font-semibold">
+                            <th scope="row" className="text-left font-semibold max-[359.98px]:whitespace-normal">
                                 <span className={r.model ? 'text-brand' : 'text-fg-1'}>{r.label}</span>
                                 {r.note ? <span className="ml-2 font-normal text-fg-3">{r.note}</span> : null}
                             </th>
@@ -492,15 +493,16 @@ function CallList({ rows }: { rows: CallRow[] }) {
                 const away = teamTriFromName(c.awayTeam) ?? c.awayTeam;
                 const pick = teamTriFromName(c.pick) ?? c.pick;
                 return (
-                    <li key={c.gameId} className="flex h-8 items-center gap-2.5 border-t border-line/60 text-caption first:border-t-0">
+                    // Under 360px the row tightens (smaller gaps, no "@") so team and score never break onto two lines.
+                    <li key={c.gameId} className="flex h-8 items-center gap-2.5 whitespace-nowrap border-t border-line/60 text-caption first:border-t-0 max-[359.98px]:gap-1.5">
                         <span aria-hidden="true" className={cn('w-3 font-bold', c.correct ? 'text-pos' : 'text-neg')}>
                             {c.correct ? '✓' : '✕'}
                         </span>
-                        <span className="w-12 shrink-0 text-fg-3">{shortDate(c.date)}</span>
-                        <span className="flex min-w-0 items-center gap-1.5 text-fg-1">
+                        <span className="w-12 shrink-0 text-fg-3 max-[359.98px]:w-auto">{shortDate(c.date)}</span>
+                        <span className="flex min-w-0 items-center gap-1.5 text-fg-1 max-[359.98px]:gap-1">
                             <Crest tri={away} size={22} className="drop-shadow-none" />
                             {away} {c.awayScore}
-                            <span className="text-fg-3">@</span>
+                            <span className="text-fg-3 max-[359.98px]:sr-only">@</span>
                             <Crest tri={home} size={22} className="drop-shadow-none" />
                             {home} {c.homeScore}
                             {c.decision !== 'REG' ? <span className="text-fg-3">{c.decision}</span> : null}

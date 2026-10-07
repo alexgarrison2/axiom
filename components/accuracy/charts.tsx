@@ -44,6 +44,43 @@ function Glow({ id, blur = 3 }: { id: string; blur?: number }) {
     );
 }
 
+/**
+ * Readout state for a chart. A mouse hovers as before; a finger taps or drags sideways to pin a
+ * readout (vertical swipes still scroll the page), taps the same spot again or anywhere else to clear it.
+ */
+function useReadout<T>() {
+    const [value, setValue] = React.useState<T | null>(null);
+    const box = React.useRef<SVGSVGElement>(null);
+    React.useEffect(() => {
+        if (value == null) return;
+        const off = (e: PointerEvent) => {
+            if (e.pointerType !== 'mouse' && !box.current?.contains(e.target as Node)) setValue(null);
+        };
+        document.addEventListener('pointerdown', off);
+        return () => document.removeEventListener('pointerdown', off);
+    }, [value]);
+    return [value, setValue, box] as const;
+}
+
+/** Pointer handlers for a scrub area over `count` evenly spaced points. */
+function scrubHandlers(count: number, hover: number | null, setHover: (i: number | null) => void) {
+    const at = (e: React.PointerEvent<SVGRectElement>) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        return Math.max(0, Math.min(count - 1, Math.round(((e.clientX - r.left) / r.width) * (count - 1))));
+    };
+    return {
+        onPointerMove: (e: React.PointerEvent<SVGRectElement>) => setHover(at(e)),
+        onPointerDown: (e: React.PointerEvent<SVGRectElement>) => {
+            if (e.pointerType === 'mouse') return;
+            const i = at(e);
+            setHover(i === hover ? null : i);
+        },
+        onPointerLeave: (e: React.PointerEvent<SVGRectElement>) => {
+            if (e.pointerType === 'mouse') setHover(null);
+        },
+    };
+}
+
 function Tip({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
         <div className={cn('pointer-events-none absolute rounded-chip border border-line-strong bg-bg/95 px-2 py-1 text-micro text-fg-1', className)}>{children}</div>
@@ -61,12 +98,31 @@ export function ReliabilityChart({ bins }: { bins: ReliabilityBin[] }) {
     const x = (v: number) => pad.l + v * (w - pad.l - pad.r);
     const y = (v: number) => pad.t + (1 - v) * (h - pad.t - pad.b);
     const maxN = Math.max(1, ...pts.map(p => p.n));
-    const [hover, setHover] = React.useState<ReliabilityBin | null>(null);
+    const [hover, setHover, svgRef] = useReadout<ReliabilityBin>();
     const d = pts.map((p, i) => `${i ? 'L' : 'M'}${x(p.meanPred!).toFixed(1)},${y(p.actual!).toFixed(1)}`).join('');
+    // A finger picks the nearest dot anywhere on the plot (the dots are small); tapping it again clears it.
+    const onTouch = (e: React.PointerEvent<SVGSVGElement>) => {
+        if (e.pointerType === 'mouse' || !pts.length) return;
+        const r = e.currentTarget.getBoundingClientRect();
+        const px = ((e.clientX - r.left) / r.width) * w;
+        const py = ((e.clientY - r.top) / r.height) * h;
+        let best = pts[0];
+        for (const p of pts) if (Math.hypot(x(p.meanPred!) - px, y(p.actual!) - py) < Math.hypot(x(best.meanPred!) - px, y(best.actual!) - py)) best = p;
+        setHover(best === hover ? null : best);
+    };
     return (
         <figure className="flex flex-col gap-1.5">
             <div className="relative" ref={boxRef}>
-                <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block" role="img" aria-label="Calibration: predicted versus actual home win rate by probability bin">
+                <svg
+                    ref={svgRef}
+                    viewBox={`0 0 ${w} ${h}`}
+                    width={w}
+                    height={h}
+                    className="block"
+                    role="img"
+                    aria-label="Calibration: predicted versus actual home win rate by probability bin"
+                    onPointerDown={onTouch}
+                >
                     <Glow id={glow} />
                     {[0, 0.25, 0.5, 0.75, 1].map(v => (
                         <g key={v}>
@@ -85,7 +141,12 @@ export function ReliabilityChart({ bins }: { bins: ReliabilityBin[] }) {
                     {pts.map(p => {
                         const r = 3 + 6 * Math.sqrt(p.n / maxN);
                         return (
-                            <g key={p.lo} onMouseEnter={() => setHover(p)} onMouseLeave={() => setHover(null)} className="cursor-crosshair">
+                            <g
+                                key={p.lo}
+                                onPointerEnter={e => e.pointerType === 'mouse' && setHover(p)}
+                                onPointerLeave={e => e.pointerType === 'mouse' && setHover(null)}
+                                className="cursor-crosshair"
+                            >
                                 <circle cx={x(p.meanPred!)} cy={y(p.actual!)} r={r + 8} fill="transparent" />
                                 <circle cx={x(p.meanPred!)} cy={y(p.actual!)} r={r} fill={MODEL} fillOpacity="0.9" stroke="rgb(var(--bg-rgb))" strokeWidth="1.5" filter={`url(#${glow})`} />
                             </g>
@@ -194,7 +255,7 @@ export function RollingChart({ points }: { points: RollingPoint[] }) {
     const glow = React.useId().replace(/:/g, '');
     const h = 200;
     const pad = { l: 44, r: 10, t: 8, b: 22 };
-    const [hover, setHover] = React.useState<number | null>(null);
+    const [hover, setHover, svgRef] = useReadout<number>();
     if (points.length < 2) return <p className="label">Needs 100 games</p>;
     const vals = points.flatMap(p => [p.model, p.market]);
     const lo = Math.floor(Math.min(...vals) * 100) / 100 - 0.005;
@@ -205,15 +266,10 @@ export function RollingChart({ points }: { points: RollingPoint[] }) {
     const ticks = [lo + 0.005, (lo + hi) / 2, hi - 0.005];
     const last = points[points.length - 1];
     const hp = hover != null ? points[hover] : null;
-    const onMove = (e: React.PointerEvent<SVGRectElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const frac = (e.clientX - rect.left) / rect.width;
-        setHover(Math.max(0, Math.min(points.length - 1, Math.round(frac * (points.length - 1)))));
-    };
     return (
         <figure className="flex flex-col gap-1.5">
             <div className="relative" ref={boxRef}>
-                <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block" role="img" aria-label={`Rolling 100-game log loss. Latest: model ${last.model.toFixed(3)}, market ${last.market.toFixed(3)}. Lower is better.`}>
+                <svg ref={svgRef} viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block touch-pan-y" role="img" aria-label={`Rolling 100-game log loss. Latest: model ${last.model.toFixed(3)}, market ${last.market.toFixed(3)}. Lower is better.`}>
                     <Glow id={glow} blur={1.5} />
                     {ticks.map(t => (
                         <g key={t}>
@@ -238,11 +294,15 @@ export function RollingChart({ points }: { points: RollingPoint[] }) {
                             <circle cx={x(hover!)} cy={y(hp.market)} r="3.5" fill={MARKET} />
                         </g>
                     ) : null}
-                    <rect x={pad.l} y={pad.t} width={w - pad.l - pad.r} height={h - pad.t - pad.b} fill="transparent" onPointerMove={onMove} onPointerLeave={() => setHover(null)} />
+                    <rect x={pad.l} y={pad.t} width={w - pad.l - pad.r} height={h - pad.t - pad.b} fill="transparent" {...scrubHandlers(points.length, hover, setHover)} />
                 </svg>
                 {hp ? (
-                    <Tip className="right-2 top-1">
-                        {hp.date} · model {hp.model.toFixed(4)} · mkt {hp.market.toFixed(4)}
+                    <Tip className={cn('right-2 top-1', hover! > (points.length - 1) / 2 && 'coarse:left-12 coarse:right-auto')}>
+                        {hp.date}
+                        <span className="coarse:hidden"> · </span>
+                        <span className="coarse:block">
+                            model {hp.model.toFixed(4)} · mkt {hp.market.toFixed(4)}
+                        </span>
                     </Tip>
                 ) : null}
             </div>
@@ -267,7 +327,7 @@ export function UnitsChart({ points, className }: { points: { date: string; unit
     const grad = `${glow}-g`;
     const h = 180;
     const pad = { l: 36, r: 10, t: 8, b: 22 };
-    const [hover, setHover] = React.useState<number | null>(null);
+    const [hover, setHover, svgRef] = useReadout<number>();
     if (points.length < 2) return null;
     const vals = [0, ...points.map(p => p.units)];
     const lo = Math.floor(Math.min(...vals)) - 1;
@@ -284,7 +344,7 @@ export function UnitsChart({ points, className }: { points: { date: string; unit
     return (
         <figure className={cn('flex flex-col gap-2', className)}>
             <div className="relative" ref={boxRef}>
-                <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block" role="img" aria-label={`Cumulative units over ${points.length} bets, ending at ${last.units >= 0 ? '+' : ''}${last.units.toFixed(2)} units`}>
+                <svg ref={svgRef} viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block touch-pan-y" role="img" aria-label={`Cumulative units over ${points.length} bets, ending at ${last.units >= 0 ? '+' : ''}${last.units.toFixed(2)} units`}>
                     <Glow id={glow} blur={1.5} />
                     <defs>
                         <linearGradient id={grad} x1="0" x2="0" y1="0" y2="1">
@@ -320,15 +380,11 @@ export function UnitsChart({ points, className }: { points: { date: string; unit
                         width={w - pad.l - pad.r}
                         height={h - pad.t - pad.b}
                         fill="transparent"
-                        onPointerMove={e => {
-                            const r = e.currentTarget.getBoundingClientRect();
-                            setHover(Math.max(0, Math.min(points.length - 1, Math.round(((e.clientX - r.left) / r.width) * (points.length - 1)))));
-                        }}
-                        onPointerLeave={() => setHover(null)}
+                        {...scrubHandlers(points.length, hover, setHover)}
                     />
                 </svg>
                 {hp ? (
-                    <Tip className="right-2 top-1">
+                    <Tip className={cn('right-2 top-1', hover! > (points.length - 1) / 2 && 'coarse:left-10 coarse:right-auto')}>
                         #{hover! + 1} · {hp.date} · {hp.units >= 0 ? '+' : '−'}
                         {Math.abs(hp.units).toFixed(2)}u
                     </Tip>

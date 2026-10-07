@@ -225,7 +225,7 @@ export function Ledger({
                     ) : (
                         <>
                             <ScrollRegion label="Bet ledger table" className="panel">
-                                <table className="table-dense min-w-[600px]">
+                                <table className="table-dense min-w-[600px] max-sm:min-w-0">
                                     <caption className="sr-only">Every graded bet, newest first</caption>
                                     <thead>
                                         <tr>
@@ -234,6 +234,13 @@ export function Ledger({
                                             </th>
                                             <th scope="col" className="text-left">
                                                 Bet
+                                            </th>
+                                            {/* Phones: result and units right after the bet; price, edge and stake scroll in after them. */}
+                                            <th scope="col" className="text-left sm:hidden">
+                                                Result
+                                            </th>
+                                            <th scope="col" className="text-right sm:hidden">
+                                                Units
                                             </th>
                                             <th scope="col" className="text-right">
                                                 Price
@@ -244,10 +251,10 @@ export function Ledger({
                                             <th scope="col" className="text-right">
                                                 Stake
                                             </th>
-                                            <th scope="col" className="text-left">
+                                            <th scope="col" className="text-left max-sm:hidden">
                                                 Result
                                             </th>
-                                            <th scope="col" className="text-right">
+                                            <th scope="col" className="text-right max-sm:hidden">
                                                 Units
                                             </th>
                                         </tr>
@@ -256,6 +263,20 @@ export function Ledger({
                                         {filtered.slice(0, shown).map(b => {
                                             const tri = teamTriFromName(b.team) ?? b.team;
                                             const opp = teamTriFromName(b.opponent) ?? b.opponent;
+                                            const result = (
+                                                <>
+                                                    <span className={cn('font-bold', b.result === 'pending' ? 'text-fg-2' : tone(b.result === 'win' ? 1 : b.result === 'loss' ? -1 : 0))}>
+                                                        <span aria-hidden="true">{b.result === 'win' ? '✓ ' : b.result === 'loss' ? '✕ ' : ''}</span>
+                                                        {b.result === 'win' ? 'W' : b.result === 'loss' ? 'L' : b.result}
+                                                    </span>
+                                                    {b.final ? (
+                                                        <span className="ml-1.5 text-fg-3">
+                                                            {teamFirstScore(b.final, b.side)}
+                                                            {b.decision && b.decision !== 'REG' ? ` ${b.decision}` : ''}
+                                                        </span>
+                                                    ) : null}
+                                                </>
+                                            );
                                             return (
                                                 <tr key={`${b.gameId}-${b.team}`}>
                                                     <td className="text-fg-3">{shortDate(b.date)}</td>
@@ -273,24 +294,15 @@ export function Ledger({
                                                             ) : null}
                                                         </span>
                                                     </td>
+                                                    <td className="sm:hidden">{result}</td>
+                                                    <td className={cn('text-right font-bold sm:hidden', tone(b.profit))}>{units(b.profit)}</td>
                                                     <td className="text-right text-fg-2">{fmtAmerican(b.price)}</td>
                                                     <td className="text-right text-fg-2">{b.evAtBet != null ? pctSigned(b.evAtBet, 0) : '—'}</td>
                                                     <td className="text-right text-fg-2">
                                                         {gateOpen || b.result !== 'pending' ? `${b.stake.toFixed(1)}u` : <span aria-label="hidden while the gate is closed">—</span>}
                                                     </td>
-                                                    <td>
-                                                        <span className={cn('font-bold', b.result === 'pending' ? 'text-fg-2' : tone(b.result === 'win' ? 1 : b.result === 'loss' ? -1 : 0))}>
-                                                            <span aria-hidden="true">{b.result === 'win' ? '✓ ' : b.result === 'loss' ? '✕ ' : ''}</span>
-                                                            {b.result === 'win' ? 'W' : b.result === 'loss' ? 'L' : b.result}
-                                                        </span>
-                                                        {b.final ? (
-                                                            <span className="ml-1.5 text-fg-3">
-                                                                {teamFirstScore(b.final, b.side)}
-                                                                {b.decision && b.decision !== 'REG' ? ` ${b.decision}` : ''}
-                                                            </span>
-                                                        ) : null}
-                                                    </td>
-                                                    <td className={cn('text-right font-bold', tone(b.profit))}>{units(b.profit)}</td>
+                                                    <td className="max-sm:hidden">{result}</td>
+                                                    <td className={cn('text-right font-bold max-sm:hidden', tone(b.profit))}>{units(b.profit)}</td>
                                                 </tr>
                                             );
                                         })}

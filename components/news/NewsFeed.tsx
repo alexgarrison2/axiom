@@ -100,10 +100,10 @@ function GameGroup({ group: g }: { group: FeedGroup }) {
         <section
             id={g.key}
             aria-labelledby={`${g.key}-h`}
-            className="panel team-wash scroll-mt-[calc(var(--appbar-h)+12px)] overflow-hidden"
+            className="panel team-wash scroll-mt-[calc(var(--appbar-h)+12px)] overflow-hidden max-lg:scroll-mt-0"
             style={{ '--ac': wash.away, '--hc': wash.home } as React.CSSProperties}
         >
-            <header className="flex min-h-11 min-w-0 items-center gap-2.5 whitespace-nowrap border-b border-line px-3 py-1.5">
+            <header className="flex min-h-11 min-w-0 items-center gap-2.5 whitespace-nowrap border-b border-line px-3 py-1.5 max-[399.98px]:gap-2">
                 <span aria-hidden="true" className="flex items-center gap-1">
                     <Crest tri={game.away} size={30} className="drop-shadow-none" />
                     <Crest tri={game.home} size={30} className="drop-shadow-none" />
@@ -126,9 +126,11 @@ function GameGroup({ group: g }: { group: FeedGroup }) {
                 </span>
                 <Link
                     href={`/#${game.away.toLowerCase()}-${game.home.toLowerCase()}`}
-                    className="label ml-auto inline-flex min-h-8 items-center text-brand hover:underline coarse:min-h-11"
+                    className="label ml-auto inline-flex min-h-8 items-center text-brand hover:underline coarse:min-h-11 max-[359.98px]:min-w-8 max-[359.98px]:justify-end"
                 >
-                    Game<span className="sr-only"> preview</span> →
+                    {/* Under 360px the arrow alone links, so the header stays one line. */}
+                    <span className="max-[359.98px]:sr-only">Game</span>
+                    <span className="sr-only"> preview</span> →
                 </Link>
             </header>
             <ul>
@@ -163,7 +165,8 @@ function NewsRow({ card, showTeam }: { card: FeedGroup['cards'][number]; showTea
                 {latest.at ? <When at={latest.at} label={latest.label} className="block text-micro text-fg-3 sm:hidden" /> : null}
                 {older.length ? (
                     <details className="group mt-0.5">
-                        <summary className="label inline-flex min-h-6 cursor-pointer list-none items-center gap-1 text-fg-3 hover:text-fg-1 [&::-webkit-details-marker]:hidden">
+                        {/* Touch: a 44px tap area that takes no more room than the 24px row. */}
+                        <summary className="label inline-flex min-h-6 cursor-pointer list-none items-center gap-1 text-fg-3 hover:text-fg-1 coarse:-my-2.5 coarse:min-h-11 coarse:pr-4 [&::-webkit-details-marker]:hidden">
                             <span aria-hidden="true" className="transition-transform group-open:rotate-90">
                                 ▸
                             </span>
