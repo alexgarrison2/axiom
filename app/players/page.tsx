@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PageHeading } from '@/components/ui/page-heading';
+import { PlayersTabs } from '@/components/players/PlayersTabs';
 import SkaterStatsTable from '@/components/SkaterStatsTable';
 import { compactSkaters, DEFAULT_FILTER, filterSkaters, headlineKey, sortSkaters } from '@/components/players/model';
 import { readBio, readRatingsDoc } from '@/lib/players/server';
@@ -32,7 +33,7 @@ export default function PlayersPage() {
     return (
         <main className="pb-tabbar">
             <div className="page flex flex-col gap-4 py-5 md:py-7">
-                <PageHeading title="Players" />
+                <PageHeading title="Players" actions={<PlayersTabs active="ratings" />} />
                 <SkaterStatsTable
                     preview={preview}
                     src="/players/skaters"

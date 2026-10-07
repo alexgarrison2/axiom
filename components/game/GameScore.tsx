@@ -12,6 +12,7 @@ import type { Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
 import { TipFace } from './HoverTip';
 import { JerseyNumber } from './Jersey';
+import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
 
 /*
  * Pony Score breakdown: every skater's one-game score in goals (lib/game/analytics.ts gameScores, constants measured by pipeline/tools/pony_score_calibrate.py) as a signed stack of
@@ -21,22 +22,6 @@ import { JerseyNumber } from './Jersey';
  * Enter) pins it.
  */
 
-const PARTS: Record<GsPart, { label: string; color: string }> = {
-    oProd: { label: 'Production', color: '#38c6e6' },
-    oDrive: { label: 'Play driving', color: '#2b7ea6' },
-    oSpecial: { label: 'Special teams', color: '#9fe3f2' },
-    oUsage: { label: 'Usage', color: '#5d7289' },
-    dProd: { label: 'Production', color: '#e2603f' },
-    dDrive: { label: 'Play driving', color: '#f39143' },
-    dSpecial: { label: 'Special teams', color: '#f4c552' },
-    dUsage: { label: 'Usage', color: '#a08e7c' },
-};
-const IDEAS: [GsPart, GsPart][] = [
-    ['oProd', 'dProd'],
-    ['oDrive', 'dDrive'],
-    ['oSpecial', 'dSpecial'],
-    ['oUsage', 'dUsage'],
-];
 
 /** Constants measured from our data (pipeline/tools/pony_score_calibrate.py). */
 const PONY = PONY_JSON as unknown as PonyConstants;
@@ -45,7 +30,6 @@ const VB = 1000;
 const ROW_H = 30;
 const BAR_H = 14;
 
-const signed = (v: number, d = 2) => `${v > 0.004 ? '+' : v < -0.004 ? '−' : ''}${Math.abs(v).toFixed(d)}`;
 
 /** The counts behind one part, in the card. */
 const g2 = (v: number) => v.toFixed(2);
@@ -78,24 +62,6 @@ function rawLine(r: GameScoreRow, k: GsPart): string {
     }
 }
 
-/** Signed stack geometry: positive parts right of zero, negative left, in the fixed part order. */
-function stack(parts: Record<GsPart, number>, x: (v: number) => number) {
-    const out: { k: GsPart; x: number; w: number }[] = [];
-    let pos = 0;
-    let neg = 0;
-    for (const k of GS_PARTS) {
-        const v = parts[k];
-        if (Math.abs(v) < 0.0005) continue;
-        if (v > 0) {
-            out.push({ k, x: x(pos), w: x(pos + v) - x(pos) });
-            pos += v;
-        } else {
-            out.push({ k, x: x(neg + v), w: x(neg) - x(neg + v) });
-            neg += v;
-        }
-    }
-    return out;
-}
 
 function MiniStack({ parts, d }: { parts: Record<GsPart, number>; d: number }) {
     const x = (v: number) => VB / 2 + (v / d) * (VB / 2 - 10);

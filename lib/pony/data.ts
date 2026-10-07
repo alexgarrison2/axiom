@@ -347,7 +347,7 @@ export function leaderboard(data: PonySeason, f: PonyFilters): LeaderRow[] {
             });
         }
     }
-    if (f.pos === 'G' || f.pos === 'all') {
+    if (f.pos === 'G') {
         for (const [id, rows] of grouped(data.goalies, f)) {
             add(id, rows, rs => {
                 const g = rs as GoalieGame[];
