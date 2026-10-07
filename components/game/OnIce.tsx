@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { PlayerLink } from '@/components/players/PlayerLink';
 import { legibleOn } from '@/components/ui/color';
-import { ScrollRegion } from '@/components/ui/scroll-region';
+import { TableScroller } from '@/components/teams-table/TableScroller';
 import { cn } from '@/lib/utils';
 import { clockOf, iceAt, shortName, type GoalieSnap, type SkaterSnap } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
@@ -24,6 +24,11 @@ function Face({ src, color }: { src: string | null; color: string }) {
 
 const zero = (v: number) => (v ? 'text-fg-1' : 'text-fg-3');
 
+/* Below lg the face and name stay pinned while the numbers scroll: opaque cells, a hairline and a soft shadow at the edge
+   (an inset shadow, since collapsed borders do not travel with sticky cells). */
+const PIN_FACE = 'max-lg:sticky max-lg:left-0 max-lg:z-[1] max-lg:bg-surface-1';
+const PIN_NAME = 'max-lg:sticky max-lg:left-8 max-lg:z-[1] max-lg:bg-surface-1 max-lg:shadow-[inset_-1px_0_0_var(--line),4px_0_8px_-6px_rgba(0,0,0,0.8)]';
+
 function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[]; goalie: GoalieSnap | null }) {
     const { m, colors } = useGame();
     const color = legibleOn(colors[side], '#0a0e15');
@@ -40,11 +45,11 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                     {n} skaters{goalie ? '' : ' · net empty'}
                 </span>
             </div>
-            <ScrollRegion label={`${m.teams[side].tri} on the ice`}>
+            <TableScroller label={`${m.teams[side].tri} on the ice`}>
                 <table className="w-full min-w-[640px] border-collapse text-caption">
                     <thead>
                         <tr className="border-b border-line">
-                            <th className={cn(TH, 'text-left')} colSpan={2}>
+                            <th className={cn(TH, 'text-left', PIN_NAME, 'max-lg:left-0')} colSpan={2}>
                                 Player
                             </th>
                             <th className={TH} title="Time into the current shift">Shift</th>
@@ -64,10 +69,10 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                     <tbody>
                         {skaters.map(r => (
                             <tr key={r.player.id} className="border-b border-line/60">
-                                <td className="w-8 py-1 pl-1.5">
+                                <td className={cn('w-8 py-1 pl-1.5', PIN_FACE)}>
                                     <Face src={r.player.headshot} color={color} />
                                 </td>
-                                <td className="whitespace-nowrap px-1.5 py-1">
+                                <td className={cn('whitespace-nowrap px-1.5 py-1', PIN_NAME)}>
                                     <span className="mr-1.5 inline-block w-5 text-right text-fg-3 tabular-nums">{r.player.num ?? ''}</span>
                                     <PlayerLink id={r.player.id} className="font-semibold text-fg-1">
                                         {shortName(r.player)}
@@ -90,10 +95,10 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                         ))}
                         {goalie ? (
                             <tr>
-                                <td className="w-8 py-1 pl-1.5">
+                                <td className={cn('w-8 py-1 pl-1.5', PIN_FACE)}>
                                     <Face src={goalie.player.headshot} color="var(--goalie)" />
                                 </td>
-                                <td className="whitespace-nowrap px-1.5 py-1">
+                                <td className={cn('whitespace-nowrap px-1.5 py-1', PIN_NAME)}>
                                     <span className="mr-1.5 inline-block w-5 text-right text-fg-3 tabular-nums">{goalie.player.num ?? ''}</span>
                                     <PlayerLink id={goalie.player.id} className="font-semibold text-goalie">
                                         {shortName(goalie.player)}
@@ -115,7 +120,7 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                         ) : null}
                     </tbody>
                 </table>
-            </ScrollRegion>
+            </TableScroller>
         </div>
     );
 }
