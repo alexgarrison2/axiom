@@ -84,6 +84,19 @@ function LiveRefresh({ live }: { live: boolean }) {
 function Rail({ active }: { active: string }) {
     // Where the chips overflow (phones), keep the current one in view as the page scrolls.
     const list = React.useRef<HTMLOListElement>(null);
+    // Its height, for headers that pin under it (PinnedTable); only while it is showing.
+    const nav = React.useRef<HTMLElement>(null);
+    React.useEffect(() => {
+        const el = nav.current;
+        if (!el || typeof ResizeObserver === 'undefined') return;
+        const root = document.documentElement;
+        const ro = new ResizeObserver(() => root.style.setProperty('--game-rail-h', `${el.offsetHeight}px`));
+        ro.observe(el);
+        return () => {
+            ro.disconnect();
+            root.style.removeProperty('--game-rail-h');
+        };
+    }, []);
     React.useEffect(() => {
         const ol = list.current;
         const chip = ol?.querySelector<HTMLElement>('[aria-current]');
@@ -94,7 +107,7 @@ function Rail({ active }: { active: string }) {
         }
     }, [active]);
     return (
-        <nav aria-label="Game sections" className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
+        <nav ref={nav} aria-label="Game sections" className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
             <ol ref={list} className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                 {SECTIONS.map(s => (
                     <li key={s.id} className="shrink-0">

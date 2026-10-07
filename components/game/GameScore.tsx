@@ -88,7 +88,7 @@ function SkaterCard({ r, d, rank }: { r: GameScoreRow; d: number; rank: string }
                     <span className="h-2.5 w-2.5 translate-y-px rounded-[2px]" style={{ background: PARTS[k].color }} />
                     <span className="min-w-0">
                         <span className="block text-fg-1">{PARTS[k].label}</span>
-                        <span className="block truncate text-micro text-fg-3">{rawLine(r, k)}</span>
+                        <span className="block text-micro text-fg-3 sm:truncate">{rawLine(r, k)}</span>
                     </span>
                     <span className={cn('tabular-nums', Math.abs(r.parts[k]) < 0.005 ? 'text-fg-3' : 'text-fg-1')}>{signed(r.parts[k])}</span>
                 </div>
@@ -169,7 +169,15 @@ export function GameScore() {
     const [panelRef, panelW] = useWidth<HTMLDivElement>();
     const [scaleRef, scaleW] = useWidth<HTMLSpanElement>();
     // Phones: a tapped card opens in place under its row instead of floating over the rows.
-    const inline = panelW > 0 && panelW < 640;
+    // Also short touch screens (landscape phones), where a floating card would be taller than the screen.
+    const [shortTouch, setShortTouch] = React.useState(false);
+    React.useEffect(() => {
+        const update = () => setShortTouch(window.innerHeight < 500 && window.innerWidth < 1024 && window.matchMedia('(pointer: coarse)').matches);
+        update();
+        window.addEventListener('resize', update);
+        return () => window.removeEventListener('resize', update);
+    }, []);
+    const inline = (panelW > 0 && panelW < 640) || shortTouch;
 
     const data = React.useMemo(() => gameScores(m, side, PONY), [m, side]);
     const forwards = data.skaters.filter(r => r.player.pos !== 'D');
@@ -211,7 +219,7 @@ export function GameScore() {
         if (!el) return;
         const r = el.getBoundingClientRect();
         const css = getComputedStyle(document.documentElement);
-        const tabbar = (parseFloat(css.getPropertyValue('--tabbar-h')) || 56) + 16;
+        const tabbar = window.innerWidth < 768 ? (parseFloat(css.getPropertyValue('--tabbar-h')) || 56) + 16 : 8;
         const top = (parseFloat(css.getPropertyValue('--appbar-h')) || 52) + 64;
         const over = r.bottom - (window.innerHeight - tabbar);
         if (over > 0) window.scrollBy({ top: Math.min(over, r.top - 40 - top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });

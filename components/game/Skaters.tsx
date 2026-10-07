@@ -5,14 +5,16 @@ import { PlayerLink } from '@/components/players/PlayerLink';
 import { Crest } from '@/components/ui/crest';
 import { Segmented } from '@/components/ui/segmented';
 import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
-import { TableScroller } from '@/components/teams-table/TableScroller';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
 import { cn } from '@/lib/utils';
 import { clockOf, pairRows, periodLabel, playerName, shortName, skaterRows, teamOnIce, type PairRow, type PlayerStrength, type SkaterRow, type TeamOnIce } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
-import { ScrollHint } from './ScrollHint';
+import { PIN_COL, PinnedTable } from './PinnedTable';
+
+/** Where the header is a pinned copy (phones, short screens), body cells carry the header's min widths so the columns match. */
+const PIN_FIRST = 'max-lg:min-w-[8.5rem] md:max-lg:min-w-[11rem] [@media(max-height:500px)]:min-w-[8.5rem] md:[@media(max-height:500px)]:min-w-[11rem]';
 
 /** Full name, or initial and last name on phones so the pinned column leaves room for the numbers. */
 function Name({ p }: { p: Parameters<typeof playerName>[0] }) {
@@ -110,10 +112,9 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
     const { m } = useGame();
     const hasXg = m.events.some(e => e.xg != null);
     return (
-        <div className="relative">
-        <TableScroller label={`${title} table`}>
-            <table className="w-full border-separate border-spacing-0 text-caption tabular-nums">
-                <thead>
+        <PinnedTable
+            label={`${title} table`}
+            head={
                     <tr>
                         <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[8.5rem] px-2 text-left md:min-w-[11rem]')}>
                             <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">{title}</span>
@@ -122,11 +123,12 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
                             <HeaderCell key={c.key} label={c.label} title={c.title} dense className={cn(HEAD_CELL, 'min-w-[3.25rem]')} />
                         ))}
                     </tr>
-                </thead>
+            }
+        >
                 <tbody>
                     {rows.map(r => (
                         <tr key={r.player.id} className="group">
-                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-7 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]')}>
+                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-7 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]', PIN_FIRST)}>
                                 <span className="flex items-center gap-2">
                                     <Crest tri={m.teams[r.player.side].tri} size={16} className="h-4 w-4" />
                                     <PlayerLink id={r.player.id} className="truncate font-bold text-fg-1">
@@ -140,7 +142,7 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
                                 return (
                                     <td
                                         key={c.key}
-                                        className={cn(CELL_BG, 'h-7 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]', v == null || v === 0 ? 'text-fg-3' : c.model ? 'text-model' : 'text-fg-1')}
+                                        className={cn(CELL_BG, 'h-7 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]', PIN_COL, v == null || v === 0 ? 'text-fg-3' : c.model ? 'text-model' : 'text-fg-1')}
                                     >
                                         {v == null ? '—' : c.fmt ? c.fmt(v) : v}
                                     </td>
@@ -149,10 +151,7 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
                         </tr>
                     ))}
                 </tbody>
-            </table>
-        </TableScroller>
-        <ScrollHint />
-        </div>
+        </PinnedTable>
     );
 }
 
@@ -199,7 +198,7 @@ export function Skaters() {
 
     return (
         <GameSection id="skaters" title="Skaters">
-            <div className="panel overflow-hidden">
+            <div className="panel overflow-hidden max-lg:overflow-clip [@media(max-height:500px)]:overflow-clip">
                 <ControlRow label="Skater table controls">
                     <Segmented
                         label="Team"
@@ -278,10 +277,9 @@ export function Skaters() {
                 {pairView && pairs ? (
                     <PairTable rows={view === 'comp' ? pairs.opp : pairs.mates} title={view === 'comp' ? 'Opponent' : 'Teammate'} />
                 ) : (
-                <div className="relative">
-                <TableScroller label={`${m.teams[side].name} skaters`}>
-                    <table className="w-full border-separate border-spacing-0 text-caption tabular-nums">
-                        <thead>
+                <PinnedTable
+                    label={`${m.teams[side].name} skaters`}
+                    head={
                             <tr>
                                 <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[8.5rem] px-2 text-left md:min-w-[11rem]')}>
                                     <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Player</span>
@@ -298,11 +296,12 @@ export function Skaters() {
                                     />
                                 ))}
                             </tr>
-                        </thead>
+                    }
+                >
                         <tbody>
                             {sorted.map(r => (
                                 <tr key={r.player.id} className="group">
-                                    <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-7 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]')}>
+                                    <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-7 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]', PIN_FIRST)}>
                                         <span className="flex items-center gap-2">
                                             <span className="w-6 text-right text-micro text-fg-3">{r.player.num ?? ''}</span>
                                             <PlayerLink id={r.player.id} className="truncate font-bold text-fg-1">
@@ -318,7 +317,7 @@ export function Skaters() {
                                                 key={c.key}
                                                 className={cn(
                                                     CELL_BG,
-                                                    'h-7 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]',
+                                                    'h-7 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]', PIN_COL,
                                                     v == null || v === 0 ? 'text-fg-3' : c.signed ? (v > 0 ? 'text-pos' : 'text-neg') : c.model ? 'text-model' : 'text-fg-1',
                                                 )}
                                             >
@@ -332,7 +331,7 @@ export function Skaters() {
                         {/* Team row: sums where they add up, the team's own on-ice numbers, blank where a total means nothing. */}
                         <tfoot>
                             <tr>
-                                <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 px-2 text-left font-normal shadow-[inset_0_1px_0_var(--line-strong)]')}>
+                                <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 px-2 text-left font-normal shadow-[inset_0_1px_0_var(--line-strong)]', PIN_FIRST)}>
                                     <span className="flex items-center gap-2">
                                         <Crest tri={m.teams[side].tri} size={18} className="ml-1 h-[18px] w-[18px]" />
                                         <span className="font-bold uppercase tracking-label text-fg-1">{m.teams[side].tri} total</span>
@@ -345,7 +344,7 @@ export function Skaters() {
                                             key={c.key}
                                             className={cn(
                                                 CELL_BG,
-                                                'h-8 px-1.5 text-center font-semibold shadow-[inset_0_1px_0_var(--line-strong)]',
+                                                'h-8 px-1.5 text-center font-semibold shadow-[inset_0_1px_0_var(--line-strong)]', PIN_COL,
                                                 v == null ? 'text-fg-3' : c.signed ? (v > 0.0049 ? 'text-pos' : v < -0.0049 ? 'text-neg' : 'text-fg-2') : c.model ? 'text-model' : 'text-fg-1',
                                             )}
                                         >
@@ -355,10 +354,7 @@ export function Skaters() {
                                 })}
                             </tr>
                         </tfoot>
-                    </table>
-                </TableScroller>
-                <ScrollHint />
-                </div>
+                </PinnedTable>
                 )}
             </div>
         </GameSection>

@@ -267,7 +267,7 @@ export function Pulse() {
         const sc = { away: 0, home: 0 };
         for (const g of goals) if (g.t <= t) sc[g.side] += 1;
         const rv = { away: stepAt(races.away, t), home: stepAt(races.home, t) };
-        const p = t >= m.end && m.state === 'final' ? (m.teams.home.score > m.teams.away.score ? 1 : 0) : wm.at(t, sc.home - sc.away);
+        const p = t >= m.end - 1 && m.state === 'final' ? (m.teams.home.score > m.teams.away.score ? 1 : 0) : wm.at(t, sc.home - sc.away);
         return { sc, rv, p, xp: stepAt(deserved, t) };
     };
 
@@ -377,10 +377,12 @@ export function Pulse() {
     const restT = m.state === 'pre' ? null : Math.max(0, m.end - 0.5);
     const iceT = focusT ?? restT;
 
-    const describe = (e: GameEvent) => {
+    /** A penalty's length, kept apart so the phone chip can clamp the description and still show it. */
+    const duration = (e: GameEvent) => (e.type === 'penalty' && e.minutes ? `${e.minutes}\u00a0min` : null);
+    const describe = (e: GameEvent, withDuration = true) => {
         const p = e.player != null ? byId.get(e.player) : undefined;
         if (e.type === 'goal') return `Goal ${m.teams[e.side].tri} · ${shortName(p)}${e.strength !== 'ev' ? ` (${e.strength.toUpperCase()})` : ''}${e.emptyNet ? ' (EN)' : ''}`;
-        return `${m.teams[e.side].tri} penalty · ${shortName(p)}${e.detail ? ` · ${e.detail.replace(/-/g, ' ')}` : ''}${e.minutes ? ` · ${e.minutes}${compact ? '\u00a0' : ' '}min` : ''}`;
+        return `${m.teams[e.side].tri} penalty · ${shortName(p)}${e.detail ? ` · ${e.detail.replace(/-/g, ' ')}` : ''}${withDuration && e.minutes ? ` · ${e.minutes} min` : ''}`;
     };
 
     // The verdict: how it ended against the pregame call and the market.
@@ -788,8 +790,21 @@ export function Pulse() {
                         style={{ top: chipTop, ...chipPos }}
                     >
                         <p className={cn('flex justify-between', compact ? 'flex-col items-start gap-0.5' : 'items-baseline gap-3')}>
-                            <span className={cn('text-fg-2', compact && 'shrink-0 whitespace-nowrap')}>{clockText(focusT)}</span>
-                            {sel && hover == null && pinT == null ? <span className={cn('font-bold text-fg-1', compact ? 'line-clamp-2' : 'truncate')}>{describe(sel)}</span> : null}
+                            {compact ? (
+                                <>
+                                    {/* Phones: a penalty's length rides the clock line, so clamping the description never drops it. */}
+                                    <span className="whitespace-nowrap text-fg-2">
+                                        {clockText(focusT)}
+                                        {sel && hover == null && pinT == null && duration(sel) ? ` · ${duration(sel)}` : ''}
+                                    </span>
+                                    {sel && hover == null && pinT == null ? <span className="line-clamp-2 font-bold text-fg-1">{describe(sel, false)}</span> : null}
+                                </>
+                            ) : (
+                                <>
+                                    <span className="text-fg-2">{clockText(focusT)}</span>
+                                    {sel && hover == null && pinT == null ? <span className="truncate font-bold text-fg-1">{describe(sel)}</span> : null}
+                                </>
+                            )}
                         </p>
                         <p className="mt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                             <span className="flex items-center gap-1.5">

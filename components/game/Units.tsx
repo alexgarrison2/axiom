@@ -4,7 +4,6 @@ import * as React from 'react';
 import { Crest } from '@/components/ui/crest';
 import { Segmented } from '@/components/ui/segmented';
 import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
-import { TableScroller } from '@/components/teams-table/TableScroller';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
 import { cn } from '@/lib/utils';
 import { clockOf, periodLabel, teamOnIce, units, type TeamOnIce, type Unit, type UnitKind } from '@/lib/game/analytics';
@@ -12,7 +11,7 @@ import type { Side } from '@/lib/game/types';
 import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
 import { JerseyNumber } from './Jersey';
-import { ScrollHint } from './ScrollHint';
+import { PIN_COL, PinnedTable } from './PinnedTable';
 
 interface Col {
     key: string;
@@ -56,6 +55,9 @@ const KINDS: { value: UnitKind; label: string; strength: string }[] = [
     { value: 'PP', label: 'PP units', strength: 'Power play' },
     { value: 'PK', label: 'PK units', strength: 'Penalty kill' },
 ];
+
+/** Where the header is a pinned copy (phones, short screens), the first column's body cells carry the header's widths. */
+const PIN_FIRST = 'max-md:w-[10.5rem] max-md:min-w-[10.5rem] md:max-lg:min-w-[18rem] [@media(max-height:500px)]:max-md:w-[10.5rem] [@media(max-height:500px)]:max-md:min-w-[10.5rem] md:[@media(max-height:500px)]:min-w-[18rem]';
 
 /** Under this the unit is a line change in passing, not a unit. */
 const MIN_TOI = 30;
@@ -113,7 +115,7 @@ export function Units() {
 
     return (
         <GameSection id="units" title="Units">
-            <div className="panel overflow-hidden">
+            <div className="panel overflow-hidden max-lg:overflow-clip [@media(max-height:500px)]:overflow-clip">
                 <ControlRow label="Unit table controls">
                     <Segmented
                         label="Team"
@@ -144,10 +146,9 @@ export function Units() {
                     <span className="ml-auto text-micro uppercase tracking-label text-fg-3">{kindLabel.strength}</span>
                 </ControlRow>
                 {sorted.length ? (
-                    <div className="relative">
-                    <TableScroller label={`${m.teams[side].name} ${kindLabel.label.toLowerCase()}`}>
-                        <table className="w-full border-separate border-spacing-0 text-caption tabular-nums">
-                            <thead>
+                    <PinnedTable
+                        label={`${m.teams[side].name} ${kindLabel.label.toLowerCase()}`}
+                        head={
                                 <tr>
                                     <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 w-[10.5rem] min-w-[10.5rem] px-2 text-left md:w-auto md:min-w-[18rem]')}>
                                         <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">{kindLabel.label}</span>
@@ -164,7 +165,8 @@ export function Units() {
                                         />
                                     ))}
                                 </tr>
-                            </thead>
+                        }
+                    >
                             <tbody>
                                 {sorted.map((u, i) => {
                                     const spot = !regular.has(u);
@@ -176,7 +178,7 @@ export function Units() {
                                         <React.Fragment key={u.ids.join('-')}>
                                         {spot && i === nRegular && nRegular > 0 ? (
                                             <tr>
-                                                <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 pt-3 text-left align-bottom font-normal shadow-[inset_0_-1px_0_var(--line-strong)]')}>
+                                                <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 pt-3 text-left align-bottom font-normal shadow-[inset_0_-1px_0_var(--line-strong)]', PIN_FIRST)}>
                                                     <span className="text-micro uppercase tracking-label text-fg-3">
                                                         Occasional · {byToi.length - nRegular} {byToi.length - nRegular === 1 ? 'group' : 'groups'}
                                                     </span>
@@ -186,7 +188,7 @@ export function Units() {
                                             </tr>
                                         ) : null}
                                         <tr className="group">
-                                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)] max-md:py-1.5', spot ? 'h-9' : 'h-11')}>
+                                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)] max-md:py-1.5', PIN_FIRST, spot ? 'h-9' : 'h-11')}>
                                                 {/* Phones: sweaters over the names (wrapped, small) so the pinned column stays narrow. */}
                                                 <span className={cn('flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-2.5', spot && 'opacity-50 transition-opacity group-hover:opacity-100')}>
                                                     <span className={cn('flex shrink-0 gap-1', spot ? 'max-md:[&>svg]:size-[22px]' : 'max-md:[&>svg]:size-[26px]')}>
@@ -212,6 +214,7 @@ export function Units() {
                                                         className={cn(
                                                             CELL_BG,
                                                             'px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]',
+                                                            PIN_COL,
                                                             spot ? 'h-9' : 'h-11',
                                                             v == null || v === 0 ? 'text-fg-3' : c.signed ? (v > 0 ? 'text-pos' : 'text-neg') : c.model ? 'text-model' : 'text-fg-1',
                                                         )}
@@ -228,7 +231,7 @@ export function Units() {
                             {/* Team row: the team's own numbers at this table's strength. */}
                             <tfoot>
                                 <tr>
-                                    <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 text-left font-normal shadow-[inset_0_1px_0_var(--line-strong)]')}>
+                                    <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 text-left font-normal shadow-[inset_0_1px_0_var(--line-strong)]', PIN_FIRST)}>
                                         <span className="flex items-center gap-2">
                                             <Crest tri={m.teams[side].tri} size={18} className="ml-1 h-[18px] w-[18px]" />
                                             <span className="font-bold uppercase tracking-label text-fg-1">
@@ -244,6 +247,7 @@ export function Units() {
                                                 className={cn(
                                                     CELL_BG,
                                                     'h-9 px-1.5 text-center font-semibold shadow-[inset_0_1px_0_var(--line-strong)]',
+                                                    PIN_COL,
                                                     v == null ? 'text-fg-3' : c.signed ? (v > 0.0049 ? 'text-pos' : v < -0.0049 ? 'text-neg' : 'text-fg-2') : c.model ? 'text-model' : 'text-fg-1',
                                                 )}
                                             >
@@ -253,10 +257,7 @@ export function Units() {
                                     })}
                                 </tr>
                             </tfoot>
-                        </table>
-                    </TableScroller>
-                    <ScrollHint />
-                    </div>
+                    </PinnedTable>
                 ) : (
                     <p className="px-card py-6 text-center text-caption text-fg-3">No {kindLabel.label.toLowerCase()} {period === 'all' ? 'in this game' : 'in this period'}</p>
                 )}
