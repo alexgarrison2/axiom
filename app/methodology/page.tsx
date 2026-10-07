@@ -12,6 +12,7 @@ import { HashScroll } from '@/components/ui/hash-scroll';
 import { SeasonTag, StatChip } from '@/components/ui/stat-chip';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { parseReport, type MarketBacktest, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
+import { MATINEE_HOUR, RETURN_HOME_REST, RIBBON_GAMES, ROAD_MI, STRETCH_GAMES } from '@/lib/schedule/metrics';
 
 export const revalidate = 3600;
 
@@ -42,6 +43,7 @@ const SECTIONS = [
     { id: 'goalies', label: 'Goalies' },
     { id: 'context', label: 'Context chips' },
     { id: 'game-story', label: 'Game story' },
+    { id: 'schedule', label: 'Schedule' },
     { id: 'pony-score', label: 'Pony score' },
     { id: 'players', label: 'Players & standings' },
     { id: 'wowy', label: 'With or without' },
@@ -511,6 +513,37 @@ export default function MethodologyPage() {
                                 row belong to the team with the extra skater (5v4, 5v3, 6v5 with the goalie pulled); amber ticks mark penalty calls. Dots
                                 at the edges of the bar lane are chances worth at least 0.20 xG that did not go in. The
                                 Share view replaces the bars with a rolling five-minute xG share.
+                            </p>
+                        </Section>
+
+                        <Section id="schedule" index={++i} title="Schedule">
+                            <p>
+                                A team page&apos;s <strong>Schedule</strong> tab reads the NHL&apos;s full schedule with venues. The strip puts every game
+                                on one day axis (home above the line, road below), so rest shows as spacing. <strong>Rest</strong> is whole days off
+                                between game dates, for both teams; a <strong>back-to-back</strong> is no day off. The amber axis thickens inside
+                                denser windows: 3 games in 4 days, 4 in 6, 5 in 8. A <strong>rest edge</strong> is a game where the opponent is on
+                                the second night of a back-to-back and the team is not (a deficit is the reverse).
+                            </p>
+                            <p>
+                                <strong>Travel</strong> is great-circle miles between arenas (a static table of the 32 rinks plus outdoor and Global
+                                Series venues). A team flies venue to venue on a road trip and home between home games; with {RETURN_HOME_REST} or
+                                more days off between two road games it flies home and starts a new trip. A venue more than {ROAD_MI} miles from
+                                the home arena counts as the road, so a Winter Classic across town is a home game and a &ldquo;home&rdquo; game in
+                                Stockholm is a trip. Real charter routes differ a little; the ranking between teams is what to read.
+                            </p>
+                            <p>
+                                <strong>Body clock</strong> is the puck drop on the team&apos;s home clock: 7 PM in Vancouver is 10 PM for a team
+                                from the East. We tag a <strong>late</strong> body clock from 9:30 PM, an
+                                <strong> early</strong> one before 12:30 PM, and a <strong>day game</strong> when local puck drop is before{' '}
+                                {MATINEE_HOUR - 12} PM.
+                            </p>
+                            <p>
+                                <strong>Difficulty</strong> (0-100) is how hard a game is for an average team: the opponent&apos;s strength (this
+                                season&apos;s team ratings; a finished season uses its xG share and points %), home ice, and either side being on a
+                                back-to-back, through a logistic curve where 50 is an even game. The grey ribbon is its {RIBBON_GAMES}-game rolling
+                                mean; the toughest stretch is the hardest {STRETCH_GAMES} games in a row. A <strong>trap</strong> is a game against a
+                                bottom-third team on a back-to-back, at the end of a road trip of four or more, or right before a top-five opponent.
+                                Win % on games ahead is our model (the day&apos;s published prediction, else the season simulation).
                             </p>
                         </Section>
 

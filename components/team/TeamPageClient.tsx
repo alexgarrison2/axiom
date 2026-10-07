@@ -35,12 +35,16 @@ const SkaterGrid = dynamic(() => import('./SkaterGrid'), {
 // Only needed once the sheet opens / the tab is picked.
 const FilterControls = dynamic(() => import('./FilterControls'), { loading: () => <p className="label py-4">Loading</p> });
 const GoaliesPanel = dynamic(() => import('./GoaliesPanel'), { loading: () => <div className="panel h-64 animate-pulse" role="status" aria-label="Loading goalies" /> });
+const ScheduleTab = dynamic(() => import('./schedule/ScheduleTab'), {
+    ssr: false,
+    loading: () => <div className="panel h-[420px] animate-pulse" role="status" aria-label="Loading the schedule" />,
+});
 const TeamBreakdown = dynamic(() => import('./TeamBreakdown').then(m => m.TeamBreakdown), {
     ssr: false,
     loading: () => <div className="panel h-64 animate-pulse" role="status" aria-label="Loading the breakdown" />,
 });
 
-const TABS = ['games', 'charts', 'skaters', 'goalies', 'breakdown'] as const;
+const TABS = ['games', 'schedule', 'charts', 'skaters', 'goalies', 'breakdown'] as const;
 type Tab = (typeof TABS)[number];
 
 interface TeamPageClientProps {
@@ -145,7 +149,7 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
         [seasons],
     );
 
-    // Phones: the five tabs scroll sideways; fade the edge that hides more, keep the picked tab in view.
+    // Phones: the six tabs scroll sideways; fade the edge that hides more, keep the picked tab in view.
     const tabsRef = React.useRef<HTMLDivElement>(null);
     const [tabsEdges, setTabsEdges] = React.useState({ start: false, end: false });
     const updateTabsFade = React.useCallback(() => {
@@ -192,13 +196,14 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
             <div className="flex flex-wrap items-center gap-2">
                 <TabsList ref={tabsRef} onScroll={updateTabsFade} aria-label="Team sections" className={tabsFade}>
                     <TabsTrigger value="games">Games</TabsTrigger>
+                    <TabsTrigger value="schedule">Schedule</TabsTrigger>
                     <TabsTrigger value="charts">Charts</TabsTrigger>
                     <TabsTrigger value="skaters">Skaters</TabsTrigger>
                     <TabsTrigger value="goalies">Goalies</TabsTrigger>
                     <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
                 </TabsList>
                 {/* One row on phones: season + quick chips scroll sideways instead of wrapping. */}
-                {tab === 'games' || tab === 'charts' || tab === 'breakdown' ? (
+                {tab === 'games' || tab === 'schedule' || tab === 'charts' || tab === 'breakdown' ? (
                     <div className="-mx-4 flex w-[calc(100%+2rem)] min-w-0 flex-nowrap items-center gap-2 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 [&>*]:shrink-0">
                         <Segmented label="Season" size="sm" value={season} onChange={changeSeason} options={seasonOptions} />
                         {tab === 'games' ? (
@@ -282,6 +287,10 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
                 ) : (
                     <GamesLogTable games={filtered} showSummary={!heroView} period={filters.period} seasonLabel={label} teamColor={initial.team.color} loadBoxscores={loadBoxscores} />
                 )}
+            </TabsContent>
+
+            <TabsContent value="schedule" className="mt-0">
+                {tab === 'schedule' ? <ScheduleTab key={`${tri}-${season}`} tri={tri} season={season} /> : null}
             </TabsContent>
 
             <TabsContent value="charts" className="mt-0">

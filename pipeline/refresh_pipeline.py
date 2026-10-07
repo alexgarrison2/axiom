@@ -707,6 +707,7 @@ def run_full(r, phase, rescore_all=False):
     r.run("skater_games", _call, "fetch_skater_games", title="Per-game skater logs (props)")
     r.run("lineups_all", stage_lineups_all, title="DailyFaceoff lineups (all 32 teams)")
     r.run("contracts", stage_contracts, title="Contracts (weekly by stored fetched_at)")
+    r.run("schedule_detail", _call, "fetch_schedule_detail", title="Season schedule with venues (team Schedule tab)")
     r.run("player_news", _call, "fetch_dailyfaceoff", "fetch_player_news", title="Player news")
     if phase["playoffs"]:
         r.run("playoff_news", _call, "fetch_dailyfaceoff", "fetch_playoff_player_news")
