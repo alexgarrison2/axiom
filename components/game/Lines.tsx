@@ -150,6 +150,11 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
     const dim = (id: number, ctx: 'es' | 'pp' | 'sh') => focus != null && id !== focus && !lit[ctx].has(id);
     // Touch has no hover: a tap on a box lights him (again, or open ice, lets go).
     const lastType = React.useRef('mouse');
+    // A link leaves one box's bottom edge and lands on the other's top edge, leaning toward each other (labels sit on a halo above it).
+    const edgeX = (n: Node, toward: Node) => {
+        const c = n.x + n.w / 2;
+        return Math.min(n.x + n.w - 6, Math.max(n.x + 6, c + (toward.x + toward.w / 2 - c) * 0.3));
+    };
 
     return (
         <div ref={ref} className="min-w-0">
@@ -185,10 +190,10 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                             return (
                                 <line
                                     key={`x${i}`}
-                                    x1={up.x + up.w / 2}
+                                    x1={edgeX(up, dn)}
                                     y1={up.y + BOX_H}
-                                    x2={dn.x + dn.w / 2}
-                                    y2={dn.y - NAME_H}
+                                    x2={edgeX(dn, up)}
+                                    y2={dn.y}
                                     className={`transition-opacity ${mine ? 'stroke-brand' : 'stroke-fg-3'}`}
                                     strokeOpacity={mine ? 0.75 : focus != null ? 0.08 : 0.3}
                                     strokeWidth={1 + 8 * k}
@@ -227,7 +232,7 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                                 setFocus(focus === n.id ? null : n.id);
                             }}
                         >
-                            <text x={n.x + n.w / 2} y={n.y - 4} textAnchor="middle" className={focus === n.id ? 'fill-brand text-micro font-semibold' : 'fill-fg-1 text-micro'}>
+                            <text x={n.x + n.w / 2} y={n.y - 4} textAnchor="middle" stroke="var(--surface-1)" strokeWidth={3} paintOrder="stroke" strokeLinejoin="round" className={focus === n.id ? 'fill-brand text-micro font-semibold' : 'fill-fg-1 text-micro'}>
                                 {label(n.id)}
                             </text>
                             <rect x={n.x} y={n.y} width={n.w} height={BOX_H} rx={3} className="fill-surface-3" stroke={focus === n.id ? 'var(--brand)' : (n.tint ?? 'var(--line-strong)')} strokeWidth={focus === n.id || n.tint ? 1.4 : 1} />
