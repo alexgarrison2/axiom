@@ -186,7 +186,18 @@ async function main() {
     doc.skaters.sort((a, b) => Number(a[0]) - Number(b[0]) || String(a[2]).localeCompare(String(b[2])) || Number(b[7]) - Number(a[7]));
     doc.goalies.sort((a, b) => Number(a[0]) - Number(b[0]));
     fs.writeFileSync(outFile, JSON.stringify(doc));
-    fs.writeFileSync(path.join(outDir, `${SEASON}_days.json`), JSON.stringify({ season: SEASON, skater_cols: ['game', 'player', 'team', 'opp', 'ps', ...GS_PARTS], days: days(doc) }));
+    const d = days(doc);
+    // Names and faces of everyone the nightly tables show.
+    const ids = new Set<string>();
+    for (const v of Object.values(d)) {
+        for (const r of [...v.top, ...v.bottom]) ids.add(String((r as unknown[])[1]));
+        if (v.goalie) ids.add(String(v.goalie[1]));
+    }
+    const players = Object.fromEntries([...ids].filter(id => doc.players[id]).map(id => [id, doc.players[id]]));
+    fs.writeFileSync(
+        path.join(outDir, `${SEASON}_days.json`),
+        JSON.stringify({ season: SEASON, skater_cols: ['game', 'player', 'team', 'opp', 'ps', ...GS_PARTS], goalie_cols: ['game', 'player', 'team', 'opp', 'ps', 'sa', 'ga'], players, days: d }),
+    );
     console.log(`built ${done}, skipped ${skipped} (not final or no shifts); ${Object.keys(doc.games).length} games, ${doc.skaters.length} skater rows -> ${path.relative(ROOT, outFile)}`);
 }
 

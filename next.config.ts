@@ -167,7 +167,6 @@ const nextConfig: NextConfig = {
     // artifacts and shooting talent to score live shots) and the graded pregame call.
     "/players/pony": ["public/data/pony/*.json"],
     "/players/[id]": ["public/data/pony/*.json", "public/data/player_ratings.json", "public/data/player_bio.json"],
-    "/": ["public/data/pony/*_days.json"],
     "/games/[id]": [
       "public/data/player_ratings.json",
       "public/data/game_xg/*.json",

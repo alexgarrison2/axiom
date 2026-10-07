@@ -43,7 +43,19 @@ export function Form({ values, reach = 1.5 }: { values: number[]; reach?: number
     );
 }
 
-export function LeaderTable({ rows, start = 0, goalies }: { rows: LeaderRow[]; start?: number; goalies: boolean }) {
+type Metric = 'avg' | 'total' | 'per60' | 'off' | 'def';
+const METRICS: Record<Metric, { label: string; goalie: string; title: string; value: (r: LeaderRow) => number; digits: number }> = {
+    avg: { label: 'Pony/GP', goalie: 'GSAx/GP', title: 'Per game, in goals', value: r => r.avg, digits: 2 },
+    total: { label: 'Total', goalie: 'GSAx', title: 'Season total, in goals', value: r => r.total, digits: 1 },
+    per60: { label: '/60', goalie: '/60', title: 'Per 60 minutes', value: r => r.per60, digits: 2 },
+    off: { label: 'Off/GP', goalie: 'Off/GP', title: 'Offence per game', value: r => r.off, digits: 2 },
+    def: { label: 'Def/GP', goalie: 'Def/GP', title: 'Defence per game', value: r => r.def, digits: 2 },
+};
+
+/** The ranking metric leads (big, right after the name); the rest of per game / total / per 60 follow. */
+export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: LeaderRow[]; start?: number; goalies: boolean; sort?: Metric }) {
+    const lead = METRICS[sort];
+    const rest = (['avg', 'total', 'per60'] as Metric[]).filter(k => k !== sort).map(k => METRICS[k]);
     let reach = 0.5;
     for (const r of rows) {
         if (r.parts) {
@@ -66,8 +78,8 @@ export function LeaderTable({ rows, start = 0, goalies }: { rows: LeaderRow[]; s
                     <tr className="border-b border-line">
                         <th className={cn(TH, 'w-10')}>#</th>
                         <th className={cn(TH, 'text-left')}>Player</th>
-                        <th className={cn(TH, 'text-fg-1')} title={goalies ? 'Goals saved above expected per game' : 'Pony Score per game, in goals'}>
-                            {goalies ? 'GSAx/GP' : 'Pony/GP'}
+                        <th className={cn(TH, 'text-fg-1')} title={lead.title}>
+                            {goalies ? lead.goalie : lead.label}
                         </th>
                         <th className={TH}>GP</th>
                         {goalies ? (
@@ -79,8 +91,11 @@ export function LeaderTable({ rows, start = 0, goalies }: { rows: LeaderRow[]; s
                         ) : (
                             <th className={TH} title="Time on ice per game">TOI</th>
                         )}
-                        <th className={TH}>Total</th>
-                        <th className={TH} title="Per 60 minutes">/60</th>
+                        {rest.map(m => (
+                            <th key={m.label} className={TH} title={m.title}>
+                                {goalies ? m.goalie : m.label}
+                            </th>
+                        ))}
                         <th className={cn(TH, 'w-44 text-center')}>Breakdown</th>
                         <th className={cn(TH, 'text-center')}>Last 10</th>
                         <th className={cn(TH, 'text-left')}>Best</th>
@@ -111,7 +126,7 @@ export function LeaderTable({ rows, start = 0, goalies }: { rows: LeaderRow[]; s
                                         </span>
                                     </Link>
                                 </td>
-                                <td className={cn(TD, 'font-display text-body font-bold', r.avg < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.avg)}</td>
+                                <td className={cn(TD, 'font-display text-body font-bold', lead.value(r) < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(lead.value(r), lead.digits)}</td>
                                 <td className={cn(TD, 'text-fg-2')}>{r.gp}</td>
                                 {goalies ? (
                                     <>
@@ -122,8 +137,11 @@ export function LeaderTable({ rows, start = 0, goalies }: { rows: LeaderRow[]; s
                                 ) : (
                                     <td className={cn(TD, 'text-fg-2')}>{mmss(r.toi)}</td>
                                 )}
-                                <td className={cn(TD, 'text-fg-2')}>{signed(r.total, 1)}</td>
-                                <td className={cn(TD, 'text-fg-2')}>{signed(r.per60)}</td>
+                                {rest.map(m => (
+                                    <td key={m.label} className={cn(TD, 'text-fg-2')}>
+                                        {signed(m.value(r), m.digits)}
+                                    </td>
+                                ))}
                                 <td className="px-2">
                                     <Breakdown row={r} reach={reach} />
                                 </td>

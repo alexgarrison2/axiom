@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { PlayerLink } from '@/components/players/PlayerLink';
 import { Crest } from '@/components/ui/crest';
 import { Segmented } from '@/components/ui/segmented';
 import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
@@ -115,7 +116,9 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
                             <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-7 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]')}>
                                 <span className="flex items-center gap-2">
                                     <Crest tri={m.teams[r.player.side].tri} size={16} className="h-4 w-4" />
-                                    <span className="truncate font-bold text-fg-1">{playerName(r.player)}</span>
+                                    <PlayerLink id={r.player.id} className="truncate font-bold text-fg-1">
+                                        {playerName(r.player)}
+                                    </PlayerLink>
                                     <span className="text-micro text-fg-3">{r.player.pos}</span>
                                 </span>
                             </th>
@@ -273,7 +276,9 @@ export function Skaters() {
                                     <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-7 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]')}>
                                         <span className="flex items-center gap-2">
                                             <span className="w-6 text-right text-micro text-fg-3">{r.player.num ?? ''}</span>
-                                            <span className="truncate font-bold text-fg-1">{playerName(r.player)}</span>
+                                            <PlayerLink id={r.player.id} className="truncate font-bold text-fg-1">
+                                                {playerName(r.player)}
+                                            </PlayerLink>
                                             <span className="text-micro text-fg-3">{r.player.pos}</span>
                                         </span>
                                     </th>

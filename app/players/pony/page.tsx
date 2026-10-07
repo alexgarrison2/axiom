@@ -55,7 +55,7 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
                         </Link>
                     </p>
                     {rows.length ? (
-                        <LeaderTable rows={rows.slice(0, n)} goalies={f.pos === 'G'} />
+                        <LeaderTable rows={rows.slice(0, n)} goalies={f.pos === 'G'} sort={f.sort} />
                     ) : (
                         <p className="py-10 text-center text-caption text-fg-3">No player matches these filters.</p>
                     )}

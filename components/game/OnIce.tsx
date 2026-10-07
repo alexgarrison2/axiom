@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { PlayerLink } from '@/components/players/PlayerLink';
 import { legibleOn } from '@/components/ui/color';
 import { cn } from '@/lib/utils';
 import { clockOf, iceAt, shortName, type GoalieSnap, type SkaterSnap } from '@/lib/game/analytics';
@@ -67,7 +68,9 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                                 </td>
                                 <td className="whitespace-nowrap px-1.5 py-1">
                                     <span className="mr-1.5 inline-block w-5 text-right text-fg-3 tabular-nums">{r.player.num ?? ''}</span>
-                                    <span className="font-semibold text-fg-1">{shortName(r.player)}</span>
+                                    <PlayerLink id={r.player.id} className="font-semibold text-fg-1">
+                                        {shortName(r.player)}
+                                    </PlayerLink>
                                     <span className="ml-1.5 text-micro text-fg-3">{r.player.pos}</span>
                                 </td>
                                 <td className={`${TD} text-fg-1`}>{clockOf(r.shift)}</td>
@@ -91,7 +94,9 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                                 </td>
                                 <td className="whitespace-nowrap px-1.5 py-1">
                                     <span className="mr-1.5 inline-block w-5 text-right text-fg-3 tabular-nums">{goalie.player.num ?? ''}</span>
-                                    <span className="font-semibold text-goalie">{shortName(goalie.player)}</span>
+                                    <PlayerLink id={goalie.player.id} className="font-semibold text-goalie">
+                                        {shortName(goalie.player)}
+                                    </PlayerLink>
                                     <span className="ml-1.5 text-micro text-fg-3">G</span>
                                 </td>
                                 <td className={TD} />
@@ -167,7 +172,7 @@ function RailTeam({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[]
                         <li key={r.player.id} className="grid h-6 grid-cols-[1.25rem_minmax(0,1fr)_2.25rem_2.5rem_1.75rem_1.75rem] items-center gap-x-1.5">
                             <JerseyNumber tri={tri} num={r.player.num} ring={colors[side]} size={20} />
                             <span className="truncate text-fg-1">
-                                {r.player.last}
+                                <PlayerLink id={r.player.id}>{r.player.last}</PlayerLink>
                                 <span className="ml-1 text-micro text-fg-3">{r.player.pos}</span>
                             </span>
                             {/* Shift length: the clock over a bar that fills to two minutes, amber past one. */}

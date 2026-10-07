@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { PlayerLink } from '@/components/players/PlayerLink';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { cn } from '@/lib/utils';
 import { goalSwings, periodLabel, playerName, shortName, type GoalSwing } from '@/lib/game/analytics';
@@ -66,7 +67,13 @@ function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: n
             </div>
             <div className={cn('flex min-w-0 flex-1 flex-col gap-1', !away && 'md:items-end')}>
                 <div className={cn('flex flex-wrap items-center gap-1.5', !away && 'md:flex-row-reverse')}>
-                    <span className="font-bold text-fg-1">{playerName(p)}</span>
+                    {p ? (
+                        <PlayerLink id={p.id} className="font-bold text-fg-1">
+                            {playerName(p)}
+                        </PlayerLink>
+                    ) : (
+                        <span className="font-bold text-fg-1">{playerName(p)}</span>
+                    )}
                     {counts?.g ? <span className="text-micro text-fg-3">({counts.g})</span> : null}
                     {e.strength === 'pp' ? <Tag>PP</Tag> : e.strength === 'sh' ? <Tag>SH</Tag> : null}
                     {e.emptyNet ? <Tag>EN</Tag> : null}

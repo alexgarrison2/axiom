@@ -7,6 +7,7 @@ import { biggestGames, findImplication, type GameImplicationsData } from '@/util
 import { MatchupCard } from '@/components/matchup/MatchupCard';
 import { ArchiveCard } from '@/components/matchup/ArchiveCard';
 import { BiggestGames } from '@/components/matchup/SlateStrips';
+import { PonyNight } from '@/components/pony/PonyNight';
 import { useLiveScores } from '@/hooks/useLiveScores';
 import { XL_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
 import { cardAnchor, defaultDate, sortSlate } from '@/lib/matchup/lifecycle';
@@ -261,6 +262,7 @@ export default function PredictionsViewer({
                         ) : null}
                     </div>
                 )}
+                <PonyNight date={headDate} />
             </div>
         </div>
     );

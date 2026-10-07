@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { PlayerLink } from '@/components/players/PlayerLink';
 import Link from 'next/link';
 import { Crest } from '@/components/ui/crest';
 import { LedWord } from '@/components/ui/led-word';
@@ -98,9 +99,9 @@ function SkaterCard({ r, d, rank }: { r: GameScoreRow; d: number; rank: string }
             <div className="flex items-center gap-2.5">
                 <TipFace p={r.player} color={colors[r.player.side]} size={40} />
                 <span className="min-w-0 flex-1 leading-tight">
-                    <span className="block truncate font-bold text-fg-1">
+                    <PlayerLink id={r.player.id} className="block truncate font-bold text-fg-1">
                         {r.player.first} {r.player.last}
-                    </span>
+                    </PlayerLink>
                     <span className="text-micro text-fg-3">
                         #{r.player.num ?? '–'} · {r.player.pos} · {m.teams[r.player.side].tri} · {clockOf(r.raw.toi)} · {rank}
                     </span>

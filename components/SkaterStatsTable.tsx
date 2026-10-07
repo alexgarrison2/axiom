@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { PlayerLink } from '@/components/players/PlayerLink';
 import Link from 'next/link';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { Input } from '@/components/ui/input';
@@ -363,8 +364,10 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                             <TeamLogo tri={p.team} size={18} />
                                             <span className="flex min-w-0 items-baseline gap-2">
                                                 <span className="truncate font-bold text-fg-1">
-                                                    <span className="md:hidden">{shortName(p.name)}</span>
-                                                    <span className="hidden md:inline">{p.name}</span>
+                                                    <PlayerLink id={Number(p.id)}>
+                                                        <span className="md:hidden">{shortName(p.name)}</span>
+                                                        <span className="hidden md:inline">{p.name}</span>
+                                                    </PlayerLink>
                                                 </span>
                                                 <span className="shrink-0 text-micro uppercase text-fg-3">
                                                     <span className="hidden md:inline">{p.team} </span>
