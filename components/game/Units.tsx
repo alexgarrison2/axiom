@@ -7,7 +7,7 @@ import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { TableScroller } from '@/components/teams-table/TableScroller';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
 import { cn } from '@/lib/utils';
-import { clockOf, periodLabel, units, type Unit, type UnitKind } from '@/lib/game/analytics';
+import { clockOf, periodLabel, teamOnIce, units, type TeamOnIce, type Unit, type UnitKind } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
 import { JerseyNumber } from './Jersey';
@@ -20,6 +20,8 @@ interface Col {
     fmt?: (v: number) => string;
     signed?: boolean;
     model?: boolean;
+    /** The team row: the team's own numbers at this table's strength; stints and zone starts stay blank. */
+    total?: (t: TeamOnIce) => number | null;
 }
 
 const pct = (a: number, b: number) => (a + b ? a / (a + b) : null);
@@ -28,19 +30,19 @@ const f1p = (v: number) => `${(v * 100).toFixed(1)}%`;
 const sgn = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(2)}`;
 
 const COLS: Col[] = [
-    { key: 'toi', label: 'TOI', title: 'Time on ice together', value: u => u.toi, fmt: clockOf },
+    { key: 'toi', label: 'TOI', title: 'Time on ice together', value: u => u.toi, fmt: clockOf, total: t => t.toi },
     { key: 'stints', label: 'STN', title: 'Stints: separate times on the ice together', value: u => u.stints },
-    { key: 'cf', label: 'CF', title: 'Shot attempts for', value: u => u.cf },
-    { key: 'ca', label: 'CA', title: 'Shot attempts against', value: u => u.ca },
-    { key: 'cfp', label: 'CF%', title: 'Shot attempt share', value: u => pct(u.cf, u.ca), fmt: f1p },
-    { key: 'sf', label: 'SF', title: 'Shots on goal for', value: u => u.sf },
-    { key: 'sa', label: 'SA', title: 'Shots on goal against', value: u => u.sa },
-    { key: 'gf', label: 'GF', title: 'Goals for', value: u => u.gf },
-    { key: 'ga', label: 'GA', title: 'Goals against', value: u => u.ga },
-    { key: 'xgf', label: 'xGF', title: 'pony xG for', value: u => u.xgf, fmt: f2, model: true },
-    { key: 'xga', label: 'xGA', title: 'pony xG against', value: u => u.xga, fmt: f2, model: true },
-    { key: 'xgfp', label: 'xGF%', title: 'pony xG share', value: u => pct(u.xgf, u.xga), fmt: f1p, model: true },
-    { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: u => u.xgf - u.xga, fmt: sgn, signed: true },
+    { key: 'cf', label: 'CF', title: 'Shot attempts for', value: u => u.cf, total: t => t.cf },
+    { key: 'ca', label: 'CA', title: 'Shot attempts against', value: u => u.ca, total: t => t.ca },
+    { key: 'cfp', label: 'CF%', title: 'Shot attempt share', value: u => pct(u.cf, u.ca), fmt: f1p, total: t => pct(t.cf, t.ca) },
+    { key: 'sf', label: 'SF', title: 'Shots on goal for', value: u => u.sf, total: t => t.sf },
+    { key: 'sa', label: 'SA', title: 'Shots on goal against', value: u => u.sa, total: t => t.sa },
+    { key: 'gf', label: 'GF', title: 'Goals for', value: u => u.gf, total: t => t.gf },
+    { key: 'ga', label: 'GA', title: 'Goals against', value: u => u.ga, total: t => t.ga },
+    { key: 'xgf', label: 'xGF', title: 'pony xG for', value: u => u.xgf, fmt: f2, model: true, total: t => t.xgf },
+    { key: 'xga', label: 'xGA', title: 'pony xG against', value: u => u.xga, fmt: f2, model: true, total: t => t.xga },
+    { key: 'xgfp', label: 'xGF%', title: 'pony xG share', value: u => pct(u.xgf, u.xga), fmt: f1p, model: true, total: t => pct(t.xgf, t.xga) },
+    { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: u => u.xgf - u.xga, fmt: sgn, signed: true, total: t => t.xgf - t.xga },
     { key: 'oz', label: 'OZ', title: 'Stints started on an offensive-zone faceoff', value: u => u.oz },
     { key: 'dz', label: 'DZ', title: 'Stints started on a defensive-zone faceoff', value: u => u.dz },
     { key: 'ozp', label: 'OZS%', title: 'Offensive-zone share of O and D faceoff starts', value: u => pct(u.oz, u.dz), fmt: v => `${Math.round(v * 100)}%` },
@@ -87,6 +89,7 @@ export function Units() {
         const all = units(m, side, kind).filter(u => u.toi >= MIN_TOI);
         return new Set(all.slice(0, regularCount(all.map(u => u.toi), MAX_CORE[kind])).map(u => u.ids.join('-')));
     }, [m, side, kind]);
+    const team = React.useMemo(() => teamOnIce(m, side, kind === 'PP' ? 'pp' : kind === 'PK' ? 'sh' : '5v5', per), [m, side, kind, per]);
     const rows = React.useMemo(() => units(m, side, kind, per).filter(u => u.toi >= MIN_TOI || regularKeys.has(u.ids.join('-'))), [m, side, kind, per, regularKeys]);
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
     const col = COLS.find(c => c.key === sort.key) ?? COLS[0];
@@ -218,6 +221,34 @@ export function Units() {
                                     );
                                 })}
                             </tbody>
+                            {/* Team row: the team's own numbers at this table's strength. */}
+                            <tfoot>
+                                <tr>
+                                    <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 text-left font-normal shadow-[inset_0_1px_0_var(--line-strong)]')}>
+                                        <span className="flex items-center gap-2">
+                                            <Crest tri={m.teams[side].tri} size={18} className="ml-1 h-[18px] w-[18px]" />
+                                            <span className="font-bold uppercase tracking-label text-fg-1">
+                                                {m.teams[side].tri} {kind === 'PP' ? 'power play' : kind === 'PK' ? 'penalty kill' : '5v5'}
+                                            </span>
+                                        </span>
+                                    </th>
+                                    {COLS.map(c => {
+                                        const v = c.total ? c.total(team) : null;
+                                        return (
+                                            <td
+                                                key={c.key}
+                                                className={cn(
+                                                    CELL_BG,
+                                                    'h-9 px-1.5 text-center font-semibold shadow-[inset_0_1px_0_var(--line-strong)]',
+                                                    v == null ? 'text-fg-3' : c.signed ? (v > 0.0049 ? 'text-pos' : v < -0.0049 ? 'text-neg' : 'text-fg-2') : c.model ? 'text-model' : 'text-fg-1',
+                                                )}
+                                            >
+                                                {v == null ? '' : c.fmt ? c.fmt(v) : v}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            </tfoot>
                         </table>
                     </TableScroller>
                 ) : (

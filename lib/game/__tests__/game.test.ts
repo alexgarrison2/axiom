@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
+import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, teamOnIce, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
 
 const team = (id: number, abbrev: string) => ({ id, abbrev, commonName: { default: abbrev }, placeName: { default: abbrev }, score: 0, sog: 0 });
@@ -130,5 +130,14 @@ describe('game model', () => {
         expect(skaters[0].player.id).toBe(21);
         expect(skaters[0].parts.oProd).toBeCloseTo(0.75 + 0.075);
         expect(goalies[0].total).toBeCloseTo(goalies[0].xga - goalies[0].ga);
+    });
+
+    it('team totals count each shot once, not once per skater', () => {
+        const t = teamOnIce(m, 'home', 'all');
+        const r = skaterRows(m, 'home', 'all')[0];
+        expect(t.cf).toBe(r.cf);
+        expect(t.gf).toBe(1);
+        expect(t.ga).toBe(1);
+        expect(t.toi).toBeCloseTo(m.end);
     });
 });

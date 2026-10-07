@@ -7,7 +7,7 @@ import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { TableScroller } from '@/components/teams-table/TableScroller';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
 import { cn } from '@/lib/utils';
-import { clockOf, pairRows, periodLabel, playerName, skaterRows, type PairRow, type PlayerStrength, type SkaterRow } from '@/lib/game/analytics';
+import { clockOf, pairRows, periodLabel, playerName, skaterRows, teamOnIce, type PairRow, type PlayerStrength, type SkaterRow, type TeamOnIce } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
 
@@ -23,7 +23,11 @@ interface Col {
     signed?: boolean;
     /** Needs pony xG: blank (—) until the game has any. */
     model?: boolean;
+    /** The team row: counting columns add up the skaters; on-ice columns are the team's own numbers; others stay blank. */
+    total?: (rows: SkaterRow[], team: TeamOnIce) => number | null;
 }
+
+const sumOf = (f: (r: SkaterRow) => number) => (rows: SkaterRow[]) => rows.reduce((a, r) => a + f(r), 0);
 
 const pct = (a: number, b: number) => (a + b ? a / (a + b) : null);
 const f2 = (v: number) => v.toFixed(2);
@@ -48,41 +52,41 @@ const PAIR_COLS: { key: string; label: string; title: string; value: (r: PairRow
 const COLS: Record<'ind' | 'ice' | 'use', Col[]> = {
     ind: [
         { key: 'toi', label: 'TOI', title: 'Time on ice', value: r => r.toi, fmt: clockOf },
-        { key: 'g', label: 'G', title: 'Goals', value: r => r.g },
-        { key: 'a', label: 'A', title: 'Assists', value: r => r.a1 + r.a2 },
-        { key: 'p', label: 'P', title: 'Points', value: r => r.g + r.a1 + r.a2 },
-        { key: 'sog', label: 'SOG', title: 'Shots on goal', value: r => r.sog },
-        { key: 'icf', label: 'iCF', title: 'Shot attempts', value: r => r.iCF },
-        { key: 'ixg', label: 'ixG', title: 'Individual pony xG', value: r => r.ixg, fmt: f2, model: true },
-        { key: 'gax', label: 'GAx', title: 'Goals above expected (G − ixG)', value: r => r.g - r.ixg, fmt: v => sgn(v), signed: true, model: true },
-        { key: 'hit', label: 'HIT', title: 'Hits', value: r => r.hits },
-        { key: 'blk', label: 'BLK', title: 'Shots blocked', value: r => r.blocks },
-        { key: 'tk', label: 'TK', title: 'Takeaways', value: r => r.takeaways },
-        { key: 'gv', label: 'GV', title: 'Giveaways', value: r => r.giveaways },
-        { key: 'fo', label: 'FO%', title: 'Faceoffs won', value: r => pct(r.foW, r.foL), fmt: v => `${Math.round(v * 100)}%` },
-        { key: 'pim', label: 'PIM', title: 'Penalty minutes (whole game)', value: r => r.pim },
+        { key: 'g', label: 'G', title: 'Goals', value: r => r.g, total: sumOf(r => r.g) },
+        { key: 'a', label: 'A', title: 'Assists', value: r => r.a1 + r.a2, total: sumOf(r => r.a1 + r.a2) },
+        { key: 'p', label: 'P', title: 'Points', value: r => r.g + r.a1 + r.a2, total: sumOf(r => r.g + r.a1 + r.a2) },
+        { key: 'sog', label: 'SOG', title: 'Shots on goal', value: r => r.sog, total: sumOf(r => r.sog) },
+        { key: 'icf', label: 'iCF', title: 'Shot attempts', value: r => r.iCF, total: sumOf(r => r.iCF) },
+        { key: 'ixg', label: 'ixG', title: 'Individual pony xG', value: r => r.ixg, fmt: f2, model: true, total: sumOf(r => r.ixg) },
+        { key: 'gax', label: 'GAx', title: 'Goals above expected (G − ixG)', value: r => r.g - r.ixg, fmt: v => sgn(v), signed: true, model: true, total: sumOf(r => r.g - r.ixg) },
+        { key: 'hit', label: 'HIT', title: 'Hits', value: r => r.hits, total: sumOf(r => r.hits) },
+        { key: 'blk', label: 'BLK', title: 'Shots blocked', value: r => r.blocks, total: sumOf(r => r.blocks) },
+        { key: 'tk', label: 'TK', title: 'Takeaways', value: r => r.takeaways, total: sumOf(r => r.takeaways) },
+        { key: 'gv', label: 'GV', title: 'Giveaways', value: r => r.giveaways, total: sumOf(r => r.giveaways) },
+        { key: 'fo', label: 'FO%', title: 'Faceoffs won', value: r => pct(r.foW, r.foL), fmt: v => `${Math.round(v * 100)}%`, total: rs => pct(sumOf(r => r.foW)(rs), sumOf(r => r.foL)(rs)) },
+        { key: 'pim', label: 'PIM', title: 'Penalty minutes (whole game)', value: r => r.pim, total: sumOf(r => r.pim) },
         { key: 'pm', label: '+/−', title: 'Plus-minus (whole game)', value: r => r.plusMinus, fmt: v => (v > 0 ? `+${v}` : String(v)), signed: true },
     ],
     ice: [
-        { key: 'toi', label: 'TOI', title: 'Time on ice', value: r => r.toi, fmt: clockOf },
-        { key: 'cf', label: 'CF', title: 'Shot attempts for, on ice', value: r => r.cf },
-        { key: 'ca', label: 'CA', title: 'Shot attempts against, on ice', value: r => r.ca },
-        { key: 'cfp', label: 'CF%', title: 'Shot attempt share', value: r => pct(r.cf, r.ca), fmt: f1p },
-        { key: 'sf', label: 'SF', title: 'Shots on goal for', value: r => r.sf },
-        { key: 'sa', label: 'SA', title: 'Shots on goal against', value: r => r.sa },
-        { key: 'gf', label: 'GF', title: 'Goals for', value: r => r.gf },
-        { key: 'ga', label: 'GA', title: 'Goals against', value: r => r.ga },
-        { key: 'xgf', label: 'xGF', title: 'pony xG for', value: r => r.xgf, fmt: f2, model: true },
-        { key: 'xga', label: 'xGA', title: 'pony xG against', value: r => r.xga, fmt: f2, model: true },
-        { key: 'xgfp', label: 'xGF%', title: 'pony xG share', value: r => pct(r.xgf, r.xga), fmt: f1p, model: true },
-        { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: r => r.xgf - r.xga, fmt: v => sgn(v), signed: true },
+        { key: 'toi', label: 'TOI', title: 'Time on ice', value: r => r.toi, fmt: clockOf, total: (_, t) => t.toi },
+        { key: 'cf', label: 'CF', title: 'Shot attempts for, on ice', value: r => r.cf, total: (_, t) => t.cf },
+        { key: 'ca', label: 'CA', title: 'Shot attempts against, on ice', value: r => r.ca, total: (_, t) => t.ca },
+        { key: 'cfp', label: 'CF%', title: 'Shot attempt share', value: r => pct(r.cf, r.ca), fmt: f1p, total: (_, t) => pct(t.cf, t.ca) },
+        { key: 'sf', label: 'SF', title: 'Shots on goal for', value: r => r.sf, total: (_, t) => t.sf },
+        { key: 'sa', label: 'SA', title: 'Shots on goal against', value: r => r.sa, total: (_, t) => t.sa },
+        { key: 'gf', label: 'GF', title: 'Goals for', value: r => r.gf, total: (_, t) => t.gf },
+        { key: 'ga', label: 'GA', title: 'Goals against', value: r => r.ga, total: (_, t) => t.ga },
+        { key: 'xgf', label: 'xGF', title: 'pony xG for', value: r => r.xgf, fmt: f2, model: true, total: (_, t) => t.xgf },
+        { key: 'xga', label: 'xGA', title: 'pony xG against', value: r => r.xga, fmt: f2, model: true, total: (_, t) => t.xga },
+        { key: 'xgfp', label: 'xGF%', title: 'pony xG share', value: r => pct(r.xgf, r.xga), fmt: f1p, model: true, total: (_, t) => pct(t.xgf, t.xga) },
+        { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: r => r.xgf - r.xga, fmt: v => sgn(v), signed: true, total: (_, t) => t.xgf - t.xga },
     ],
     use: [
-        { key: 'toi', label: 'TOI', title: 'Time on ice', value: r => r.toi, fmt: clockOf },
+        { key: 'toi', label: 'TOI', title: 'Time on ice', value: r => r.toi, fmt: clockOf, total: (_, t) => t.toi },
         { key: 'toip', label: 'TOI%', title: 'Share of the game clock', value: r => r.toiPct, fmt: f1p },
-        { key: 'ev', label: 'EV', title: 'Even-strength time', value: r => r.toiEv, fmt: clockOf },
-        { key: 'pp', label: 'PP', title: 'Power-play time', value: r => r.toiPp, fmt: clockOf },
-        { key: 'sh', label: 'SH', title: 'Shorthanded time', value: r => r.toiSh, fmt: clockOf },
+        { key: 'ev', label: 'EV', title: 'Even-strength time', value: r => r.toiEv, fmt: clockOf, total: (_, t) => t.toiEv },
+        { key: 'pp', label: 'PP', title: 'Power-play time', value: r => r.toiPp, fmt: clockOf, total: (_, t) => t.toiPp },
+        { key: 'sh', label: 'SH', title: 'Shorthanded time', value: r => r.toiSh, fmt: clockOf, total: (_, t) => t.toiSh },
         { key: 'shf', label: 'SHF', title: 'Shifts', value: r => r.shifts },
         { key: 'qoc', label: 'QoC', title: 'Quality of competition: opponents’ average TOI share, weighted by time faced', value: r => r.qoc, fmt: f1p },
         { key: 'qot', label: 'QoT', title: 'Quality of teammates: linemates’ average TOI share, weighted by time together', value: r => r.qot, fmt: f1p },
@@ -144,6 +148,7 @@ export function Skaters() {
     const [sort, setSort] = React.useState<{ key: string; dir: SortDir }>({ key: 'toi', dir: 'desc' });
     const per = period === 'all' ? 'all' : Number(period);
     const rows = React.useMemo(() => skaterRows(m, side, strength, per), [m, side, strength, per]);
+    const team = React.useMemo(() => teamOnIce(m, side, strength, per), [m, side, strength, per]);
     const pairView = view === 'comp' || view === 'mates';
     const [focus, setFocus] = React.useState<number | null>(null);
     const focusId = focus != null && rows.some(r => r.player.id === focus) ? focus : (rows[0]?.player.id ?? null);
@@ -290,6 +295,32 @@ export function Skaters() {
                                 </tr>
                             ))}
                         </tbody>
+                        {/* Team row: sums where they add up, the team's own on-ice numbers, blank where a total means nothing. */}
+                        <tfoot>
+                            <tr>
+                                <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 px-2 text-left font-normal shadow-[inset_0_1px_0_var(--line-strong)]')}>
+                                    <span className="flex items-center gap-2">
+                                        <Crest tri={m.teams[side].tri} size={18} className="ml-1 h-[18px] w-[18px]" />
+                                        <span className="font-bold uppercase tracking-label text-fg-1">{m.teams[side].tri} total</span>
+                                    </span>
+                                </th>
+                                {cols.map(c => {
+                                    const v = c.total && !(c.model && !hasXg) ? c.total(rows, team) : null;
+                                    return (
+                                        <td
+                                            key={c.key}
+                                            className={cn(
+                                                CELL_BG,
+                                                'h-8 px-1.5 text-center font-semibold shadow-[inset_0_1px_0_var(--line-strong)]',
+                                                v == null ? 'text-fg-3' : c.signed ? (v > 0.0049 ? 'text-pos' : v < -0.0049 ? 'text-neg' : 'text-fg-2') : c.model ? 'text-model' : 'text-fg-1',
+                                            )}
+                                        >
+                                            {v == null ? '' : c.fmt ? c.fmt(v) : Number.isInteger(v) ? v : v.toFixed(2)}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        </tfoot>
                     </table>
                 </TableScroller>
                 )}

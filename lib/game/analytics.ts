@@ -1367,3 +1367,55 @@ export function gameScores(m: GameModel, side: Side): { skaters: GameScoreRow[];
     const goalies = goalieRows(m, side).map(g => ({ player: g.player, toi: g.toi, sa: g.sa, ga: g.ga, xga: g.xga, total: g.xga - g.ga }));
     return { skaters: skaters.sort((a, b) => b.total - a.total), goalies };
 }
+
+/* ── Team on-ice totals (table total rows) ─────────────────────────────── */
+
+export interface TeamOnIce {
+    toi: number;
+    toiEv: number;
+    toiPp: number;
+    toiSh: number;
+    cf: number;
+    ca: number;
+    sf: number;
+    sa: number;
+    gf: number;
+    ga: number;
+    xgf: number;
+    xga: number;
+}
+
+/** The team's own numbers at a strength and period: what a total row shows for on-ice columns (not the skaters' sum, which counts every shot five times). */
+export function teamOnIce(m: GameModel, side: Side, f: PlayerStrength, period: PeriodFilter = 'all'): TeamOnIce {
+    const t: TeamOnIce = { toi: 0, toiEv: 0, toiPp: 0, toiSh: 0, cf: 0, ca: 0, sf: 0, sa: 0, gf: 0, ga: 0, xgf: 0, xga: 0 };
+    for (const s of segments(m)) {
+        if ((period !== 'all' && periodOf(s.a) !== period) || !segMatches(s, side, f)) continue;
+        const d = s.b - s.a;
+        t.toi += d;
+        const st = segStrength(s, side);
+        if (st === 'pp') t.toiPp += d;
+        else if (st === 'sh') t.toiSh += d;
+        else t.toiEv += d;
+    }
+    for (const e of m.events) {
+        if (!isAttempt(e) || !inPeriod(e, period)) continue;
+        const ice = onIce(m, e);
+        if (!ice || !segMatches(ice, side, f)) continue;
+        const mine = e.side === side;
+        if (mine) t.cf += 1;
+        else t.ca += 1;
+        if (isOnGoal(e)) {
+            if (mine) t.sf += 1;
+            else t.sa += 1;
+        }
+        if (e.type === 'goal') {
+            if (mine) t.gf += 1;
+            else t.ga += 1;
+        }
+        if (isUnblocked(e) && e.xg != null) {
+            if (mine) t.xgf += e.xg;
+            else t.xga += e.xg;
+        }
+    }
+    return t;
+}
