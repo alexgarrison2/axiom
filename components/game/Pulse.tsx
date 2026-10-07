@@ -271,7 +271,7 @@ export function Pulse() {
         return { sc, rv, p, xp: stepAt(deserved, t) };
     };
 
-    // Set by the step buttons: on phones the chip is then brought into view (it can sit below a short screen's tab bar).
+    // Set by the step buttons: on phones and short landscape screens the chip is then brought into view (below the tab bar or the fold).
     const stepped = React.useRef(false);
     const step = (dir: 1 | -1) => {
         if (!keyEvents.length) return;
@@ -421,7 +421,7 @@ export function Pulse() {
         if (!stepped.current) return;
         stepped.current = false;
         const chip = chipRef.current;
-        if (!compact || !chip) return;
+        if (!(compact || short) || !chip) return;
         // Clear of the bottom tab bar (phones) and of the app bar plus section rail above.
         const css = getComputedStyle(document.documentElement);
         const px = (v: string, d: number) => parseFloat(css.getPropertyValue(v)) || d;
@@ -430,7 +430,7 @@ export function Pulse() {
         const r = chip.getBoundingClientRect();
         const d = r.bottom > bottom ? Math.min(r.bottom - bottom, r.top - top) : r.top < top ? r.top - top : 0;
         if (d) window.scrollBy({ top: d, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    }, [selected, compact]);
+    }, [selected, compact, short]);
     const chipPos: React.CSSProperties = !compact
         ? flip
             ? { right: W - chipLeft + 10 }
