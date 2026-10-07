@@ -259,7 +259,7 @@ export default function PredictionsViewer({
                     </ul>
                 ) : slate.length ? (
                     <>
-                        <ul className="grid grid-cols-1 items-start gap-3 lg:grid-cols-2 lg:gap-4 xl:hidden" aria-label={`Games, ${weekdayDate(headDate)}`}>
+                        <ul className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 md:gap-4 xl:hidden" aria-label={`Games, ${weekdayDate(headDate)}`}>
                             {slate.map((p, i) => (
                                 <li key={p.id} className={styles.rise} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
                                     <MatchupCard
