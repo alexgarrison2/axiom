@@ -11,6 +11,7 @@ import { clockOf, periodLabel, teamOnIce, units, type TeamOnIce, type Unit, type
 import type { Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
 import { JerseyNumber } from './Jersey';
+import { ScrollHint } from './ScrollHint';
 
 interface Col {
     key: string;
@@ -142,11 +143,12 @@ export function Units() {
                     <span className="ml-auto text-micro uppercase tracking-label text-fg-3">{kindLabel.strength}</span>
                 </div>
                 {sorted.length ? (
+                    <div className="relative">
                     <TableScroller label={`${m.teams[side].name} ${kindLabel.label.toLowerCase()}`}>
                         <table className="w-full border-separate border-spacing-0 text-caption tabular-nums">
                             <thead>
                                 <tr>
-                                    <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[18rem] px-2 text-left')}>
+                                    <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 w-[10.5rem] min-w-[10.5rem] px-2 text-left md:w-auto md:min-w-[18rem]')}>
                                         <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">{kindLabel.label}</span>
                                     </th>
                                     {COLS.map(c => (
@@ -183,14 +185,15 @@ export function Units() {
                                             </tr>
                                         ) : null}
                                         <tr className="group">
-                                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]', spot ? 'h-9' : 'h-11')}>
-                                                <span className={cn('flex items-center gap-2.5', spot && 'opacity-50 transition-opacity group-hover:opacity-100')}>
-                                                    <span className="flex shrink-0 gap-1">
+                                            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)] max-md:py-1.5', spot ? 'h-9' : 'h-11')}>
+                                                {/* Phones: sweaters over the names (wrapped, small) so the pinned column stays narrow. */}
+                                                <span className={cn('flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-2.5', spot && 'opacity-50 transition-opacity group-hover:opacity-100')}>
+                                                    <span className={cn('flex shrink-0 gap-1', spot ? 'max-md:[&>svg]:size-[22px]' : 'max-md:[&>svg]:size-[26px]')}>
                                                         {ps.map(p => (
                                                             <JerseyNumber key={p.id} tri={m.teams[side].tri} num={p.num} ring={colors[side]} size={spot ? 26 : 32} />
                                                         ))}
                                                     </span>
-                                                    <span className="truncate">
+                                                    <span className="max-md:text-micro max-md:leading-tight md:truncate">
                                                         {ps.map((p, i) => (
                                                             <React.Fragment key={p.id}>
                                                                 {i ? <span className="px-1 text-fg-3">·</span> : null}
@@ -251,6 +254,8 @@ export function Units() {
                             </tfoot>
                         </table>
                     </TableScroller>
+                    <ScrollHint />
+                    </div>
                 ) : (
                     <p className="px-card py-6 text-center text-caption text-fg-3">No {kindLabel.label.toLowerCase()} {period === 'all' ? 'in this game' : 'in this period'}</p>
                 )}

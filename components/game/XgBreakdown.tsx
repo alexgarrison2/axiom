@@ -171,7 +171,7 @@ export function XgBreakdown() {
         );
     }
 
-    const W = Math.max(width, 320);
+    const W = Math.max(width, 240);
     const gutter = compact ? 104 : 150;
     const gap = compact ? 0 : 28;
     const colW = compact ? W - gutter - 4 : (W - 2 * gutter - gap) / 2;
@@ -187,19 +187,21 @@ export function XgBreakdown() {
         return { rows, h: d.total * scale };
     };
     const L = { away: layout('away'), home: layout('home') };
+    // Side by side the columns share a baseline; stacked (narrow), each block is only as tall as its own column.
     const colH = Math.max(L.away.h, L.home.h);
     const blockH = head + colH;
-    const H = compact ? blockH * 2 + 24 : blockH;
+    const H = compact ? head * 2 + L.away.h + L.home.h + 24 : blockH;
 
     const column = (side: Side, x0: number, top: number) => {
         const { rows, h } = L[side];
         const color = colors[side];
         const mirror = !compact && side === 'home';
-        let y = top + head + (colH - h);
+        const drop = compact ? 0 : colH - h;
+        let y = top + head + drop;
         return (
             <g key={side}>
                 {/* Team chip above the column. */}
-                <g transform={`translate(${x0 + colW / 2},${top + head + (colH - h) - 12})`}>
+                <g transform={`translate(${x0 + colW / 2},${top + head + drop - 12})`}>
                     <text textAnchor="middle" className="text-caption font-bold" fill={color}>
                         {m.teams[side].tri} {data[side].total.toFixed(2)} xG
                         <tspan className="fill-fg-3 font-normal"> · {data[side].goals} G</tspan>
@@ -283,7 +285,7 @@ export function XgBreakdown() {
                             {compact ? (
                                 <>
                                     {column('away', gutter, 0)}
-                                    {column('home', gutter, blockH + 24)}
+                                    {column('home', gutter, head + L.away.h + 24)}
                                 </>
                             ) : (
                                 <>

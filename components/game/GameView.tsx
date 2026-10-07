@@ -82,9 +82,20 @@ function LiveRefresh({ live }: { live: boolean }) {
 
 /** Section chips in a sticky bar under the app bar, at every width (the page keeps its full width for the charts). */
 function Rail({ active }: { active: string }) {
+    // Where the chips overflow (phones), keep the current one in view as the page scrolls.
+    const list = React.useRef<HTMLOListElement>(null);
+    React.useEffect(() => {
+        const ol = list.current;
+        const chip = ol?.querySelector<HTMLElement>('[aria-current]');
+        if (!ol || !chip || ol.scrollWidth <= ol.clientWidth) return;
+        const l = chip.offsetLeft - ol.offsetLeft;
+        if (l < ol.scrollLeft + 8 || l + chip.offsetWidth > ol.scrollLeft + ol.clientWidth - 8) {
+            ol.scrollTo({ left: Math.max(0, l - (ol.clientWidth - chip.offsetWidth) / 2), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        }
+    }, [active]);
     return (
         <nav aria-label="Game sections" className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
-            <ol className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+            <ol ref={list} className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                 {SECTIONS.map(s => (
                     <li key={s.id} className="shrink-0">
                         <a
@@ -113,7 +124,14 @@ export function GameView({ m }: { m: GameModel }) {
             <div className="flex flex-col gap-5">
                 <ScoreBand />
                 <div className="flex flex-col gap-6">
-                    <Rail active={active} />
+                    {/* Before puck drop the story is the only section: no chips to dead anchors on phones and tablets. */}
+                    {started ? (
+                        <Rail active={active} />
+                    ) : (
+                        <div className="hidden lg:block">
+                            <Rail active={active} />
+                        </div>
+                    )}
                     <div className="flex min-w-0 flex-col gap-10">
                         <GameSection id="story" title="Story">
                             {started ? <Pulse /> : <p className="panel p-card label">Puck drop at the time above</p>}

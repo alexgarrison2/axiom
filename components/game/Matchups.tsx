@@ -104,7 +104,10 @@ export function Matchups() {
     // Fill the panel: cells grow with the width, 22px floor (the grid scrolls sideways on phones), 44px ceiling.
     const CELL = Math.max(22, Math.min(44, Math.floor(((boxW || 600) - gutter - 8) / Math.max(1, home.length))));
     const W = gutter + home.length * CELL;
-    const H = 96 + away.length * CELL;
+    // Room for the slanted column names: 96px on wide screens; phones trim it to the longest name.
+    const longest = Math.max(0, ...home.map(p => label(p.id).length));
+    const head = boxW > 0 && boxW < 640 ? Math.min(96, Math.ceil(longest * 6.4 * 0.87) + 14) : 96;
+    const H = head + away.length * CELL;
 
     return (
         <GameSection id="matchups" title="Matchups">
@@ -124,12 +127,12 @@ export function Matchups() {
                 <ScrollRegion label="5v5 matchup grid" className="py-card">
                     <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`5v5 time and xG for every ${m.teams.away.tri} skater against every ${m.teams.home.tri} skater`} className="block font-mono">
                         {home.map((p, j) => (
-                            <text key={p.id} transform={`translate(${gutter + j * CELL + CELL / 2 - 4},90) rotate(-60)`} className="text-micro" fill={colors.home}>
+                            <text key={p.id} transform={`translate(${gutter + j * CELL + CELL / 2 - 4},${head - 6}) rotate(-60)`} className="text-micro" fill={colors.home}>
                                 {label(p.id)}
                             </text>
                         ))}
                         {away.map((a, i) => (
-                            <g key={a.id} transform={`translate(0,${96 + i * CELL})`}>
+                            <g key={a.id} transform={`translate(0,${head + i * CELL})`}>
                                 <text x={gutter - 8} y={CELL / 2 + 4} textAnchor="end" className="text-micro" fill={colors.away}>
                                     {label(a.id)}
                                 </text>

@@ -10,6 +10,12 @@ import { other, SIDES, type Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
 
 const pct = (p: number) => `${Math.round(p * 100)}%`;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** "2026-10-06" -> "Oct 6" (phones, where the date sits between two big scores). */
+const shortDate = (iso: string) => {
+    const [, mm, dd] = iso.split('-').map(Number);
+    return mm && dd ? `${MONTHS[mm - 1]} ${dd}` : iso;
+};
 const american = (o: number | null) => (o == null ? null : o > 0 ? `+${o}` : String(o));
 
 function Team({ side }: { side: Side }) {
@@ -223,7 +229,14 @@ export function ScoreBand() {
                         {m.live && !m.live.intermission ? ` · ${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : ''}
                     </span>
                     <span className="text-micro uppercase tracking-label text-fg-3">
-                        {m.state === 'pre' ? <LocalTime iso={m.startUtc} /> : m.date}
+                        {m.state === 'pre' ? (
+                            <LocalTime iso={m.startUtc} />
+                        ) : (
+                            <>
+                                <span className="sm:hidden">{shortDate(m.date)}</span>
+                                <span className="hidden sm:inline">{m.date}</span>
+                            </>
+                        )}
                     </span>
                     {/* Line score: goals by period, shots under. */}
                     <table className="hidden text-caption tabular-nums md:table" aria-label="Goals and shots by period">

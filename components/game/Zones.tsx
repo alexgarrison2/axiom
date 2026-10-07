@@ -121,15 +121,25 @@ export function Zones() {
             aside={<Segmented label="Team" size="sm" value={side} onChange={setSide} optionClassName="px-2.5" options={SIDES.map(s => ({ value: s, label: m.teams[s].tri }))} />}
         >
             <div className="panel p-card">
-                <div className="mb-2 grid grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] gap-2 text-micro uppercase tracking-label text-fg-3">
+                <div className="mb-2 grid grid-cols-[7.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] items-end gap-2 text-micro uppercase tracking-label text-fg-3 sm:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)]">
                     <span />
-                    <span className="text-right">D zone</span>
-                    <span className="text-center">Neutral · fly</span>
-                    <span>O zone</span>
+                    {/* Phones: the zones by their hockey shorthand (the row card spells them out). */}
+                    <span className="text-right">
+                        <span className="sm:hidden">DZ</span>
+                        <span className="hidden sm:inline">D zone</span>
+                    </span>
+                    <span className="text-center">
+                        <span className="sm:hidden">NZ · fly</span>
+                        <span className="hidden sm:inline">Neutral · fly</span>
+                    </span>
+                    <span>
+                        <span className="sm:hidden">OZ</span>
+                        <span className="hidden sm:inline">O zone</span>
+                    </span>
                 </div>
                 <ol className="flex flex-col gap-1.5">
                     {rows.map(({ p, z }, i) => (
-                        <li key={p.id} {...bind(<ZoneTip p={p} z={z} color={colors[side]} />)} className={`-mx-1.5 rounded-control px-1.5 hover:bg-surface-2 grid grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] items-center gap-2 text-caption tabular-nums ${i > 0 && rows[i - 1].p.pos === 'D' && p.pos !== 'D' ? 'mt-3' : ''}`}>
+                        <li key={p.id} {...bind(<ZoneTip p={p} z={z} color={colors[side]} />)} className={`-mx-1.5 rounded-control px-1.5 hover:bg-surface-2 grid grid-cols-[7.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] sm:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] items-center gap-2 text-caption tabular-nums ${i > 0 && rows[i - 1].p.pos === 'D' && p.pos !== 'D' ? 'mt-3' : ''}`}>
                             <span className="flex min-w-0 items-baseline gap-1.5">
                                 <span className="truncate text-fg-1">{label(p.id)}</span>
                                 <span className="whitespace-nowrap text-micro text-fg-3">

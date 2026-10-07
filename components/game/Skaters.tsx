@@ -8,9 +8,20 @@ import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { TableScroller } from '@/components/teams-table/TableScroller';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
 import { cn } from '@/lib/utils';
-import { clockOf, pairRows, periodLabel, playerName, skaterRows, teamOnIce, type PairRow, type PlayerStrength, type SkaterRow, type TeamOnIce } from '@/lib/game/analytics';
+import { clockOf, pairRows, periodLabel, playerName, shortName, skaterRows, teamOnIce, type PairRow, type PlayerStrength, type SkaterRow, type TeamOnIce } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
+import { ScrollHint } from './ScrollHint';
+
+/** Full name, or initial and last name on phones so the pinned column leaves room for the numbers. */
+function Name({ p }: { p: Parameters<typeof playerName>[0] }) {
+    return (
+        <>
+            <span className="md:hidden">{shortName(p)}</span>
+            <span className="hidden md:inline">{playerName(p)}</span>
+        </>
+    );
+}
 
 type View = 'ind' | 'ice' | 'use' | 'comp' | 'mates';
 
@@ -98,11 +109,12 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
     const { m } = useGame();
     const hasXg = m.events.some(e => e.xg != null);
     return (
+        <div className="relative">
         <TableScroller label={`${title} table`}>
             <table className="w-full border-separate border-spacing-0 text-caption tabular-nums">
                 <thead>
                     <tr>
-                        <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[11rem] px-2 text-left')}>
+                        <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[8.5rem] px-2 text-left md:min-w-[11rem]')}>
                             <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">{title}</span>
                         </th>
                         {PAIR_COLS.map(c => (
@@ -117,7 +129,7 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
                                 <span className="flex items-center gap-2">
                                     <Crest tri={m.teams[r.player.side].tri} size={16} className="h-4 w-4" />
                                     <PlayerLink id={r.player.id} className="truncate font-bold text-fg-1">
-                                        {playerName(r.player)}
+                                        <Name p={r.player} />
                                     </PlayerLink>
                                     <span className="text-micro text-fg-3">{r.player.pos}</span>
                                 </span>
@@ -138,6 +150,8 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
                 </tbody>
             </table>
         </TableScroller>
+        <ScrollHint />
+        </div>
     );
 }
 
@@ -250,11 +264,12 @@ export function Skaters() {
                 {pairView && pairs ? (
                     <PairTable rows={view === 'comp' ? pairs.opp : pairs.mates} title={view === 'comp' ? 'Opponent' : 'Teammate'} />
                 ) : (
+                <div className="relative">
                 <TableScroller label={`${m.teams[side].name} skaters`}>
                     <table className="w-full border-separate border-spacing-0 text-caption tabular-nums">
                         <thead>
                             <tr>
-                                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[11rem] px-2 text-left')}>
+                                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 min-w-[8.5rem] px-2 text-left md:min-w-[11rem]')}>
                                     <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Player</span>
                                 </th>
                                 {cols.map(c => (
@@ -277,7 +292,7 @@ export function Skaters() {
                                         <span className="flex items-center gap-2">
                                             <span className="w-6 text-right text-micro text-fg-3">{r.player.num ?? ''}</span>
                                             <PlayerLink id={r.player.id} className="truncate font-bold text-fg-1">
-                                                {playerName(r.player)}
+                                                <Name p={r.player} />
                                             </PlayerLink>
                                             <span className="text-micro text-fg-3">{r.player.pos}</span>
                                         </span>
@@ -328,6 +343,8 @@ export function Skaters() {
                         </tfoot>
                     </table>
                 </TableScroller>
+                <ScrollHint />
+                </div>
                 )}
             </div>
         </GameSection>

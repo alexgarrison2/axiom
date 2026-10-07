@@ -83,7 +83,7 @@ function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: n
                         </Tag>
                     ) : null}
                 </div>
-                <p className="truncate text-caption text-fg-2">
+                <p className="text-caption text-fg-2 sm:truncate">
                     {e.assists.length
                         ? e.assists.map((id, i) => `${shortName(byId.get(id))} (${counts?.a[i] ?? 1})`).join(', ')
                         : 'Unassisted'}
@@ -97,7 +97,7 @@ function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: n
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={ev => ev.stopPropagation()}
-                            className="inline-flex min-h-6 items-center gap-1 text-brand hover:underline coarse:min-h-11"
+                            className="inline-flex min-h-6 items-center gap-1 text-brand hover:underline coarse:-my-3 coarse:min-h-11"
                         >
                             Clip
                             <svg viewBox="0 0 8 8" className="h-2 w-2" aria-hidden="true">

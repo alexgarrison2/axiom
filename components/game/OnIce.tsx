@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { PlayerLink } from '@/components/players/PlayerLink';
 import { legibleOn } from '@/components/ui/color';
+import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
 import { clockOf, iceAt, shortName, type GoalieSnap, type SkaterSnap } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
@@ -39,7 +40,7 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                     {n} skaters{goalie ? '' : ' · net empty'}
                 </span>
             </div>
-            <div className="overflow-x-auto">
+            <ScrollRegion label={`${m.teams[side].tri} on the ice`}>
                 <table className="w-full min-w-[640px] border-collapse text-caption">
                     <thead>
                         <tr className="border-b border-line">
@@ -114,7 +115,7 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                         ) : null}
                     </tbody>
                 </table>
-            </div>
+            </ScrollRegion>
         </div>
     );
 }
