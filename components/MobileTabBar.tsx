@@ -48,6 +48,32 @@ export function MobileTabBar({ playoffsSeason }: { playoffsSeason?: string | nul
     const more: NavItem[] = archive ? [secondary[0], archive, ...secondary.slice(1)] : secondary;
     const moreActive = more.some(i => isItemActive(i, pathname));
 
+    // The sheet's grab handle works: drag the sheet down past 64px to close it. Uses the
+    // `translate` property, which the sheet-up entrance animation (on `transform`) leaves alone.
+    const sheet = React.useRef<HTMLDivElement>(null);
+    const drag = React.useRef<{ y: number; dy: number } | null>(null);
+    const onTouchStart = (e: React.TouchEvent) => {
+        drag.current = { y: e.touches[0].clientY, dy: 0 };
+        if (sheet.current) sheet.current.style.transition = 'none';
+    };
+    const onTouchMove = (e: React.TouchEvent) => {
+        if (!drag.current || !sheet.current) return;
+        drag.current.dy = Math.max(0, e.touches[0].clientY - drag.current.y);
+        sheet.current.style.translate = `0 ${drag.current.dy}px`;
+    };
+    const onTouchEnd = () => {
+        const dy = drag.current?.dy ?? 0;
+        drag.current = null;
+        if (dy > 64) {
+            setMoreOpen(false);
+            return;
+        }
+        if (sheet.current) {
+            sheet.current.style.transition = 'translate 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            sheet.current.style.translate = '';
+        }
+    };
+
     const tabClass = (active: boolean) =>
         cn(
             'relative flex h-full min-h-11 flex-1 flex-col items-center justify-center gap-1 text-micro font-medium uppercase tracking-[0.08em] transition-colors max-[359px]:text-[11px] max-[359px]:tracking-[0.02em]',
@@ -80,11 +106,16 @@ export function MobileTabBar({ playoffsSeason }: { playoffsSeason?: string | nul
                         <DialogPrimitive.Portal>
                             <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-bg/70 backdrop-blur-sm animate-fade-in md:hidden" />
                             <DialogPrimitive.Content
+                                ref={sheet}
+                                onTouchStart={onTouchStart}
+                                onTouchMove={onTouchMove}
+                                onTouchEnd={onTouchEnd}
+                                onTouchCancel={onTouchEnd}
                                 aria-describedby={undefined}
                                 className="fixed inset-x-0 bottom-[calc(0px_-_var(--vv-bottom,0px))] z-[61] rounded-t-card border-t border-line-strong bg-surface-1 pb-[calc(env(safe-area-inset-bottom)+8px)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] animate-sheet-up focus:outline-none md:hidden"
                             >
                                 <div aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-full bg-mute" />
-                                <div className="flex items-center justify-between px-card pb-1 pt-1">
+                                <div className="flex items-center justify-between pb-1 pl-5 pr-card pt-1">
                                     <DialogPrimitive.Title className="label">More</DialogPrimitive.Title>
                                     <DialogClose label="Close menu" />
                                 </div>

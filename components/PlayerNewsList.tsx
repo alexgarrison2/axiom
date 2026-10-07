@@ -9,13 +9,17 @@ interface PlayerNewsListProps {
     teamTriCode: string;
 }
 
-/** Compact player-news list for a matchup card (goalie-start items are shown elsewhere). */
-export default function PlayerNewsList({ news, teamTriCode }: PlayerNewsListProps) {
-    if (!news || news.length === 0) return null;
-    const items = news.filter(n => {
+/** The items the list shows: goalie-start news is shown elsewhere. Callers count with this too. */
+export function listedNews(news: PlayerNewsItem[] | null | undefined): PlayerNewsItem[] {
+    return (news ?? []).filter(n => {
         const cat = n.category?.toLowerCase() || '';
         return !(cat.includes('goalie') && cat.includes('start'));
     });
+}
+
+/** Compact player-news list for a matchup card (goalie-start items are shown elsewhere). */
+export default function PlayerNewsList({ news, teamTriCode }: PlayerNewsListProps) {
+    const items = listedNews(news);
     if (items.length === 0) return null;
 
     return (

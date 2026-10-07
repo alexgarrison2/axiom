@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { Prediction } from '@/types/prediction';
 import LineupGrid from '@/components/LineupGrid';
-import PlayerNewsList from '@/components/PlayerNewsList';
+import PlayerNewsList, { listedNews } from '@/components/PlayerNewsList';
 import type { PlayerNewsItem } from '@/utils/data';
 import { Segmented } from '@/components/ui/segmented';
 import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
@@ -32,12 +32,14 @@ function impactTag(season: string | null | undefined, home: boolean) {
 function TeamNews({ news, tri }: { news: PlayerNewsItem[]; tri: string }) {
     // Client-only (the card mounts its details on tap), so the viewport is known on first render.
     const [open] = useState(() => typeof window === 'undefined' || window.matchMedia('(min-width: 1024px)').matches);
-    if (!news.length) return null;
+    // The count is what the list shows (it leaves out goalie-start items).
+    const count = listedNews(news).length;
+    if (!count) return null;
     return (
         <details open={open} className="group rounded-[10px] border border-line px-3 py-1.5">
             <summary className="flex min-h-7 cursor-pointer list-none items-center justify-between coarse:min-h-11">
                 <span className="label">
-                    News <span className="text-fg-2">{news.length}</span>
+                    News <span className="text-fg-2">{count}</span>
                 </span>
                 <span aria-hidden="true" className="text-fg-3 transition-transform group-open:rotate-180">
                     ▾

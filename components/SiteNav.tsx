@@ -72,7 +72,7 @@ export default function SiteNav() {
                     >
                         <BrandMark className="h-[28px] drop-shadow-[0_0_10px_rgba(41,231,255,.35)] md:h-[30px]" />
                     </Link>
-                    <SiteNavLinks />
+                    <SiteNavLinks playoffsSeason={playoffs} />
                     <div className="ml-auto flex items-center">
                         <FreshnessBadge generatedAt={stamp.generatedAt} starts={starts} />
                     </div>

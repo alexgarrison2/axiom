@@ -4,81 +4,107 @@ import * as React from 'react';
 import { IntentLink } from './IntentLink';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { NAV_ITEMS, isItemActive } from './nav-items';
+import { NAV_ITEMS, isActive, isItemActive, playoffsLink, type NavItem } from './nav-items';
 
-function fade({ left, right }: { left: boolean; right: boolean }): React.CSSProperties | undefined {
-    if (!left && !right) return undefined;
-    const mask = `linear-gradient(to right, ${left ? 'transparent' : '#000'} 0, #000 32px, #000 calc(100% - 32px), ${right ? 'transparent' : '#000'} 100%)`;
-    return { WebkitMaskImage: mask, maskImage: mask };
+const linkClass = (active: boolean) =>
+    cn(
+        'relative flex h-11 items-center whitespace-nowrap text-caption font-medium uppercase tracking-[0.12em] transition-colors lg:tracking-label',
+        active ? 'text-fg-1' : 'text-fg-3 hover:text-fg-1',
+    );
+
+function Underline({ active }: { active: boolean }) {
+    return (
+        <span
+            aria-hidden="true"
+            className={cn('absolute inset-x-0 bottom-1.5 h-0.5 transition-opacity', active ? 'bg-brand opacity-100 shadow-[0_6px_12px_-4px_rgb(var(--brand-rgb))]' : 'opacity-0')}
+        />
+    );
+}
+
+/**
+ * Tablet widths (md to lg) have room for the bottom bar's sections only: the rest
+ * (Standings, the playoff archive, News, How it works) sit under "More", as on phones.
+ */
+function TabletMore({ items, pathname }: { items: NavItem[]; pathname: string | null }) {
+    const [open, setOpen] = React.useState(false);
+    const root = React.useRef<HTMLLIElement>(null);
+    const active = items.some(i => isItemActive(i, pathname));
+
+    React.useEffect(() => setOpen(false), [pathname]);
+    React.useEffect(() => {
+        if (!open) return;
+        const away = (e: PointerEvent) => {
+            if (!root.current?.contains(e.target as Node)) setOpen(false);
+        };
+        const esc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setOpen(false);
+        };
+        document.addEventListener('pointerdown', away);
+        document.addEventListener('keydown', esc);
+        return () => {
+            document.removeEventListener('pointerdown', away);
+            document.removeEventListener('keydown', esc);
+        };
+    }, [open]);
+
+    return (
+        <li ref={root} className="relative lg:hidden">
+            <button type="button" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen(o => !o)} className={linkClass(active)}>
+                More
+                <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('ml-1 h-3 w-3 transition-transform', open && 'rotate-180')}>
+                    <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <Underline active={active} />
+            </button>
+            {open ? (
+                <ul className="absolute right-0 top-full z-50 min-w-48 rounded-control border border-line-strong bg-surface-1 py-1 shadow-card animate-fade-in">
+                    {items.map(item => {
+                        const on = isActive(item.href, pathname);
+                        return (
+                            <li key={item.key}>
+                                <IntentLink
+                                    href={item.href}
+                                    aria-current={on ? 'page' : undefined}
+                                    onClick={() => setOpen(false)}
+                                    className={cn('flex min-h-11 items-center px-4 text-caption font-medium uppercase tracking-[0.12em] transition-colors', on ? 'text-brand' : 'text-fg-1 hover:text-brand')}
+                                >
+                                    {item.label}
+                                </IntentLink>
+                            </li>
+                        );
+                    })}
+                </ul>
+            ) : null}
+        </li>
+    );
 }
 
 /** Desktop (md+) section links: mono uppercase, cyan underline on the active one. */
-export function SiteNavLinks() {
+export function SiteNavLinks({ playoffsSeason }: { playoffsSeason?: string | null }) {
     const pathname = usePathname();
-    const ref = React.useRef<HTMLElement>(null);
-    // Tablet widths: the links overflow; fade whichever edge has links past it.
-    const [edges, setEdges] = React.useState({ left: false, right: false });
-
-    React.useEffect(() => {
-        const nav = ref.current;
-        if (!nav) return;
-        const check = () => {
-            const left = nav.scrollLeft > 1;
-            const right = nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1;
-            setEdges(e => (e.left === left && e.right === right ? e : { left, right }));
-        };
-        // The active section is scrolled into view (sideways only) when it sits past the edge;
-        // again once the web font has replaced the fallback and the links have their real widths.
-        let live = true;
-        const reveal = () => {
-            const active = nav.querySelector<HTMLElement>('[aria-current="page"]');
-            if (!live || !active || nav.scrollWidth <= nav.clientWidth) return;
-            const n = nav.getBoundingClientRect();
-            const a = active.getBoundingClientRect();
-            if (a.right > n.right - 32) nav.scrollLeft += a.right - n.right + 40;
-            check();
-        };
-        reveal();
-        document.fonts?.ready.then(reveal);
-        check();
-        nav.addEventListener('scroll', check, { passive: true });
-        window.addEventListener('resize', check);
-        return () => {
-            live = false;
-            nav.removeEventListener('scroll', check);
-            window.removeEventListener('resize', check);
-        };
-    }, [pathname]);
+    const secondary = NAV_ITEMS.filter(i => !i.primary);
+    const archive = playoffsLink(playoffsSeason);
+    // Same order as the phone More sheet: Standings, Playoffs 25-26, News, How it works.
+    const more: NavItem[] = archive ? [secondary[0], archive, ...secondary.slice(1)] : secondary;
 
     return (
         // Scrolls sideways rather than running into the freshness badge at
         // tablet widths; p-1 keeps focus rings unclipped.
-        <nav ref={ref} aria-label="Main" className="hidden min-w-0 overflow-x-auto scrollbar-hide md:block" style={fade(edges)}>
+        <nav aria-label="Main" className="hidden min-w-0 overflow-x-auto scrollbar-hide md:block md:max-lg:overflow-visible">
             <ul className="flex items-center gap-4 p-1 lg:gap-7">
                 {NAV_ITEMS.map(item => {
                     const active = isItemActive(item, pathname);
                     return (
-                        <li key={item.key}>
-                            <IntentLink
-                                href={item.href}
-                                aria-current={active ? 'page' : undefined}
-                                className={cn(
-                                    'relative flex h-11 items-center whitespace-nowrap text-caption font-medium uppercase tracking-[0.12em] transition-colors lg:tracking-label',
-                                    active ? 'text-fg-1' : 'text-fg-3 hover:text-fg-1',
-                                )}
-                            >
+                        // Below lg only the bottom bar's sections show inline; the rest are under More.
+                        <li key={item.key} className={item.primary ? undefined : 'md:max-lg:hidden'}>
+                            <IntentLink href={item.href} aria-current={active ? 'page' : undefined} className={linkClass(active)}>
                                 {item.label}
-                                <span
-                                    aria-hidden="true"
-                                    className={cn(
-                                        'absolute inset-x-0 bottom-1.5 h-0.5 transition-opacity',
-                                        active ? 'bg-brand opacity-100 shadow-[0_6px_12px_-4px_rgb(var(--brand-rgb))]' : 'opacity-0',
-                                    )}
-                                />
+                                <Underline active={active} />
                             </IntentLink>
                         </li>
                     );
                 })}
+                <TabletMore items={more} pathname={pathname} />
             </ul>
         </nav>
     );

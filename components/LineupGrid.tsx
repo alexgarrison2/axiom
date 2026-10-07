@@ -39,14 +39,25 @@ function PpLegend() {
     );
 }
 
+/** Lineup movement marker: ▲ moved up, ▼ moved down, + new to the lineup. */
+function Move({ m, className }: { m: LineupPlayerView['movement']; className?: string }) {
+    if (m === 'up') return <span aria-label="moved up" className={cn('text-micro text-pos', className)}>▲</span>;
+    if (m === 'down') return <span aria-label="moved down" className={cn('text-micro text-neg', className)}>▼</span>;
+    if (m === 'new') return <span aria-label="new to the lineup" className={cn('text-micro text-warn', className)}>+</span>;
+    return null;
+}
+
+/* A phone-width card (< 25rem) gives the name the whole column: the movement marker moves down beside the impact number. */
+const NARROW_HIDE = '[@container(max-width:24.99rem)]:hidden';
+const NARROW_SHOW = 'hidden [@container(max-width:24.99rem)]:inline';
+
 function Player({ pl }: { pl: LineupPlayerView | undefined }) {
     if (!pl) return <span className="block text-center text-fg-3">–</span>;
+    const below = pl.value82 != null;
     return (
         <span className="flex min-w-0 flex-col items-center leading-tight" title={pl.name}>
             <span className="flex max-w-full items-center gap-0.5">
-                {pl.movement === 'up' ? <span aria-label="moved up" className="text-micro text-pos">▲</span> : null}
-                {pl.movement === 'down' ? <span aria-label="moved down" className="text-micro text-neg">▼</span> : null}
-                {pl.movement === 'new' ? <span aria-label="new to the lineup" className="text-micro text-warn">+</span> : null}
+                <Move m={pl.movement} className={below ? NARROW_HIDE : undefined} />
                 {/* Power-play unit by name colour (legend under the tables): PP1 yellow, PP2 white, others dimmer. */}
                 <span className={cn('truncate text-caption', PP_NAME[pl.ppUnit ?? 0] ?? PP_NAME[0])}>
                     {pl.display}
@@ -55,6 +66,7 @@ function Player({ pl }: { pl: LineupPlayerView | undefined }) {
             </span>
             {pl.value82 != null ? (
                 <span className={cn('text-micro tabular-nums', impactTone(pl.value82))} title="Impact: goals above a positional average per 82 games, all situations (the Players page number)">
+                    <Move m={pl.movement} className={cn('mr-0.5', NARROW_SHOW)} />
                     {fmtSigned(pl.value82, 1)}
                 </span>
             ) : null}
@@ -80,7 +92,11 @@ function LineCell({ imp }: { imp: LineImpact | null | undefined }) {
 }
 
 function Table({ keys, cols, d, label }: { keys: string[]; cols: string[]; d: SideDetails; label: string }) {
-    const tpl = cols.length === 3 ? 'grid-cols-[1.5rem_repeat(3,minmax(0,1fr))_2.5rem]' : 'grid-cols-[1.5rem_repeat(2,minmax(0,1fr))_2.5rem]';
+    // Phone-width card: slimmer row-label and LINE columns and gaps, so the names keep their width.
+    const tpl =
+        cols.length === 3
+            ? 'grid-cols-[1.5rem_repeat(3,minmax(0,1fr))_2.5rem] [@container(max-width:24.99rem)]:grid-cols-[1.25rem_repeat(3,minmax(0,1fr))_2.25rem] [@container(max-width:24.99rem)]:gap-0.5 [@container(max-width:24.99rem)]:px-1.5'
+            : 'grid-cols-[1.5rem_repeat(2,minmax(0,1fr))_2.5rem] [@container(max-width:24.99rem)]:grid-cols-[1.25rem_repeat(2,minmax(0,1fr))_2.25rem] [@container(max-width:24.99rem)]:gap-0.5 [@container(max-width:24.99rem)]:px-1.5';
     return (
         <div role="table" aria-label={label} className="overflow-hidden rounded-[10px] border border-line">
             <div role="row" className={cn('grid items-center gap-1 border-b border-line px-2 py-1 text-micro font-medium uppercase tracking-wide text-fg-3', tpl)}>

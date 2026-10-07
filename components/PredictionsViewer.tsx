@@ -53,7 +53,7 @@ function PaneSkeleton({ games, className }: { games: number; className?: string 
     return (
         <div aria-hidden="true" className={cn('grid-cols-[22.5rem_minmax(0,1fr)] items-start gap-4', className)}>
             <div className="panel motion-safe:animate-pulse" style={{ height: `calc(${games} * 128px + 40px)` }} />
-            <div className="panel h-[54rem] motion-safe:animate-pulse" />
+            <div className="panel h-[65rem] motion-safe:animate-pulse" />
         </div>
     );
 }
