@@ -17,6 +17,7 @@ import { Wowy } from '@/components/player/Wowy';
 import { loadWowy } from '@/lib/players/wowy-server';
 import { SEASON_ID } from '@/lib/season';
 import { IsolatedImpact } from '@/components/player/IsolatedImpact';
+import { AwardShelf } from '@/components/player/AwardShelf';
 import { loadIsolate } from '@/lib/players/isolate-server';
 
 /*
@@ -451,14 +452,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         <h2 id="awards-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
                             Awards
                         </h2>
-                        <ul className="flex flex-wrap gap-2">
-                            {profile.awards.map(a => (
-                                <li key={a.name} className="rounded-card border border-warn/40 px-3 py-2 text-caption">
-                                    <span className="font-bold text-warn">{a.name}</span>{' '}
-                                    <span className="text-fg-3">{a.seasons.map(s => seasonLabel(s)).join(', ')}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        <AwardShelf awards={profile.awards} />
                     </section>
                 ) : null}
             </div>
