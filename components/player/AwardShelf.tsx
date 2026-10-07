@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { groupAwards, seasonYears, type AwardIn } from '@/lib/players/awards';
+import { YearList } from '@/components/player/YearList';
 
 /*
  * The trophy shelf on a player page: one drawn trophy per award (artwork in
@@ -29,14 +29,7 @@ export function AwardShelf({ awards }: { awards: AwardIn[] }) {
                         <span aria-hidden="true">{g.label}</span>
                         {g.seasons.length > 1 ? <span className="ml-1 text-fg-2">×{g.seasons.length}</span> : null}
                     </p>
-                    <p className="mt-0.5 text-micro tabular-nums text-fg-3">
-                        {seasonYears(g.seasons).map((y, i) => (
-                            <React.Fragment key={y}>
-                                {i ? ' · ' : null}
-                                <span className="whitespace-nowrap">{y}</span>
-                            </React.Fragment>
-                        ))}
-                    </p>
+                    <YearList years={seasonYears(g.seasons)} />
                 </li>
             ))}
         </ul>
