@@ -41,7 +41,7 @@ const SECTIONS = [
     { id: 'goalies', label: 'Goalies' },
     { id: 'context', label: 'Context chips' },
     { id: 'game-story', label: 'Game story' },
-    { id: 'game-score', label: 'Game score' },
+    { id: 'pony-score', label: 'Pony score' },
     { id: 'players', label: 'Players & standings' },
     { id: 'data-sources', label: 'Data sources' },
     { id: 'glossary', label: 'Glossary' },
@@ -509,9 +509,9 @@ export default function MethodologyPage() {
                             </p>
                         </Section>
 
-                        <Section id="game-score" index={++i} title="Game score">
+                        <Section id="pony-score" index={++i} title="Pony score">
                             <p>
-                                The game page scores every skater for that one game with <strong>Game Score</strong> (Dom Luszczyszyn&apos;s weights),
+                                The game page scores every skater for that one game with the <strong>Pony Score</strong>, built on Dom Luszczyszyn&apos;s Game Score weights and
                                 split into the same ideas as the season ratings, offence and defence each:
                             </p>
                             <ul className="list-disc space-y-1 pl-5">

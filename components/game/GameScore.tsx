@@ -12,7 +12,7 @@ import { TipFace } from './HoverTip';
 import { JerseyNumber } from './Jersey';
 
 /*
- * Game Score breakdown: every skater's one-game score as a signed stack of
+ * Pony Score breakdown (built on Luszczyszyn's Game Score weights): every skater's one-game score as a signed stack of
  * eight parts (offence in a cool family, defence in a warm one; the same
  * four ideas each side). Positive parts stack right of zero, negative parts
  * left, and an ink notch marks the net. Hover a row for its card; click (or
@@ -134,7 +134,7 @@ function SkaterCard({ r, d, rank }: { r: GameScoreRow; d: number; rank: string }
                 </span>
                 <span className="text-right leading-none">
                     <span className={cn('block font-display text-title font-bold tabular-nums', r.total < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.total)}</span>
-                    <span className="text-micro uppercase tracking-label text-fg-3">Game score</span>
+                    <span className="text-micro uppercase tracking-label text-fg-3">Pony score</span>
                 </span>
             </div>
             <MiniStack parts={r.parts} d={d} />
@@ -322,7 +322,7 @@ export function GameScore() {
         const y0 = (ROW_H - BAR_H) / 2;
         return row({
             rowKey: `s${r.player.id}`,
-            label: `${r.player.first} ${r.player.last}, game score ${signed(r.total)}. Press Enter for the breakdown.`,
+            label: `${r.player.first} ${r.player.last}, Pony Score ${signed(r.total)}. Press Enter for the breakdown.`,
             total: r.total,
             card: <SkaterCard r={r} d={d} rank={rank} />,
             name: (
@@ -354,8 +354,8 @@ export function GameScore() {
 
     return (
         <GameSection
-            id="gamescore"
-            title="Game score"
+            id="ponyscore"
+            title="Pony score"
             aside={
                 <Segmented
                     label="Team"
@@ -392,7 +392,7 @@ export function GameScore() {
                             {PARTS[o].label}
                         </span>
                     ))}
-                    <Link href="/methodology#game-score" className="ml-auto underline-offset-4 hover:text-fg-1 hover:underline">
+                    <Link href="/methodology#pony-score" className="ml-auto underline-offset-4 hover:text-fg-1 hover:underline">
                         Method
                     </Link>
                 </div>
@@ -444,7 +444,7 @@ export function GameScore() {
                         <div
                             ref={cardRef}
                             role={tip.pinned ? 'dialog' : 'tooltip'}
-                            aria-label={tip.pinned ? 'Game score breakdown' : undefined}
+                            aria-label={tip.pinned ? 'Pony Score breakdown' : undefined}
                             className={cn(
                                 'absolute z-30 rounded-card border bg-surface-1/95 p-3.5 text-caption shadow-[0_16px_40px_rgb(0_0_0/0.6)] backdrop-blur-md motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95',
                                 tip.pinned ? 'pointer-events-auto border-brand/60' : 'pointer-events-none border-line-strong',

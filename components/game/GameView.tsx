@@ -27,7 +27,7 @@ const SECTIONS = [
     { id: 'xg', label: 'xG' },
     { id: 'team', label: 'Team' },
     { id: 'skaters', label: 'Skaters' },
-    { id: 'gamescore', label: 'Game score' },
+    { id: 'ponyscore', label: 'Pony score' },
     { id: 'units', label: 'Units' },
     { id: 'goalies', label: 'Goalies' },
     { id: 'lines', label: 'Lines' },
