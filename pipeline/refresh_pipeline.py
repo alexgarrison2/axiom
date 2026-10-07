@@ -701,6 +701,7 @@ def run_full(r, phase, rescore_all=False):
     phase.update(season_phase())
     r.run("shifts", _call, "fetch_shifts", "main", [], title="Shift charts")
     r.run("enrich_pbp", _call, "enrich_pbp", "main", [], title="On-ice players for PBP")
+    r.run("wowy", _call, "wowy", "main", [], title="5v5 with-or-without pairs")
     r.run("raw_pbp", stage_raw_pbp, title="Append raw PBP to data/historical_pbp")
     r.run("player_models", stage_player_models, state, phase["games_played"], title="Player impact")
     r.run("skater_games", _call, "fetch_skater_games", title="Per-game skater logs (props)")

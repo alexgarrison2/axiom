@@ -156,6 +156,8 @@ jobs:
               public/data/props.json public/data/props_detail.json public/data/game_xg/*.json
           # Pony Score season data (per player-game) and the nightly top / bottom
           add public/data/pony/*.json
+          # 5v5 with-or-without-you pairs (pipeline/wowy.py, full run)
+          add public/data/wowy/*.json
           # Season game data (current season file names come from pipeline/season.py)
           # (shooting_talent.json: the per-shooter multipliers in published xG; the game page applies them to live shots)
           add pipeline/nhl_season_*_gamestats.csv pipeline/nhl_season_*_shots.csv pipeline/nhl_season_*_shifts.csv \

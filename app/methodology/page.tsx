@@ -44,6 +44,7 @@ const SECTIONS = [
     { id: 'game-story', label: 'Game story' },
     { id: 'pony-score', label: 'Pony score' },
     { id: 'players', label: 'Players & standings' },
+    { id: 'wowy', label: 'With or without' },
     { id: 'props', label: 'Player props' },
     { id: 'data-sources', label: 'Data sources' },
     { id: 'glossary', label: 'Glossary' },
@@ -606,6 +607,24 @@ export default function MethodologyPage() {
                                     the series the simulations produced most often.
                                 </Key>
                             </dl>
+                        </Section>
+
+                        <Section id="wowy" index={++i} title="With or without">
+                            <p>
+                                A skater&apos;s 5-on-5 minutes (five skaters and a goalie a side, regular season) split three ways for each of his
+                                most-used teammates, after HockeyViz: <strong>together</strong> (filled dot), <strong>him apart</strong>, on the ice
+                                without that teammate (ring), and the <strong>mate apart</strong>, the teammate without him (diamond). Each point is a
+                                raw rate, pony xG for per 60 across and xG against per 60 down with fewer against at the top, never a share, so a
+                                pairing that slows both ends of the game looks different from one that speeds both up. Faint diagonals mark equal xG
+                                differential; the corners read GOOD (more for, less against), BAD, FUN (lots of both) and DULL (little of either).
+                            </p>
+                            <p>
+                                The line through each teammate&apos;s three points passes through the <strong>+</strong>, the player&apos;s own 5-on-5
+                                rates, because his minutes with and without that teammate average to it. A teammate is listed with 100 minutes
+                                together over a full season, scaled down with the share of the season played and never below 10 minutes; an apart
+                                sample under 10 minutes (or a quarter of that bar) gets no point. A traded player has one chart per team. Rates
+                                describe who he played with; they do not separate his effect from his linemates&apos; (IMPACT does).
+                            </p>
                         </Section>
 
                         <Section id="props" index={++i} title="Player props">

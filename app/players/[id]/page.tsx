@@ -13,6 +13,9 @@ import { leaderboard, loadPonySeason, playerGames, ponySeasons, DEFAULT_FILTERS,
 import { IDEAS, PARTS, signed } from '@/lib/pony/parts';
 import { ageOn, playerProfile, type SeasonLine } from '@/lib/players/landing';
 import { readRatingsDoc } from '@/lib/players/server';
+import { Wowy } from '@/components/player/Wowy';
+import { loadWowy } from '@/lib/players/wowy-server';
+import { SEASON_ID } from '@/lib/season';
 
 /*
  * A player's page: the NHL profile (bio, action photo, draft, awards, career
@@ -149,6 +152,9 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
     const thisSeason = nhl.find(s => String(s.season) === cur?.s) ?? nhl[nhl.length - 1] ?? null;
     const age = ageOn(profile?.birthDate ?? null);
     const seasonQ = (s: string) => (s === seasons[0] ? `/players/${pid}` : `/players/${pid}?season=${s}`);
+    // With or without you: skaters only, for the season the page shows.
+    const wowySeason = cur?.s ?? SEASON_ID;
+    const wowy = goalie ? null : loadWowy(wowySeason, pid);
 
     return (
         <main className="pb-tabbar">
@@ -309,6 +315,20 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         <p className="panel p-card text-caption text-fg-3">No Pony Score games yet this season.</p>
                     )}
                 </section>
+
+                {/* With or without you: 5v5 with and apart from his most-used teammates. */}
+                {!goalie && (wowy || (gp && wowySeason === SEASON_ID)) ? (
+                    <section aria-labelledby="wowy-h" className="flex flex-col gap-3">
+                        <h2 id="wowy-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
+                            With or without
+                        </h2>
+                        {wowy ? (
+                            <Wowy data={wowy} first={first} last={last} gp={gp} prior={wowySeason !== SEASON_ID} seasonTag={seasonLabel(wowySeason).replace(/^\d\d/, '')} />
+                        ) : (
+                            <p className="panel p-card text-caption text-fg-3">No teammate with enough 5v5 time together yet.</p>
+                        )}
+                    </section>
+                ) : null}
 
                 {/* Game log. */}
                 {gp ? (
