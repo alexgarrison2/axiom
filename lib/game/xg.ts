@@ -301,6 +301,7 @@ function applySides(ev: Ev[]) {
 
 export interface ShotRow {
     eventId: number;
+    shooterId: number;
     strengthClass: StrengthClass;
     f: Record<string, number>;
 }
@@ -380,6 +381,7 @@ export function shotFeatures(pbp: Raw, art: Pick<XgArtifacts, 'hand' | 'rink'>):
 
         rows.push({
             eventId: e.eventId,
+            shooterId: e.shooterId,
             strengthClass: strengthClass(own, opp, e.emptyNetAgainst, e.ownGoaliePulled, e.isPenaltyShot),
             f: {
                 distance,
@@ -442,11 +444,15 @@ const logit = (p: number) => {
     return Math.log(q / (1 - q));
 };
 
-/** Raw xG v2 (before the pipeline's league normalisation) per unblocked shot, keyed by NHL event id. */
+/** Raw xG v2 (before the pipeline's talent and league adjustments) per unblocked shot, keyed by NHL event id. */
 export function scoreGame(pbp: Raw, art: XgArtifacts): Map<number, number> {
+    return scoreRows(shotFeatures(pbp, art), art);
+}
+
+function scoreRows(rows: ShotRow[], art: XgArtifacts): Map<number, number> {
     const out = new Map<number, number>();
     const x = new Float64Array(art.features.length);
-    for (const r of shotFeatures(pbp, art)) {
+    for (const r of rows) {
         const sc = r.strengthClass;
         const d = r.f.distance;
         let p = NaN;
@@ -467,5 +473,22 @@ export function scoreGame(pbp: Raw, art: XgArtifacts): Map<number, number> {
         if (Number.isNaN(p)) p = art.trainGoalRate;
         if (!Number.isNaN(r.eventId) && !out.has(r.eventId)) out.set(r.eventId, Math.min(0.999, Math.max(1e-4, p)));
     }
+    return out;
+}
+
+const round4 = (v: number) => Math.round(v * 1e4) / 1e4;
+
+/**
+ * Published pony xG per unblocked shot, keyed by NHL event id, computed the way
+ * the nightly run does it (pipeline/refresh_pipeline.py stage_rescore_xg):
+ * raw xG rounded to 4 dp, times the shooter's prior-seasons talent multiplier
+ * (1 when unknown), times the season's league factor, rounded to 4 dp.
+ */
+export function publishedXg(pbp: Raw, art: XgArtifacts, talent: Map<number, number>, leagueFactor: number): Map<number, number> {
+    const rows = shotFeatures(pbp, art);
+    const shooter = new Map<number, number>();
+    for (const r of rows) if (!shooter.has(r.eventId)) shooter.set(r.eventId, r.shooterId);
+    const out = new Map<number, number>();
+    for (const [e, x] of scoreRows(rows, art)) out.set(e, round4(round4(x) * (talent.get(shooter.get(e)!) ?? 1) * leagueFactor));
     return out;
 }

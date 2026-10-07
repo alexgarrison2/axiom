@@ -164,12 +164,13 @@ const nextConfig: NextConfig = {
     "/opengraph-image": OG_RUNTIME,
     "/api/odds-history": ["public/data/SiteHistory/*.csv"],
     // The game page reads pony xG per shot (nightly file, else the xG v2
-    // artifacts to score live shots) and the graded pregame call.
+    // artifacts and shooting talent to score live shots) and the graded pregame call.
     "/games/[id]": [
       "public/data/game_xg/*.json",
       "pipeline/models/xg2_booster.json",
       "pipeline/models/xg2_calibrators.json",
       "pipeline/bu/xg/models/handedness.json",
+      "pipeline/shooting_talent.json",
       "data/prediction_history.json",
       "public/data/odds_closing.json",
       "public/data/season_projections_history.json",

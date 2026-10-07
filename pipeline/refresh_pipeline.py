@@ -185,7 +185,10 @@ def stage_rescore_xg(state, rescore_all=False):
     xg_raw   = model output (EN override applied), scored only for rows that
                don't have it yet, or for every row when the model file changes.
     xG       = xg_raw x shooting talent x league normalisation, recomputed
-               deterministically from xg_raw each run.
+               deterministically from xg_raw each run.  Talent is the shooter's
+               multiplier for the shot's season, from the three seasons before
+               it (shooting_talent.py); the game model and goalie ratings read
+               xg_raw, so it never reaches model inputs.
     Both are rounded to 4 decimals and the file is only rewritten when a value
     actually changes, so a run with no new games produces a zero-line diff.
     nhl_historical_shots.csv is never touched here.
@@ -252,16 +255,18 @@ def stage_rescore_xg(state, rescore_all=False):
     # Persist xg_raw first: shooting talent is computed from xg_raw on disk.
     if n_scored or v2_changed:
         atomic_write_csv(path, df, min_rows=len(before), label="season shots")
+    # The game page applies the same saved map to live shots (lib/game/fetch.ts), so on failure
+    # fall back to the last saved shooting_talent.json rather than to no talent.
+    import shooting_talent
     try:
-        from shooting_talent import compute_shooting_talent
-        talent_map = compute_shooting_talent()
+        talent_map = shooting_talent.compute_shooting_talent()
     except Exception as e:
-        print(f"  [WARN] Shooting talent computation failed: {e}")
-        talent_map = {}
+        print(f"  [WARN] Shooting talent computation failed ({e}); using the saved {shooting_talent.OUT_NAME}")
+        talent_map = shooting_talent.load_shooting_talent()
 
-    adj = df["xg_raw"].astype(float).copy()
-    if talent_map and "player_id" in df.columns:
-        adj = adj * df["player_id"].map(talent_map).fillna(1.0)
+    adj = df["xg_raw"].astype(float)
+    if "player_id" in df.columns:
+        adj = adj * shooting_talent.talent_multipliers(df, talent_map)
     factor = 1.0
     if "is_goal" in df.columns:
         tot_xg, tot_g = float(adj.sum()), float(pd.to_numeric(df["is_goal"], errors="coerce").fillna(0).sum())
@@ -281,7 +286,8 @@ def stage_rescore_xg(state, rescore_all=False):
         print(f"  Updated {path} (xg_raw + adjusted xG)")
     else:
         print(f"  {path}: xG unchanged — not rewritten")
-    # league_factor: the game page scores live shots with xG v2 and applies this same factor (lib/game/fetch.ts).
+    # league_factor: the game page scores live shots with xG v2 and applies this same factor and the
+    # saved talent map (lib/game/fetch.ts).
     record_source("xg_model", hash=mh, mode=xg_info["mode"], v1_fallback_games=xg_info["v1_fallback_games"],
                   league_factor=round(factor, 6), league_factor_season=str(SEASON_ID),
                   **{k: v for k, v in v2_info.items() if k != "v2_column"}, **v1_info)
