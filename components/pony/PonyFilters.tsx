@@ -16,6 +16,14 @@ const SELECT =
 
 const seasonLabel = (s: string) => `${s.slice(0, 4)}-${s.slice(6)}`;
 
+/** A segment label with a shorter phone form. */
+const short = (full: string, phone: string) => (
+    <>
+        <span className="sm:hidden">{phone}</span>
+        <span className="hidden sm:inline">{full}</span>
+    </>
+);
+
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
     return (
         <label className={cn('flex min-w-0 flex-col gap-1', className)}>
@@ -46,28 +54,32 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
         }
         start(() => router.replace(`${pathname}${next.toString() ? `?${next}` : ''}`, { scroll: false }));
     };
+    const clear = () => start(() => router.replace(`${pathname}${get('season') ? `?season=${get('season')}` : ''}`, { scroll: false }));
     const active = ['from', 'to', 'last', 'venue', 'rest', 'result', 'vs', 'team', 'gp'].some(k => sp.has(k));
     const pos = get('pos', 'all');
 
     return (
         <div className={cn('flex flex-col gap-3 transition-opacity', pending && 'opacity-60')} aria-busy={pending}>
             <div className="flex flex-wrap items-center gap-2">
+                {/* Phones: position and rank fill a row each, then order beside the filters button. */}
                 <Segmented
                     label="Position"
                     size="sm"
                     value={pos}
                     onChange={v => set({ pos: v, sort: v === 'G' && ['off', 'def'].includes(get('sort')) ? null : get('sort') || null })}
-                    optionClassName="px-2.5"
+                    className="max-sm:flex max-sm:w-full"
+                    optionClassName="px-2.5 max-sm:flex-1 max-sm:px-1"
                     options={[
                         { value: 'all', label: 'Skaters' },
-                        { value: 'F', label: 'Forwards' },
-                        { value: 'D', label: 'Defence' },
+                        { value: 'F', label: short('Forwards', 'Fwd'), ariaLabel: 'Forwards' },
+                        { value: 'D', label: short('Defence', 'Def'), ariaLabel: 'Defence' },
                         { value: 'G', label: 'Goalies' },
                     ]}
                 />
                 <Segmented
                     label="Order"
                     size="sm"
+                    className="max-sm:order-1"
                     value={get('dir', 'top')}
                     onChange={v => set({ dir: v === 'top' ? null : v })}
                     optionClassName="px-2.5"
@@ -81,40 +93,41 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
                     size="sm"
                     value={get('sort', 'avg')}
                     onChange={v => set({ sort: v === 'avg' ? null : v })}
-                    optionClassName="px-2.5"
+                    className="max-sm:flex max-sm:w-full"
+                    optionClassName="px-2.5 max-sm:flex-1 max-sm:px-1"
                     options={[
-                        { value: 'avg', label: 'Per game' },
+                        { value: 'avg', label: short('Per game', '/GP'), ariaLabel: 'Per game' },
                         { value: 'total', label: 'Total' },
-                        { value: 'per60', label: 'Per 60' },
+                        { value: 'per60', label: short('Per 60', '/60'), ariaLabel: 'Per 60' },
                         ...(pos === 'G' ? [] : [
-                            { value: 'off', label: 'Offence' },
-                            { value: 'def', label: 'Defence' },
+                            { value: 'off', label: short('Offence', 'Off'), ariaLabel: 'Offence' },
+                            { value: 'def', label: short('Defence', 'Def'), ariaLabel: 'Defence' },
                         ]),
                     ]}
                 />
                 {active ? (
                     <button
                         type="button"
-                        onClick={() => start(() => router.replace(`${pathname}${get('season') ? `?season=${get('season')}` : ''}`, { scroll: false }))}
-                        className="ml-auto h-8 rounded-control px-2.5 text-micro uppercase tracking-label text-fg-3 hover:text-fg-1 coarse:h-11"
+                        onClick={clear}
+                        className="ml-auto h-8 rounded-control px-2.5 text-micro uppercase tracking-label text-fg-3 hover:text-fg-1 max-sm:hidden coarse:h-11"
                     >
                         Clear filters
                     </button>
                 ) : null}
+                {/* Phones: the selects fold behind one button. */}
+                <button
+                    type="button"
+                    aria-expanded={open}
+                    onClick={() => setOpen(o => !o)}
+                    className="order-1 flex h-11 min-w-0 flex-1 items-center justify-between rounded-control border border-line px-3 text-micro uppercase tracking-label text-fg-2 sm:hidden"
+                >
+                    Filters{active ? ' · on' : ''}
+                    <svg viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} aria-hidden="true">
+                        <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </button>
             </div>
-            {/* Phones: the selects fold behind one button. */}
-            <button
-                type="button"
-                aria-expanded={open}
-                onClick={() => setOpen(o => !o)}
-                className="flex h-10 items-center justify-between rounded-control border border-line px-3 text-micro uppercase tracking-label text-fg-2 sm:hidden"
-            >
-                Filters{active ? ' · on' : ''}
-                <svg viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} aria-hidden="true">
-                    <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            </button>
-            <div className={cn('grid-cols-2 gap-x-3 gap-y-2 sm:grid sm:grid-cols-4 lg:grid-cols-9', open ? 'grid' : 'hidden')}>
+            <div className={cn('grid-cols-2 gap-x-3 gap-y-2 sm:grid sm:grid-cols-3 lg:grid-cols-9', open ? 'grid' : 'hidden')}>
                 <Field label="Season">
                     <select className={SELECT} value={get('season', seasons[0])} onChange={e => set({ season: e.target.value === seasons[0] ? null : e.target.value })}>
                         {seasons.map(s => (
@@ -219,13 +232,18 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
                         onClick={() => set({ gp: n ? String(n) : null })}
                         aria-pressed={Number(get('gp', '0')) === n}
                         className={cn(
-                            'h-7 rounded-full border px-2.5 tabular-nums coarse:h-10',
+                            'h-7 rounded-full border px-2.5 tabular-nums coarse:h-11',
                             Number(get('gp', '0')) === n ? 'border-brand/60 text-brand' : 'border-line text-fg-3 hover:border-line-strong hover:text-fg-1',
                         )}
                     >
                         {n || 'Any'}
                     </button>
                 ))}
+                {active ? (
+                    <button type="button" onClick={clear} className="ml-auto h-11 rounded-control px-2.5 text-micro uppercase tracking-label text-fg-3 hover:text-fg-1 sm:hidden">
+                        Clear filters
+                    </button>
+                ) : null}
             </div>
         </div>
     );

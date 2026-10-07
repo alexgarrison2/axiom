@@ -40,7 +40,7 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
                     </h1>
                     <PlayersTabs active="pony" />
                 </div>
-                <div className="panel flex flex-col gap-4 p-card">
+                <div className="panel flex flex-col gap-4 p-card max-lg:bg-none max-lg:bg-surface-1">
                     <Suspense>
                         <PonyFilters seasons={seasons} dates={dates} />
                     </Suspense>
@@ -49,8 +49,8 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
                             {rows.length} {f.pos === 'G' ? 'goalies' : f.pos === 'F' ? 'forwards' : f.pos === 'D' ? 'defencemen' : 'players'}
                         </span>
                         <span>{data ? `${data.games.size} games · ${seasonLabel(f.season)}` : 'No games yet'}</span>
-                        <span>Goals per game above an average player at his position</span>
-                        <Link href="/methodology#pony-score" className="ml-auto underline-offset-4 hover:text-fg-1 hover:underline">
+                        <span className="max-sm:order-1 max-sm:flex-1 max-sm:basis-48">Goals per game above an average player at his position</span>
+                        <Link href="/methodology#pony-score" className="ml-auto underline-offset-4 max-sm:order-2 hover:text-fg-1 hover:underline coarse:py-3">
                             Method
                         </Link>
                     </p>
@@ -60,7 +60,7 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
                         <p className="py-10 text-center text-caption text-fg-3">No player matches these filters.</p>
                     )}
                     {n < rows.length ? (
-                        <Link href={`/players/pony?${more}`} scroll={false} className="self-center rounded-full border border-line px-4 py-2 text-micro uppercase tracking-label text-fg-2 hover:border-line-strong hover:text-fg-1">
+                        <Link href={`/players/pony?${more}`} scroll={false} className="self-center rounded-full border border-line px-4 py-2 text-micro coarse:py-[15px] uppercase tracking-label text-fg-2 hover:border-line-strong hover:text-fg-1">
                             Show {Math.min(PAGE, rows.length - n)} more
                         </Link>
                     ) : null}

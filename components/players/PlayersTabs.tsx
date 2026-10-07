@@ -8,7 +8,7 @@ export function PlayersTabs({ active }: { active: 'ratings' | 'pony' }) {
             href={href}
             aria-current={active === key ? 'page' : undefined}
             className={cn(
-                'inline-flex h-8 items-center rounded-full border px-3 text-micro font-medium uppercase tracking-chip transition-colors coarse:h-10',
+                'inline-flex h-8 items-center rounded-full border px-3 text-micro font-medium uppercase tracking-chip transition-colors coarse:h-11',
                 active === key ? 'border-brand/60 text-brand' : 'border-line text-fg-3 hover:border-line-strong hover:text-fg-1',
             )}
         >

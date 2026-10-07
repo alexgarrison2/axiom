@@ -22,12 +22,18 @@ export interface TrendGame {
 /**
  * A season of Pony Scores: one signed bar per game in the team colour (dim
  * below zero), the five-game rolling average as a magenta line, and a card on
- * hover. Click a bar to open the game.
+ * hover. Click a bar to open the game. On touch the first tap (or a sideways
+ * scrub) shows the card, a second tap on the same bar or on the card opens it.
  */
 export function PonyTrend({ games, color }: { games: TrendGame[]; color: string }) {
     const [ref, width] = useWidth<HTMLDivElement>();
     const [hover, setHover] = React.useState<number | null>(null);
     const router = useRouter();
+    const cardRef = React.useRef<HTMLDivElement>(null);
+    // Touch: the bar whose card was already showing when this tap began (a second tap opens it).
+    const armed = React.useRef<number | null>(null);
+    const touch = React.useRef(false);
+    const [below, setBelow] = React.useState(false);
     const W = Math.max(width, 280);
     const H = 180;
     const padL = 34;
@@ -46,14 +52,49 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
     const hg = hover != null ? games[hover] : null;
     const hx = hover != null ? padL + step * (hover + 0.5) : 0;
 
-    const onMove = (e: React.PointerEvent<SVGRectElement>) => {
+    // Too narrow for the card beside the bar (phones): it spans the chart, above it (below near the app bar).
+    const compact = W < 480;
+
+    const at = (e: React.PointerEvent<SVGRectElement>) => {
         const r = e.currentTarget.getBoundingClientRect();
-        const i = Math.floor(((e.clientX - r.left) / r.width) * games.length);
-        setHover(Math.max(0, Math.min(games.length - 1, i)));
+        return Math.max(0, Math.min(games.length - 1, Math.floor(((e.clientX - r.left) / r.width) * games.length)));
     };
+    const onMove = (e: React.PointerEvent<SVGRectElement>) => {
+        if (e.pointerType === 'mouse' || e.buttons) setHover(at(e));
+    };
+    const onDown = (e: React.PointerEvent<SVGRectElement>) => {
+        touch.current = e.pointerType !== 'mouse';
+        armed.current = hover;
+        setHover(at(e));
+    };
+    const open = (g: TrendGame | null) => g && router.push(`/games/${g.game}`);
+
+    // Touch: a tap anywhere outside the chart and its card dismisses the card.
+    const showing = hover != null;
+    React.useEffect(() => {
+        if (!showing) return;
+        const off = (e: PointerEvent) => {
+            if (e.pointerType !== 'mouse' && !ref.current?.contains(e.target as Node)) setHover(null);
+        };
+        document.addEventListener('pointerdown', off);
+        return () => document.removeEventListener('pointerdown', off);
+    }, [showing, ref]);
+
+    // Compact card: above the chart unless the app bar would cover it and there is more room below.
+    React.useLayoutEffect(() => {
+        if (!showing || !compact || !ref.current || !cardRef.current) return;
+        const r = ref.current.getBoundingClientRect();
+        const css = getComputedStyle(document.documentElement);
+        const top = parseFloat(css.getPropertyValue('--appbar-h')) || 56;
+        const bottom = window.innerHeight - (parseFloat(css.getPropertyValue('--tabbar-h')) || 0);
+        const h = cardRef.current.offsetHeight + 8;
+        const above = r.top - top;
+        setBelow(above < h && bottom - r.bottom > above);
+    }, [showing, compact, ref]);
 
     return (
-        <div ref={ref} className="relative">
+        // Sideways drags scrub the bars; vertical swipes still scroll the page.
+        <div ref={ref} className="relative touch-pan-y">
             {width ? (
                 <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} className="block select-none tabular-nums" role="img" aria-label={`Pony Score in ${games.length} games, five-game average ${signed(roll[roll.length - 1] ?? 0)}`}>
                     {ticks.map(t => (
@@ -89,9 +130,12 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
                         fill="transparent"
                         className="cursor-pointer"
                         onPointerMove={onMove}
-                        onPointerDown={onMove}
-                        onPointerLeave={() => setHover(null)}
-                        onClick={() => hg && router.push(`/games/${hg.game}`)}
+                        onPointerDown={onDown}
+                        onPointerLeave={e => e.pointerType === 'mouse' && setHover(null)}
+                        onPointerCancel={() => setHover(null)}
+                        onClick={() => {
+                            if (!touch.current || (hover != null && armed.current === hover)) open(hg);
+                        }}
                     />
                 </svg>
             ) : (
@@ -99,8 +143,13 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
             )}
             {hg ? (
                 <div
-                    className="pointer-events-none absolute top-1 z-10 w-[19rem] rounded-card border border-line-strong bg-surface-1/95 p-3 text-caption shadow-[0_12px_32px_rgb(0_0_0/0.55)] backdrop-blur-sm"
-                    style={hx > W * 0.6 ? { right: W - hx + 12 } : { left: hx + 12 }}
+                    ref={cardRef}
+                    onClick={compact ? () => open(hg) : undefined}
+                    className={cn(
+                        'absolute z-10 rounded-card border border-line-strong bg-surface-1/95 p-3 text-caption shadow-[0_12px_32px_rgb(0_0_0/0.55)] backdrop-blur-sm',
+                        compact ? cn('inset-x-0 mx-auto max-w-[19rem] cursor-pointer', below ? 'top-[calc(100%+8px)]' : 'bottom-[calc(100%+8px)]') : 'pointer-events-none top-1 w-[19rem]',
+                    )}
+                    style={compact ? undefined : hx > W * 0.6 ? { right: W - hx + 12 } : { left: hx + 12 }}
                 >
                     <p className="flex items-baseline justify-between gap-2">
                         <span className="text-fg-2">
@@ -122,7 +171,7 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
                             ))}
                         </div>
                     ) : null}
-                    <p className="mt-2 text-micro uppercase tracking-label text-fg-3">5-game avg {signed(roll[hover!])} · click for the game</p>
+                    <p className="mt-2 text-micro uppercase tracking-label text-fg-3">5-game avg {signed(roll[hover!])} · <span className="coarse:hidden">click for the game</span><span className="hidden coarse:inline">tap again for the game</span></p>
                 </div>
             ) : null}
         </div>

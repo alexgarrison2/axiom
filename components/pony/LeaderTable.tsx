@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ScrollRegion } from '@/components/ui/scroll-region';
 import { teamPalette } from '@/components/ui/team-color';
 import { cn } from '@/lib/utils';
 import type { LeaderRow } from '@/lib/pony/data';
@@ -71,13 +72,16 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
     reach = Math.ceil(reach * 4) / 4;
     const TH = 'px-2 py-2 text-right text-micro font-semibold uppercase tracking-label text-fg-3';
     const TD = 'px-2 text-right tabular-nums';
+    // Below lg the table scrolls sideways under a pinned player column.
+    const PIN = 'max-lg:sticky max-lg:left-0 max-lg:z-10 max-lg:bg-surface-1';
+    const PIN_HOVER = 'max-lg:group-hover:bg-[color-mix(in_srgb,var(--surface-2)_60%,var(--surface-1))]';
     return (
-        <div className="overflow-x-auto">
+        <ScrollRegion label="Pony Score leaders" stickyStart>
             <table className="w-full min-w-[40rem] md:min-w-[56rem] border-collapse text-caption">
                 <thead>
                     <tr className="border-b border-line">
-                        <th className={cn(TH, 'w-10')}>#</th>
-                        <th className={cn(TH, 'text-left')}>Player</th>
+                        <th className={cn(TH, 'w-10 max-sm:w-7 max-sm:px-1')}>#</th>
+                        <th className={cn(TH, PIN, 'text-left')}>Player</th>
                         <th className={cn(TH, 'text-fg-1')} title={lead.title}>
                             {goalies ? lead.goalie : lead.label}
                         </th>
@@ -107,14 +111,14 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
                         const sv = r.goalie && r.goalie.sa ? ((r.goalie.sa - r.goalie.ga) / r.goalie.sa).toFixed(3).replace(/^0/, '') : '—';
                         return (
                             <tr key={r.player.id} className="group border-b border-line/60 hover:bg-surface-2/60">
-                                <td className={cn(TD, 'text-fg-3')}>{start + i + 1}</td>
-                                <td className="py-1.5 pl-2 pr-3">
-                                    <Link href={`/players/${r.player.id}`} className="flex min-w-0 items-center gap-2.5 rounded-control outline-none focus-visible:outline-2 focus-visible:outline-brand">
+                                <td className={cn(TD, 'text-fg-3 max-sm:px-1')}>{start + i + 1}</td>
+                                <td className={cn('py-1.5 pl-2 pr-3 max-sm:pr-2', PIN, PIN_HOVER)}>
+                                    <Link href={`/players/${r.player.id}`} className="flex min-w-0 items-center gap-2.5 rounded-control max-sm:gap-2 outline-none focus-visible:outline-2 focus-visible:outline-brand">
                                         <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 bg-surface-2" style={{ borderColor: ring }}>
                                             {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}
                                             {r.player.headshot ? <img src={r.player.headshot} alt="" width={36} height={36} loading="lazy" className="headshot h-full w-full" /> : null}
                                         </span>
-                                        <span className="min-w-0 leading-tight">
+                                        <span className="min-w-0 leading-tight max-lg:max-w-[8rem] max-sm:max-w-[7rem]">
                                             <span className="block truncate font-bold text-fg-1 group-hover:text-brand">
                                                 {r.player.first} {r.player.last}
                                             </span>
@@ -152,7 +156,7 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
                                 </td>
                                 <td className="px-2 text-left">
                                     {r.best ? (
-                                        <Link href={`/games/${r.best.game}`} className="whitespace-nowrap text-fg-2 underline-offset-4 hover:text-fg-1 hover:underline">
+                                        <Link href={`/games/${r.best.game}`} className="whitespace-nowrap text-fg-2 coarse:py-3 underline-offset-4 hover:text-fg-1 hover:underline">
                                             <span className="font-semibold text-fg-1">{signed(r.best.ps)}</span> vs {r.best.opp}
                                             <span className="ml-1 text-micro text-fg-3">{r.best.date.slice(5).replace('-', '/')}</span>
                                         </Link>
@@ -163,6 +167,6 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
                     })}
                 </tbody>
             </table>
-        </div>
+        </ScrollRegion>
     );
 }

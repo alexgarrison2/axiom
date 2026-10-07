@@ -8,6 +8,8 @@ export interface ScrollRegionProps extends React.HTMLAttributes<HTMLDivElement> 
     label: string;
     /** Scroll axis (default horizontal). */
     axis?: 'x' | 'y' | 'both';
+    /** A sticky first column covers the start edge: fade only the end, so the pinned column stays crisp. */
+    stickyStart?: boolean;
 }
 
 /**
@@ -15,7 +17,7 @@ export interface ScrollRegionProps extends React.HTMLAttributes<HTMLDivElement> 
  * with edge fades that appear only where more content is hidden.
  */
 export const ScrollRegion = React.forwardRef<HTMLDivElement, ScrollRegionProps>(function ScrollRegion(
-    { label, axis = 'x', className, children, onScroll, ...rest },
+    { label, axis = 'x', stickyStart = false, className, children, onScroll, ...rest },
     forwardedRef,
 ) {
     const ref = React.useRef<HTMLDivElement | null>(null);
@@ -39,7 +41,8 @@ export const ScrollRegion = React.forwardRef<HTMLDivElement, ScrollRegionProps>(
         return () => ro.disconnect();
     }, [update]);
 
-    const fade = axis === 'y' ? '' : edges.start && edges.end ? 'edge-fade-x' : edges.end ? 'edge-fade-right' : edges.start ? 'edge-fade-left' : '';
+    const start = edges.start && !stickyStart;
+    const fade = axis === 'y' ? '' : start && edges.end ? 'edge-fade-x' : edges.end ? 'edge-fade-right' : start ? 'edge-fade-left' : '';
 
     return (
         <div

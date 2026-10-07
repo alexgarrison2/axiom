@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -5,6 +6,7 @@ import { teamPalette } from '@/components/ui/team-color';
 import { legibleOn } from '@/components/ui/color';
 import { Breakdown } from '@/components/pony/LeaderTable';
 import { PonyTrend, type TrendGame } from '@/components/player/PonyTrend';
+import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
 import { GS_PARTS, type GsPart } from '@/lib/game/analytics';
 import { leaderboard, loadPonySeason, playerGames, ponySeasons, DEFAULT_FILTERS, type GoalieGame, type SkaterGame } from '@/lib/pony/data';
@@ -22,6 +24,11 @@ type Params = { id: string };
 type Search = Record<string, string | string[] | undefined>;
 
 const PANEL = '#0a0e15';
+// Below lg the wide tables scroll sideways under a pinned first column.
+const PIN = 'max-lg:sticky max-lg:left-0 max-lg:z-10 max-lg:bg-surface-1';
+// Flat panel fill under pinned columns, so the pinned cells match it.
+const FLAT = 'max-lg:bg-none max-lg:bg-surface-1';
+const PIN_HOVER = 'max-lg:group-hover:bg-[color-mix(in_srgb,var(--surface-2)_60%,var(--surface-1))]';
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 const seasonLabel = (s: string | number) => `${String(s).slice(0, 4)}-${String(s).slice(6)}`;
 const feetInches = (inches: number | null) => (inches ? `${Math.floor(inches / 12)}′${inches % 12}″` : '—');
@@ -52,12 +59,22 @@ function Fact({ k, v }: { k: string; v: React.ReactNode }) {
     );
 }
 
-function Tile({ k, v, sub, accent }: { k: string; v: React.ReactNode; sub?: React.ReactNode; accent?: boolean }) {
+/** A sub line given as parts joins them with " · "; below lg each part (and its dot) stays whole when the line wraps. */
+function Sub({ parts }: { parts: string[] }) {
+    return parts.map((t, i) => (
+        <React.Fragment key={i}>
+            <span className="max-lg:whitespace-nowrap">{i < parts.length - 1 ? `${t} ·` : t}</span>
+            {i < parts.length - 1 ? ' ' : null}
+        </React.Fragment>
+    ));
+}
+
+function Tile({ k, v, sub, accent }: { k: string; v: React.ReactNode; sub?: React.ReactNode | string[]; accent?: boolean }) {
     return (
-        <div className={cn('rounded-card border bg-surface-1/80 px-4 py-3 backdrop-blur-sm', accent ? 'border-brand/50' : 'border-line')}>
+        <div className={cn('rounded-card border bg-surface-1/80 px-4 py-3 backdrop-blur-sm max-[359px]:px-3', accent ? 'border-brand/50' : 'border-line')}>
             <p className="text-micro uppercase tracking-label text-fg-3">{k}</p>
-            <p className="mt-1 font-display text-h2 font-bold leading-none tabular-nums text-fg-1">{v}</p>
-            {sub ? <p className="mt-1 text-micro text-fg-3">{sub}</p> : null}
+            <p className="mt-1 font-display text-h2 font-bold leading-none tabular-nums text-fg-1 max-lg:whitespace-nowrap max-[359px]:text-[20px]">{v}</p>
+            {sub ? <p className="mt-1 text-micro text-fg-3 max-lg:text-balance">{Array.isArray(sub) ? <Sub parts={sub} /> : sub}</p> : null}
         </div>
     );
 }
@@ -144,7 +161,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                             <div className="absolute inset-0 bg-[linear-gradient(0deg,var(--surface-1)_0%,transparent_45%)] md:hidden" aria-hidden="true" />
                         </>
                     ) : null}
-                    <div className="relative flex flex-col gap-6 p-5 md:p-8">
+                    <div className="relative flex flex-col gap-6 p-5 max-[359px]:p-4 md:p-8">
                         <div className="flex items-center gap-4">
                             {profile?.headshot ? (
                                 <span className="block h-20 w-20 shrink-0 overflow-hidden rounded-full border-[3px] bg-surface-2 md:h-24 md:w-24" style={{ borderColor: color }}>
@@ -153,7 +170,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                 </span>
                             ) : null}
                             <div className="min-w-0">
-                                <p className="flex items-center gap-2 text-caption uppercase tracking-label" style={{ color: ink }}>
+                                <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-caption uppercase tracking-label" style={{ color: ink }}>
                                     {team ? (
                                         <Link href={`/teams/${team}`} className="flex items-center gap-1.5 hover:underline">
                                             {/* eslint-disable-next-line @next/next/no-img-element -- team logo */}
@@ -187,16 +204,16 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                 sub={rank ? `${rank.n} of ${rank.of} ${group === 'G' ? 'goalies' : group === 'D' ? 'defencemen' : 'forwards'}` : cur ? `${gp} games` : 'No games yet'}
                                 accent
                             />
-                            <Tile k={goalie ? 'GSAx total' : 'Pony total'} v={gp ? signed(total) : '—'} sub={cur ? `${gp} games · ${seasonLabel(cur.s)}` : undefined} />
+                            <Tile k={goalie ? 'GSAx total' : 'Pony total'} v={gp ? signed(total) : '—'} sub={cur ? [`${gp} games`, seasonLabel(cur.s)] : undefined} />
                             {goalie ? (
-                                <Tile k="Record" v={thisSeason ? `${thisSeason.w ?? 0}-${thisSeason.l ?? 0}-${thisSeason.otl ?? 0}` : '—'} sub={thisSeason?.svPct != null ? `SV% ${thisSeason.svPct.toFixed(3).replace(/^0/, '')} · GAA ${thisSeason.gaa?.toFixed(2)}` : undefined} />
+                                <Tile k="Record" v={thisSeason ? `${thisSeason.w ?? 0}-${thisSeason.l ?? 0}-${thisSeason.otl ?? 0}` : '—'} sub={thisSeason?.svPct != null ? [`SV% ${thisSeason.svPct.toFixed(3).replace(/^0/, '')}`, `GAA ${thisSeason.gaa?.toFixed(2)}`] : undefined} />
                             ) : (
-                                <Tile k="Points" v={thisSeason ? `${thisSeason.g ?? 0}-${thisSeason.a ?? 0}-${thisSeason.p ?? 0}` : '—'} sub={thisSeason ? `G-A-P · ${thisSeason.gp} GP · ${thisSeason.toi ?? mmss(toi)} TOI` : undefined} />
+                                <Tile k="Points" v={thisSeason ? `${thisSeason.g ?? 0}-${thisSeason.a ?? 0}-${thisSeason.p ?? 0}` : '—'} sub={thisSeason ? ['G-A-P', `${thisSeason.gp} GP`, `${thisSeason.toi ?? mmss(toi)} TOI`] : undefined} />
                             )}
                             <Tile
                                 k="IMPACT"
                                 v={imp && imp.impact != null ? signed(Number(imp.impact), 1) : '—'}
-                                sub={imp && imp.off_impact != null ? `Goals / 82 · OFF ${signed(Number(imp.off_impact), 1)} · DEF ${signed(Number(imp.def_impact), 1)}` : 'Goals per 82 games'}
+                                sub={imp && imp.off_impact != null ? ['Goals / 82', `OFF ${signed(Number(imp.off_impact), 1)}`, `DEF ${signed(Number(imp.def_impact), 1)}`] : 'Goals per 82 games'}
                             />
                         </div>
                     </div>
@@ -217,7 +234,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                         scroll={false}
                                         aria-current={x.s === cur?.s ? 'page' : undefined}
                                         className={cn(
-                                            'inline-flex h-8 items-center rounded-full border px-3 text-micro uppercase tracking-chip coarse:h-10',
+                                            'inline-flex h-8 items-center rounded-full border px-3 text-micro uppercase tracking-chip coarse:h-11',
                                             x.s === cur?.s ? 'border-brand/60 text-brand' : 'border-line text-fg-3 hover:border-line-strong hover:text-fg-1',
                                         )}
                                     >
@@ -300,12 +317,14 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         {/* The latest 25 games; a checkbox (no script) reveals the rest. */}
                         <div className="group/log flex flex-col gap-2">
                         <input id="log-all" type="checkbox" className="peer sr-only" />
-                        <div className="panel overflow-x-auto">
+                        <ScrollRegion label="Game log" stickyStart className={cn('panel', FLAT)}>
                             <table className="w-full min-w-[44rem] border-collapse text-caption tabular-nums">
                                 <thead>
                                     <tr className="border-b border-line text-micro uppercase tracking-label text-fg-3">
-                                        <th className="px-3 py-2 text-left font-semibold">Date</th>
+                                        <th className={cn('px-3 py-2 text-left font-semibold', PIN)}>Date</th>
                                         <th className="px-2 py-2 text-left font-semibold">Opp</th>
+                                        {/* Phones: the score follows the opponent instead of trailing the box score. */}
+                                        <th className="px-3 py-2 text-right font-semibold text-fg-1 md:hidden">{goalie ? 'GSAx' : 'Pony'}</th>
                                         <th className="px-2 py-2 text-left font-semibold">Res</th>
                                         <th className="px-2 py-2 text-right font-semibold">TOI</th>
                                         {goalie ? (
@@ -325,7 +344,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                                 <th className="px-2 py-2 text-right font-semibold">+/−</th>
                                             </>
                                         )}
-                                        <th className="px-3 py-2 text-right font-semibold text-fg-1">{goalie ? 'GSAx' : 'Pony'}</th>
+                                        <th className="px-3 py-2 text-right font-semibold text-fg-1 max-md:hidden">{goalie ? 'GSAx' : 'Pony'}</th>
                                         <th className="w-40 px-3 py-2" />
                                     </tr>
                                 </thead>
@@ -336,8 +355,8 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                         const reach = Math.max(1, ...rows.map(x => Math.abs(x.ps)));
                                         return (
                                             <tr key={r.game} className={cn('group border-b border-line/60 hover:bg-surface-2/60', i >= 25 && 'hidden group-has-[:checked]/log:table-row')}>
-                                                <td className="px-3 py-1.5">
-                                                    <Link href={`/games/${r.game}`} className="text-fg-2 underline-offset-4 group-hover:text-fg-1 group-hover:underline">
+                                                <td className={cn('px-3 py-1.5', PIN, PIN_HOVER)}>
+                                                    <Link href={`/games/${r.game}`} className="text-fg-2 underline-offset-4 group-hover:text-fg-1 group-hover:underline coarse:py-1.5">
                                                         {r.date.slice(5).replace('-', '/')}
                                                     </Link>
                                                 </td>
@@ -349,6 +368,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                                         {r.opp}
                                                     </span>
                                                 </td>
+                                                <td className={cn('px-3 text-right font-bold md:hidden', r.ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.ps)}</td>
                                                 <td className={cn('px-2', r.result === 'W' ? 'text-fg-1' : 'text-fg-3')}>{r.result}</td>
                                                 <td className="px-2 text-right text-fg-2">{mmss(r.toi)}</td>
                                                 {goalie ? (
@@ -368,7 +388,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                                         <td className="px-2 text-right text-fg-2">{s.pm > 0 ? `+${s.pm}` : s.pm}</td>
                                                     </>
                                                 )}
-                                                <td className={cn('px-3 text-right font-bold', r.ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.ps)}</td>
+                                                <td className={cn('px-3 text-right font-bold max-md:hidden', r.ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.ps)}</td>
                                                 <td className="px-3">
                                                     <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="block h-2.5 w-full" aria-hidden="true">
                                                         <rect x={0} y={0} width={100} height={10} fill="var(--track)" />
@@ -381,7 +401,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                     })}
                                 </tbody>
                             </table>
-                        </div>
+                        </ScrollRegion>
                         {rows.length > 25 ? (
                             <label
                                 htmlFor="log-all"
@@ -403,7 +423,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         </h2>
                         <CareerTable lines={nhl} career={profile?.career ?? null} goalie={goalie} />
                         {other.length ? (
-                            <details className="group panel">
+                            <details className={cn('group panel', FLAT)}>
                                 <summary className="cursor-pointer list-none px-card py-3 text-micro uppercase tracking-label text-fg-3 hover:text-fg-1">
                                     Before the NHL and other leagues · {other.length} seasons
                                 </summary>
@@ -459,11 +479,11 @@ function CareerTable({ lines, career, goalie, bare, showLeague }: { lines: Seaso
               ['TOI', s => s.toi ?? '—'],
           ];
     return (
-        <div className={cn('overflow-x-auto', !bare && 'panel')}>
+        <ScrollRegion label={showLeague ? 'Other leagues' : 'NHL career'} stickyStart className={cn(!bare && cn('panel', FLAT))}>
             <table className="w-full min-w-[40rem] border-collapse text-caption tabular-nums">
                 <thead>
                     <tr className="border-b border-line text-micro uppercase tracking-label text-fg-3">
-                        <th className="px-3 py-2 text-left font-semibold">Season</th>
+                        <th className={cn('px-3 py-2 text-left font-semibold', PIN)}>Season</th>
                         <th className="px-2 py-2 text-left font-semibold">{showLeague ? 'League · team' : 'Team'}</th>
                         {cols.map(([k]) => (
                             <th key={k} className="px-2 py-2 text-right font-semibold">
@@ -475,7 +495,7 @@ function CareerTable({ lines, career, goalie, bare, showLeague }: { lines: Seaso
                 <tbody>
                     {[...lines].reverse().map((s, i) => (
                         <tr key={`${s.season}-${s.team}-${i}`} className="border-b border-line/60">
-                            <td className="px-3 py-1.5 text-fg-2">{seasonLabel(s.season)}</td>
+                            <td className={cn('px-3 py-1.5 text-fg-2', PIN)}>{seasonLabel(s.season)}</td>
                             <td className="px-2 text-fg-1">{showLeague ? `${s.league} · ${s.team}` : s.team}</td>
                             {cols.map(([k, f]) => (
                                 <td key={k} className="px-2 text-right text-fg-1">
@@ -488,9 +508,12 @@ function CareerTable({ lines, career, goalie, bare, showLeague }: { lines: Seaso
                 {career ? (
                     <tfoot>
                         <tr className="border-t border-line-strong font-semibold">
-                            <td className="px-3 py-2 uppercase tracking-label text-fg-1" colSpan={2}>
+                            <td className="px-3 py-2 uppercase tracking-label text-fg-1 max-lg:hidden" colSpan={2}>
                                 NHL career
                             </td>
+                            {/* Below lg the label takes the pinned season cell (a two-column cell can't pin). */}
+                            <td className={cn('px-3 py-2 uppercase tracking-label text-fg-1 lg:hidden', PIN)}>Career</td>
+                            <td className="lg:hidden" />
                             {cols.map(([k, f]) => (
                                 <td key={k} className="px-2 text-right text-fg-1">
                                     {f(career)}
@@ -500,6 +523,6 @@ function CareerTable({ lines, career, goalie, bare, showLeague }: { lines: Seaso
                     </tfoot>
                 ) : null}
             </table>
-        </div>
+        </ScrollRegion>
     );
 }
