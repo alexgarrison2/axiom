@@ -199,11 +199,18 @@ def test_rest_rows_of_other_teams_are_dropped(monkeypatch):
     assert FS.keep_game_teams(rows, (None, 1)) == rows      # unknown teams: keep everything
 
 
+def _complete_game_rows(gid):
+    """Six players a side on for all of periods 1-3: a complete capture."""
+    return [{"game_id": gid, "period": per, "start_seconds": 0, "end_seconds": 1200, "player_id": 8470000 + 100 * t + k,
+             "player_name": f"P{t}{k}", "team_id": t, "team_abbrev": f"T{t}"}
+            for t in (20, 22) for k in range(6) for per in (1, 2, 3)]
+
+
 def test_stored_duplicates_are_healed_when_up_to_date(tmp_path, monkeypatch):
     season = 2026
     paths = FS.season_paths(season)
     _gamestats(tmp_path / paths["gamestats"], [(2026020001, "2026-09-29")])
-    rows = FS.parse_rest_shifts(_rest_payload(2026020001), 2026020001)
+    rows = _complete_game_rows(2026020001)
     FS.append_rows(str(tmp_path / paths["shifts"]), rows + rows[:1])   # written before de-dup existed
     monkeypatch.setattr(FS, "fetch_shifts_rest_api", lambda gid: (_ for _ in ()).throw(AssertionError(gid)))
     res = FS.main(["--season", str(season)], now=datetime(2026, 10, 1, tzinfo=timezone.utc),

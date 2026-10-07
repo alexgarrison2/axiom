@@ -138,6 +138,31 @@ function days(doc: SeasonDoc) {
     return out;
 }
 
+/**
+ * Lowest per-team, per-regulation-period on-ice share of a shift chart (six players x
+ * 20:00 = 1). The feed can answer while a finished game's chart is still filling in;
+ * such a capture is skipped and the game is built on a later run (same bar as
+ * pipeline/fetch_shifts.py: real games sit at 0.91 or more).
+ */
+const MIN_SHIFT_COVERAGE = 0.85;
+function shiftCoverage(rows: unknown[]): number {
+    const sec = new Map<string, number>();
+    const teams = new Set<number>();
+    const mmss = (t: unknown) => {
+        const [m, s] = String(t ?? '0:00').split(':').map(Number);
+        return (m || 0) * 60 + (s || 0);
+    };
+    for (const r of rows as { typeCode?: number; teamId?: number; period?: number; startTime?: string; endTime?: string }[]) {
+        if ((r.typeCode ?? 517) !== 517 || r.teamId == null || !r.period || r.period > 3) continue;
+        teams.add(r.teamId);
+        const d = Math.max(0, Math.min(1200, mmss(r.endTime)) - Math.max(0, mmss(r.startTime)));
+        const k = `${r.teamId}|${r.period}`;
+        sec.set(k, (sec.get(k) ?? 0) + d);
+    }
+    if (teams.size !== 2) return 0;
+    return Math.min(...[...teams].flatMap(t => [1, 2, 3].map(p => (sec.get(`${t}|${p}`) ?? 0) / 7200)));
+}
+
 async function main() {
     const C = readJson<PonyConstants>(path.join(ROOT, 'public', 'data', 'pony_score.json'));
     if (!C) throw new Error('public/data/pony_score.json missing: run pipeline/tools/pony_score_calibrate.py');
@@ -169,7 +194,7 @@ async function main() {
             ]);
             const p = pbp as RawFeeds['pbp'] | null;
             const shiftRows = (shifts as { data?: unknown[] } | null)?.data;
-            if (!p?.id || (p.gameState !== 'OFF' && p.gameState !== 'FINAL') || !shiftRows?.length) {
+            if (!p?.id || (p.gameState !== 'OFF' && p.gameState !== 'FINAL') || !shiftRows?.length || shiftCoverage(shiftRows) < MIN_SHIFT_COVERAGE) {
                 skipped++;
                 continue;
             }
@@ -198,7 +223,7 @@ async function main() {
         path.join(outDir, `${SEASON}_days.json`),
         JSON.stringify({ season: SEASON, skater_cols: ['game', 'player', 'team', 'opp', 'ps', ...GS_PARTS], goalie_cols: ['game', 'player', 'team', 'opp', 'ps', 'sa', 'ga'], players, days: d }),
     );
-    console.log(`built ${done}, skipped ${skipped} (not final or no shifts); ${Object.keys(doc.games).length} games, ${doc.skaters.length} skater rows -> ${path.relative(ROOT, outFile)}`);
+    console.log(`built ${done}, skipped ${skipped} (not final or shift chart incomplete); ${Object.keys(doc.games).length} games, ${doc.skaters.length} skater rows -> ${path.relative(ROOT, outFile)}`);
 }
 
 main().catch(e => {

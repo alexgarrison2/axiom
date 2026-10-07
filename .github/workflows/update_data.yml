@@ -161,7 +161,7 @@ jobs:
           # Season game data (current season file names come from pipeline/season.py)
           # (shooting_talent.json: the per-shooter multipliers in published xG; the game page applies them to live shots)
           add pipeline/nhl_season_*_gamestats.csv pipeline/nhl_season_*_shots.csv pipeline/nhl_season_*_shifts.csv \
-              pipeline/shooting_talent.json \
+              pipeline/shooting_talent.json pipeline/shifts_incomplete.json \
               pipeline/pending_failed.json data/gamestats.csv public/data/gamestats.csv \
               public/data/nhl_season_*_player_stats.csv
           # Boxscore dressed lineups (fast-track lineup feature state; gap-driven top-up)

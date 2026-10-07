@@ -16,6 +16,18 @@ Gap-driven upgrades: every run also re-tries REST for up to ``--max-refetch``
 games whose stored rows lack player IDs (older HTML-fallback games) and
 replaces them when REST has the game.  ``--refetch-null-ids`` lifts that cap.
 
+Completeness: the endpoint can answer while a game's chart is still filling in
+(2026-27 opening week stored 17 of 52 games with whole stretches missing, e.g.
+2026020028 with 132 of 276 third-period rows), and a stored game used to count as
+done for good.  Only final games are fetched (the season gamestats holds games in
+state OFF/FINAL), and a stored game is complete only when, for both teams and each
+of periods 1-3, the on-ice seconds reach ``MIN_PERIOD_COVERAGE`` of six players
+(five skaters and a goalie) x 20:00 and the team's shifts reach the end of the
+third period.  Incomplete games are re-fetched on later runs (REST, then the HTML
+reports once the game is old enough for the fallback; the better-covered capture
+wins) until they are complete or ``MAX_INCOMPLETE_TRIES`` captures were tried; the
+tries live in ``shifts_incomplete.json``.
+
 Rows are de-duplicated on (game_id, player, period, start, end) before they are
 written; the REST feed itself repeats shifts (2023020500 has 295 duplicates)
 and also carries goal rows (typeCode 505) that are not shifts.
@@ -58,6 +70,14 @@ MAX_RETRIES = 3
 HTML_AFTER_HOURS = 72      # REST lags up to ~48 h; only fall back after this
 MAX_REFETCH_PER_RUN = 60   # capped gap-driven upgrades of null-id games per run
 SHIFT_TYPE_CODE = 517      # shiftcharts also carries goal rows (505)
+# Completeness: per team and regulation period, on-ice seconds / (6 x 1200).  Real
+# games sit at 0.91 or more (0.1% quantile of 2025-26; PK time and pulled goalies
+# keep it under 1); partial captures sat at 0.23-0.54.
+MIN_PERIOD_COVERAGE = 0.85
+PERIOD_END = 1200
+MAX_INCOMPLETE_TRIES = 8   # captures tried per incomplete game before giving up
+MAX_INCOMPLETE_PER_RUN = 60
+INCOMPLETE_FILE = "shifts_incomplete.json"   # {game_id: {tries, coverage, last_try[, gave_up]}}
 
 
 def season_paths(start_year: int = START_YEAR) -> dict:
@@ -121,6 +141,63 @@ def _dedupe_rows(rows: list[dict]) -> list[dict]:
         return rows
     df = dedupe_shift_rows(pd.DataFrame(rows, columns=SHIFTS_COLUMNS))
     return df.to_dict("records")
+
+
+# ── Completeness ─────────────────────────────────────────────────────────────
+
+def coverage_by_game(df: pd.DataFrame) -> dict[int, float]:
+    """Each game's lowest per-team, per-regulation-period on-ice share (0-1): the
+    seconds of its shifts in that period over six players x 20:00.  A game missing a
+    team or one of periods 1-3 scores 0; one whose team's shifts stop short of the end
+    of the third period scores just under the bar."""
+    if df is None or len(df) == 0:
+        return {}
+    d = df[["game_id", "team_id", "period", "start_seconds", "end_seconds"]].copy()
+    for c in d.columns:
+        d[c] = pd.to_numeric(d[c], errors="coerce")
+    d = d.dropna()
+    games = sorted(int(g) for g in pd.to_numeric(df["game_id"], errors="coerce").dropna().unique())
+    d = d[d["period"].between(1, 3)]
+    d["sec"] = (d["end_seconds"].clip(upper=PERIOD_END) - d["start_seconds"].clip(lower=0)).clip(lower=0)
+    cov = d.groupby(["game_id", "team_id", "period"])["sec"].sum() / (6 * PERIOD_END)
+    p3_end = d[d["period"] == 3].groupby(["game_id", "team_id"])["end_seconds"].max()
+    teams_of = d.groupby("game_id")["team_id"].unique().to_dict()
+    cov = cov.to_dict()
+    p3_end = p3_end.to_dict()
+    out = {}
+    for g in games:
+        teams = teams_of.get(g, [])
+        if len(teams) != 2:
+            out[g] = 0.0
+            continue
+        vals = [float(cov.get((g, t, per), 0.0)) for t in teams for per in (1, 2, 3)]
+        reach = all(float(p3_end.get((g, t), 0)) >= PERIOD_END - 5 for t in teams)
+        # Shifts that stop short of the third period's end never count as complete,
+        # but keep their share so a later, fuller capture still ranks higher.
+        out[g] = round(min(vals) if reach else min(min(vals), MIN_PERIOD_COVERAGE - 0.0001), 4)
+    return out
+
+
+def rows_coverage(rows: list[dict], game_id: int) -> float:
+    return coverage_by_game(pd.DataFrame(rows, columns=SHIFTS_COLUMNS)).get(int(game_id), 0.0) if rows else 0.0
+
+
+def is_complete(coverage: float) -> bool:
+    return coverage >= MIN_PERIOD_COVERAGE
+
+
+def load_incomplete(path: str) -> dict:
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def save_incomplete(path: str, state: dict) -> None:
+    from io_utils import atomic_write_json
+    atomic_write_json(path, dict(sorted(state.items())), label=INCOMPLETE_FILE)
 
 
 # ── Source 1: NHL Stats REST API ─────────────────────────────────────────────
@@ -407,6 +484,8 @@ def main(argv=None, *, now: datetime | None = None, workdir: str | None = None):
     ap.add_argument("--max-refetch", type=int, default=MAX_REFETCH_PER_RUN)
     ap.add_argument("--html-after-hours", type=float, default=HTML_AFTER_HOURS)
     ap.add_argument("--no-html", action="store_true", help="Never use the HTML fallback")
+    ap.add_argument("--max-incomplete", type=int, default=MAX_INCOMPLETE_PER_RUN,
+                    help="Re-fetch at most this many incomplete stored games per run")
     args = ap.parse_args(argv)
 
     now = now or datetime.now(timezone.utc)
@@ -432,11 +511,44 @@ def main(argv=None, *, now: datetime | None = None, workdir: str | None = None):
     upgrade = null_games[:cap]
 
     stored_dups = 0 if full_mode else stored_duplicate_count(shifts_file)
+
+    # Stored games whose capture is incomplete (a chart still filling in when it was
+    # fetched): re-fetched until complete or out of tries.
+    state_file = os.path.join(wd, INCOMPLETE_FILE)
+    state = load_incomplete(state_file)
+    state_before = json.dumps(state, sort_keys=True)
+    coverage = {} if full_mode else coverage_by_game(load_shifts(shifts_file))
+    for g, cov in coverage.items():
+        if is_complete(cov) and str(g) in state:
+            del state[str(g)]      # completed by an earlier replacement
+    in_season = set(all_game_ids)
+    incomplete = [g for g, cov in sorted(coverage.items())
+                  if g in in_season and not is_complete(cov) and g not in upgrade
+                  and not state.get(str(g), {}).get("gave_up")]
+    retry = incomplete[:max(0, args.max_incomplete)]
+
     print(f"  Total games: {len(all_game_ids)} | Stored: {len(existing_ids)} | New: {len(todo)} | "
           f"Stored without player IDs: {len(null_games)} (re-trying {len(upgrade)}) | "
+          f"Incomplete: {len(incomplete)} (re-trying {len(retry)}) | "
           f"Stored duplicate rows: {stored_dups}")
 
-    if not todo and not upgrade:
+    def note_try(game_id: int, cov: float) -> None:
+        """One more capture of an incomplete game; give up after MAX_INCOMPLETE_TRIES."""
+        if is_complete(cov):
+            state.pop(str(game_id), None)
+            return
+        prev = state.get(str(game_id), {})
+        tries = int(prev.get("tries", 0)) + 1
+        state[str(game_id)] = {"tries": tries, "coverage": round(cov, 4),
+                               "last_try": now.strftime("%Y-%m-%dT%H:%M:%SZ")}
+        if tries >= MAX_INCOMPLETE_TRIES:
+            state[str(game_id)]["gave_up"] = True
+            print(f"  [WARN] game {game_id}: shifts still incomplete after {tries} captures "
+                  f"(coverage {cov:.2f}); giving up")
+
+    if not todo and not upgrade and not retry:
+        if state_before != json.dumps(state, sort_keys=True):
+            save_incomplete(state_file, state)
         if stored_dups:
             n = replace_games(shifts_file, {})
             print(f"  Healed {stored_dups} duplicate shift rows in {shifts_file} ({n:,} rows)")
@@ -458,6 +570,11 @@ def main(argv=None, *, now: datetime | None = None, workdir: str | None = None):
             append_rows(shifts_file, rows)
             rest_ok += 1
             rows_written += len(rows)
+            cov = rows_coverage(rows, game_id)
+            if not is_complete(cov):
+                note_try(game_id, cov)   # stored for now; re-fetched on later runs
+                print(f"  [{i}/{len(todo)}] … game {game_id}: REST capture incomplete "
+                      f"(coverage {cov:.2f}) — re-fetched later")
             if i % 100 == 0 or i == len(todo):
                 print(f"  [{i}/{len(todo)}] REST ✓ game {game_id} → {len(rows)} shifts")
             continue
@@ -474,6 +591,9 @@ def main(argv=None, *, now: datetime | None = None, workdir: str | None = None):
         if rows:
             append_rows(shifts_file, rows)
             html_ok += 1
+            cov = rows_coverage(rows, game_id)
+            if not is_complete(cov):
+                note_try(game_id, cov)
             rows_written += len(rows)
             print(f"  [{i}/{len(todo)}] HTML ✓ game {game_id} → {len(rows)} shifts "
                   f"({sum(r['player_id'] is None for r in rows)} without IDs)")
@@ -492,23 +612,50 @@ def main(argv=None, *, now: datetime | None = None, workdir: str | None = None):
         if j % 50 == 0 or j == len(upgrade):
             print(f"  upgrade [{j}/{len(upgrade)}] REST replacements so far: {upgraded}")
 
-    # Rewrite (de-duplicating the whole file) only when a game was upgraded or the
+    completed = improved = 0
+    for j, game_id in enumerate(retry, 1):
+        best, best_cov, src = None, coverage.get(game_id, 0.0), ""
+        rows = fetch_shifts_rest_api(game_id)
+        time.sleep(RATE_LIMIT_DELAY)
+        cov = rows_coverage(rows, game_id)
+        if rows and cov > best_cov:
+            best, best_cov, src = rows, cov, "REST"
+        age_h = _hours_since(game_dates.get(game_id), now)
+        if not is_complete(best_cov) and not args.no_html and age_h >= args.html_after_hours:
+            meta = fetch_boxscore_meta(game_id)
+            html = fetch_shifts_html(game_id, meta, paths["season"]) if meta else []
+            hcov = rows_coverage(html, game_id)
+            if html and hcov > best_cov:
+                best, best_cov, src = html, hcov, "HTML"
+        if best is not None:
+            replacements[game_id] = best
+            improved += 1
+            completed += is_complete(best_cov)
+            print(f"  incomplete [{j}/{len(retry)}] game {game_id}: {src} capture "
+                  f"{coverage.get(game_id, 0.0):.2f} → {best_cov:.2f}")
+        note_try(game_id, best_cov)
+
+    # Rewrite (de-duplicating the whole file) only when a game was replaced or the
     # stored file still carries duplicate rows.
     if replacements or (stored_dups and os.path.exists(shifts_file)):
         n = replace_games(shifts_file, replacements)
         print(f"  Rewrote {shifts_file}: {n:,} rows ({upgraded} games upgraded to REST IDs, "
+              f"{improved} incomplete games re-captured ({completed} now complete), "
               f"{stored_dups} stored duplicates healed)")
         rows_written += sum(len(r) for r in replacements.values())
+    if state_before != json.dumps(state, sort_keys=True):
+        save_incomplete(state_file, state)
 
     print(f"\n✓ Done. REST: {rest_ok} | HTML fallback: {html_ok} | Pending REST: {pending} | "
-          f"Failed: {failed} | Upgraded: {upgraded}")
+          f"Failed: {failed} | Upgraded: {upgraded} | Incomplete re-captured: {improved} "
+          f"({completed} complete, {sum(1 for v in state.values() if not v.get('gave_up'))} still open)")
     if os.path.exists(shifts_file):
         df = pd.read_csv(shifts_file, usecols=["game_id", "player_id"])
         print(f"  Shifts file: {len(df):,} rows across {df['game_id'].nunique()} games; "
               f"null player_id share {df['player_id'].isna().mean():.4f}")
-    ok = (rest_ok + html_ok + upgraded) or not failed
+    ok = (rest_ok + html_ok + upgraded + improved) or not failed
     return {"status": "ok" if ok else "fail", "rows_written": rows_written, "failed": failed,
-            "pending": pending, "upgraded": upgraded}
+            "pending": pending, "upgraded": upgraded, "recaptured": improved, "completed": completed}
 
 
 if __name__ == "__main__":

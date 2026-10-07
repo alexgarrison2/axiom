@@ -7,7 +7,7 @@ For every PBP row, finds all players whose shift overlaps the event's timestamp
 and adds them as home_on1...home_on6, away_on1...away_on6 columns.
 
 Usage:
-  python enrich_pbp.py                         # Process all unprocessed games
+  python enrich_pbp.py                         # Process unprocessed and thinly covered games
   python enrich_pbp.py --game 2025020018       # Single game (for testing)
   python enrich_pbp.py --full                  # Re-enrich all games from scratch
 """
@@ -27,6 +27,23 @@ MAX_ON_ICE  = 6   # 5 skaters + 1 goalie per team
 HOME_COLS  = [f"home_on{i}" for i in range(1, MAX_ON_ICE + 1)]
 AWAY_COLS  = [f"away_on{i}" for i in range(1, MAX_ON_ICE + 1)]
 ON_ICE_COLS = HOME_COLS + AWAY_COLS
+
+
+THIN_ON_ICE = 4          # fewer players than this on a side in a regulation event looks wrong
+THIN_SHARE = 0.02        # re-enrich a game when more of its regulation events are that thin
+
+
+def thin_on_ice_games(pbp: pd.DataFrame) -> set:
+    """Enriched games whose on-ice columns look like a partial shift chart: more than
+    THIN_SHARE of their regulation events have under THIN_ON_ICE players on a side.
+    fetch_shifts.py replaces a game's shifts when a later capture is more complete,
+    so these are enriched again from the current shifts."""
+    reg = pbp[pd.to_numeric(pbp["period"], errors="coerce").between(1, 3)]
+    if reg.empty:
+        return set()
+    thin = (reg[HOME_COLS].notna().sum(axis=1) < THIN_ON_ICE) | (reg[AWAY_COLS].notna().sum(axis=1) < THIN_ON_ICE)
+    share = thin.groupby(reg["game_id"]).mean()
+    return set(share[share > THIN_SHARE].index)
 
 
 def time_to_seconds(t) -> int:
@@ -162,9 +179,13 @@ def main(argv=None):
     elif full_mode:
         to_process = [g for g in all_pbp_game_ids if g in shift_game_ids]
     else:
-        # Incremental: games where ALL home_on1 values are NA
+        # Incremental: games where ALL home_on1 values are NA, plus games enriched
+        # from a partial shift chart that has since been re-captured.
         unenriched = pbp.groupby("game_id")["home_on1"].apply(lambda x: x.isna().all())
-        to_process = [g for g in unenriched[unenriched].index if g in shift_game_ids]
+        thin = thin_on_ice_games(pbp) - set(unenriched[unenriched].index)
+        if thin:
+            print(f"  Re-enriching {len(thin)} thinly covered game(s): {sorted(thin)[:10]}")
+        to_process = [g for g in list(unenriched[unenriched].index) + sorted(thin) if g in shift_game_ids]
 
     print(f"  Games to enrich: {len(to_process)}")
     if not to_process:
