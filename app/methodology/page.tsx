@@ -41,6 +41,7 @@ const SECTIONS = [
     { id: 'goalies', label: 'Goalies' },
     { id: 'context', label: 'Context chips' },
     { id: 'game-story', label: 'Game story' },
+    { id: 'game-score', label: 'Game score' },
     { id: 'players', label: 'Players & standings' },
     { id: 'data-sources', label: 'Data sources' },
     { id: 'glossary', label: 'Glossary' },
@@ -505,6 +506,37 @@ export default function MethodologyPage() {
                                 row belong to the team with the extra skater (5v4, 5v3, 6v5 with the goalie pulled); amber ticks mark penalty calls. Dots
                                 at the edges of the bar lane are chances worth at least 0.20 xG that did not go in. The
                                 Share view replaces the bars with a rolling five-minute xG share.
+                            </p>
+                        </Section>
+
+                        <Section id="game-score" index={++i} title="Game score">
+                            <p>
+                                The game page scores every skater for that one game with <strong>Game Score</strong> (Dom Luszczyszyn&apos;s weights),
+                                split into the same ideas as the season ratings, offence and defence each:
+                            </p>
+                            <ul className="list-disc space-y-1 pl-5">
+                                <li>
+                                    <strong>Production</strong>: 0.75 per goal, 0.7 per primary and 0.55 per secondary assist, 0.075 per shot on goal,
+                                    0.15 per penalty drawn and 0.01 per faceoff won minus lost; on defence 0.05 per blocked shot and −0.15 per penalty
+                                    taken.
+                                </li>
+                                <li>
+                                    <strong>Play driving</strong>: 5-on-5 shot attempts (0.05 each) and goals (0.15 each) for and against while he was
+                                    on the ice, measured against his team&apos;s own 5-on-5 rate over his minutes, so an average shift scores zero.
+                                </li>
+                                <li>
+                                    <strong>Special teams</strong>: power-play goals for and penalty-kill goals against on the ice (0.15 each), against a
+                                    league rate of 6.6 per 60 minutes.
+                                </li>
+                                <li>
+                                    <strong>Usage</strong>: a small adjustment for who he played with and against (the average share of the game his
+                                    teammates and opponents played, weighted by time together, against his team&apos;s average): stronger linemates take
+                                    a little off his offence, tougher opponents add a little to his defence.
+                                </li>
+                            </ul>
+                            <p>
+                                Goalies are scored on goals saved above expected (pony xG against minus goals allowed). One game is a small sample:
+                                the score describes the night, it does not rate the player. IMPACT on the players page is the predictive rating.
                             </p>
                         </Section>
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import type { GameModel } from '@/lib/game/types';
 import { GameProvider, GameSection } from './GameContext';
+import { GameScore } from './GameScore';
 import { Goalies } from './Goalies';
 import { Goals } from './Goals';
 import { Lines } from './Lines';
@@ -26,6 +27,7 @@ const SECTIONS = [
     { id: 'xg', label: 'xG' },
     { id: 'team', label: 'Team' },
     { id: 'skaters', label: 'Skaters' },
+    { id: 'gamescore', label: 'Game score' },
     { id: 'units', label: 'Units' },
     { id: 'goalies', label: 'Goalies' },
     { id: 'lines', label: 'Lines' },
@@ -123,6 +125,7 @@ export function GameView({ m }: { m: GameModel }) {
                                 <XgBreakdown />
                                 <TeamStats />
                                 <Skaters />
+                                <GameScore />
                                 <Units />
                                 <Goalies />
                                 <Lines />

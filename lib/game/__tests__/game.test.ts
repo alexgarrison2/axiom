@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { clockOf, deservedSeries, goalSwings, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
+import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
 
 const team = (id: number, abbrev: string) => ({ id, abbrev, commonName: { default: abbrev }, placeName: { default: abbrev }, score: 0, sog: 0 });
@@ -122,5 +122,13 @@ describe('game model', () => {
         const c = legibleOn('#00875A', '#0a0e15');
         expect(contrastRatio(c, '#0a0e15')).toBeGreaterThanOrEqual(4.5);
         expect(legibleOn('#FFB81C', '#0a0e15')).toBe('#ffb81c');
+    });
+
+    it('scores a game: parts add up, the scorer leads, the goalie gets GSAx', () => {
+        const { skaters, goalies } = gameScores(m, 'home');
+        for (const r of skaters) expect(GS_PARTS.reduce((a, k) => a + r.parts[k], 0)).toBeCloseTo(r.total);
+        expect(skaters[0].player.id).toBe(21);
+        expect(skaters[0].parts.oProd).toBeCloseTo(0.75 + 0.075);
+        expect(goalies[0].total).toBeCloseTo(goalies[0].xga - goalies[0].ga);
     });
 });
