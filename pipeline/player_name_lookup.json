@@ -46,12 +46,14 @@
     "dryden hunt": "8478211",
     "john beecher": "8481556",
     "sam morton": "8484821",
+    "connor zary": "8482074",
     "abram wiebe": "8483709",
     "hunter brzustewicz": "8484150",
     "rory kerins": "8482209",
     "daniil miromanov": "8482624",
     "aydar suniev": "8484234",
     "tyson gross": "8486056",
+    "brayden pachal": "8481167",
     "william stromgren": "8482766",
     "landon slaggert": "8482172",
     "dominic toninato": "8476952",
@@ -71,10 +73,8 @@
     "michael bunting": "8478047",
     "alexander petrovic": "8475755",
     "david perron": "8474102",
-    "dylan larkin": "8477946",
     "john leonard": "8481077",
     "james van riemsdyk": "8474037",
-    "sheldon dries": "8480326",
     "simon edvinsson": "8482762",
     "travis hamonic": "8474612",
     "dominik shine": "8479942",
@@ -158,6 +158,7 @@
     "brendan brisson": "8482153",
     "juuso parssinen": "8481704",
     "connor mackey": "8482067",
+    "matthew robertson": "8481525",
     "justin dowling": "8475413",
     "brett berard": "8482132",
     "drew fortescue": "8484169",
@@ -382,7 +383,6 @@
     "kent johnson": "8482660",
     "kirill marchenko": "8480893",
     "morgan frost": "8480028",
-    "connor zary": "8482074",
     "ryan lomberg": "8479066",
     "matt coronato": "8482679",
     "brennan othmann": "8482747",
@@ -398,7 +398,6 @@
     "zayne parekh": "8484768",
     "ryan strome": "8476458",
     "yan kuznetsov": "8482165",
-    "brayden pachal": "8481167",
     "joel hanley": "8477810",
     "olli maatta": "8476874",
     "blake coleman": "8476399",
@@ -468,6 +467,7 @@
     "thomas harley": "8481581",
     "tyler seguin": "8475794",
     "arttu hyry": "8484938",
+    "dylan larkin": "8477946",
     "justin faulk": "8475753",
     "albert johansson": "8481607",
     "andrew copp": "8477429",
@@ -479,6 +479,7 @@
     "nate danielson": "8484160",
     "lucas raymond": "8482078",
     "jacob bernard-docker": "8480879",
+    "sheldon dries": "8480326",
     "michael brandsegg-nyg\u00e5rd": "8484794",
     "ben chiarot": "8475279",
     "mason appleton": "8478891",
@@ -651,7 +652,6 @@
     "carson soucy": "8477369",
     "gabe perreault": "8484210",
     "adam sykora": "8483669",
-    "matthew robertson": "8481525",
     "j.t. miller": "8476468",
     "noah laba": "8483690",
     "tye kartye": "8481789",
@@ -1303,6 +1303,13 @@
         "team": "CGY"
       }
     ],
+    "zary": [
+      {
+        "pid": "8482074",
+        "full_name": "connor zary",
+        "team": "CGY"
+      }
+    ],
     "wiebe": [
       {
         "pid": "8483709",
@@ -1342,6 +1349,13 @@
       {
         "pid": "8486056",
         "full_name": "tyson gross",
+        "team": "CGY"
+      }
+    ],
+    "pachal": [
+      {
+        "pid": "8481167",
+        "full_name": "brayden pachal",
         "team": "CGY"
       }
     ],
@@ -1503,13 +1517,6 @@
         "team": "DET"
       }
     ],
-    "larkin": [
-      {
-        "pid": "8477946",
-        "full_name": "dylan larkin",
-        "team": "DET"
-      }
-    ],
     "leonard": [
       {
         "pid": "8481077",
@@ -1532,13 +1539,6 @@
         "pid": "8477845",
         "full_name": "trevor van riemsdyk",
         "team": "PIT"
-      }
-    ],
-    "dries": [
-      {
-        "pid": "8480326",
-        "full_name": "sheldon dries",
-        "team": "DET"
       }
     ],
     "edvinsson": [
@@ -2185,6 +2185,23 @@
         "pid": "8482067",
         "full_name": "connor mackey",
         "team": "NYR"
+      }
+    ],
+    "robertson": [
+      {
+        "pid": "8481525",
+        "full_name": "matthew robertson",
+        "team": "NYR"
+      },
+      {
+        "pid": "8480027",
+        "full_name": "jason robertson",
+        "team": "DAL"
+      },
+      {
+        "pid": "8481582",
+        "full_name": "nick robertson",
+        "team": "PIT"
       }
     ],
     "dowling": [
@@ -3768,13 +3785,6 @@
         "team": "CGY"
       }
     ],
-    "zary": [
-      {
-        "pid": "8482074",
-        "full_name": "connor zary",
-        "team": "CGY"
-      }
-    ],
     "lomberg": [
       {
         "pid": "8479066",
@@ -3882,13 +3892,6 @@
       {
         "pid": "8482165",
         "full_name": "yan kuznetsov",
-        "team": "CGY"
-      }
-    ],
-    "pachal": [
-      {
-        "pid": "8481167",
-        "full_name": "brayden pachal",
         "team": "CGY"
       }
     ],
@@ -4289,23 +4292,6 @@
         "team": "DAL"
       }
     ],
-    "robertson": [
-      {
-        "pid": "8480027",
-        "full_name": "jason robertson",
-        "team": "DAL"
-      },
-      {
-        "pid": "8481525",
-        "full_name": "matthew robertson",
-        "team": "NYR"
-      },
-      {
-        "pid": "8481582",
-        "full_name": "nick robertson",
-        "team": "PIT"
-      }
-    ],
     "bourque": [
       {
         "pid": "8482145",
@@ -4346,6 +4332,13 @@
         "pid": "8484938",
         "full_name": "arttu hyry",
         "team": "DAL"
+      }
+    ],
+    "larkin": [
+      {
+        "pid": "8477946",
+        "full_name": "dylan larkin",
+        "team": "DET"
       }
     ],
     "faulk": [
@@ -4408,6 +4401,13 @@
       {
         "pid": "8480879",
         "full_name": "jacob bernard-docker",
+        "team": "DET"
+      }
+    ],
+    "dries": [
+      {
+        "pid": "8480326",
+        "full_name": "sheldon dries",
         "team": "DET"
       }
     ],

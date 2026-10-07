@@ -38310,5 +38310,263 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020044,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-06",
+    "homeTeam": "Maple Leafs",
+    "awayTeam": "Predators",
+    "homeScore": 5,
+    "awayScore": 4,
+    "decision": "OT",
+    "homeXg": 3.23,
+    "awayXg": 2.86,
+    "homeWinProb": 56.2,
+    "predictedWinner": "Maple Leafs",
+    "actualWinner": "Maple Leafs",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1918,
+    "logLoss": 0.5763,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-06T22:01:00Z",
+    "startUtc": "2026-10-06T23:00:00Z",
+    "marketHomeProb": 59.9,
+    "modelHomeProb": 55.2,
+    "homeOdds": -162.0,
+    "awayOdds": 136.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 55.2,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.225,
+        "ll": 1.4917,
+        "naive_ll": 1.7999,
+        "market_p": 0.2137
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.674,
+        "ll": 0.3945,
+        "naive_ll": 0.3791,
+        "market_p": 0.6393
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.545,
+        "ll": 0.607,
+        "naive_ll": 0.5975,
+        "market_p": 0.5547
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.306,
+        "ll": 1.1842,
+        "naive_ll": 1.1595,
+        "market_p": 0.2923
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.458,
+        "ll": 0.7809,
+        "naive_ll": 0.7906,
+        "market_p": 0.4303
+      }
+    }
+  },
+  {
+    "gameId": 2026020046,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-06",
+    "homeTeam": "Red Wings",
+    "awayTeam": "Senators",
+    "homeScore": 5,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 3.09,
+    "awayXg": 2.88,
+    "homeWinProb": 53.5,
+    "predictedWinner": "Red Wings",
+    "actualWinner": "Red Wings",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2162,
+    "logLoss": 0.6255,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-06T22:03:00Z",
+    "startUtc": "2026-10-06T23:00:00Z",
+    "marketHomeProb": 52.8,
+    "modelHomeProb": 53.7,
+    "homeOdds": -122.0,
+    "awayOdds": 102.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 53.7,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.423,
+        "ll": 0.8604,
+        "naive_ll": 0.8011,
+        "market_p": 0.4052
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.302,
+        "ll": 1.1973,
+        "naive_ll": 1.2371,
+        "market_p": 0.2966
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.522,
+        "ll": 0.6501,
+        "naive_ll": 0.634,
+        "market_p": 0.5547
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.348,
+        "ll": 1.0556,
+        "naive_ll": 1.0173,
+        "market_p": 0.3363
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.531,
+        "ll": 0.633,
+        "naive_ll": 0.642,
+        "market_p": 0.5112
+      }
+    }
+  },
+  {
+    "gameId": 2026020047,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-06",
+    "homeTeam": "Devils",
+    "awayTeam": "Mammoth",
+    "homeScore": 3,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.21,
+    "awayXg": 2.97,
+    "homeWinProb": 53.9,
+    "predictedWinner": "Devils",
+    "actualWinner": "Mammoth",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.2905,
+    "logLoss": 0.7744,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-06T22:01:00Z",
+    "startUtc": "2026-10-06T23:00:00Z",
+    "marketHomeProb": 53.5,
+    "modelHomeProb": 54.0,
+    "homeOdds": -125.0,
+    "awayOdds": 105.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 54.0,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.354,
+        "ll": 1.0385,
+        "naive_ll": 0.9658,
+        "market_p": 0.371
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.694,
+        "ll": 0.3653,
+        "naive_ll": 0.3533,
+        "market_p": 0.6865
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.451,
+        "ll": 0.7963,
+        "naive_ll": 0.7894,
+        "market_p": 0.4654
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.332,
+        "ll": 1.1026,
+        "naive_ll": 1.1836,
+        "market_p": 0.3324
+      }
+    }
+  },
+  {
+    "gameId": 2026020049,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-06",
+    "homeTeam": "Sabres",
+    "awayTeam": "Wild",
+    "homeScore": 3,
+    "awayScore": 2,
+    "decision": "OT",
+    "homeXg": 3.17,
+    "awayXg": 3.13,
+    "homeWinProb": 50.6,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Sabres",
+    "isCorrect": true,
+    "isLean": false,
+    "brierScore": 0.244,
+    "logLoss": 0.6812,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-06T22:01:00Z",
+    "startUtc": "2026-10-06T23:00:00Z",
+    "marketHomeProb": 49.5,
+    "modelHomeProb": 50.9,
+    "homeOdds": -108.0,
+    "awayOdds": -112.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 50.9,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.229,
+        "ll": 1.474,
+        "naive_ll": 1.808,
+        "market_p": 0.2195
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.726,
+        "ll": 0.3202,
+        "naive_ll": 0.3054,
+        "market_p": 0.7131
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.526,
+        "ll": 0.6425,
+        "naive_ll": 0.6418,
+        "market_p": 0.5278
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.323,
+        "ll": 1.1301,
+        "naive_ll": 1.1945,
+        "market_p": 0.3316
+      }
+    }
   }
 ]
