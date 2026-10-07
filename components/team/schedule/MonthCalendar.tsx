@@ -41,11 +41,27 @@ function DayIcon({ g }: { g: SchedGame }) {
 
 /**
  * A month of the schedule: each game day shows the opponent's crest, "@" for
- * road games, the result (or the model's win % for a game ahead, magenta),
+ * road games, the result (or the model's win % for a game ahead, magenta,
+ * with a bar along the cell's foot as long as the win % and brighter the
+ * likelier the win; a faint tick marks 50%),
  * and a small amber B2B on the second night of a back-to-back (the wider
  * 3-in-4 / 4-in-6 windows live in the rhythm strip and the game card). Home
  * days carry a faint wash of the team's colour.
  */
+/** A game ahead's win % as a bar from the cell's left edge: longer and brighter the likelier the win. */
+function WinBar({ pct }: { pct: number }) {
+    const t = Math.min(1, Math.max(0, (pct - 30) / 45));
+    return (
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1 bg-[rgb(var(--model-rgb)/0.07)]">
+            <span
+                className="block h-full rounded-r-[2px]"
+                style={{ width: `${Math.min(100, Math.max(0, pct))}%`, background: `linear-gradient(90deg, rgb(var(--model-rgb) / ${(0.12 + 0.3 * t).toFixed(2)}), rgb(var(--model-rgb) / ${(0.35 + 0.65 * t).toFixed(2)}))` }}
+            />
+            <span className="absolute inset-y-0 left-1/2 w-px bg-fg-3/50" />
+        </span>
+    );
+}
+
 export function MonthCalendar({ month, months, games, focus, lens, today, teamColor, selectedId, onSelect, onHover, onMonth }: MonthCalendarProps) {
     const y = Number(month.slice(0, 4));
     const m = Number(month.slice(5, 7)) - 1;
@@ -153,6 +169,7 @@ export function MonthCalendar({ month, months, games, focus, lens, today, teamCo
                                     <span className="text-fg-3">{g.et.replace(/:00/, '').replace(/ (AM|PM)/, '')}</span>
                                 )}
                             </span>
+                            {!res && g.winPct ? <WinBar pct={g.winPct.pct} /> : null}
                         </button>
                     );
                 })}
