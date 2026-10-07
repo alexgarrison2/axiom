@@ -4010,7 +4010,7 @@
                 "id": 29623,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -4072,6 +4072,15 @@
                 "number": 13,
                 "pos": "ir1",
                 "id": 2482,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Alexander Romanov",
+                "number": 28,
+                "pos": "ir2",
+                "id": 29623,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -4150,12 +4159,12 @@
                 "id": 29623,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "lineup_source": "Last Game (2026-10-06)",
-        "updated_at": "2026-10-07T14:21:40.896Z",
-        "fetched_at": "2026-10-07T15:02:41Z"
+        "updated_at": "2026-10-07T15:41:55.383Z",
+        "fetched_at": "2026-10-07T16:03:13Z"
     },
     "COL": {
         "f1": [
@@ -4282,8 +4291,8 @@
                 "id": 31229,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             }
         ],
         "d1": [
@@ -4381,15 +4390,6 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Zachary L'Heureux",
-                "number": 68,
-                "pos": "ir2",
-                "id": 31229,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -4469,8 +4469,8 @@
             }
         ],
         "lineup_source": "Bailey Curtis",
-        "updated_at": "2026-10-06T17:56:12.290Z",
-        "fetched_at": "2026-10-06T19:02:43Z"
+        "updated_at": "2026-10-07T15:04:52.801Z",
+        "fetched_at": "2026-10-07T16:03:13Z"
     },
     "LAK": {
         "f1": [
@@ -8440,7 +8440,7 @@
                 "id": 2639,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -8515,6 +8515,17 @@
                 "id": 34654,
                 "ppUnit": null,
                 "injuryStatus": null,
+                "gameTimeDecision": false
+            }
+        ],
+        "ir": [
+            {
+                "name": "Mikhail Sergachev",
+                "number": 98,
+                "pos": "ir1",
+                "id": 2639,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -8595,8 +8606,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-10-06)",
-        "updated_at": "2026-10-07T14:05:22.621Z",
-        "fetched_at": "2026-10-07T15:02:41Z"
+        "updated_at": "2026-10-07T15:21:41.985Z",
+        "fetched_at": "2026-10-07T16:03:13Z"
     },
     "WPG": {
         "f1": [
