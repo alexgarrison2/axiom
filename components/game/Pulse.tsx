@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { ScrollRegion } from '@/components/ui/scroll-region';
 import { Segmented } from '@/components/ui/segmented';
 import { legibleOn, readableTextOn } from '@/components/ui/color';
 import { cn } from '@/lib/utils';
@@ -384,6 +385,8 @@ export function Pulse() {
     return (
         <div className="panel overflow-hidden">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-card py-2">
+                {/* Phones: the three pickers share one sideways-scrolling line above the step buttons. */}
+                <ScrollRegion label="Story chart controls" className="flex items-center gap-x-3 scrollbar-hide max-sm:w-full max-sm:[&>*]:shrink-0 max-sm:[&_[role=radiogroup]]:max-w-none sm:contents">
                 <div className="flex items-center gap-1.5">
                     <span className="label hidden sm:inline" aria-hidden="true">
                         Bars
@@ -407,6 +410,7 @@ export function Pulse() {
                     ]}
                     optionClassName="px-2"
                 />
+                </ScrollRegion>
                 <div className="ml-auto flex items-center gap-1">
                     <button
                         type="button"
