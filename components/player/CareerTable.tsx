@@ -78,7 +78,8 @@ export function CareerTable({
               ['GP', s => s.gp],
               ['G', s => s.g ?? '—'],
               ['A', s => s.a ?? '—'],
-              ['P', s => s.p ?? '—'],
+              ['Pts', s => s.p ?? '—'],
+              ['Pts/G', s => (s.p != null && s.gp ? (s.p / s.gp).toFixed(2) : '—')],
               ['+/−', s => (s.pm != null ? (s.pm > 0 ? `+${s.pm}` : s.pm) : '—')],
               ['PIM', s => s.pim ?? '—'],
               ['PPG', s => s.ppg ?? '—'],
@@ -90,7 +91,7 @@ export function CareerTable({
     const rows = groupBySeason(lines);
     return (
         <ScrollRegion label={showLeague ? 'Other leagues' : 'NHL career'} stickyStart className={cn(!bare && cn('panel', FLAT))}>
-            <table className="w-full min-w-[42rem] border-collapse text-caption tabular-nums">
+            <table className="w-full min-w-[45rem] border-collapse text-caption tabular-nums">
                 <thead>
                     <tr className="border-b border-line text-micro uppercase tracking-label text-fg-3">
                         <th className={cn('px-3 py-2 text-left font-semibold max-lg:bg-surface-1', PIN, SEASON_W)}>Season</th>
