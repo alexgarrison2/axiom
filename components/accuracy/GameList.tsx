@@ -13,6 +13,7 @@ import { GlossLink } from '@/components/ui/gloss-link';
 import { isCorrect, isNoLean, isWrong, pickOf, pickProb, type ExcludedGame, type GradedGame } from './types';
 import type { GameTypeKey } from './report';
 import { groupByDay, summarize, vsMarket, type DayGroup, type DayShape, type SpanSummary } from './summary';
+import { useDataEpoch } from '@/lib/fresh';
 
 /** Days listed before More (about a month of slates). */
 const PAGE = 30;
@@ -43,16 +44,19 @@ const RESULT_SEG = 'coarse:gap-0.5';
 const RESULT_OPT = 'coarse:min-w-11 coarse:px-2';
 
 const cache = new Map<string, Promise<GradedGame[]>>();
-function loadSeason(label: string): Promise<GradedGame[]> {
-    let p = cache.get(label);
+/** A season's graded rows, fetched once per data epoch (a stale tab coming back fetches again). */
+function loadSeason(label: string, epoch: number): Promise<GradedGame[]> {
+    const k = `${label}@${epoch}`;
+    let p = cache.get(k);
     if (!p) {
+        for (const old of cache.keys()) if (!old.endsWith(`@${epoch}`)) cache.delete(old);
         // A failed fetch rejects, so the cache entry is evicted and a retry refetches.
-        p = fetch(`/accuracy/games/${label}`).then(r => {
+        p = fetch(`/accuracy/games/${label}`, epoch ? { cache: 'no-cache' } : undefined).then(r => {
             if (!r.ok) throw new Error(`picks ${label}: HTTP ${r.status}`);
             return r.json() as Promise<GradedGame[]>;
         });
-        p.catch(() => cache.delete(label));
-        cache.set(label, p);
+        p.catch(() => cache.delete(k));
+        cache.set(k, p);
     }
     return p;
 }
@@ -97,11 +101,12 @@ export function GameList({
         setOpenDays(null);
     };
 
-    const key = `${season}#${attempt}`;
+    const epoch = useDataEpoch();
+    const key = `${season}#${attempt}#${epoch}`;
     React.useEffect(() => {
         let alive = true;
         const labels = season === 'all' ? seasons : [season];
-        Promise.all(labels.map(loadSeason))
+        Promise.all(labels.map(l => loadSeason(l, epoch)))
             .then(lists => {
                 if (alive) setGames({ key, rows: lists.flat().sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id) });
             })
@@ -109,7 +114,7 @@ export function GameList({
         return () => {
             alive = false;
         };
-    }, [key, season, seasons]);
+    }, [key, season, seasons, epoch]);
 
     // Reset paging and the date window when the selection changes.
     React.useEffect(() => {

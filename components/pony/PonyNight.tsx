@@ -6,6 +6,7 @@ import { teamPalette } from '@/components/ui/team-color';
 import { cn } from '@/lib/utils';
 import type { GsPart } from '@/lib/game/analytics';
 import { ORDER, PARTS, signed, stack } from '@/lib/pony/parts';
+import { useDataEpoch } from '@/lib/fresh';
 
 /**
  * The night in Pony Scores under a slate: the five best and five toughest
@@ -26,16 +27,18 @@ const seasonOf = (date: string) => {
 };
 
 const docs = new Map<string, Promise<DaysDoc | null>>();
-function load(season: string) {
-    if (!docs.has(season)) {
+/** A season's nights, fetched once per data epoch (a stale tab coming back fetches again). */
+function load(season: string, epoch: number) {
+    const k = `${season}@${epoch}`;
+    if (!docs.has(k)) {
         docs.set(
-            season,
-            fetch(`/data/pony/${season}_days.json`)
+            k,
+            fetch(`/data/pony/${season}_days.json`, epoch ? { cache: 'no-cache' } : undefined)
                 .then(r => (r.ok ? (r.json() as Promise<DaysDoc>) : null))
                 .catch(() => null),
         );
     }
-    return docs.get(season)!;
+    return docs.get(k)!;
 }
 
 function Row({ r, rank, players, reach }: { r: (string | number)[]; rank: number; players: Record<string, Player>; reach: number }) {
@@ -82,13 +85,14 @@ function Row({ r, rank, players, reach }: { r: (string | number)[]; rank: number
 
 export function PonyNight({ date }: { date: string }) {
     const [doc, setDoc] = React.useState<DaysDoc | null>(null);
+    const epoch = useDataEpoch();
     React.useEffect(() => {
         let live = true;
-        load(seasonOf(date)).then(d => live && setDoc(d));
+        load(seasonOf(date), epoch).then(d => live && setDoc(d));
         return () => {
             live = false;
         };
-    }, [date]);
+    }, [date, epoch]);
     const day = doc?.days[date];
     if (!doc || !day || (!day.top.length && !day.goalie)) return null;
     let reach = 1;

@@ -13,6 +13,7 @@ import { cumulativeUnits, fmtAmerican, gradePending, parseLedgerBets, teamFirstS
 import { teamTriFromName } from './names';
 import type { GateInfo } from './report';
 import type { BetFinal, LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
+import { useDataEpoch } from '@/lib/fresh';
 
 const PAGE = 25;
 /** Below this many graded bets ROI, its CI and the bucket tables are noise: record and units only. */
@@ -21,9 +22,12 @@ export const LEDGER_ROI_MIN = 20;
 export const LEDGER_COLOR_MIN = 100;
 
 let betsPromise: Promise<LedgerBet[]> | null = null;
-function loadBets(): Promise<LedgerBet[]> {
-    if (!betsPromise) {
-        betsPromise = fetch('/data/bet_ledger.json')
+let betsEpoch = 0;
+/** Every bet, fetched once per data epoch (a stale tab coming back fetches again). */
+function loadBets(epoch = 0): Promise<LedgerBet[]> {
+    if (!betsPromise || betsEpoch !== epoch) {
+        betsEpoch = epoch;
+        betsPromise = fetch('/data/bet_ledger.json', epoch ? { cache: 'no-cache' } : undefined)
             .then(r => (r.ok ? r.json() : null))
             .then(parseLedgerBets)
             .catch(() => {
@@ -103,6 +107,12 @@ export function Ledger({
     const labels = React.useMemo(() => (season === 'all' ? seasons : [season]), [season, seasons]);
     const summary = combine(labels.map(l => ledger.seasons[l]).filter((s): s is LedgerSummary => !!s));
     const [bets, setBets] = React.useState<LedgerBet[] | null>(null);
+    // A stale tab coming back reloads the bets it already showed.
+    const epoch = useDataEpoch();
+    const loaded = bets != null;
+    React.useEffect(() => {
+        if (epoch && loaded) void loadBets(epoch).then(setBets);
+    }, [epoch, loaded]);
     const [query, setQuery] = React.useState('');
     const [shown, setShown] = React.useState(PAGE);
     const ref = React.useRef<HTMLDivElement>(null);
