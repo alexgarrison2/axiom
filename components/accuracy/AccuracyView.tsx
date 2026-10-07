@@ -427,7 +427,7 @@ function BaselineTable({ block: b, seasonWord, modelLabel }: { block: ReportBloc
                 <tbody>
                     {rows.map(r => (
                         <tr key={r.label}>
-                            <th scope="row" className="text-left font-semibold max-[359.98px]:whitespace-normal">
+                            <th scope="row" className="text-left font-semibold max-[359.98px]:!whitespace-normal">
                                 <span className={r.model ? 'text-brand' : 'text-fg-1'}>{r.label}</span>
                                 {r.note ? <span className="ml-2 font-normal text-fg-3">{r.note}</span> : null}
                             </th>
