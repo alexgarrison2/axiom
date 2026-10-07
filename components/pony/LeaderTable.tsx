@@ -74,6 +74,8 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
     const TD = 'px-2 text-right tabular-nums';
     // Below lg the table scrolls sideways under a pinned player column.
     const PIN = 'max-lg:sticky max-lg:left-0 max-lg:z-10 max-lg:bg-surface-1';
+// The pinned cell's right hairline (a pseudo-element: collapsed table cells drop box-shadow).
+const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:after:inset-y-0 max-lg:after:right-0 max-lg:after:w-px max-lg:after:bg-line-strong max-lg:after:content-['']";
     const PIN_HOVER = 'max-lg:group-hover:bg-[color-mix(in_srgb,var(--surface-2)_60%,var(--surface-1))]';
     return (
         <ScrollRegion label="Pony Score leaders" stickyStart>
@@ -81,7 +83,7 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
                 <thead>
                     <tr className="border-b border-line">
                         <th className={cn(TH, 'w-10 max-sm:w-7 max-sm:px-1')}>#</th>
-                        <th className={cn(TH, PIN, 'text-left')}>Player</th>
+                        <th className={cn(TH, PIN, PIN_EDGE, 'text-left')}>Player</th>
                         <th className={cn(TH, 'text-fg-1')} title={lead.title}>
                             {goalies ? lead.goalie : lead.label}
                         </th>
@@ -112,7 +114,7 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
                         return (
                             <tr key={r.player.id} className="group border-b border-line/60 hover:bg-surface-2/60">
                                 <td className={cn(TD, 'text-fg-3 max-sm:px-1')}>{start + i + 1}</td>
-                                <td className={cn('py-1.5 pl-2 pr-3 max-sm:pr-2', PIN, PIN_HOVER)}>
+                                <td className={cn('py-1.5 pl-2 pr-3 max-sm:pr-2', PIN, PIN_EDGE, PIN_HOVER)}>
                                     <Link href={`/players/${r.player.id}`} className="flex min-w-0 items-center gap-2.5 rounded-control max-sm:gap-2 outline-none focus-visible:outline-2 focus-visible:outline-brand">
                                         <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 bg-surface-2" style={{ borderColor: ring }}>
                                             {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}

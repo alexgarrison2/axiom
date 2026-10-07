@@ -119,7 +119,7 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
                     type="button"
                     aria-expanded={open}
                     onClick={() => setOpen(o => !o)}
-                    className="order-1 flex h-11 min-w-0 flex-1 items-center justify-between rounded-control border border-line px-3 text-micro uppercase tracking-label text-fg-2 sm:hidden"
+                    className="order-1 flex h-11 min-w-0 flex-1 items-center justify-between rounded-control border border-line px-3 text-micro uppercase tracking-label text-fg-2 sm:hidden [@media(max-height:500px)_and_(max-width:1023px)]:flex"
                 >
                     Filters{active ? ' · on' : ''}
                     <svg viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} aria-hidden="true">
@@ -127,7 +127,8 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
                     </svg>
                 </button>
             </div>
-            <div className={cn('grid-cols-2 gap-x-3 gap-y-2 sm:grid sm:grid-cols-3 lg:grid-cols-9', open ? 'grid' : 'hidden')}>
+            {/* Phones and short landscape screens: folded until the Filters button opens them. */}
+            <div className={cn('grid-cols-2 gap-x-3 gap-y-2 sm:grid sm:grid-cols-3 lg:grid-cols-9', open ? 'grid' : 'hidden [@media(max-height:500px)_and_(max-width:1023px)]:hidden')}>
                 <Field label="Season">
                     <select className={SELECT} value={get('season', seasons[0])} onChange={e => set({ season: e.target.value === seasons[0] ? null : e.target.value })}>
                         {seasons.map(s => (
@@ -223,7 +224,7 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
                     />
                 </Field>
             </div>
-            <div className={cn('flex-wrap items-center gap-2 text-micro uppercase tracking-label text-fg-3 sm:flex', open ? 'flex' : 'hidden')}>
+            <div className={cn('flex-wrap items-center gap-2 text-micro uppercase tracking-label text-fg-3 sm:flex', open ? 'flex' : 'hidden [@media(max-height:500px)_and_(max-width:1023px)]:hidden')}>
                 <span>Min games</span>
                 {[0, 3, 5, 10, 20, 40].map(n => (
                     <button

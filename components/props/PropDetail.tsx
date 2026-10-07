@@ -17,6 +17,7 @@ import {
     seasonRate,
     seasonStart,
     shortDate,
+    shortName,
     summarize,
     vsLog,
     type Category,
@@ -33,12 +34,13 @@ const pctText = (v: number | null) => (v == null ? '—' : `${Math.round(v * 100
 const minutes = (min: number | null) => (min == null ? '—' : min.toFixed(1));
 const signed = (v: number, digits = 1) => `${v > 0 ? '+' : v < 0 ? '−' : '±'}${Math.abs(v).toFixed(digits)}`;
 
-function RateText({ r }: { r: Rate }) {
+/** `full`: the window's own size (L5, L10); a full window's count is implied by the header, so phones drop it. */
+function RateText({ r, full }: { r: Rate; full?: number }) {
     const p = pct(r);
     return (
         <span className={cn(p == null ? 'text-fg-disabled' : r.n < 5 ? 'text-fg-3' : p >= 0.6 ? 'text-fg-1' : 'text-fg-2')}>
             {fmt(r)}
-            {r.n ? <span className="ml-1 text-micro text-fg-3">{r.n}</span> : null}
+            {r.n ? <span className={cn('ml-1 text-micro text-fg-3', r.n === full && 'max-sm:hidden')}>{r.n}</span> : null}
         </span>
     );
 }
@@ -86,14 +88,17 @@ function Mate({ m, cat, line, tag }: { m: PropPlayer; cat: Category; line: Row['
     const l10 = lastN(m, cat, cat.lines.find(l => l.key === line.key) ?? cat.lines[0], 10);
     const att = attemptsPer(m, 10).avg;
     return (
-        <li className="flex items-center gap-2 border-t border-line py-1.5 first:border-t-0">
-            <span className="w-9 shrink-0 text-micro uppercase text-fg-3">{tag}</span>
+        <li className="flex items-center gap-2 border-t border-line py-1.5 first:border-t-0 max-sm:gap-1.5">
+            <span className="w-9 shrink-0 text-micro uppercase text-fg-3 max-sm:w-7">{tag}</span>
             <TeamLogo tri={m.team} size={16} />
-            <span className="min-w-0 flex-1 truncate text-fg-1">{m.name}</span>
-            <span className="w-10 text-right text-micro text-fg-2" title="Shot attempts per game, last 10">
+            <span className="min-w-0 flex-1 truncate text-fg-1">
+                <span className="sm:hidden">{shortName(m.name)}</span>
+                <span className="hidden sm:inline">{m.name}</span>
+            </span>
+            <span className="w-10 text-right text-micro text-fg-2 max-sm:w-8" title="Shot attempts per game, last 10">
                 {att != null ? att.toFixed(1) : '—'}
             </span>
-            <span className="w-10 text-right text-micro text-fg-2" title={`${cat.stat} ${line.label}, last 10`}>
+            <span className="w-10 text-right text-micro text-fg-2 max-sm:w-9" title={`${cat.stat} ${line.label}, last 10`}>
                 {fmt(l10)}
             </span>
             <span className="w-12 text-right" title="1+ point: book price (pony xG when unposted)">
@@ -286,75 +291,78 @@ export function PropDetail({ r, cat, doc, detail, seasons }: PropDetailProps) {
                         ) : null
                     }
                 >
-                    <table className="w-full text-caption tabular-nums">
-                        <thead>
-                            <tr className="text-micro uppercase text-fg-3">
-                                <th scope="col" className="py-1 text-left font-medium">
-                                    {cat.stat}
-                                </th>
-                                <th scope="col" className="py-1 text-right font-medium">
-                                    L5
-                                </th>
-                                <th scope="col" className="py-1 text-right font-medium">
-                                    L10
-                                </th>
-                                <th scope="col" className="hidden py-1 text-right font-medium sm:table-cell">
-                                    L20
-                                </th>
-                                <th scope="col" className="py-1 text-right font-medium">
-                                    {seasons.cur}
-                                </th>
-                                <th scope="col" className="hidden py-1 text-right font-medium sm:table-cell">
-                                    {seasons.prev}
-                                </th>
-                                <th scope="col" className="py-1 text-right font-medium">
-                                    Book
-                                </th>
-                                <th scope="col" className="py-1 text-right font-medium">
-                                    Fair
-                                </th>
-                                <th scope="col" className="py-1 text-right font-medium">
-                                    Edge
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cat.lines.map(l => {
-                                const b = p.book?.[l.key];
-                                const f = p.fair?.[l.key];
-                                const e = edge(p, l);
-                                return (
-                                    <tr key={l.key} className={cn('border-t border-line', l.key === line.key && 'text-fg-1')}>
-                                        <th scope="row" className={cn('py-1.5 text-left font-medium uppercase', l.key === line.key ? 'text-brand' : 'text-fg-2')}>
-                                            {l.label}
-                                        </th>
-                                        <td className="py-1.5 text-right">
-                                            <RateText r={lastN(p, cat, l, 5)} />
-                                        </td>
-                                        <td className="py-1.5 text-right">
-                                            <RateText r={lastN(p, cat, l, 10)} />
-                                        </td>
-                                        <td className="hidden py-1.5 text-right sm:table-cell">
-                                            <RateText r={lastN(p, cat, l, 20)} />
-                                        </td>
-                                        <td className="py-1.5 text-right">
-                                            <RateText r={seasonRate(p, l)} />
-                                        </td>
-                                        <td className="hidden py-1.5 text-right sm:table-cell">
-                                            <RateText r={prevRate(p, l)} />
-                                        </td>
-                                        <td className="py-1.5 text-right text-fg-1">{b ? american(b.over) : <span className="text-fg-disabled">—</span>}</td>
-                                        <td className="py-1.5 text-right text-model" title={f != null ? `${Math.round(f * 100)}%` : undefined}>
-                                            {fairAmerican(f)}
-                                        </td>
-                                        <td className={cn('py-1.5 text-right', e == null ? 'text-fg-disabled' : e > 0 ? 'text-pos' : 'text-neg')}>
-                                            {e == null ? '—' : `${e > 0 ? '+' : ''}${(e * 100).toFixed(1)}`}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                    {/* Very narrow phones: the lines table scrolls rather than squeezing its values together. */}
+                    <div className="scrollbar-hide max-sm:-mx-4 max-sm:overflow-x-auto max-sm:px-4">
+                        <table className="w-full text-caption tabular-nums">
+                            <thead>
+                                <tr className="text-micro uppercase text-fg-3">
+                                    <th scope="col" className="py-1 text-left font-medium">
+                                        {cat.stat}
+                                    </th>
+                                    <th scope="col" className="py-1 text-right font-medium max-lg:pl-2 max-sm:pl-1.5">
+                                        L5
+                                    </th>
+                                    <th scope="col" className="py-1 text-right font-medium max-lg:pl-2 max-sm:pl-1.5">
+                                        L10
+                                    </th>
+                                    <th scope="col" className="hidden py-1 text-right font-medium max-lg:pl-2 max-sm:pl-1.5 sm:table-cell">
+                                        L20
+                                    </th>
+                                    <th scope="col" className="py-1 text-right font-medium max-lg:pl-2 max-sm:pl-1.5">
+                                        {seasons.cur}
+                                    </th>
+                                    <th scope="col" className="hidden py-1 text-right font-medium max-lg:pl-2 max-sm:pl-1.5 sm:table-cell">
+                                        {seasons.prev}
+                                    </th>
+                                    <th scope="col" className="py-1 text-right font-medium max-lg:pl-2 max-sm:pl-1.5">
+                                        Book
+                                    </th>
+                                    <th scope="col" className="py-1 text-right font-medium max-lg:pl-2 max-sm:pl-1.5">
+                                        Fair
+                                    </th>
+                                    <th scope="col" className="py-1 text-right font-medium max-lg:pl-2 max-sm:pl-1.5">
+                                        Edge
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {cat.lines.map(l => {
+                                    const b = p.book?.[l.key];
+                                    const f = p.fair?.[l.key];
+                                    const e = edge(p, l);
+                                    return (
+                                        <tr key={l.key} className={cn('border-t border-line', l.key === line.key && 'text-fg-1')}>
+                                            <th scope="row" className={cn('py-1.5 text-left font-medium uppercase', l.key === line.key ? 'text-brand' : 'text-fg-2')}>
+                                                {l.label}
+                                            </th>
+                                            <td className="py-1.5 text-right max-lg:pl-2 max-sm:pl-1.5">
+                                                <RateText r={lastN(p, cat, l, 5)} full={5} />
+                                            </td>
+                                            <td className="py-1.5 text-right max-lg:pl-2 max-sm:pl-1.5">
+                                                <RateText r={lastN(p, cat, l, 10)} full={10} />
+                                            </td>
+                                            <td className="hidden py-1.5 text-right max-lg:pl-2 max-sm:pl-1.5 sm:table-cell">
+                                                <RateText r={lastN(p, cat, l, 20)} />
+                                            </td>
+                                            <td className="py-1.5 text-right max-lg:pl-2 max-sm:pl-1.5">
+                                                <RateText r={seasonRate(p, l)} />
+                                            </td>
+                                            <td className="hidden py-1.5 text-right max-lg:pl-2 max-sm:pl-1.5 sm:table-cell">
+                                                <RateText r={prevRate(p, l)} />
+                                            </td>
+                                            <td className="py-1.5 text-right text-fg-1 max-lg:pl-2 max-sm:pl-1.5">{b ? american(b.over) : <span className="text-fg-disabled">—</span>}</td>
+                                            <td className="py-1.5 text-right text-model max-lg:pl-2 max-sm:pl-1.5" title={f != null ? `${Math.round(f * 100)}%` : undefined}>
+                                                {fairAmerican(f)}
+                                            </td>
+                                            <td className={cn('py-1.5 text-right max-lg:pl-2 max-sm:pl-1.5', e == null ? 'text-fg-disabled' : e > 0 ? 'text-pos' : 'text-neg')}>
+                                                {e == null ? '—' : `${e > 0 ? '+' : ''}${(e * 100).toFixed(1)}`}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </Section>
             </div>
 

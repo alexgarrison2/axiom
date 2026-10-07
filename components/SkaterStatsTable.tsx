@@ -35,6 +35,10 @@ import {
 
 const PAGE = 50;
 
+// Coming back to the table (Back from a player) lands before the full list loads, so the browser restores
+// scroll against the short preview; the position saved on leaving is put back, once, when the list is in.
+const SCROLL_KEY = 'players-scroll';
+
 /** Phone column sets (a wide screen shows every column). */
 type ColumnSet = 'impact' | 'rates' | 'scoring';
 const SET_LABELS: Record<ColumnSet, string> = { impact: 'Impact', rates: 'Rates', scoring: 'Scoring' };
@@ -122,6 +126,54 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
     const ids = { search: React.useId(), team: React.useId(), ev: React.useId(), cols: React.useId() };
     const tableTop = React.useRef<HTMLDivElement>(null);
     const filterBar = React.useRef<HTMLDivElement>(null);
+    const defaultSet: ColumnSet = firstHeadline === 'impact' ? 'impact' : 'rates';
+
+    // Position, page and phone column set live in the URL (replaced, not pushed), so Back from a player restores them.
+    const [fromUrl, setFromUrl] = React.useState(false);
+    const restoreY = React.useRef<number | null>(null);
+    React.useEffect(() => {
+        const q = new URLSearchParams(window.location.search);
+        const pos = q.get('pos');
+        if (pos === 'F' || pos === 'D') setFilter(f => ({ ...f, pos }));
+        const pg = Number(q.get('page'));
+        if (Number.isInteger(pg) && pg > 1) setPage(pg - 1);
+        const cols = q.get('cols');
+        if (cols && cols in SET_LABELS) setSet(cols as ColumnSet);
+        setFromUrl(true);
+        try {
+            const saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) ?? 'null') as { url: string; y: number } | null;
+            if (saved && saved.url === window.location.search) {
+                restoreY.current = saved.y;
+                sessionStorage.removeItem(SCROLL_KEY);
+            }
+        } catch {}
+        // Saved at the tap that leaves (capture runs before the link navigates and scrolls).
+        const save = () => {
+            try {
+                sessionStorage.setItem(SCROLL_KEY, JSON.stringify({ url: window.location.search, y: Math.round(window.scrollY) }));
+            } catch {}
+        };
+        window.addEventListener('click', save, true);
+        return () => window.removeEventListener('click', save, true);
+    }, []);
+    React.useEffect(() => {
+        const y = restoreY.current;
+        if (!players || y == null) return;
+        restoreY.current = null;
+        requestAnimationFrame(() => {
+            if (Math.abs(window.scrollY - y) > 40) window.scrollTo(0, y);
+        });
+    }, [players]);
+    React.useEffect(() => {
+        if (!fromUrl) return;
+        const q = new URLSearchParams(window.location.search);
+        const put = (k: string, v: string | null) => (v == null ? q.delete(k) : q.set(k, v));
+        put('pos', filter.pos === 'all' ? null : filter.pos);
+        put('page', page > 0 ? String(page + 1) : null);
+        put('cols', chosenSet === defaultSet ? null : chosenSet);
+        const next = `${window.location.pathname}${q.size ? `?${q}` : ''}${window.location.hash}`;
+        if (next !== `${window.location.pathname}${window.location.search}${window.location.hash}`) window.history.replaceState(null, '', next);
+    }, [fromUrl, filter.pos, page, chosenSet, defaultSet]);
 
     React.useEffect(() => {
         let alive = true;
@@ -188,7 +240,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
 
     return (
         <div className="flex flex-col gap-3">
-            <div ref={filterBar} className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:flex-row md:items-center md:px-6">
+            <div ref={filterBar} className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 [@media(max-height:500px)_and_(max-width:1023px)]:static -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:flex-row md:items-center md:px-6">
                 <div className="flex items-end gap-2">
                     <div className="flex min-w-0 flex-1 flex-col gap-1 md:w-72 md:flex-none">
                         <label htmlFor={ids.search} className="sr-only">
@@ -364,7 +416,8 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                             <TeamLogo tri={p.team} size={18} />
                                             <span className="flex min-w-0 items-baseline gap-2">
                                                 <span className="truncate font-bold text-fg-1">
-                                                    <PlayerLink id={Number(p.id)}>
+                                                    {/* Touch: the link's hit area fills the pinned name cell. */}
+                                                    <PlayerLink id={Number(p.id)} className="coarse:after:absolute coarse:after:inset-0 coarse:after:content-['']">
                                                         <span className="md:hidden">{shortName(p.name)}</span>
                                                         <span className="hidden md:inline">{p.name}</span>
                                                     </PlayerLink>

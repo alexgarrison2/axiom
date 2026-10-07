@@ -474,7 +474,13 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
     const detailId = `prop-detail-${p.id}`;
     return (
         <>
-            <tr className="group">
+            {/* Touch: the whole row opens the detail (the name button stays the keyboard and screen-reader control). */}
+            <tr
+                className="group coarse:cursor-pointer"
+                onClick={e => {
+                    if (!(e.target as Element).closest('button, a') && window.matchMedia('(pointer: coarse)').matches) onToggle(p.id);
+                }}
+            >
                 <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-11 w-[9.5rem] min-w-[9.5rem] border-b border-line px-2 text-left font-normal max-sm:px-1.5 md:w-64')}>
                     <button
                         type="button"

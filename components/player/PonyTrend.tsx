@@ -33,7 +33,8 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
     // Touch: the bar whose card was already showing when this tap began (a second tap opens it).
     const armed = React.useRef<number | null>(null);
     const touch = React.useRef(false);
-    const [below, setBelow] = React.useState(false);
+    // Compact card's top, in px from the chart's top (null until measured).
+    const [cardTop, setCardTop] = React.useState<number | null>(null);
     const W = Math.max(width, 280);
     const H = 180;
     const padL = 34;
@@ -80,16 +81,21 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
         return () => document.removeEventListener('pointerdown', off);
     }, [showing, ref]);
 
-    // Compact card: above the chart unless the app bar would cover it and there is more room below.
+    // Compact card: above the chart when it fits, else below, else the roomier side; always kept
+    // between the app bar and the tab bar (on a short screen it then overlaps the chart's top).
     React.useLayoutEffect(() => {
         if (!showing || !compact || !ref.current || !cardRef.current) return;
         const r = ref.current.getBoundingClientRect();
         const css = getComputedStyle(document.documentElement);
-        const top = parseFloat(css.getPropertyValue('--appbar-h')) || 56;
-        const bottom = window.innerHeight - (parseFloat(css.getPropertyValue('--tabbar-h')) || 0);
-        const h = cardRef.current.offsetHeight + 8;
-        const above = r.top - top;
-        setBelow(above < h && bottom - r.bottom > above);
+        const top = (parseFloat(css.getPropertyValue('--appbar-h')) || 56) + 8;
+        const bottom = window.innerHeight - (parseFloat(css.getPropertyValue('--tabbar-h')) || 0) - 8;
+        const h = cardRef.current.offsetHeight;
+        const above = r.top - 8 - top;
+        const below = bottom - (r.bottom + 8);
+        const want = above >= h || (below < h && above >= below) ? -(h + 8) : r.height + 8;
+        const lo = top - r.top;
+        const hi = bottom - h - r.top;
+        setCardTop(Math.max(lo, Math.min(want, hi)));
     }, [showing, compact, ref]);
 
     return (
@@ -147,9 +153,9 @@ export function PonyTrend({ games, color }: { games: TrendGame[]; color: string 
                     onClick={compact ? () => open(hg) : undefined}
                     className={cn(
                         'absolute z-10 rounded-card border border-line-strong bg-surface-1/95 p-3 text-caption shadow-[0_12px_32px_rgb(0_0_0/0.55)] backdrop-blur-sm',
-                        compact ? cn('inset-x-0 mx-auto max-w-[19rem] cursor-pointer', below ? 'top-[calc(100%+8px)]' : 'bottom-[calc(100%+8px)]') : 'pointer-events-none top-1 w-[19rem]',
+                        compact ? cn('inset-x-0 mx-auto max-w-[19rem] cursor-pointer', cardTop == null && 'bottom-[calc(100%+8px)]') : 'pointer-events-none top-1 w-[19rem]',
                     )}
-                    style={compact ? undefined : hx > W * 0.6 ? { right: W - hx + 12 } : { left: hx + 12 }}
+                    style={compact ? (cardTop == null ? undefined : { top: cardTop }) : hx > W * 0.6 ? { right: W - hx + 12 } : { left: hx + 12 }}
                 >
                     <p className="flex items-baseline justify-between gap-2">
                         <span className="text-fg-2">

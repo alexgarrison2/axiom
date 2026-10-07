@@ -26,6 +26,8 @@ type Search = Record<string, string | string[] | undefined>;
 const PANEL = '#0a0e15';
 // Below lg the wide tables scroll sideways under a pinned first column.
 const PIN = 'max-lg:sticky max-lg:left-0 max-lg:z-10 max-lg:bg-surface-1';
+// The pinned cell's right hairline (a pseudo-element: collapsed table cells drop box-shadow).
+const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:after:inset-y-0 max-lg:after:right-0 max-lg:after:w-px max-lg:after:bg-line-strong max-lg:after:content-['']";
 // Flat panel fill under pinned columns, so the pinned cells match it.
 const FLAT = 'max-lg:bg-none max-lg:bg-surface-1';
 const PIN_HOVER = 'max-lg:group-hover:bg-[color-mix(in_srgb,var(--surface-2)_60%,var(--surface-1))]';
@@ -183,7 +185,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                         {pos}
                                     </span>
                                 </p>
-                                <h1 className="mt-1 font-display text-[clamp(2rem,6vw,4rem)] font-bold uppercase leading-[0.95] tracking-tight text-fg-1">
+                                <h1 className="mt-1 font-display text-[clamp(2rem,6vw,4rem)] font-bold uppercase leading-[0.95] tracking-tight text-fg-1 max-lg:[overflow-wrap:anywhere] max-[359px]:text-[1.625rem]">
                                     <span className="block text-fg-2">{first}</span>
                                     {last}
                                 </h1>
@@ -321,7 +323,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                             <table className="w-full min-w-[44rem] border-collapse text-caption tabular-nums">
                                 <thead>
                                     <tr className="border-b border-line text-micro uppercase tracking-label text-fg-3">
-                                        <th className={cn('px-3 py-2 text-left font-semibold', PIN)}>Date</th>
+                                        <th className={cn('px-3 py-2 text-left font-semibold', PIN, PIN_EDGE)}>Date</th>
                                         <th className="px-2 py-2 text-left font-semibold">Opp</th>
                                         {/* Phones: the score follows the opponent instead of trailing the box score. */}
                                         <th className="px-3 py-2 text-right font-semibold text-fg-1 md:hidden">{goalie ? 'GSAx' : 'Pony'}</th>
@@ -355,7 +357,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                         const reach = Math.max(1, ...rows.map(x => Math.abs(x.ps)));
                                         return (
                                             <tr key={r.game} className={cn('group border-b border-line/60 hover:bg-surface-2/60', i >= 25 && 'hidden group-has-[:checked]/log:table-row')}>
-                                                <td className={cn('px-3 py-1.5', PIN, PIN_HOVER)}>
+                                                <td className={cn('px-3 py-1.5', PIN, PIN_EDGE, PIN_HOVER)}>
                                                     <Link href={`/games/${r.game}`} className="text-fg-2 underline-offset-4 group-hover:text-fg-1 group-hover:underline coarse:py-1.5">
                                                         {r.date.slice(5).replace('-', '/')}
                                                     </Link>
@@ -405,7 +407,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         {rows.length > 25 ? (
                             <label
                                 htmlFor="log-all"
-                                className="cursor-pointer self-center rounded-full border border-line px-4 py-2 text-micro uppercase tracking-label text-fg-2 hover:border-line-strong hover:text-fg-1 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-brand"
+                                className="cursor-pointer self-center rounded-full border border-line px-4 py-2 text-micro coarse:py-3.5 uppercase tracking-label text-fg-2 hover:border-line-strong hover:text-fg-1 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-brand"
                             >
                                 <span className="group-has-[:checked]/log:hidden">Show all {rows.length} games</span>
                                 <span className="hidden group-has-[:checked]/log:inline">Show the latest 25</span>
@@ -423,7 +425,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         </h2>
                         <CareerTable lines={nhl} career={profile?.career ?? null} goalie={goalie} />
                         {other.length ? (
-                            <details className={cn('group panel', FLAT)}>
+                            <details className={cn('group panel max-lg:overflow-hidden', FLAT)}>
                                 <summary className="cursor-pointer list-none px-card py-3 text-micro uppercase tracking-label text-fg-3 hover:text-fg-1">
                                     Before the NHL and other leagues · {other.length} seasons
                                 </summary>
@@ -483,7 +485,7 @@ function CareerTable({ lines, career, goalie, bare, showLeague }: { lines: Seaso
             <table className="w-full min-w-[40rem] border-collapse text-caption tabular-nums">
                 <thead>
                     <tr className="border-b border-line text-micro uppercase tracking-label text-fg-3">
-                        <th className={cn('px-3 py-2 text-left font-semibold', PIN)}>Season</th>
+                        <th className={cn('px-3 py-2 text-left font-semibold', PIN, PIN_EDGE)}>Season</th>
                         <th className="px-2 py-2 text-left font-semibold">{showLeague ? 'League · team' : 'Team'}</th>
                         {cols.map(([k]) => (
                             <th key={k} className="px-2 py-2 text-right font-semibold">
@@ -495,7 +497,7 @@ function CareerTable({ lines, career, goalie, bare, showLeague }: { lines: Seaso
                 <tbody>
                     {[...lines].reverse().map((s, i) => (
                         <tr key={`${s.season}-${s.team}-${i}`} className="border-b border-line/60">
-                            <td className={cn('px-3 py-1.5 text-fg-2', PIN)}>{seasonLabel(s.season)}</td>
+                            <td className={cn('px-3 py-1.5 text-fg-2', PIN, PIN_EDGE)}>{seasonLabel(s.season)}</td>
                             <td className="px-2 text-fg-1">{showLeague ? `${s.league} · ${s.team}` : s.team}</td>
                             {cols.map(([k, f]) => (
                                 <td key={k} className="px-2 text-right text-fg-1">
@@ -512,7 +514,7 @@ function CareerTable({ lines, career, goalie, bare, showLeague }: { lines: Seaso
                                 NHL career
                             </td>
                             {/* Below lg the label takes the pinned season cell (a two-column cell can't pin). */}
-                            <td className={cn('px-3 py-2 uppercase tracking-label text-fg-1 lg:hidden', PIN)}>Career</td>
+                            <td className={cn('px-3 py-2 uppercase tracking-label text-fg-1 lg:hidden', PIN, PIN_EDGE)}>Career</td>
                             <td className="lg:hidden" />
                             {cols.map(([k, f]) => (
                                 <td key={k} className="px-2 text-right text-fg-1">
