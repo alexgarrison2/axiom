@@ -97,9 +97,9 @@ function SkaterCard({ r, d, rank }: { r: GameScoreRow; d: number; rank: string }
     );
     return (
         <div className="flex w-[21rem] max-w-full flex-col gap-3">
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
                 <TipFace p={r.player} color={colors[r.player.side]} size={40} />
-                <span className="min-w-0 flex-1 leading-tight">
+                <span className="min-w-[8rem] flex-1 leading-tight">
                     <PlayerLink id={r.player.id} className="block truncate font-bold text-fg-1">
                         {r.player.first} {r.player.last}
                     </PlayerLink>
@@ -202,6 +202,20 @@ export function GameScore() {
         const r = cardRef.current?.getBoundingClientRect();
         if (r) setCardSize(s => (Math.abs(r.width - s.w) > 1 || Math.abs(r.height - s.h) > 1 ? { w: r.width, h: r.height } : s));
     }, [tip]);
+
+    // Phones: a card opened in place under its row is brought fully into view, clear of the bottom tab bar.
+    const openKey = inline && tip?.pinned ? tip.key : null;
+    React.useEffect(() => {
+        if (!openKey) return;
+        const el = cardRef.current;
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        const css = getComputedStyle(document.documentElement);
+        const tabbar = (parseFloat(css.getPropertyValue('--tabbar-h')) || 56) + 16;
+        const top = (parseFloat(css.getPropertyValue('--appbar-h')) || 52) + 64;
+        const over = r.bottom - (window.innerHeight - tabbar);
+        if (over > 0) window.scrollBy({ top: Math.min(over, r.top - 40 - top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }, [openKey]);
 
     // Clicking anywhere else, or Escape, lets go of a pinned card.
     React.useEffect(() => {

@@ -134,6 +134,15 @@ export function Pulse() {
     const [pinT, setPinT] = React.useState<number | null>(null);
     const [wrapRef, width] = useWidth<HTMLDivElement>();
     const compact = width > 0 && width < 640;
+    // Landscape phones (a viewport under 500px tall): shallower lanes so the whole chart fits on screen.
+    const [short, setShort] = React.useState(false);
+    React.useEffect(() => {
+        const update = () => setShort(window.innerHeight < 500 && window.innerWidth < 1024);
+        update();
+        window.addEventListener('resize', update);
+        return () => window.removeEventListener('resize', update);
+    }, []);
+    const tight = compact || short;
     const ink = React.useMemo(() => ({ away: legibleOn(colors.away, PANEL), home: legibleOn(colors.home, PANEL) }), [colors]);
 
     // Remembered metric choices and a shared moment (?t=seconds) load after hydration.
@@ -143,7 +152,7 @@ export function Pulse() {
         if (b) setBarMetricState(b);
         if (r && !(r === 'xg' && m.xgPending && !m.events.some(e => e.xg != null))) setRaceMetricState(r);
         const t = Number(new URLSearchParams(window.location.search).get('t'));
-        if (Number.isFinite(t) && t > 0) setPinT(Math.min(t, m.end));
+        if (Number.isFinite(t) && t > 0) setPinT(Math.min(t, Math.max(0, m.end - 0.5)));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     React.useEffect(() => {
@@ -163,13 +172,13 @@ export function Pulse() {
 
     const domain = Math.max(3600, m.end);
     const W = Math.max(width, 240);
-    const padL = compact ? 30 : 40;
+    const padL = compact ? 36 : 40;
     const padR = compact ? 46 : 54;
     const plot = W - padL - padR;
     const x = (t: number) => padL + (Math.min(t, domain) / domain) * plot;
 
     // Goal pins: greedy rows so collided pins stack instead of hiding each other.
-    const pinR = compact ? 13 : 19;
+    const pinR = tight ? 13 : 19;
     const goals = m.events.filter(e => e.type === 'goal');
     const pinRow = new Map<number, number>();
     const rowEnds: number[] = [];
@@ -187,11 +196,11 @@ export function Pulse() {
 
     // Lanes, top to bottom.
     const pinH = pinR * 2 + 6 + (rows - 1) * pinStep + 14;
-    const winH = compact ? 84 : 120;
-    const barH = compact ? 96 : 136;
-    const raceH = compact ? 72 : 110;
-    const gap = 18;
-    const stripH = compact ? 16 : 20;
+    const winH = short ? 54 : compact ? 84 : 120;
+    const barH = short ? 56 : compact ? 96 : 136;
+    const raceH = short ? 44 : compact ? 72 : 110;
+    const gap = short ? 8 : 18;
+    const stripH = tight ? 16 : 20;
     const winTop = pinH;
     const stripTop = winTop + winH + 8;
     const barTop = stripTop + stripH + 10;
@@ -293,23 +302,44 @@ export function Pulse() {
     };
     const tAt = (e: React.PointerEvent<SVGRectElement>) => {
         const r = e.currentTarget.getBoundingClientRect();
-        return Math.max(0, Math.min(m.end || domain, ((e.clientX - r.left) / r.width) * domain));
+        // Never past the last second played: the right edge of a regulation game reads 3rd 19:59, not OT 0:00.
+        return Math.max(0, Math.min(m.end ? Math.max(0, m.end - 0.5) : domain, ((e.clientX - r.left) / r.width) * domain));
     };
     // A click (or tap) at t: steps onto a goal or penalty right there, lets go of the held moment, or holds t.
-    const pick = (t: number) => {
+    // Touch: tapping the event already flagged lets it go (a mouse moves off it instead).
+    const pick = (t: number, tapped = false) => {
         const near = keyEvents.length ? keyEvents.reduce((b, k) => (Math.abs(k.t - t) < Math.abs(b.t - t) ? k : b)) : null;
         if (near && Math.abs(x(near.t) - x(t)) < 14) {
             setPinT(null);
-            select(near.id);
+            select(tapped && near.id === selected ? null : near.id);
+            if (tapped) touchHeld.current = true;
         } else if (pinT != null && Math.abs(x(pinT) - x(t)) < 8) setPinT(null);
         else {
             select(null);
             setPinT(t);
+            if (tapped) touchHeld.current = true;
         }
     };
     // Touch and pen: a horizontal drag scrubs (holding the moment under the finger), a tap acts like a click,
     // and a vertical swipe is left to the browser so the page still scrolls.
     const touch = React.useRef<{ x: number; y: number; scrub: boolean } | null>(null);
+    // A moment or event held by a touch on the chart: a touch anywhere but the chart and its controls lets it go.
+    const touchHeld = React.useRef(false);
+    const pinTap = React.useRef<{ x: number; y: number } | null>(null);
+    const controlsRef = React.useRef<HTMLDivElement>(null);
+    const held = pinT != null || selected != null;
+    React.useEffect(() => {
+        if (!held) return;
+        const off = (e: PointerEvent) => {
+            const t = e.target as Node;
+            if (e.pointerType === 'mouse' || !touchHeld.current || wrapRef.current?.contains(t) || controlsRef.current?.contains(t)) return;
+            touchHeld.current = false;
+            setPinT(null);
+            select(null);
+        };
+        window.addEventListener('pointerdown', off, true);
+        return () => window.removeEventListener('pointerdown', off, true);
+    }, [held, select, wrapRef]);
     const onMove = (e: React.PointerEvent<SVGRectElement>) => {
         if (e.pointerType === 'mouse') {
             setHover(tAt(e));
@@ -321,6 +351,7 @@ export function Pulse() {
             const dx = Math.abs(e.clientX - t0.x);
             if (dx < 8 || dx < Math.abs(e.clientY - t0.y)) return;
             t0.scrub = true;
+            touchHeld.current = true;
             select(null);
         }
         setPinT(tAt(e));
@@ -332,7 +363,7 @@ export function Pulse() {
         const t0 = touch.current;
         touch.current = null;
         if (e.pointerType === 'mouse' || !t0 || t0.scrub || Math.hypot(e.clientX - t0.x, e.clientY - t0.y) > 10) return;
-        pick(tAt(e));
+        pick(tAt(e), true);
     };
     const onClick = (e: React.MouseEvent<SVGRectElement>) => {
         if (hover == null) return;
@@ -349,7 +380,7 @@ export function Pulse() {
     const describe = (e: GameEvent) => {
         const p = e.player != null ? byId.get(e.player) : undefined;
         if (e.type === 'goal') return `Goal ${m.teams[e.side].tri} · ${shortName(p)}${e.strength !== 'ev' ? ` (${e.strength.toUpperCase()})` : ''}${e.emptyNet ? ' (EN)' : ''}`;
-        return `${m.teams[e.side].tri} penalty · ${shortName(p)}${e.detail ? ` · ${e.detail.replace(/-/g, ' ')}` : ''}${e.minutes ? ` · ${e.minutes} min` : ''}`;
+        return `${m.teams[e.side].tri} penalty · ${shortName(p)}${e.detail ? ` · ${e.detail.replace(/-/g, ' ')}` : ''}${e.minutes ? ` · ${e.minutes}${compact ? '\u00a0' : ' '}min` : ''}`;
     };
 
     // The verdict: how it ended against the pregame call and the market.
@@ -377,14 +408,16 @@ export function Pulse() {
         ? flip
             ? { right: W - chipLeft + 10 }
             : { left: chipLeft + 10 }
-        : { left: chipLeft >= W / 2 ? Math.max(4, chipLeft - 10 - chipW) : Math.min(chipLeft + 10, W - chipW - 4) };
+        : // Phones: over the bars lane (the win line at the playhead stays clear), on the roomier side of the playhead.
+          { left: chipLeft >= W / 2 ? Math.max(4, chipLeft - 10 - chipW) : Math.min(chipLeft + 10, W - chipW - 4) };
+    const chipTop = compact ? barTop + 2 : winTop + 12;
     const lastWin = win[win.length - 1][1];
     let deservedEndY = yWin(finalDeserved) + 4;
     if (Math.abs(deservedEndY - (yWin(lastWin) + 4)) < 13) deservedEndY += deservedEndY >= yWin(lastWin) + 4 ? 13 - (deservedEndY - yWin(lastWin) - 4) : -13;
 
     return (
         <div className="panel overflow-hidden">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-card py-2">
+            <div ref={controlsRef} className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-card py-2">
                 {/* Phones: the three pickers share one sideways-scrolling line above the step buttons. */}
                 <ScrollRegion label="Story chart controls" className="flex items-center gap-x-3 scrollbar-hide max-sm:w-full max-sm:[&>*]:shrink-0 max-sm:[&_[role=radiogroup]]:max-w-none sm:contents">
                 <div className="flex items-center gap-1.5">
@@ -704,6 +737,41 @@ export function Pulse() {
                                 </g>
                             );
                         })}
+                        {/* Touch: the crests are small and stack, so a tap in their lane takes the nearest one (again lets go). */}
+                        <rect
+                            x={0}
+                            y={0}
+                            width={W}
+                            height={winTop}
+                            fill="transparent"
+                            aria-hidden="true"
+                            className="pointer-events-none coarse:pointer-events-auto"
+                            onPointerDown={e => {
+                                pinTap.current = { x: e.clientX, y: e.clientY };
+                            }}
+                            onPointerUp={e => {
+                                const t0 = pinTap.current;
+                                pinTap.current = null;
+                                if (!t0 || Math.hypot(e.clientX - t0.x, e.clientY - t0.y) > 10) return;
+                                const r = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+                                if (!r) return;
+                                const sx = ((e.clientX - r.left) / r.width) * W;
+                                const sy = ((e.clientY - r.top) / r.height) * H;
+                                let best: GameEvent | null = null;
+                                let bd = 30;
+                                for (const g of goals) {
+                                    const d = Math.hypot(x(g.t) - sx, pinR + 3 + (pinRow.get(g.id) ?? 0) * pinStep - sy);
+                                    if (d < bd) {
+                                        bd = d;
+                                        best = g;
+                                    }
+                                }
+                                if (!best) return;
+                                setPinT(null);
+                                select(best.id === selected ? null : best.id);
+                                touchHeld.current = true;
+                            }}
+                        />
                     </svg>
                 ) : (
                     <div className="h-[340px] md:h-[470px]" aria-hidden="true" />
@@ -715,13 +783,13 @@ export function Pulse() {
                         ref={chipRef}
                         className={cn(
                             'pointer-events-none absolute z-10 w-max min-w-[11rem] rounded-card border border-line-strong bg-surface-1/95 px-2.5 py-1.5 text-caption tabular-nums shadow-[0_8px_24px_rgb(0_0_0/0.5)] backdrop-blur-sm',
-                            compact && 'max-w-[min(17rem,calc(100%-8px))]',
+                            compact && 'max-w-[min(12.5rem,calc(100%-8px))]',
                         )}
-                        style={{ top: winTop + 12, ...chipPos }}
+                        style={{ top: chipTop, ...chipPos }}
                     >
-                        <p className="flex items-baseline justify-between gap-3">
-                            <span className="text-fg-2">{clockText(focusT)}</span>
-                            {sel && hover == null && pinT == null ? <span className={cn('font-bold text-fg-1', compact ? 'text-right' : 'truncate')}>{describe(sel)}</span> : null}
+                        <p className={cn('flex justify-between', compact ? 'flex-col items-start gap-0.5' : 'items-baseline gap-3')}>
+                            <span className={cn('text-fg-2', compact && 'shrink-0 whitespace-nowrap')}>{clockText(focusT)}</span>
+                            {sel && hover == null && pinT == null ? <span className={cn('font-bold text-fg-1', compact ? 'line-clamp-2' : 'truncate')}>{describe(sel)}</span> : null}
                         </p>
                         <p className="mt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                             <span className="flex items-center gap-1.5">

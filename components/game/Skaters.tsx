@@ -182,6 +182,21 @@ export function Skaters() {
         return sort.dir === 'desc' ? vb - va : va - vb;
     });
 
+    const pairSelect = (id: string, className?: string) => (
+        <select
+            id={id}
+            value={focusId ?? ''}
+            onChange={e => setFocus(Number(e.target.value))}
+            className={cn('h-8 min-w-0 max-w-[13rem] rounded-control border border-line bg-surface-1 px-2 text-caption uppercase tracking-wide text-fg-1 hover:border-line-strong coarse:h-11', className)}
+        >
+            {rows.map(r => (
+                <option key={r.player.id} value={r.player.id}>
+                    {playerName(r.player)}
+                </option>
+            ))}
+        </select>
+    );
+
     return (
         <GameSection id="skaters" title="Skaters">
             <div className="panel overflow-hidden">
@@ -225,18 +240,7 @@ export function Skaters() {
                             <label className="sr-only" htmlFor="pair-player">
                                 Skater
                             </label>
-                            <select
-                                id="pair-player"
-                                value={focusId ?? ''}
-                                onChange={e => setFocus(Number(e.target.value))}
-                                className="h-8 min-w-0 max-w-[13rem] rounded-control border border-line bg-surface-1 px-2 text-caption uppercase tracking-wide text-fg-1 hover:border-line-strong coarse:h-11"
-                            >
-                                {rows.map(r => (
-                                    <option key={r.player.id} value={r.player.id}>
-                                        {playerName(r.player)}
-                                    </option>
-                                ))}
-                            </select>
+                            {pairSelect('pair-player', 'max-sm:hidden')}
                         </>
                     ) : null}
                     <Segmented
@@ -262,6 +266,15 @@ export function Skaters() {
                         options={[{ value: 'all', label: 'All' }, ...periods.map(p => ({ value: String(p), label: periodLabel(p) }))]}
                     />
                 </ControlRow>
+                {/* Phones: whose opponents / teammates these are, on its own line under the scrolling controls. */}
+                {pairView ? (
+                    <div className="border-b border-line px-card py-2 sm:hidden">
+                        <label className="sr-only" htmlFor="pair-player-m">
+                            Skater
+                        </label>
+                        {pairSelect('pair-player-m', 'w-full max-w-none')}
+                    </div>
+                ) : null}
                 {pairView && pairs ? (
                     <PairTable rows={view === 'comp' ? pairs.opp : pairs.mates} title={view === 'comp' ? 'Opponent' : 'Teammate'} />
                 ) : (
