@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type { MarketOutcome, Prediction } from '@/types/prediction';
 import { evTone, fmtEv, fmtFair, fmtModelPct, marketRows, type MarketRow, type SidesRow } from '@/lib/matchup/markets';
 import { fmtOdds } from '@/lib/matchup/format';
@@ -22,8 +23,12 @@ function Ev({ o, gated }: { o: MarketOutcome | undefined; gated: boolean }) {
     );
 }
 
-/** Shared column template: outcome | book | Pony | win % | edge. Header and every row use it so the columns line up. */
-const GRID = 'grid grid-cols-[minmax(4.25rem,7rem)_2.5rem_2.5rem_2.5rem_3.5rem] items-center gap-x-1.5 coarse:gap-x-2';
+/**
+ * Shared column template: outcome | book | Pony | win % | edge. Header and every row use it so the columns line up.
+ * In a phone-width card the edge column and the touch gaps give a little back so the market labels keep their words whole.
+ */
+const GRID =
+    'grid grid-cols-[minmax(4.25rem,7rem)_2.5rem_2.5rem_2.5rem_3.25rem] items-center gap-x-1.5 [@container(max-width:20.99rem)]:grid-cols-[minmax(3.75rem,7rem)_2.5rem_2.5rem_2.5rem_3.25rem] [@container(min-width:26rem)]:grid-cols-[minmax(4.25rem,7rem)_2.5rem_2.5rem_2.5rem_3.5rem] [@container(min-width:26rem)]:coarse:gap-x-2';
 
 /** One outcome as one line: who, the book price, Pony's price, Pony's win %, and the edge when it is positive. */
 function Outcome({ o, tag, gated, tri }: { o: MarketOutcome | undefined; tag: string; gated: boolean; tri?: string }) {
@@ -64,7 +69,20 @@ function sideTag(row: SidesRow, side: Side, tri: string): string {
 }
 
 function Label({ row }: { row: MarketRow }) {
-    return row.term ? <GlossLink term={row.term}>{row.label}</GlossLink> : <span className="inline-flex min-h-6 items-center">{row.label}</span>;
+    // Words wrap, never inside a word: "3-way" stays whole in a narrow column.
+    // The total ("O 6.5 U") reads as one unit and stays on one line.
+    const words = row.key === 'total' ? [row.label] : row.label.split(' ');
+    const text = (
+        <span>
+            {words.map((w, i) => (
+                <Fragment key={i}>
+                    {i ? ' ' : null}
+                    <span className="whitespace-nowrap">{w}</span>
+                </Fragment>
+            ))}
+        </span>
+    );
+    return row.term ? <GlossLink term={row.term}>{text}</GlossLink> : <span className="inline-flex min-h-6 items-center">{text}</span>;
 }
 
 /**
@@ -86,16 +104,17 @@ export function MarketsTable({ p }: { p: Prediction }) {
                     Est
                 </GlossLink>
             ) : null}
-            <table className="w-full max-w-[32rem]" data-markets>
+            {/* A card under ~336px has no room for the label column: each market's label sits on its own line above its prices. */}
+            <table className="w-full max-w-[32rem] [@container(max-width:20.99rem)]:block" data-markets>
                 <caption className="sr-only">
                     {a} at {h}: every market, book price, Pony price, model % and edge
                 </caption>
-                <thead>
-                    <tr>
-                        <th scope="col" className="w-12 coarse:w-14">
+                <thead className="[@container(max-width:20.99rem)]:block">
+                    <tr className="[@container(max-width:20.99rem)]:block">
+                        <th scope="col" className="w-12 coarse:w-14 [@container(max-width:20.99rem)]:block [@container(max-width:20.99rem)]:w-auto">
                             <span className="sr-only">Market</span>
                         </th>
-                        <th scope="col" className="pb-1 font-medium">
+                        <th scope="col" className="pb-1 font-medium [@container(max-width:20.99rem)]:block">
                             <div className={cn(GRID, 'text-micro uppercase tracking-label text-fg-3')}>
                                 <span className="sr-only">Outcome</span>
                                 <span />
@@ -109,13 +128,19 @@ export function MarketsTable({ p }: { p: Prediction }) {
                         </th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className="[@container(max-width:20.99rem)]:block">
                     {rows.map(r => (
-                        <tr key={r.key} data-market={r.key} data-gated={r.gated || undefined} className="border-t border-line align-top">
-                            <th scope="row" className="w-12 whitespace-normal break-words py-2 pr-2 text-left align-top text-micro font-medium uppercase tracking-wide text-fg-3 coarse:w-14">
+                        <tr key={r.key} data-market={r.key} data-gated={r.gated || undefined} className="border-t border-line align-top [@container(max-width:20.99rem)]:block">
+                            <th
+                                scope="row"
+                                className={cn(
+                                    'w-12 whitespace-normal py-2 pr-2 text-left align-top text-micro font-medium uppercase tracking-wide text-fg-3 coarse:w-14 [@container(max-width:20.99rem)]:block [@container(max-width:20.99rem)]:w-auto [@container(max-width:20.99rem)]:pb-0',
+                                    r.kind === 'sides' ? null : '[@container(max-width:20.99rem)]:p-0',
+                                )}
+                            >
                                 {r.kind === 'sides' ? <Label row={r} /> : <span className="sr-only">{r.label}</span>}
                             </th>
-                            <td className="py-1">
+                            <td className="py-1 [@container(max-width:20.99rem)]:block">
                                 {r.kind === 'sides' ? (
                                     <>
                                         <Outcome o={r.away} tag={sideTag(r, 'away', a)} gated={r.gated} tri={r.key === 'total' ? undefined : a} />

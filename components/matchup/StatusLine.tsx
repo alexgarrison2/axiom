@@ -11,11 +11,11 @@ export function StatusLine({ p, phase, live }: { p: Prediction; phase: Phase; li
     if (phase === 'live') {
         const sog = live && live.away.sog != null && live.home.sog != null ? `SOG ${live.away.sog}–${live.home.sog}` : null;
         return (
-            <span className="flex min-w-0 items-center gap-2.5">
+            <span className="flex min-w-0 items-center gap-2.5 [@container(max-width:20.99rem)]:gap-2">
                 <span aria-hidden="true" className="live-dot motion-safe:animate-pulse" />
                 <span className="sr-only">Live, </span>
-                <span className="text-body-sm font-bold uppercase tracking-[0.14em] cq-md:tracking-[0.22em] text-pos">{liveClock(live)}</span>
-                {sog ? <span className="text-micro tracking-wide text-fg-3">{sog}</span> : null}
+                <span className="whitespace-nowrap text-body-sm font-bold uppercase tracking-[0.14em] cq-md:tracking-[0.22em] text-pos [@container(max-width:20.99rem)]:tracking-[0.06em]">{liveClock(live)}</span>
+                {sog ? <span className="whitespace-nowrap text-micro tracking-wide text-fg-3 [@container(max-width:20.99rem)]:tracking-normal">{sog}</span> : null}
             </span>
         );
     }

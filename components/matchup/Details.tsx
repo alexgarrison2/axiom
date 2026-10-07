@@ -67,7 +67,7 @@ export default function Details({ p, phase, implication, onCollapse, tab: tabPro
                 id={panelId}
                 role="region"
                 aria-label={`${TABS.find(t => t.value === tab)?.label ?? 'Details'}: ${game}`}
-                className={cn('overflow-x-clip', tab === 'matchup' && 'mx-auto max-w-[52rem]')}
+                className={cn('overflow-x-clip', tab === 'matchup' && 'mx-auto max-w-[52rem] max-md:w-full')}
             >
                 {tab === 'form' ? <FormPanel p={p} state={state} /> : null}
                 {tab === 'lines' ? <LineupsPanel p={p} state={state} /> : null}

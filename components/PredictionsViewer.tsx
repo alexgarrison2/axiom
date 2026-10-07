@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState, useSyncExternalStore, useTransition } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Prediction } from '@/types/prediction';
 import { biggestGames, findImplication, type GameImplicationsData } from '@/utils/implications';
@@ -77,6 +77,7 @@ export default function PredictionsViewer({
     const [pending, startTransition] = useTransition();
     // Server and hydration render false: the rail + pane is client-only (see SlatePane above).
     const wide = useMediaQuery(XL_QUERY);
+    const dayNav = useRef<HTMLElement>(null);
 
     const dates = useMemo(() => [...new Set(predictions.map(p => p.date))].sort(), [predictions]);
     const date = picked ?? (explicitDate || today === serverToday ? initialDate : defaultDate(dates, today));
@@ -142,8 +143,43 @@ export default function PredictionsViewer({
         const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
         el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
         const t = window.setTimeout(() => setTarget(null), 2400);
-        return () => window.clearTimeout(t);
+        // Phones: the page can still grow under the jump (the Pony Score night loads below the
+        // slate), which clamps the first scroll short of the card, and the cards' entrance rise
+        // (≤680ms) moves the target while it is measured. Re-aim while the card is highlighted,
+        // unless the reader has started scrolling themselves.
+        let touched = false;
+        const stop = () => (touched = true);
+        const phone = window.matchMedia?.('(max-width: 1023.98px)').matches;
+        const aim = () => {
+            if (!touched) el.scrollIntoView({ block: 'start', behavior: 'auto' });
+        };
+        const ro = phone && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(aim) : null;
+        ro?.observe(document.body);
+        const settled = phone ? window.setTimeout(aim, 720) : undefined;
+        window.addEventListener('touchstart', stop, { passive: true });
+        window.addEventListener('wheel', stop, { passive: true });
+        window.addEventListener('keydown', stop);
+        return () => {
+            window.clearTimeout(t);
+            window.clearTimeout(settled);
+            ro?.disconnect();
+            window.removeEventListener('touchstart', stop);
+            window.removeEventListener('wheel', stop);
+            window.removeEventListener('keydown', stop);
+        };
     }, [target, date]);
+
+    // A day chip off the end of the row (a deep-linked date) is scrolled into view, sideways only.
+    useEffect(() => {
+        const nav = dayNav.current;
+        const chip = nav?.querySelector<HTMLElement>('[aria-current="date"]');
+        if (!nav || !chip || nav.scrollWidth <= nav.clientWidth) return;
+        const pad = 16;
+        const n = nav.getBoundingClientRect();
+        const c = chip.getBoundingClientRect();
+        if (c.right > n.right - pad) nav.scrollLeft += c.right - n.right + pad;
+        else if (c.left < n.left + pad) nav.scrollLeft -= n.left + pad - c.left;
+    }, [date]);
 
     // Client-side day changes keep the tab title in step with the server's dated title.
     useEffect(() => {
@@ -166,8 +202,10 @@ export default function PredictionsViewer({
                     <span className="sr-only">NHL predictions for </span>
                     {railHeading(headDate, today)}
                 </h1>
-                <nav aria-label="Game day" className="order-3 -mx-1 w-[calc(100%+0.5rem)] min-w-0 overflow-x-auto px-1 py-1 scrollbar-hide md:order-2 md:w-auto">
-                    <ul className="flex items-center gap-2">
+                {/* Phones: the chip row runs to the screen edges, so a chip cut by the edge says the row scrolls. */}
+                <nav ref={dayNav} aria-label="Game day" className="order-3 -mx-4 w-[calc(100%+2rem)] min-w-0 overflow-x-auto py-1 scrollbar-hide md:order-2 md:-mx-1 md:w-auto md:px-1">
+                    {/* The gutter is the list's own padding so the row also scrolls clear of the right edge. */}
+                    <ul className="flex w-max items-center gap-2 px-4 md:w-auto md:px-0">
                         {chips.map(([d, n]) => {
                             const on = d === date;
                             return (

@@ -50,7 +50,7 @@ export function MobileTabBar({ playoffsSeason }: { playoffsSeason?: string | nul
 
     const tabClass = (active: boolean) =>
         cn(
-            'relative flex h-full min-h-11 flex-1 flex-col items-center justify-center gap-1 text-micro font-medium uppercase tracking-[0.08em] transition-colors',
+            'relative flex h-full min-h-11 flex-1 flex-col items-center justify-center gap-1 text-micro font-medium uppercase tracking-[0.08em] transition-colors max-[359px]:text-[11px] max-[359px]:tracking-[0.02em]',
             active ? 'text-brand' : 'text-fg-3 active:text-fg-1',
         );
 

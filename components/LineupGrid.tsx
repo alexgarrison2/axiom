@@ -206,7 +206,13 @@ export default function LineupGrid({
                         </span>
                     ) : null}
                     {seasonTag}
-                    {hasLines && age ? <span title={d.lineupSource ? `${d.lineupSource} via DailyFaceoff` : 'DailyFaceoff'}>· {age}</span> : null}
+                    {hasLines && age ? (
+                        <span title={d.lineupSource ? `${d.lineupSource} via DailyFaceoff` : 'DailyFaceoff'}>
+                            {/* The separator only follows something: alone on a narrow card the age stands without it. */}
+                            {(d.grade && !d.grade.parts) || seasonTag ? '· ' : <span className={titleWideOnly ? 'max-lg:hidden' : undefined}>· </span>}
+                            {age}
+                        </span>
+                    ) : null}
                 </span>
             </div>
             {d.grade?.parts ? <LineupSummary grade={d.grade} /> : null}

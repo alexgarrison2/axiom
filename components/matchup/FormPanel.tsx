@@ -22,8 +22,9 @@ const OUTCOME: Record<Outcome, { text: string; cls: string; label: string }> = {
 };
 
 /** Game-log columns: date, opponent, result + score, xG split, shots, goalie. Shots appear once the column is wide enough. */
+// Below ~380px the opponent column widens to hold the "vs"/"@" mark and the crest without running into the result.
 const COLS =
-    'grid grid-cols-[2.9rem_2.25rem_4.75rem_minmax(0,1fr)] items-center gap-x-2.5 cq-sm:grid-cols-[2.9rem_minmax(2.25rem,1fr)_4.75rem_4.5rem_6rem_6rem] cq-xl:grid-cols-[3.25rem_minmax(2.25rem,1fr)_4.75rem_5rem_6.25rem_6.25rem_3.25rem_3.25rem_3.25rem]';
+    'grid grid-cols-[2.9rem_2.25rem_4.75rem_minmax(0,1fr)] items-center gap-x-2.5 [@container(max-width:23.74rem)]:grid-cols-[2.75rem_3rem_4.5rem_minmax(0,1fr)] cq-sm:grid-cols-[2.9rem_minmax(2.25rem,1fr)_4.75rem_4.5rem_6rem_6rem] cq-xl:grid-cols-[3.25rem_minmax(2.25rem,1fr)_4.75rem_5rem_6.25rem_6.25rem_3.25rem_3.25rem_3.25rem]';
 
 /** The xG split of one game as a tiny bar: our share in the team's colour, theirs left dark. */
 function XgBar({ f, a, color }: { f: number; a: number; color: string }) {

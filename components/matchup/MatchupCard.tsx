@@ -216,6 +216,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
     const chip = seriesChip(p, seriesScore);
     const awayChip = phase === 'pre' ? teamChip(p, 'away') : null;
     const homeChip = phase === 'pre' ? teamChip(p, 'home') : null;
+    const betRow = phase === 'pre' && recommendedBet(p) != null;
     const awayLost = phase === 'final' && scored && live.away.score < live.home.score;
     const homeLost = phase === 'final' && scored && live.home.score < live.away.score;
 
@@ -250,7 +251,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
             aria-labelledby={finalText ? `${titleId} ${resultId}` : titleId}
             data-phase={phase}
             className={cn(
-                'panel team-wash panel-hover scroll-mt-[calc(var(--appbar-h)+12px)] transition-[box-shadow,border-color] duration-300 [container-type:inline-size]',
+                'panel team-wash panel-hover scroll-mt-[calc(var(--appbar-h)+12px)] max-lg:scroll-mt-0 transition-[box-shadow,border-color] duration-300 [container-type:inline-size]',
                 highlighted && 'border-brand shadow-glow',
             )}
             style={washVars(colors.away, colors.home)}
@@ -289,7 +290,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
 
                 {/* Teams. The h2 is the matchup name only: it holds the expand toggle, whose hit area stretches over the card summary. */}
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 font-mono cq-sm:gap-2">
-                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!scored} chip={awayChip} />
+                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!started} chip={awayChip} />
                     {finalText ? (
                         <span id={resultId} className="sr-only">
                             {finalText}
@@ -356,7 +357,7 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                             </button>
                         )}
                     </h2>
-                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!scored} chip={homeChip} />
+                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!started} chip={homeChip} />
                 </div>
 
                 {forecast ? (
@@ -380,10 +381,18 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                     </div>
                 )}
 
-                {/* Footer: tricode + book odds under each end of the bar, our odds and projected goals under them, the flag in the middle. */}
-                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+                {/* Footer: tricode + book odds under each end of the bar, our odds and projected goals under them, the flag in the middle.
+                    A phone-width card has no room for the +EV pill between the two odds stacks: it drops to its own row under them. */}
+                <div
+                    className={cn(
+                        'grid items-center gap-2',
+                        betRow
+                            ? 'grid-cols-2 gap-y-2.5 [@container(min-width:26rem)]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] [@container(min-width:26rem)]:gap-y-2'
+                            : 'grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]',
+                    )}
+                >
                     <FooterSide p={p} side="away" phase={phase} />
-                    <span className="text-center">
+                    <span className={cn('text-center', betRow && 'col-span-2 row-start-2 [@container(min-width:26rem)]:col-span-1 [@container(min-width:26rem)]:row-start-auto')}>
                         <Flag p={p} phase={phase} live={live} />
                     </span>
                     <FooterSide p={p} side="home" phase={phase} />

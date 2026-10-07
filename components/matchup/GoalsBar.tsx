@@ -26,7 +26,7 @@ export function GoalsBar({ away, home, ax, hx, line, colors }: { away: string; h
         return (
             <span
                 aria-hidden="true"
-                className={cn('absolute inset-y-0 flex items-center gap-1.5 overflow-hidden px-1.5', side === 'away' ? 'left-0 rounded-l-bar' : 'rounded-r-bar')}
+                className={cn('absolute inset-y-0 flex items-center gap-1.5 overflow-hidden px-1.5 max-lg:[container-type:inline-size]', side === 'away' ? 'left-0 rounded-l-bar' : 'rounded-r-bar')}
                 style={{
                     left: side === 'home' ? `${pos(ax)}%` : undefined,
                     width: `${pos(val)}%`,
@@ -38,7 +38,8 @@ export function GoalsBar({ away, home, ax, hx, line, colors }: { away: string; h
                 }}
             >
                 <span className="wb-hatch absolute inset-0" />
-                <Crest tri={tri} size={28} className="relative drop-shadow-none" />
+                {/* Phones: a segment too short for crest and number keeps the number. */}
+                <Crest tri={tri} size={28} className="relative drop-shadow-none max-lg:hidden max-lg:[@container(min-width:5.25rem)]:block" />
                 <span className="num-pct relative text-[20px] leading-none">{val.toFixed(2)}</span>
             </span>
         );

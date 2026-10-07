@@ -44,9 +44,10 @@ function Row({ r, rank, players, reach }: { r: (string | number)[]; rank: number
     const p = players[String(id)];
     const x = (v: number) => 50 + (v / reach) * 48;
     return (
-        <li className="grid grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_5.5rem_3.5rem] items-center gap-x-2.5 py-1.5">
+        // Phone-width panels give the name the room: a shorter bar (same scale, same parts) and tighter gaps.
+        <li className="grid grid-cols-[1rem_2rem_minmax(0,1fr)_2.5rem_3.25rem] items-center gap-x-2 py-1.5 [@container(min-width:18rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_3.5rem_3.5rem] [@container(min-width:26rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_5.5rem_3.5rem] [@container(min-width:26rem)]:gap-x-2.5">
             <span className="text-right text-micro tabular-nums text-fg-3">{rank}</span>
-            <span className="block h-9 w-9 overflow-hidden rounded-full border-2 bg-surface-2" style={{ borderColor: teamPalette(team).primary }}>
+            <span className="block h-8 w-8 overflow-hidden rounded-full border-2 bg-surface-2 [@container(min-width:18rem)]:h-9 [@container(min-width:18rem)]:w-9" style={{ borderColor: teamPalette(team).primary }}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshot */}
                 {p?.[4] ? <img src={p[4]} alt="" width={36} height={36} loading="lazy" className="headshot h-full w-full" /> : null}
             </span>
@@ -54,7 +55,7 @@ function Row({ r, rank, players, reach }: { r: (string | number)[]; rank: number
                 <Link href={`/players/${id}`} className="block truncate font-bold text-fg-1 underline-offset-4 hover:text-brand hover:underline">
                     {p ? `${p[0].charAt(0)}. ${p[1]}` : id}
                 </Link>
-                <Link href={`/games/${game}`} className="flex items-center gap-1 text-micro text-fg-3 hover:text-fg-1">
+                <Link href={`/games/${game}`} className="flex items-center gap-1 whitespace-nowrap text-micro text-fg-3 hover:text-fg-1">
                     {/* eslint-disable-next-line @next/next/no-img-element -- team logo */}
                     <img src={`/logos/${team}.svg`} alt="" width={14} height={14} className="h-3.5 w-3.5" />
                     {team} vs {opp}
@@ -102,7 +103,7 @@ export function PonyNight({ date }: { date: string }) {
                 <h2 id="pony-night-h" className="heading-section">
                     Pony score
                 </h2>
-                <Link href={`/players/pony?from=${date}&to=${date}&season=${seasonOf(date)}`} className="text-micro uppercase tracking-label text-fg-3 underline-offset-4 hover:text-fg-1 hover:underline">
+                <Link href={`/players/pony?from=${date}&to=${date}&season=${seasonOf(date)}`} className="text-micro uppercase tracking-label text-fg-3 underline-offset-4 hover:text-fg-1 hover:underline coarse:relative coarse:after:absolute coarse:after:-inset-x-2 coarse:after:-inset-y-3.5 coarse:after:content-['']">
                     Full night
                 </Link>
             </div>
@@ -111,7 +112,7 @@ export function PonyNight({ date }: { date: string }) {
                     ['Top', day.top],
                     ['Bottom', day.bottom],
                 ].map(([title, list]) => (
-                    <div key={title as string} className="panel px-card py-3">
+                    <div key={title as string} className="panel px-card py-3 [container-type:inline-size]">
                         <p className="label mb-1">{title as string}</p>
                         <ol className="divide-y divide-line/60">
                             {(list as (string | number)[][]).map((r, i) => (
