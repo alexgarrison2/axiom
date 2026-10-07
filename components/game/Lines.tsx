@@ -18,7 +18,8 @@ import { useWidth } from './Pulse';
  *   - bars between linemates grow with even-strength time together, the
  *     centre in the middle of his line; hovering a player (box or Minutes
  *     row) lights his boxes, everyone he shared a line, pair or unit with,
- *     and dashed links to partners on other lines, and fades everyone else;
+ *     and his links to partners on other lines (drawn muted at rest, 60s+
+ *     together, thicker with more time), and fades everyone else;
  *   - the top two power-play and penalty-kill units, with their own markers;
  *   - the goalie's share of the game with each goal against;
  *   - every skater's minutes at even strength, on the power play and on the
@@ -173,15 +174,26 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                             {t.text}
                         </text>
                     ))}
-                    {/* Links to players on other lines: only for the focused player, under the boxes. */}
+                    {/* Links to players on other lines (60s+ together), under the boxes: muted at rest, lit for the focused player. */}
                     {links
-                        .filter(l => !l.inLine && focus != null && (l.a.id === focus || l.b.id === focus))
+                        .filter(l => !l.inLine)
                         .map((l, i) => {
                             const up = l.a.y < l.b.y ? l.a : l.b;
                             const dn = up === l.a ? l.b : l.a;
                             const k = Math.min(1, l.t / maxPair);
+                            const mine = focus != null && (l.a.id === focus || l.b.id === focus);
                             return (
-                                <line key={`x${i}`} x1={up.x + up.w / 2} y1={up.y + BOX_H} x2={dn.x + dn.w / 2} y2={dn.y - NAME_H + 2} className="stroke-brand" strokeOpacity={0.35 + 0.4 * k} strokeWidth={1 + 2 * k} strokeDasharray="4 3">
+                                <line
+                                    key={`x${i}`}
+                                    x1={up.x + up.w / 2}
+                                    y1={up.y + BOX_H}
+                                    x2={dn.x + dn.w / 2}
+                                    y2={dn.y - NAME_H}
+                                    className={`transition-opacity ${mine ? 'stroke-brand' : 'stroke-fg-3'}`}
+                                    strokeOpacity={mine ? 0.75 : focus != null ? 0.08 : 0.3}
+                                    strokeWidth={1 + 8 * k}
+                                    strokeLinecap="round"
+                                >
                                     <title>{`${label(l.a.id)} with ${label(l.b.id)}: ${clockOf(l.t)} at even strength`}</title>
                                 </line>
                             );
@@ -191,8 +203,9 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                         .filter(l => l.inLine)
                         .map((l, i) => {
                             const h = 2 + 9 * Math.min(1, l.t / maxPair);
+                            const faded = dim(l.a.id, l.ctx) || dim(l.b.id, l.ctx);
                             return (
-                                <rect key={`l${i}`} x={l.a.x + l.a.w} y={l.a.y + BOX_H / 2 - h / 2} width={Math.max(0, l.b.x - (l.a.x + l.a.w))} height={h} className="fill-line-strong transition-opacity" opacity={dim(l.a.id, l.ctx) || dim(l.b.id, l.ctx) ? 0.3 : 1}>
+                                <rect key={`l${i}`} x={l.a.x + l.a.w} y={l.a.y + BOX_H / 2 - h / 2} width={Math.max(0, l.b.x - (l.a.x + l.a.w))} height={h} className="fill-fg-3 transition-opacity" opacity={faded ? 0.12 : focus != null ? 0.75 : 0.55}>
                                     <title>{`${label(l.a.id)} with ${label(l.b.id)}: ${clockOf(l.t)}`}</title>
                                 </rect>
                             );
@@ -342,7 +355,7 @@ function Legend() {
             <span className="flex items-center gap-1.5">{mark('var(--pos)')} Goal for</span>
             <span className="flex items-center gap-1.5">{mark('var(--neg)')} Goal against</span>
             <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-5 rounded-full bg-line-strong" /> Time together
+                <span className="h-1.5 w-5 rounded-full bg-fg-3/55" /> Time together
             </span>
             <span className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'rgb(var(--text-3-rgb) / 0.55)' }} /> ES
