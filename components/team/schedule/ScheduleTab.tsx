@@ -17,7 +17,7 @@ import { projectRecord } from '@/lib/schedule/record';
 import { MonthCalendar } from './MonthCalendar';
 import { RhythmStrip } from './RhythmStrip';
 import { TravelMap, type NaGeo } from './TravelMap';
-import { dateRange, defaultGame, focusTotals, inFocus, miles, monthKey, monthLong, monthShort, months as monthsOf, type Focus, type Lens } from './schedule-ui';
+import { dateRange, daysOff, defaultGame, focusTotals, inFocus, miles, monthKey, monthLong, monthShort, months as monthsOf, type Focus, type Lens } from './schedule-ui';
 
 const GEO_URL = '/data/geo/north-america.json';
 
@@ -250,7 +250,7 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
                             {focusChip}
                         </FilterChip>
                     ) : null}
-                    <ProjectedRecord p={projection} range={projRange} className="w-full md:ml-auto md:w-auto md:justify-end" />
+                    <ProjectedRecord p={projection} range={projRange} daysOff={daysOff(games, focus)} className="w-full md:ml-auto md:w-auto md:justify-end" />
                 </div>
                 <RhythmStrip
                     schedule={schedule}

@@ -56,6 +56,27 @@ export function inFocus(g: SchedGame, focus: Focus): boolean {
     }
 }
 
+/**
+ * Days without a game in the focus: a month counts its calendar days inside
+ * the season (first to last game), a trip or stretch the days from its first
+ * game to its last; minus the game days.
+ */
+export function daysOff(all: SchedGame[], focus: Focus): number | null {
+    const gs = all.filter(g => inFocus(g, focus));
+    if (!gs.length || !all.length) return null;
+    const day = (d: string) => Date.parse(`${d}T12:00:00Z`) / 86_400_000;
+    let from = day(gs[0].date);
+    let to = day(gs[gs.length - 1].date);
+    if (focus.kind === 'month' || focus.kind === 'season') {
+        const y = Number((focus.kind === 'month' ? focus.key : gs[0].date).slice(0, 4));
+        const m = Number((focus.kind === 'month' ? focus.key : gs[0].date).slice(5, 7));
+        from = focus.kind === 'month' ? Math.max(day(all[0].date), Date.UTC(y, m - 1, 1, 12) / 86_400_000) : day(all[0].date);
+        to = focus.kind === 'month' ? Math.min(day(all[all.length - 1].date), Date.UTC(y, m, 0, 12) / 86_400_000) : day(all[all.length - 1].date);
+    }
+    const gameDays = new Set(gs.map(g => g.date)).size;
+    return Math.max(0, Math.round(to - from) + 1 - gameDays);
+}
+
 const DENSE: Tag[] = ['3IN4', '4IN6', '5IN8'];
 export function inLens(g: SchedGame, lens: Lens): boolean {
     switch (lens) {

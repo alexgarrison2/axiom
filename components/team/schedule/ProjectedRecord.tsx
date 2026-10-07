@@ -12,9 +12,10 @@ const Dot = () => (
 /**
  * One line for the focused month / trip / season: the record so far, the
  * model's projected record and expected points of those possible (magenta),
- * and quietly the 10th-90th percentile of points.
+ * quietly the likely range of points (10th-90th percentile), and the days
+ * off in it.
  */
-export function ProjectedRecord({ p, range, className }: { p: RecordProjection; range?: [number, number] | null; className?: string }) {
+export function ProjectedRecord({ p, range, daysOff, className }: { p: RecordProjection; range?: [number, number] | null; daysOff?: number | null; className?: string }) {
     if (!p.games) return null;
     const projected = p.record && p.pts != null;
     const lo = range ?? p.range;
@@ -35,8 +36,8 @@ export function ProjectedRecord({ p, range, className }: { p: RecordProjection; 
                     <span>
                         <span className="font-bold tabular-nums text-model">{Math.round(p.pts!)}</span> of {p.possible} pts
                         {lo && lo[1] > lo[0] ? (
-                            <span className="ml-1.5 tabular-nums normal-case tracking-normal text-fg-3" title="10th to 90th percentile">
-                                ({lo[0]}–{lo[1]})
+                            <span className="ml-1.5 text-fg-3" title="Points in 8 of 10 simulated outcomes (10th to 90th percentile)">
+                                likely <span className="tabular-nums normal-case tracking-normal">{lo[0]}–{lo[1]}</span>
                             </span>
                         ) : null}
                     </span>
@@ -48,6 +49,17 @@ export function ProjectedRecord({ p, range, className }: { p: RecordProjection; 
                         <span className="font-bold tabular-nums text-fg-1">{p.actualPts}</span> of {p.possible} pts
                     </span>
                 </>
+            ) : null}
+            {daysOff != null ? (
+                // On phones this item takes its own line, so its separator shows only where the line holds everything.
+                <span className="max-md:basis-full">
+                    {p.played || projected ? (
+                        <span className="max-md:hidden">
+                            <Dot />{' '}
+                        </span>
+                    ) : null}
+                    <span className="font-bold tabular-nums text-fg-1">{daysOff}</span> {daysOff === 1 ? 'day' : 'days'} off
+                </span>
             ) : null}
         </p>
     );
