@@ -220,6 +220,10 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
                             <stop offset="0" stopColor="var(--panel-top)" stopOpacity="1" />
                             <stop offset="0.28" stopColor="var(--panel-top)" stopOpacity="0" />
                         </linearGradient>
+                        <radialGradient id="sched-crest-shadow">
+                            <stop offset="0" stopColor="#000" stopOpacity="0.55" />
+                            <stop offset="1" stopColor="#000" stopOpacity="0" />
+                        </radialGradient>
                         <style>{`@keyframes sched-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}.sched-draw{stroke-dasharray:1;animation:sched-draw .9s cubic-bezier(.16,1,.3,1) both}@media (prefers-reduced-motion:reduce){.sched-draw{animation:none}}`}</style>
                     </defs>
                     <g transform={matrix}>
@@ -306,7 +310,11 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
                                 <circle cx={x} cy={y} r={3} fill="rgb(var(--text-1-rgb))" />
                                 {picked ? <circle cx={x} cy={y} r={7} fill="none" stroke="rgb(var(--brand-rgb))" strokeWidth={1.75} /> : null}
                                 {showCrests ? (
-                                    <image href={`/logos/${v.crest}.svg`} x={x - crestSize / 2} y={y - stem - crestSize} width={crestSize} height={crestSize} style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,.7))' }} />
+                                    <>
+                                        {/* A painted soft shadow, not a CSS filter: Safari draws filtered SVG images as black tiles while the map moves. */}
+                                        <ellipse cx={x} cy={y - stem - crestSize * 0.12} rx={crestSize * 0.55} ry={crestSize * 0.5} fill="url(#sched-crest-shadow)" />
+                                        <image href={`/logos/${v.crest}.svg`} x={x - crestSize / 2} y={y - stem - crestSize} width={crestSize} height={crestSize} />
+                                    </>
                                 ) : null}
                             </g>
                         );
