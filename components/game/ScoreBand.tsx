@@ -216,17 +216,33 @@ export function ScoreBand() {
 
     return (
         <header className="panel overflow-hidden">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 p-card md:gap-8 md:px-8 md:py-6">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 p-card max-[374px]:items-start md:gap-8 md:px-8 md:py-6">
                 <Team side="away" />
-                <div className="flex flex-col items-center gap-2 text-center">
+                {/* Narrow phones: the tricodes reach into the middle column, so the status starts just below their line. */}
+                <div className="flex flex-col items-center gap-2 text-center max-[374px]:pt-[1.375rem]">
                     <span
                         className={cn(
                             'rounded-chip px-2 py-0.5 text-micro font-bold uppercase tracking-label',
                             m.state === 'live' ? 'bg-pos/10 text-pos shadow-glow' : m.state === 'final' ? 'bg-surface-3 text-fg-1' : 'text-fg-3',
                         )}
                     >
-                        {status}
-                        {m.live && !m.live.intermission ? ` · ${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : ''}
+                        {/* Under 360 the live clock takes a second line and an intermission reads "End P2", so the chip stays between the scores. */}
+                        {m.live?.intermission ? (
+                            <>
+                                <span className="max-[359px]:hidden">{status}</span>
+                                <span className="min-[360px]:hidden">End {m.live.period <= 3 ? `P${m.live.period}` : 'OT'}</span>
+                            </>
+                        ) : (
+                            status
+                        )}
+                        {m.live && !m.live.intermission ? (
+                            <>
+                                <span className="max-[359px]:hidden"> · </span>
+                                <span className="max-[359px]:block">
+                                    {m.live.period <= 3 ? `P${m.live.period}` : 'OT'} {m.live.remaining}
+                                </span>
+                            </>
+                        ) : null}
                     </span>
                     <span className="text-micro uppercase tracking-label text-fg-3">
                         {m.state === 'pre' ? (
