@@ -36,13 +36,16 @@ interface Node {
     w: number;
 }
 
-function Markers({ list, x, y, w, end }: { list: { t: number; kind: MarkerKind }[]; x: number; y: number; w: number; end: number }) {
+function Markers({ list, x, y, w, end, narrow = false }: { list: { t: number; kind: MarkerKind }[]; x: number; y: number; w: number; end: number; narrow?: boolean }) {
+    // A phone-width box with more goals than room (a season merged): small plain dots, no ticks, so it reads as a texture.
+    const dense = narrow && list.length * 7 > w;
     return (
         <>
             {list.map((mk, i) => {
                 const mx = x + 4 + (Math.min(mk.t, end) / end) * (w - 8);
                 const cy = y + BOX_H / 2;
                 const fill = mk.kind === 'ga' ? 'var(--neg)' : 'var(--pos)';
+                if (dense) return <circle key={i} cx={mx} cy={cy} r={1.6} fill={fill} opacity={0.85} />;
                 return (
                     <g key={i}>
                         {mk.kind === 'goal' ? <line x1={mx} x2={mx} y1={y - 3} y2={y + BOX_H + 3} className="stroke-fg-1" strokeWidth={1.4} /> : null}
@@ -210,7 +213,7 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                             </text>
                             <rect x={n.x} y={n.y} width={n.w} height={BOX_H} rx={3} className="fill-surface-3" stroke={focus === n.id ? 'var(--brand)' : (n.tint ?? 'var(--line-strong)')} strokeWidth={focus === n.id || n.tint ? 1.4 : 1} />
                             {n.tint ? <rect x={n.x} y={n.y} width={n.w} height={BOX_H} rx={3} fill={n.tint} opacity={0.14} /> : null}
-                            <Markers list={goalMarkers(m, n.id, side, n.ctx)} x={n.x} y={n.y} w={n.w} end={end} />
+                            <Markers list={goalMarkers(m, n.id, side, n.ctx)} x={n.x} y={n.y} w={n.w} end={end} narrow={width < 640} />
                         </g>
                     ))}
                     {data.goalie && goalieY >= 0 ? (
@@ -220,7 +223,7 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                             </text>
                             <rect x={pad} y={goalieY} width={W - pad * 2} height={BOX_H} rx={3} className="fill-track" />
                             <rect x={pad} y={goalieY} width={(W - pad * 2) * Math.min(1, data.goalie.toi / end)} height={BOX_H} rx={3} className="fill-surface-3" stroke="var(--goalie)" strokeOpacity={0.6} />
-                            <Markers list={data.goalieGa.map(e => ({ t: e.t, kind: 'ga' as MarkerKind }))} x={pad} y={goalieY} w={W - pad * 2} end={end} />
+                            <Markers list={data.goalieGa.map(e => ({ t: e.t, kind: 'ga' as MarkerKind }))} x={pad} y={goalieY} w={W - pad * 2} end={end} narrow={width < 640} />
                         </g>
                     ) : null}
                 </svg>

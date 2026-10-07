@@ -6,6 +6,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { inPeriod, isUnblocked, matchTeamStrength, periodLabel, shortName, type TeamStrength } from '@/lib/game/analytics';
 import { SIDES, type GameEvent, type Side } from '@/lib/game/types';
+import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
 import { useWidth } from './Pulse';
 import { RinkMarkings } from './Rink';
@@ -205,7 +206,7 @@ export function Shots() {
             aside={<Segmented label="Shot view" size="sm" value={view} onChange={setView} options={[{ value: 'map', label: 'Map' }, { value: 'heat', label: 'Density' }]} optionClassName="px-2.5" />}
         >
             <div className="panel overflow-hidden">
-                <div className="flex flex-wrap items-center gap-2 border-b border-line px-card py-2">
+                <ControlRow label="Shot map controls">
                     <Segmented
                         label="Strength"
                         size="sm"
@@ -254,7 +255,7 @@ export function Shots() {
                             </select>
                         </>
                     ) : null}
-                </div>
+                </ControlRow>
 
                 {view === 'map' ? (
                     <div className="p-card">

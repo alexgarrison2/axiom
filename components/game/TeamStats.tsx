@@ -5,6 +5,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { periodLabel, powerPlays, teamTotals, type TeamStrength, type TeamTotals } from '@/lib/game/analytics';
 import { SIDES, type Side } from '@/lib/game/types';
+import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
 
 interface RowDef {
@@ -85,7 +86,7 @@ export function TeamStats() {
     return (
         <GameSection id="team" title="Team stats">
             <div className="panel overflow-hidden">
-                <div className="flex flex-wrap items-center gap-2 border-b border-line px-card py-2">
+                <ControlRow label="Team stats controls">
                     <Segmented
                         label="Strength"
                         size="sm"
@@ -130,7 +131,7 @@ export function TeamStats() {
                             { value: 'shares', label: 'Shares' },
                         ]}
                     />
-                </div>
+                </ControlRow>
                 <div className="grid grid-cols-[minmax(0,1fr)_7.5rem_minmax(0,1fr)] items-center gap-y-1.5 px-card py-3 text-caption tabular-nums md:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)]">
                     <span className="pb-1 text-micro font-bold uppercase tracking-label" style={{ color: colors.away }}>
                         {m.teams.away.tri}

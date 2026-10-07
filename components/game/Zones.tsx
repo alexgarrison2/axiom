@@ -121,7 +121,7 @@ export function Zones() {
             aside={<Segmented label="Team" size="sm" value={side} onChange={setSide} optionClassName="px-2.5" options={SIDES.map(s => ({ value: s, label: m.teams[s].tri }))} />}
         >
             <div className="panel p-card">
-                <div className="mb-2 grid grid-cols-[7.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] items-end gap-2 text-micro uppercase tracking-label text-fg-3 sm:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)]">
+                <div className="mb-2 grid grid-cols-[7.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] items-end gap-2 text-micro uppercase tracking-label text-fg-3 min-[360px]:grid-cols-[9rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] sm:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)]">
                     <span />
                     {/* Phones: the zones by their hockey shorthand (the row card spells them out). */}
                     <span className="text-right">
@@ -139,7 +139,7 @@ export function Zones() {
                 </div>
                 <ol className="flex flex-col gap-1.5">
                     {rows.map(({ p, z }, i) => (
-                        <li key={p.id} {...bind(<ZoneTip p={p} z={z} color={colors[side]} />)} className={`-mx-1.5 rounded-control px-1.5 hover:bg-surface-2 grid grid-cols-[7.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] sm:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] items-center gap-2 text-caption tabular-nums ${i > 0 && rows[i - 1].p.pos === 'D' && p.pos !== 'D' ? 'mt-3' : ''}`}>
+                        <li key={p.id} {...bind(<ZoneTip p={p} z={z} color={colors[side]} />)} className={`-mx-1.5 rounded-control px-1.5 hover:bg-surface-2 grid grid-cols-[7.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] min-[360px]:grid-cols-[9rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] sm:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] items-center gap-2 text-caption tabular-nums ${i > 0 && rows[i - 1].p.pos === 'D' && p.pos !== 'D' ? 'mt-3' : ''}`}>
                             <span className="flex min-w-0 items-baseline gap-1.5">
                                 <span className="truncate text-fg-1">{label(p.id)}</span>
                                 <span className="whitespace-nowrap text-micro text-fg-3">

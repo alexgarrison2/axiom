@@ -10,6 +10,7 @@ import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-
 import { cn } from '@/lib/utils';
 import { clockOf, pairRows, periodLabel, playerName, shortName, skaterRows, teamOnIce, type PairRow, type PlayerStrength, type SkaterRow, type TeamOnIce } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
+import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
 import { ScrollHint } from './ScrollHint';
 
@@ -184,7 +185,7 @@ export function Skaters() {
     return (
         <GameSection id="skaters" title="Skaters">
             <div className="panel overflow-hidden">
-                <div className="flex flex-wrap items-center gap-2 border-b border-line px-card py-2">
+                <ControlRow label="Skater table controls">
                     <Segmented
                         label="Team"
                         size="sm"
@@ -260,7 +261,7 @@ export function Skaters() {
                         optionClassName="px-2"
                         options={[{ value: 'all', label: 'All' }, ...periods.map(p => ({ value: String(p), label: periodLabel(p) }))]}
                     />
-                </div>
+                </ControlRow>
                 {pairView && pairs ? (
                     <PairTable rows={view === 'comp' ? pairs.opp : pairs.mates} title={view === 'comp' ? 'Opponent' : 'Teammate'} />
                 ) : (

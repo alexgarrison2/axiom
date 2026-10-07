@@ -9,6 +9,7 @@ import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-
 import { cn } from '@/lib/utils';
 import { clockOf, periodLabel, teamOnIce, units, type TeamOnIce, type Unit, type UnitKind } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
+import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
 import { JerseyNumber } from './Jersey';
 import { ScrollHint } from './ScrollHint';
@@ -113,7 +114,7 @@ export function Units() {
     return (
         <GameSection id="units" title="Units">
             <div className="panel overflow-hidden">
-                <div className="flex flex-wrap items-center gap-2 border-b border-line px-card py-2">
+                <ControlRow label="Unit table controls">
                     <Segmented
                         label="Team"
                         size="sm"
@@ -141,7 +142,7 @@ export function Units() {
                         options={[{ value: 'all', label: 'All' }, ...periods.map(p => ({ value: String(p), label: periodLabel(p) }))]}
                     />
                     <span className="ml-auto text-micro uppercase tracking-label text-fg-3">{kindLabel.strength}</span>
-                </div>
+                </ControlRow>
                 {sorted.length ? (
                     <div className="relative">
                     <TableScroller label={`${m.teams[side].name} ${kindLabel.label.toLowerCase()}`}>
