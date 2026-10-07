@@ -6,14 +6,15 @@ import { Crest } from '@/components/ui/crest';
 import { LedWord } from '@/components/ui/led-word';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
-import { clockOf, gameScores, GS_PARTS, type GameScoreRow, type GoalieScoreRow, type GsPart } from '@/lib/game/analytics';
+import { clockOf, gameScores, GS_PARTS, type GameScoreRow, type GoalieScoreRow, type GsPart, type PonyConstants } from '@/lib/game/analytics';
+import PONY_JSON from '@/public/data/pony_score.json';
 import type { Side } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
 import { TipFace } from './HoverTip';
 import { JerseyNumber } from './Jersey';
 
 /*
- * Pony Score breakdown (built on Luszczyszyn's Game Score weights): every skater's one-game score as a signed stack of
+ * Pony Score breakdown: every skater's one-game score in goals (lib/game/analytics.ts gameScores, constants measured by pipeline/tools/pony_score_calibrate.py) as a signed stack of
  * eight parts (offence in a cool family, defence in a warm one; the same
  * four ideas each side). Positive parts stack right of zero, negative parts
  * left, and an ink notch marks the net. Hover a row for its card; click (or
@@ -37,38 +38,43 @@ const IDEAS: [GsPart, GsPart][] = [
     ['oUsage', 'dUsage'],
 ];
 
+/** Constants measured from our data (pipeline/tools/pony_score_calibrate.py). */
+const PONY = PONY_JSON as unknown as PonyConstants;
+
 const VB = 1000;
 const ROW_H = 30;
 const BAR_H = 14;
 
 const signed = (v: number, d = 2) => `${v > 0.004 ? '+' : v < -0.004 ? '−' : ''}${Math.abs(v).toFixed(d)}`;
-const f1 = (v: number) => v.toFixed(1);
-const pctTxt = (v: number | null) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
 
 /** The counts behind one part, in the card. */
+const g2 = (v: number) => v.toFixed(2);
 function rawLine(r: GameScoreRow, k: GsPart): string {
     const x = r.raw;
+    const share = (v: number) => signed((PONY.k / 5) * v);
     switch (k) {
         case 'oProd': {
-            const bits = [`${x.g} G`, `${x.a1} A1`, `${x.a2} A2`, `${x.sog} SOG`];
-            if (x.pd) bits.push(`${x.pd} drawn`);
-            if (x.foW + x.foL) bits.push(`FO ${x.foW}–${x.foL}`);
+            const bits = [`xG ${g2(x.ixg)}`, `${x.g} G`, `${x.a1} A1`, `${x.a2} A2`];
+            if (x.pdUnits) bits.push(`${x.pdUnits} drawn`);
+            const fw = x.foEndW + x.foNeuW;
+            const fl = x.foEndL + x.foNeuL;
+            if (fw + fl) bits.push(`FO ${fw}–${fl}`);
             return bits.join(' · ');
         }
         case 'oDrive':
-            return `5v5 CF ${x.cf} vs ${f1(x.cfExp)} · GF ${x.gf} vs ${x.gfExp.toFixed(2)}`;
+            return x.toi5 > 0 ? `5v5 linemates' xG ${g2(x.xgfOthers)} vs ${g2(x.xgfExp)} expected` : 'No 5v5 time';
         case 'oSpecial':
-            return x.toiPp > 0 ? `PP ${clockOf(x.toiPp)} · GF ${x.gfPp} vs ${((6.6 / 3600) * x.toiPp).toFixed(2)}` : 'No PP time';
+            return x.toiPp > 0 ? `PP ${clockOf(x.toiPp)} · linemates' xG ${g2(x.ppXgfOthers)} vs ${g2(x.ppXgfExp)}` : 'No PP time';
         case 'oUsage':
-            return `Teammates ${pctTxt(x.qot)} of the game`;
+            return x.toi5 > 0 ? `Opposing D ${share(x.oppDef)} · linemates' offence ${share(-x.mateOff)}` : 'No 5v5 time';
         case 'dProd':
-            return `${x.blk} blocks · ${x.pt} taken`;
+            return `${x.blocks} blocks (xG ${g2(x.blockXg)})${x.ptUnits ? ` · ${x.ptUnits} taken` : ''}`;
         case 'dDrive':
-            return `5v5 CA ${x.ca} vs ${f1(x.caExp)} · GA ${x.ga} vs ${x.gaExp.toFixed(2)}`;
+            return x.toi5 > 0 ? `5v5 xG against ${g2(x.xga)} vs ${g2(x.xgaExp)} expected` : 'No 5v5 time';
         case 'dSpecial':
-            return x.toiPk > 0 ? `PK ${clockOf(x.toiPk)} · GA ${x.gaPk} vs ${((6.6 / 3600) * x.toiPk).toFixed(2)}` : 'No PK time';
+            return x.toiPk > 0 ? `PK ${clockOf(x.toiPk)} · xG against ${g2(x.pkXga)} vs ${g2(x.pkXgaExp)}` : 'No PK time';
         case 'dUsage':
-            return `Competition ${pctTxt(x.qoc)} of the game`;
+            return x.toi5 > 0 ? `Opposing offence ${share(x.oppOff)} · linemates' D ${share(-x.mateDef)}` : 'No 5v5 time';
     }
 }
 
@@ -135,7 +141,7 @@ function SkaterCard({ r, d, rank }: { r: GameScoreRow; d: number; rank: string }
                 </span>
                 <span className="text-right leading-none">
                     <span className={cn('block font-display text-title font-bold tabular-nums', r.total < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.total)}</span>
-                    <span className="text-micro uppercase tracking-label text-fg-3">Pony score</span>
+                    <span className="text-micro uppercase tracking-label text-fg-3">Pony score · goals</span>
                 </span>
             </div>
             <MiniStack parts={r.parts} d={d} />
@@ -178,7 +184,7 @@ function GoalieCard({ g }: { g: GoalieScoreRow }) {
                     </span>
                 ))}
             </div>
-            <p className="text-micro text-fg-3">Goalies score goals saved above expected: pony xG against minus goals allowed.</p>
+            <p className="text-micro text-fg-3">Goalies score goals saved above expected: pony xG against (in goals) minus goals allowed.</p>
         </div>
     );
 }
@@ -193,7 +199,7 @@ export function GameScore() {
     const cardRef = React.useRef<HTMLDivElement>(null);
     const [cardSize, setCardSize] = React.useState({ w: 336, h: 320 });
 
-    const data = React.useMemo(() => gameScores(m, side), [m, side]);
+    const data = React.useMemo(() => gameScores(m, side, PONY), [m, side]);
     const forwards = data.skaters.filter(r => r.player.pos !== 'D');
     const defence = data.skaters.filter(r => r.player.pos === 'D');
     const goalies = data.goalies.filter(g => g.toi > 0);

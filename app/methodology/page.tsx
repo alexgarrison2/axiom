@@ -511,32 +511,37 @@ export default function MethodologyPage() {
 
                         <Section id="pony-score" index={++i} title="Pony score">
                             <p>
-                                The game page scores every skater for that one game with the <strong>Pony Score</strong>, built on Dom Luszczyszyn&apos;s Game Score weights and
-                                split into the same ideas as the season ratings, offence and defence each:
+                                The <strong>Pony Score</strong> is a skater&apos;s game in <strong>goals</strong>, on the same footing as IMPACT (one
+                                is a single night, the other a rating). Every weight comes from our own data (three regular seasons, refit with{' '}
+                                <code>pipeline/tools/pony_score_calibrate.py</code>); the only fixed choice is that an on-ice chance is shared
+                                evenly by the five skaters on the ice.
                             </p>
                             <ul className="list-disc space-y-1 pl-5">
                                 <li>
-                                    <strong>Production</strong>: 0.75 per goal, 0.7 per primary and 0.55 per secondary assist, 0.075 per shot on goal,
-                                    0.15 per penalty drawn and 0.01 per faceoff won minus lost; on defence 0.05 per blocked shot and −0.15 per penalty
-                                    taken.
+                                    <strong>Production</strong>: the pony xG of his own shots, plus finishing (goals minus that xG) and primary and
+                                    secondary assists at the weights a fit of every skater&apos;s IMPACT offence on those rates gives (forwards: an
+                                    assist is worth 0.56 of a goal of his own xG, finishing 0.70; defencemen 0.36 and 0.51); penalties drawn and taken
+                                    at what a power play is worth in net goals (0.18); faceoffs at the pony xG a win in an end zone or at centre
+                                    produces in the next 20 seconds; and on defence, each blocked attempt at the pony xG of an attempt from that
+                                    distance.
                                 </li>
                                 <li>
-                                    <strong>Play driving</strong>: 5-on-5 shot attempts (0.05 each) and goals (0.15 each) for and against while he was
-                                    on the ice, measured against his team&apos;s own 5-on-5 rate over his minutes, so an average shift scores zero.
+                                    <strong>Play driving</strong>: at 5-on-5, a fifth of his linemates&apos; score-adjusted pony xG for (his own
+                                    shots are already in production) and of the pony xG against while he was on, each against the league rate over
+                                    his minutes.
                                 </li>
                                 <li>
-                                    <strong>Special teams</strong>: power-play goals for and penalty-kill goals against on the ice (0.15 each), against a
-                                    league rate of 6.6 per 60 minutes.
+                                    <strong>Special teams</strong>: the same on the power play (linemates&apos; xG for) and the penalty kill (xG
+                                    against), against the league&apos;s 5-on-4 rate.
                                 </li>
                                 <li>
-                                    <strong>Usage</strong>: a small adjustment for who he played with and against (the average share of the game his
-                                    teammates and opponents played, weighted by time together, against his team&apos;s average): stronger linemates take
-                                    a little off his offence, tougher opponents add a little to his defence.
+                                    <strong>Usage</strong>: who he shared the ice with, from their IMPACT ratings. Facing strong defenders or
+                                    attackers adds a little; playing beside strong linemates takes a little off.
                                 </li>
                             </ul>
                             <p>
-                                Goalies are scored on goals saved above expected (pony xG against minus goals allowed). One game is a small sample:
-                                the score describes the night, it does not rate the player. IMPACT on the players page is the predictive rating.
+                                Goalies score goals saved above expected. One game is a small sample: the score describes the night, it does not
+                                rate the player.
                             </p>
                         </Section>
 

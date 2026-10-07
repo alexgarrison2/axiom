@@ -35,3 +35,11 @@ They can also be imported as a package from `pipeline/`, e.g.
 - The model trainer, `train_game_model.py`, stays in `pipeline/` because the
   retrain job uses it.
 - All tools verify TLS certificates; do not reintroduce `CERT_NONE`.
+
+## pony_score_calibrate.py
+
+Measures the Pony Score constants (goals per xG, league 5v5 / 5v4 xG rates, power-play value per
+penalty, faceoff value by zone, blocked-attempt value by distance, assist and finishing weights fit
+on IMPACT offence) from the local lake plus `nhl_historical_shots.csv` xG, and writes
+`public/data/pony_score.json`. Rerun at the season rollover (after `archive_season.py`), from `pipeline/`:
+`python tools/pony_score_calibrate.py`.

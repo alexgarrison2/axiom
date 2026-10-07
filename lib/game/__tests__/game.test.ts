@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, teamOnIce, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
+import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
+import PONY from '@/public/data/pony_score.json';
 
 const team = (id: number, abbrev: string) => ({ id, abbrev, commonName: { default: abbrev }, placeName: { default: abbrev }, score: 0, sog: 0 });
 const spot = (playerId: number, teamId: number, pos: string) => ({ playerId, teamId, positionCode: pos, firstName: { default: 'P' }, lastName: { default: String(playerId) }, sweaterNumber: playerId % 100 });
@@ -124,12 +125,15 @@ describe('game model', () => {
         expect(legibleOn('#FFB81C', '#0a0e15')).toBe('#ffb81c');
     });
 
-    it('scores a game: parts add up, the scorer leads, the goalie gets GSAx', () => {
-        const { skaters, goalies } = gameScores(m, 'home');
+    it('scores a game (Pony Score): parts add up, the scorer leads, the goalie gets GSAx', () => {
+        const C = PONY as unknown as PonyConstants;
+        const { skaters, goalies } = gameScores(m, 'home', C);
         for (const r of skaters) expect(GS_PARTS.reduce((a, k) => a + r.parts[k], 0)).toBeCloseTo(r.total);
+        const scorer = skaters.find(r => r.player.id === 21)!;
         expect(skaters[0].player.id).toBe(21);
-        expect(skaters[0].parts.oProd).toBeCloseTo(0.75 + 0.075);
-        expect(goalies[0].total).toBeCloseTo(goalies[0].xga - goalies[0].ga);
+        expect(scorer.parts.oProd).toBeCloseTo(C.k * 0.3 + C.assist.F.fin * (1 - C.k * 0.3));
+        expect(skaters.find(r => r.player.id === 22)!.raw.a1).toBe(1);
+        expect(goalies[0].total).toBeCloseTo(C.k * goalies[0].xga - goalies[0].ga);
     });
 
     it('team totals count each shot once, not once per skater', () => {

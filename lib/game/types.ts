@@ -167,6 +167,8 @@ export interface GameModel {
     outlook: SeasonOdds | null;
     /** Official NHL figures where ours are only an estimate (power play "goals/opportunities"). */
     official: { pp: Record<Side, string> } | null;
+    /** IMPACT ratings (EV xG/60 added and prevented) of the players in this game, for the Pony Score's usage term. */
+    ratings: Record<number, { evOff: number; evDef: number }>;
     /** Shots that should carry pony xG but do not yet (live games, last night before the nightly run). */
     xgPending: boolean;
 }

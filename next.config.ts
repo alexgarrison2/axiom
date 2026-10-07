@@ -166,6 +166,7 @@ const nextConfig: NextConfig = {
     // The game page reads pony xG per shot (nightly file, else the xG v2
     // artifacts and shooting talent to score live shots) and the graded pregame call.
     "/games/[id]": [
+      "public/data/player_ratings.json",
       "public/data/game_xg/*.json",
       "pipeline/models/xg2_booster.json",
       "pipeline/models/xg2_calibrators.json",

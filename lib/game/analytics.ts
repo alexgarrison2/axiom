@@ -1205,43 +1205,59 @@ export function iceAt(m: GameModel, t: number): IceSnapshot | null {
     return { t, skaters: { away: skaters('away'), home: skaters('home') }, goalie: { away: goalie('away'), home: goalie('home') } };
 }
 
-/* ── Game Score breakdown (one game, descriptive) ──────────────────────── */
+/* ── Pony Score (one game, descriptive, in goals) ──────────────────────── */
 
 export type GsPart = 'oProd' | 'oDrive' | 'oSpecial' | 'oUsage' | 'dProd' | 'dDrive' | 'dSpecial' | 'dUsage';
 export const GS_PARTS: GsPart[] = ['oProd', 'oDrive', 'oSpecial', 'oUsage', 'dProd', 'dDrive', 'dSpecial', 'dUsage'];
 
+/** Measured by pipeline/tools/pony_score_calibrate.py (public/data/pony_score.json). */
+export interface PonyConstants {
+    k: number;
+    ev_xg60: number;
+    pp_xg60: number;
+    pen_value: number;
+    fo_end: number;
+    fo_neutral: number;
+    block_bands_ft: number[];
+    block_xg: number[];
+    assist: Record<'F' | 'D', { a1: number; a2: number; fin: number }>;
+}
+
 export interface GameScoreRow {
     player: Player;
-    /** Sum of the parts, in Game Score points (roughly goals). */
+    /** Sum of the parts, in goals. */
     total: number;
     parts: Record<GsPart, number>;
     /** The counts behind each part, for the card. */
     raw: {
+        toi: number;
         g: number;
         a1: number;
         a2: number;
-        sog: number;
-        blk: number;
-        pd: number;
-        pt: number;
-        foW: number;
-        foL: number;
-        toi: number;
+        ixg: number;
+        pdUnits: number;
+        ptUnits: number;
+        foEndW: number;
+        foEndL: number;
+        foNeuW: number;
+        foNeuL: number;
+        blocks: number;
+        blockXg: number;
         toi5: number;
-        cf: number;
-        ca: number;
-        gf: number;
-        ga: number;
-        cfExp: number;
-        caExp: number;
-        gfExp: number;
-        gaExp: number;
+        xgfOthers: number;
+        xgfExp: number;
+        xga: number;
+        xgaExp: number;
         toiPp: number;
-        gfPp: number;
+        ppXgfOthers: number;
+        ppXgfExp: number;
         toiPk: number;
-        gaPk: number;
-        qoc: number | null;
-        qot: number | null;
+        pkXga: number;
+        pkXgaExp: number;
+        oppDef: number;
+        mateOff: number;
+        oppOff: number;
+        mateDef: number;
     };
 }
 
@@ -1251,120 +1267,160 @@ export interface GoalieScoreRow {
     sa: number;
     ga: number;
     xga: number;
-    /** Goals saved above expected. */
+    /** Goals saved above expected (k × xGA − GA). */
     total: number;
 }
 
-/** League 5v4 goal rate (per 60), the power-play and penalty-kill baseline. */
-const LEAGUE_PP_GF60 = 6.6;
-/** Weight that turns a TOI-share gap in competition / teammates into Game Score points. */
-const USAGE_K = 4;
+/** Penalty units: a minor gives one power play's worth; a double minor two; a major two and a half; misconducts none. */
+const penUnits = (min: number | null) => (min === 2 ? 1 : min === 4 ? 2 : min === 5 ? 2.5 : 0);
 
 /**
- * Game Score for one game, split the way the season ratings are (offence and
- * defence × production, play driving, special teams, usage). Weights are
- * Luszczyszyn's Game Score; the on-ice terms are measured against what the
- * team did at the same strength, so an average shift scores zero:
- *   production  O: 0.75 G + 0.7 A1 + 0.55 A2 + 0.075 SOG + 0.15 penalties drawn + 0.01 (FOW − FOL)
- *               D: 0.05 blocks − 0.15 penalties taken
- *   driving     O: 5v5 on-ice 0.05 (CF − team rate) + 0.15 (GF − team rate)
- *               D: −[0.05 (CA − team rate) + 0.15 (GA − team rate)]
- *   special     O: 0.15 (PP goals for on ice − league rate × PP TOI)
- *               D: −0.15 (PK goals against on ice − league rate × PK TOI)
- *   usage       O: −k (teammate quality − team average); D: +k (competition quality − team average)
+ * Pony Score: a skater's game in goals, on the same footing as IMPACT. Every
+ * weight is measured from our own data (see PonyConstants) except the 1/5
+ * share of on-ice results, which splits each on-ice chance evenly over the
+ * five skaters.
+ *
+ * Offence
+ *   production   k·ixG (his own shots) + fin·(G − k·ixG) + a1·A1 + a2·A2
+ *                + pen·(penalties drawn) + faceoffs (end-zone / neutral value, win − loss)
+ *   driving      5v5: k/5 · (teammates' score-adjusted xG for while he is on − 4/5 of the league rate × his time)
+ *   special      PP:  k/5 · (teammates' xG for − 4/5 of the league 5v4 rate × his PP time)
+ *   usage        5v5: k/5 · Σ time × (opponents' IMPACT EV defence − linemates' IMPACT EV offence)
+ * Defence
+ *   production   blocked attempts, each worth the league xG from that distance − pen·(penalties taken)
+ *   driving      5v5: −k/5 · (score-adjusted xG against − the league rate × his time)
+ *   special      PK:  −k/5 · (xG against − the league 5v4 rate × his PK time)
+ *   usage        5v5: k/5 · Σ time × (opponents' IMPACT EV offence − linemates' IMPACT EV defence)
+ * Goalies: goals saved above expected.
  */
-export function gameScores(m: GameModel, side: Side): { skaters: GameScoreRow[]; goalies: GoalieScoreRow[] } {
-    const all = skaterRows(m, side, 'all');
-    const five = new Map(skaterRows(m, side, '5v5').map(r => [r.player.id, r]));
-    const pp = new Map(skaterRows(m, side, 'pp').map(r => [r.player.id, r]));
-    const pk = new Map(skaterRows(m, side, 'sh').map(r => [r.player.id, r]));
-
-    // The team's 5v5 rates per second, the zero line for every skater's on-ice numbers.
-    let t5 = 0;
-    for (const s of segments(m)) if (segFive(s)) t5 += s.b - s.a;
-    const team = { cf: 0, ca: 0, gf: 0, ga: 0 };
-    for (const e of m.events) {
-        if (!e.fiveOnFive || !isAttempt(e)) continue;
-        const mine = e.side === side;
-        if (mine) team.cf += 1;
-        else team.ca += 1;
-        if (e.type === 'goal') {
-            if (mine) team.gf += 1;
-            else team.ga += 1;
-        }
-    }
-    const rate = (n: number) => (t5 > 0 ? n / t5 : 0);
-
-    const drawn = new Map<number, number>();
-    const taken = new Map<number, number>();
-    for (const e of m.events) {
-        if (e.type !== 'penalty') continue;
-        if (e.side === side && e.player != null) taken.set(e.player, (taken.get(e.player) ?? 0) + 1);
-        if (e.side !== side && e.other != null) drawn.set(e.other, (drawn.get(e.other) ?? 0) + 1);
-    }
-
-    const fiveRows = [...five.values()].filter(r => r.toi > 0);
-    const wMean = (key: 'qoc' | 'qot') => {
-        let s = 0;
-        let w = 0;
-        for (const r of fiveRows) if (r[key] != null) {
-            s += r[key]! * r.toi;
-            w += r.toi;
-        }
-        return w ? s / w : null;
+export function gameScores(m: GameModel, side: Side, C: PonyConstants): { skaters: GameScoreRow[]; goalies: GoalieScoreRow[] } {
+    const opp = other(side);
+    const byId = new Map(m.players.map(p => [p.id, p]));
+    const evRate = C.ev_xg60 / 3600;
+    const ppRate = C.pp_xg60 / 3600;
+    const rating = (id: number) => m.ratings?.[id] ?? { evOff: 0, evDef: 0 };
+    const blockValue = (e: GameEvent) => {
+        if (e.x == null || e.y == null) return C.block_xg[C.block_xg.length - 1];
+        const d = Math.hypot(89 - Math.abs(e.x), e.y);
+        let i = 0;
+        while (i + 1 < C.block_bands_ft.length && d >= C.block_bands_ft[i + 1]) i++;
+        return C.block_xg[i];
     };
-    const meanQoc = wMean('qoc');
-    const meanQot = wMean('qot');
-    const ppRate = LEAGUE_PP_GF60 / 3600;
 
-    const skaters = all.map(r => {
-        const id = r.player.id;
-        const f = five.get(id);
-        const p = pp.get(id);
-        const k = pk.get(id);
-        const toi5 = f?.toi ?? 0;
-        const raw = {
-            g: r.g,
-            a1: r.a1,
-            a2: r.a2,
-            sog: r.sog,
-            blk: r.blocks,
-            pd: drawn.get(id) ?? 0,
-            pt: taken.get(id) ?? 0,
-            foW: r.foW,
-            foL: r.foL,
-            toi: r.toi,
-            toi5,
-            cf: f?.cf ?? 0,
-            ca: f?.ca ?? 0,
-            gf: f?.gf ?? 0,
-            ga: f?.ga ?? 0,
-            cfExp: rate(team.cf) * toi5,
-            caExp: rate(team.ca) * toi5,
-            gfExp: rate(team.gf) * toi5,
-            gaExp: rate(team.ga) * toi5,
-            toiPp: p?.toi ?? 0,
-            gfPp: p?.gf ?? 0,
-            toiPk: k?.toi ?? 0,
-            gaPk: k?.ga ?? 0,
-            qoc: f?.qoc ?? null,
-            qot: f?.qot ?? null,
-        };
-        const parts: Record<GsPart, number> = {
-            oProd: 0.75 * raw.g + 0.7 * raw.a1 + 0.55 * raw.a2 + 0.075 * raw.sog + 0.15 * raw.pd + 0.01 * (raw.foW - raw.foL),
-            oDrive: 0.05 * (raw.cf - raw.cfExp) + 0.15 * (raw.gf - raw.gfExp),
-            oSpecial: raw.toiPp > 0 ? 0.15 * (raw.gfPp - ppRate * raw.toiPp) : 0,
-            oUsage: raw.qot != null && meanQot != null ? -USAGE_K * (raw.qot - meanQot) : 0,
-            dProd: 0.05 * raw.blk - 0.15 * raw.pt,
-            dDrive: -(0.05 * (raw.ca - raw.caExp) + 0.15 * (raw.ga - raw.gaExp)),
-            dSpecial: raw.toiPk > 0 ? -0.15 * (raw.gaPk - ppRate * raw.toiPk) : 0,
-            dUsage: raw.qoc != null && meanQoc != null ? USAGE_K * (raw.qoc - meanQoc) : 0,
-        };
-        const total = GS_PARTS.reduce((a, k2) => a + parts[k2], 0);
-        return { player: r.player, total, parts, raw };
+    const zero = (): GameScoreRow['raw'] => ({
+        toi: 0, g: 0, a1: 0, a2: 0, ixg: 0, pdUnits: 0, ptUnits: 0, foEndW: 0, foEndL: 0, foNeuW: 0, foNeuL: 0, blocks: 0, blockXg: 0,
+        toi5: 0, xgfOthers: 0, xgfExp: 0, xga: 0, xgaExp: 0, toiPp: 0, ppXgfOthers: 0, ppXgfExp: 0, toiPk: 0, pkXga: 0, pkXgaExp: 0,
+        oppDef: 0, mateOff: 0, oppOff: 0, mateDef: 0,
     });
+    const raw = new Map<number, GameScoreRow['raw']>();
+    const get = (id: number) => {
+        let r = raw.get(id);
+        if (!r) raw.set(id, (r = zero()));
+        return r;
+    };
 
-    const goalies = goalieRows(m, side).map(g => ({ player: g.player, toi: g.toi, sa: g.sa, ga: g.ga, xga: g.xga, total: g.xga - g.ga }));
+    // Time on ice by state, and who he shared the 5v5 ice with (for usage).
+    for (const s of segments(m)) {
+        const dt = s.b - s.a;
+        const st = segStrength(s, side);
+        const five = segFive(s);
+        const mates = s.skaters[side];
+        const opps = s.skaters[opp];
+        const sumOff = (ids: number[]) => ids.reduce((a, id) => a + rating(id).evOff, 0);
+        const sumDef = (ids: number[]) => ids.reduce((a, id) => a + rating(id).evDef, 0);
+        for (const id of mates) {
+            const r = get(id);
+            r.toi += dt;
+            if (five) {
+                r.toi5 += dt;
+                const others = mates.filter(x => x !== id);
+                r.oppDef += (sumDef(opps) * dt) / 3600;
+                r.mateOff += (sumOff(others) * dt) / 3600;
+                r.oppOff += (sumOff(opps) * dt) / 3600;
+                r.mateDef += (sumDef(others) * dt) / 3600;
+            } else if (st === 'pp' && s.goalie[side] && s.goalie[opp]) r.toiPp += dt;
+            else if (st === 'sh' && s.goalie[side] && s.goalie[opp]) r.toiPk += dt;
+        }
+    }
+
+    for (const e of m.events) {
+        // Individual events.
+        if (e.type === 'goal' && e.side === side) {
+            if (e.player != null && !e.emptyNet) get(e.player).g += 1;
+            if (e.assists[0] != null) get(e.assists[0]).a1 += 1;
+            if (e.assists[1] != null) get(e.assists[1]).a2 += 1;
+        }
+        if (isUnblocked(e) && e.side === side && e.player != null && e.xg != null && !e.emptyNet) get(e.player).ixg += e.xg;
+        if (e.type === 'penalty') {
+            const u = penUnits(e.minutes);
+            if (e.side === side && e.player != null) get(e.player).ptUnits += u;
+            if (e.side === opp && e.other != null) get(e.other).pdUnits += u;
+        }
+        if (e.type === 'faceoff' && e.zone) {
+            const end = e.zone !== 'N';
+            if (e.side === side && e.player != null) {
+                const r = get(e.player);
+                if (end) r.foEndW += 1;
+                else r.foNeuW += 1;
+            }
+            if (e.side === opp && e.other != null) {
+                const r = get(e.other);
+                if (end) r.foEndL += 1;
+                else r.foNeuL += 1;
+            }
+        }
+        if (e.type === 'block' && e.side === opp && e.other != null) {
+            const r = get(e.other);
+            r.blocks += 1;
+            r.blockXg += blockValue(e);
+        }
+        // On-ice chances.
+        if (!isUnblocked(e) || e.xg == null) continue;
+        const ice = onIce(m, e);
+        if (!ice || !ice.goalie[side] || !ice.goalie[opp]) continue;
+        const five = segFive(ice);
+        const st = segStrength(ice, side);
+        for (const id of ice.skaters[side]) {
+            const r = get(id);
+            if (five) {
+                if (e.side === side && e.player !== id) r.xgfOthers += e.xg * xgWeight(e);
+                if (e.side === opp) r.xga += e.xg * xgWeight(e);
+            } else if (st === 'pp' && e.side === side && e.player !== id) r.ppXgfOthers += e.xg;
+            else if (st === 'sh' && e.side === opp) r.pkXga += e.xg;
+        }
+    }
+
+    const skaters: GameScoreRow[] = [];
+    for (const [id, x] of raw) {
+        const player = byId.get(id);
+        if (!player || player.side !== side || player.pos === 'G' || x.toi <= 0) continue;
+        const pos = player.pos === 'D' ? 'D' : 'F';
+        const w = C.assist[pos];
+        x.xgfExp = 0.8 * evRate * x.toi5;
+        x.xgaExp = evRate * x.toi5;
+        x.ppXgfExp = 0.8 * ppRate * x.toiPp;
+        x.pkXgaExp = ppRate * x.toiPk;
+        const parts: Record<GsPart, number> = {
+            oProd:
+                C.k * x.ixg +
+                w.fin * (x.g - C.k * x.ixg) +
+                w.a1 * x.a1 +
+                w.a2 * x.a2 +
+                C.pen_value * x.pdUnits +
+                C.fo_end * (x.foEndW - x.foEndL) +
+                C.fo_neutral * (x.foNeuW - x.foNeuL),
+            oDrive: (C.k / 5) * (x.xgfOthers - x.xgfExp),
+            oSpecial: (C.k / 5) * (x.ppXgfOthers - x.ppXgfExp),
+            oUsage: (C.k / 5) * (x.oppDef - x.mateOff),
+            dProd: x.blockXg - C.pen_value * x.ptUnits,
+            dDrive: -(C.k / 5) * (x.xga - x.xgaExp),
+            dSpecial: -(C.k / 5) * (x.pkXga - x.pkXgaExp),
+            dUsage: (C.k / 5) * (x.oppOff - x.mateDef),
+        };
+        skaters.push({ player, total: GS_PARTS.reduce((a, k2) => a + parts[k2], 0), parts, raw: x });
+    }
+
+    const goalies = goalieRows(m, side).map(g => ({ player: g.player, toi: g.toi, sa: g.sa, ga: g.ga, xga: g.xga, total: C.k * g.xga - g.ga }));
     return { skaters: skaters.sort((a, b) => b.total - a.total), goalies };
 }
 

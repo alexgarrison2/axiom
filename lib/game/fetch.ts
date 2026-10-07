@@ -51,6 +51,27 @@ function nightlyXg(season: string, id: number): Map<number, number> | null {
 
 const readJson = (file: string) => JSON.parse(fs.readFileSync(file, 'utf8'));
 
+/** IMPACT EV ratings (xG/60 added, prevented) by player id, from public/data/player_ratings.json; empty if unreadable. */
+let ratingsCache: { at: number; map: Map<number, { evOff: number; evDef: number }> } | null = null;
+export function playerRatings(): Map<number, { evOff: number; evDef: number }> {
+    if (ratingsCache && Date.now() - ratingsCache.at < 3_600_000) return ratingsCache.map;
+    const map = new Map<number, { evOff: number; evDef: number }>();
+    try {
+        const doc = readJson(path.join(process.cwd(), 'public', 'data', 'player_ratings.json')) as { columns: string[]; rows: unknown[][] };
+        const ix = (c: string) => doc.columns.indexOf(c);
+        const [iId, iOff, iDef] = [ix('id'), ix('ev_off') >= 0 ? ix('ev_off') : ix('off'), ix('ev_def') >= 0 ? ix('ev_def') : ix('def')];
+        for (const r of doc.rows) {
+            const off = Number(r[iOff]);
+            const def = Number(r[iDef]);
+            if (Number.isFinite(off) && Number.isFinite(def)) map.set(Number(r[iId]), { evOff: off, evDef: def });
+        }
+    } catch {
+        /* no ratings: the usage term is zero */
+    }
+    ratingsCache = { at: Date.now(), map };
+    return map;
+}
+
 // The committed xG v2 artifacts, parsed once per instance (null when unreadable: the page then waits for the nightly file).
 let artifacts: XgArtifacts | null | undefined;
 function xgArtifacts(): XgArtifacts | null {
@@ -255,5 +276,5 @@ export async function getGame(idStr: string): Promise<GameModel | null> {
         date: pbp.gameDate,
         teams: { away: { tri: pbp.awayTeam?.abbrev }, home: { tri: pbp.homeTeam?.abbrev } },
     });
-    return buildGame({ pbp, landing, box, shifts, rightRail }, gameXg(pbp), pregame, { odds, outlook });
+    return buildGame({ pbp, landing, box, shifts, rightRail }, gameXg(pbp), pregame, { odds, outlook, ratings: playerRatings() });
 }

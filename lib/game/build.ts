@@ -63,7 +63,7 @@ export function buildGame(
     feeds: RawFeeds,
     xg: Map<number, number> | null,
     pregame: Pregame | null,
-    extras: { odds?: GameOdds | null; outlook?: SeasonOdds | null } = {},
+    extras: { odds?: GameOdds | null; outlook?: SeasonOdds | null; ratings?: Map<number, { evOff: number; evDef: number }> } = {},
 ): GameModel {
     const { pbp } = feeds;
     const awayId: number = pbp.awayTeam.id;
@@ -287,6 +287,7 @@ export function buildGame(
         stars,
         pregame,
         odds: extras.odds ?? null,
+        ratings: Object.fromEntries(players.filter(p => extras.ratings?.has(p.id)).map(p => [p.id, extras.ratings!.get(p.id)!])),
         outlook: extras.outlook ?? null,
         official,
         xgPending: unscored,
