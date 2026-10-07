@@ -115,3 +115,34 @@ describe('dropSpent drops starter/lineup notes about games already final', () =>
         expect(all.some(p => /Bobrovsky|Lankinen|Shesterkin|Markstrom|Marchenko/.test(p))).toBe(false);
     });
 });
+
+describe('goalie notes under a game are about that game only', () => {
+    // Oct 7, 2026, EDM @ ANA (9 PM CDT). EDM last played Oct 3 vs. Seattle.
+    const lastEnd = { EDM: '2026-10-04T04:30:00Z', ANA: '2026-10-04T05:00:00Z' };
+    const cards = buildCards({
+        EDM: [
+            { player: 'Tristan Jarry', news: 'Jarry will start in San Jose on Saturday.', category: 'Goalie Start', timestamp: '2026-10-05T18:02:53Z' },
+            { player: 'Devon Levi', news: 'Levi will start in Anaheim on Wednesday.', category: 'Goalie Start', timestamp: '2026-10-05T18:02:22Z' },
+            { player: 'Devon Levi', news: 'Levi will start vs. Seattle on Saturday.', category: 'Goalie Start', timestamp: '2026-10-03T22:38:17Z' },
+            { player: 'Devon Levi', news: 'Levi will start in Vancouver on Thursday.', category: 'Goalie Start', timestamp: '2026-10-01T18:40:52Z' },
+            { player: 'Zach Hyman', news: 'Hyman (undisclosed) is out vs. Vancouver on Thursday.', category: 'Injury', timestamp: '2026-10-01T18:46:28Z' },
+        ],
+    });
+    const game: GameRef = { id: 2026020055, away: 'EDM', home: 'ANA', startUtc: '2026-10-08T02:00:00Z', prevEndUtc: lastEnd };
+    const groups = groupByGames(dropSpent(cards, lastEnd), [game]);
+    const tonight = groups.find(g => g.game)!;
+
+    it("drops a start for a game that's already been played from the timeline", () => {
+        const levi = tonight.cards.find(c => c.player === 'Devon Levi')!;
+        expect(levi.updates.map(u => u.text)).toEqual(['Levi will start in Anaheim on Wednesday.']);
+    });
+
+    it('files a start for another day under the rest of the league, not this game', () => {
+        expect(tonight.cards.map(c => c.player)).not.toContain('Tristan Jarry');
+        expect(groups.find(g => !g.game)!.cards.map(c => c.player)).toContain('Tristan Jarry');
+    });
+
+    it('keeps injury history', () => {
+        expect(groups.flatMap(g => g.cards).some(c => c.player === 'Zach Hyman')).toBe(true);
+    });
+});

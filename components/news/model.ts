@@ -56,25 +56,43 @@ export function isGameSpecific(u: NewsUpdate): boolean {
 }
 
 /**
- * Drop game-specific cards whose game is already final: the newest update is
- * a starter/lineup note posted before the team's latest finished game ended
- * (`lastEnd`, ISO UTC by tricode). Injury, return and transaction items stay.
+ * Drop starter/lineup notes about games that are already final (posted before
+ * the team's latest finished game ended, `lastEnd`, ISO UTC by tricode): a card
+ * whose newest update is one goes, and older ones leave the timeline of the
+ * cards that stay. Injury, return and transaction items stay.
  */
 export function dropSpent(cards: NewsCard[], lastEnd: Partial<Record<string, string | null>>): NewsCard[] {
-    return cards.filter(c => {
-        const newest = c.updates[0];
+    const out: NewsCard[] = [];
+    for (const c of cards) {
         const end = lastEnd[c.team];
-        if (!newest || !end || !newest.at || !isGameSpecific(newest)) return true;
-        return postedAfter(newest.at, end);
-    });
+        const spent = (u: NewsUpdate) => !!end && !!u.at && isGameSpecific(u) && !postedAfter(u.at, end);
+        const newest = c.updates[0];
+        if (!newest || spent(newest)) continue;
+        const updates = c.updates.filter(u => !spent(u));
+        out.push(updates.length === c.updates.length ? c : { ...c, updates });
+    }
+    return out;
+}
+
+const WEEKDAY = /\b(Sun|Mon|Tues|Wednes|Thurs|Fri|Satur)day\b/i;
+
+/** The game's local weekday ("Wednesday"), or null. Pacific time puts every NHL puck drop on its own calendar day. */
+function gameWeekday(g: GameRef): string | null {
+    if (!g.startUtc) return null;
+    const d = new Date(g.startUtc);
+    return Number.isNaN(d.getTime()) ? null : d.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/Los_Angeles' });
 }
 
 /** Is the card's newest update about this game (posted after the team's last game, or naming the opponent)? */
 export function isForGame(card: NewsCard, g: GameRef): boolean {
-    const prevEnd = g.prevEndUtc?.[card.team];
-    if (!prevEnd) return true;
     const newest = card.updates[0];
     if (!newest) return false;
+    // A starter or lineup note that names another day ("will start in San Jose on Saturday") is about another game.
+    const day = WEEKDAY.exec(newest.text)?.[0];
+    const gameDay = gameWeekday(g);
+    if (isGameSpecific(newest) && day && gameDay && day.toLowerCase() !== gameDay.toLowerCase()) return false;
+    const prevEnd = g.prevEndUtc?.[card.team];
+    if (!prevEnd) return true;
     if (postedAfter(newest.at, prevEnd)) return true;
     const opp = card.team === g.home ? g.away : g.home;
     const oppName = g.names?.[opp];
