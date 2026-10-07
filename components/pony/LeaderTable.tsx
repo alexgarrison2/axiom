@@ -46,7 +46,7 @@ export function Form({ values, reach = 1.5 }: { values: number[]; reach?: number
 type Metric = 'avg' | 'total' | 'per60' | 'off' | 'def';
 const METRICS: Record<Metric, { label: string; goalie: string; title: string; value: (r: LeaderRow) => number; digits: number }> = {
     avg: { label: 'Pony/GP', goalie: 'GSAx/GP', title: 'Per game, in goals', value: r => r.avg, digits: 2 },
-    total: { label: 'Total', goalie: 'GSAx', title: 'Season total, in goals', value: r => r.total, digits: 1 },
+    total: { label: 'Total', goalie: 'GSAx', title: 'Season total, in goals', value: r => r.total, digits: 2 },
     per60: { label: '/60', goalie: '/60', title: 'Per 60 minutes', value: r => r.per60, digits: 2 },
     off: { label: 'Off/GP', goalie: 'Off/GP', title: 'Offence per game', value: r => r.off, digits: 2 },
     def: { label: 'Def/GP', goalie: 'Def/GP', title: 'Defence per game', value: r => r.def, digits: 2 },

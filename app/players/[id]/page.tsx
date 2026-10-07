@@ -187,7 +187,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                 sub={rank ? `${rank.n} of ${rank.of} ${group === 'G' ? 'goalies' : group === 'D' ? 'defencemen' : 'forwards'}` : cur ? `${gp} games` : 'No games yet'}
                                 accent
                             />
-                            <Tile k={goalie ? 'GSAx total' : 'Pony total'} v={gp ? signed(total, 1) : '—'} sub={cur ? `${gp} games · ${seasonLabel(cur.s)}` : undefined} />
+                            <Tile k={goalie ? 'GSAx total' : 'Pony total'} v={gp ? signed(total) : '—'} sub={cur ? `${gp} games · ${seasonLabel(cur.s)}` : undefined} />
                             {goalie ? (
                                 <Tile k="Record" v={thisSeason ? `${thisSeason.w ?? 0}-${thisSeason.l ?? 0}-${thisSeason.otl ?? 0}` : '—'} sub={thisSeason?.svPct != null ? `SV% ${thisSeason.svPct.toFixed(3).replace(/^0/, '')} · GAA ${thisSeason.gaa?.toFixed(2)}` : undefined} />
                             ) : (
