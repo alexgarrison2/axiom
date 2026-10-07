@@ -618,6 +618,10 @@ export default function MethodologyPage() {
                                 sample. The same ratings feed the team tables (as even-strength <strong>NET</strong> = EV OFF + EV DEF), the Lines tab and
                                 the game model&apos;s lineup term.
                             </p>
+                            <p>
+                                In a player&apos;s career tables, <strong>Age</strong> is his age on February 1 of that season (the Hockey-Reference
+                                convention).
+                            </p>
                             <p id="standings" className="scroll-mt-[calc(var(--appbar-h)+16px)] max-lg:scroll-mt-0">
                                 <strong>Playoff odds</strong> come from simulating the rest of the season thousands of times with the same game model. On
                                 Standings:
