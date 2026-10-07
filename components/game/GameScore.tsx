@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Crest } from '@/components/ui/crest';
+import { LedWord } from '@/components/ui/led-word';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { clockOf, gameScores, GS_PARTS, type GameScoreRow, type GoalieScoreRow, type GsPart } from '@/lib/game/analytics';
@@ -356,6 +357,7 @@ export function GameScore() {
         <GameSection
             id="ponyscore"
             title="Pony score"
+            display={<LedWord text="pony score" className="h-7" />}
             aside={
                 <Segmented
                     label="Team"
