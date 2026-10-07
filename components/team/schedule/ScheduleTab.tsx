@@ -12,10 +12,12 @@ import { fetchJsonCached } from '@/utils/team-stats/client-cache';
 import { seasonLabel } from '@/utils/team-stats/season';
 import { FocusSummary, GameDetail } from './GameDetail';
 import { Lenses } from './Lenses';
+import { ProjectedRecord } from './ProjectedRecord';
+import { projectRecord } from '@/lib/schedule/record';
 import { MonthCalendar } from './MonthCalendar';
 import { RhythmStrip } from './RhythmStrip';
 import { TravelMap, type NaGeo } from './TravelMap';
-import { dateRange, defaultGame, focusTotals, miles, monthKey, monthLong, monthShort, months as monthsOf, type Focus, type Lens } from './schedule-ui';
+import { dateRange, defaultGame, focusTotals, inFocus, miles, monthKey, monthLong, monthShort, months as monthsOf, type Focus, type Lens } from './schedule-ui';
 
 const GEO_URL = '/data/geo/north-america.json';
 
@@ -194,6 +196,9 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
     const picked = selectedId != null ? byId.get(selectedId) : undefined;
     const month = calMonth ?? months[0];
     const totals = focusTotals(schedule, focus);
+    const projection = projectRecord(games.filter(g => inFocus(g, focus)));
+    // The whole season's range comes from the season simulator itself.
+    const projRange = focus.kind === 'season' ? payload.seasonRange ?? null : null;
     const trip = focus.kind === 'trip' ? schedule.trips.find(t => t.id === focus.id) : undefined;
     const focusTitle =
         focus.kind === 'season'
@@ -236,6 +241,7 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
                             {focusChip}
                         </FilterChip>
                     ) : null}
+                    <ProjectedRecord p={projection} range={projRange} className="w-full md:ml-auto md:w-auto md:justify-end" />
                 </div>
                 <RhythmStrip
                     schedule={schedule}
@@ -268,7 +274,7 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
                     <section aria-label="Travel" className="panel overflow-hidden">
                         <TravelMap tri={tri} schedule={schedule} geo={geo} focus={focus} teamColor={routeColor} selectedId={picked?.id ?? null} onSelect={selectGame} caption={caption} />
                     </section>
-                    <FocusSummary title={focusTitle} totals={totals} focus={focus} schedule={schedule} className="max-lg:hidden" />
+                    <FocusSummary title={focusTitle} totals={totals} focus={focus} schedule={schedule} projection={projection} range={projRange} className="max-lg:hidden" />
                 </div>
                 <div className="flex min-w-0 flex-col gap-3 lg:col-span-5">
                     <section aria-label="Calendar" className="panel p-3">
@@ -290,7 +296,7 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
                     </section>
                     {/* Desktop: the card lives here. Phones: the focus summary here, the card in a sheet. */}
                     {shown ? <GameDetail tri={tri} schedule={schedule} game={shown} onTrip={id => focusTo({ kind: 'trip', id })} className="max-lg:hidden" /> : null}
-                    <FocusSummary title={focusTitle} totals={totals} focus={focus} schedule={schedule} className="lg:hidden" />
+                    <FocusSummary title={focusTitle} totals={totals} focus={focus} schedule={schedule} projection={projection} range={projRange} className="lg:hidden" />
                 </div>
             </div>
 

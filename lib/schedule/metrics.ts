@@ -39,6 +39,8 @@ export interface TeamResult {
 
 export interface WinPct {
     pct: number;
+    /** P(loss in OT or a shootout), percent, when the forecast splits regulation from OT. */
+    otl?: number;
     src: 'pred' | 'sim';
 }
 

@@ -11,7 +11,8 @@ import path from 'node:path';
 import { SEASON_ID } from '../../lib/season';
 import { buildLeagueSchedules, compareToLeague, type RawGame, type TeamResult, type TeamSchedule, type WinPct } from '../../lib/schedule/metrics';
 import type { SchedulePayload } from '../../lib/schedule/payload';
-import { leagueStandings, loadPredictionRows, loadSeasonGames, readPublicJson, teamToTri } from './server';
+import Papa from 'papaparse';
+import { leagueStandings, loadSeasonGames, readPublicJson, teamToTri } from './server';
 import { TEAM_TRICODES } from './teams';
 
 const ROOT = process.cwd();
@@ -73,27 +74,87 @@ function resultsFor(season: string): Map<string, TeamResult> {
     return out;
 }
 
+const num = (v: unknown): number | null => {
+    const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
+    return Number.isFinite(n) ? n : null;
+};
+const clampPct = (x: number) => Math.min(100, Math.max(0, x));
+
+/** The day's published predictions with the regulation / OT split (predictions_detailed.csv). */
+function predictionRows(): { date: string; home: string; away: string; homeWin: number; awayWin: number; homeOtShare: number | null; tie: number | null }[] {
+    let text = '';
+    try {
+        text = fs.readFileSync(path.join(ROOT, 'public', 'data', 'predictions_detailed.csv'), 'utf8');
+    } catch {
+        return [];
+    }
+    const rows = Papa.parse<Record<string, string>>(text, { header: true, skipEmptyLines: true }).data;
+    const out = [];
+    for (const r of rows) {
+        const homeWin = num(r.home_win_pct);
+        const awayWin = num(r.away_win_pct);
+        const home = teamToTri((r.home_team ?? '').trim()) ?? r.home_abbrev;
+        const away = teamToTri((r.away_team ?? '').trim()) ?? r.away_abbrev;
+        if (homeWin == null || awayWin == null || !home || !away) continue;
+        const tie = num(r.reg_tie_pct);
+        const reg = num(r.home_reg_pct);
+        const model = num(r.home_model_win_pct);
+        // The model's share of overtimes the home side wins.
+        const homeOtShare = tie && reg != null && model != null ? Math.min(1, Math.max(0, (model - reg) / tie)) : null;
+        out.push({ date: (r.game_date ?? '').slice(0, 10), home, away, homeWin, awayWin, homeOtShare, tie });
+    }
+    return out;
+}
+
 function winPctFor(season: string, raw: RawGame[]): Map<string, WinPct> {
     const out = new Map<string, WinPct>();
     if (season !== SEASON_ID) return out;
+    // {"<id>|<home rest>|<away rest>": [reg_home, reg_tie, reg_away, p_home]}
     const sim = readJson<{ games?: Record<string, number[]> }>(path.join(ROOT, 'pipeline', 'data', 'season_sim_games.json'));
     const byId = new Map(raw.map(g => [g.id, g]));
     for (const [key, v] of Object.entries(sim?.games ?? {})) {
         const id = Number(key.split('|')[0]);
         const g = byId.get(id);
-        const p = v?.[3];
+        const [regHome, tie, regAway, p] = v ?? [];
         if (!g || typeof p !== 'number') continue;
-        out.set(`${id}|${g.home}`, { pct: 100 * p, src: 'sim' });
-        out.set(`${id}|${g.away}`, { pct: 100 * (1 - p), src: 'sim' });
+        const ok = typeof regHome === 'number' && typeof tie === 'number' && typeof regAway === 'number';
+        // A side's OT loss is the other side's OT win: P(win) minus its regulation win.
+        out.set(`${id}|${g.home}`, { pct: 100 * p, otl: ok ? clampPct(100 * (1 - p - regAway)) : undefined, src: 'sim' });
+        out.set(`${id}|${g.away}`, { pct: 100 * (1 - p), otl: ok ? clampPct(100 * (p - regHome)) : undefined, src: 'sim' });
     }
     // Today's published predictions win over the simulator's table.
-    for (const p of loadPredictionRows()) {
+    for (const p of predictionRows()) {
         const g = raw.find(x => x.type === 2 && x.date === p.date && x.home === p.home && x.away === p.away);
-        if (!g || typeof p.homeWinPct !== 'number' || typeof p.awayWinPct !== 'number') continue;
-        out.set(`${g.id}|${g.home}`, { pct: p.homeWinPct, src: 'pred' });
-        out.set(`${g.id}|${g.away}`, { pct: p.awayWinPct, src: 'pred' });
+        if (!g) continue;
+        const split = p.tie != null && p.homeOtShare != null;
+        out.set(`${g.id}|${g.home}`, { pct: p.homeWin, otl: split ? clampPct(p.tie! * (1 - p.homeOtShare!)) : undefined, src: 'pred' });
+        out.set(`${g.id}|${g.away}`, { pct: p.awayWin, otl: split ? clampPct(p.tie! * p.homeOtShare!) : undefined, src: 'pred' });
     }
     return out;
+}
+
+/** 10th / 90th percentile of the season simulator's final points for a team (current season only). */
+function simPointsRange(tri: string, season: string): [number, number] | null {
+    if (season !== SEASON_ID) return null;
+    const doc = readPublicJson<{ season_id?: string; teams?: { team: string; point_dist?: Record<string, number> }[] }>('season_projections.json');
+    if (!doc || String(doc.season_id) !== season) return null;
+    const dist = doc.teams?.find(t => t.team === tri)?.point_dist;
+    if (!dist) return null;
+    const pts = Object.entries(dist)
+        .map(([k, n]) => [Number(k), n] as const)
+        .filter(([k, n]) => Number.isFinite(k) && n > 0)
+        .sort((a, b) => a[0] - b[0]);
+    const total = pts.reduce((s, [, n]) => s + n, 0);
+    if (!total) return null;
+    const q = (p: number) => {
+        let c = 0;
+        for (const [k, n] of pts) {
+            c += n;
+            if (c >= p * total) return k;
+        }
+        return pts[pts.length - 1][0];
+    };
+    return [q(0.1), q(0.9)];
 }
 
 const r1 = (x: number) => Math.round(x * 10) / 10;
@@ -103,7 +164,7 @@ function compact(s: TeamSchedule): TeamSchedule {
     const ll = (p: { lat: number; lon: number }) => ({ lat: Math.round(p.lat * 1e4) / 1e4, lon: Math.round(p.lon * 1e4) / 1e4 });
     return {
         ...s,
-        games: s.games.map(g => ({ ...g, mi: Math.round(g.mi), diff: r1(g.diff), ribbon: r1(g.ribbon), bodyHour: Math.round(g.bodyHour * 100) / 100, winPct: g.winPct ? { ...g.winPct, pct: r1(g.winPct.pct) } : null })),
+        games: s.games.map(g => ({ ...g, mi: Math.round(g.mi), diff: r1(g.diff), ribbon: r1(g.ribbon), bodyHour: Math.round(g.bodyHour * 100) / 100, winPct: g.winPct ? { ...g.winPct, pct: r1(g.winPct.pct), otl: g.winPct.otl != null ? r1(g.winPct.otl) : undefined } : null })),
         legs: s.legs.map(l => ({ ...l, mi: Math.round(l.mi), from: { ...l.from, ...ll(l.from) }, to: { ...l.to, ...ll(l.to) } })),
         trips: s.trips.map(t => ({ ...t, mi: Math.round(t.mi) })),
         summary: {
@@ -141,5 +202,6 @@ export function buildSchedulePayload(tri: string, season: string, now = new Date
         strength: hit.source,
         schedule: compact(own),
         league,
+        seasonRange: simPointsRange(tri, season),
     };
 }

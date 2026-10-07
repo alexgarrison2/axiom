@@ -13,6 +13,7 @@ import { SeasonTag, StatChip } from '@/components/ui/stat-chip';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { parseReport, type MarketBacktest, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 import { MATINEE_HOUR, RETURN_HOME_REST, RIBBON_GAMES, ROAD_MI, STRETCH_GAMES } from '@/lib/schedule/metrics';
+import { OT_SHARE } from '@/lib/schedule/record';
 
 export const revalidate = 3600;
 
@@ -544,6 +545,15 @@ export default function MethodologyPage() {
                                 mean; the toughest stretch is the hardest {STRETCH_GAMES} games in a row. A <strong>trap</strong> is a game against a
                                 bottom-third team on a back-to-back, at the end of a road trip of four or more, or right before a top-five opponent.
                                 Win % on games ahead is our model (the day&apos;s published prediction, else the season simulation).
+                            </p>
+                            <p>
+                                The <strong>projected record</strong> for a month, a road trip or the season adds the results so far to the model&apos;s
+                                outcome probabilities for the games ahead. Both forecasts split each game into a regulation win, overtime or a
+                                shootout, and a regulation loss, so the expected standings points are the sum of 2 × P(win) + 1 × P(OT or shootout
+                                loss), out of 2 per game. The record rounds the expected wins, losses and OT losses to whole games that still add up
+                                (largest remainder). Without a split we assume the league&apos;s {Math.round(OT_SHARE * 1000) / 10}% of games that
+                                reach OT (2022-23 to 2025-26). The range in brackets is the 10th to 90th percentile of points: the season simulation
+                                for a whole season, a normal approximation over the games for a month or a trip.
                             </p>
                         </Section>
 

@@ -12,6 +12,8 @@ export interface SchedulePayload {
     strength: 'ratings' | 'season';
     schedule: TeamSchedule;
     league: Record<ComparedKey, LeagueStat>;
+    /** Season simulator's 10th-90th percentile of final points (current season). */
+    seasonRange?: [number, number] | null;
 }
 
 export const scheduleUrl = (tri: string, season: string) => `/api/teams/${tri}/schedule/${season}`;

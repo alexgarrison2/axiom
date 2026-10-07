@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import type { SchedGame, TeamSchedule } from '@/lib/schedule/metrics';
+import { recordText, type RecordProjection } from '@/lib/schedule/record';
 import { cn } from '@/lib/utils';
 import { dateRange, dayLabel, miles, tagLabel, type Focus, type FocusTotals } from './schedule-ui';
 
@@ -148,11 +149,13 @@ interface FocusSummaryProps {
     totals: FocusTotals;
     focus: Focus;
     schedule: TeamSchedule;
+    projection?: RecordProjection;
+    range?: [number, number] | null;
     className?: string;
 }
 
 /** What the card shows when no game is picked: the focus in numbers. */
-export function FocusSummary({ title, totals: t, focus, schedule, className }: FocusSummaryProps) {
+export function FocusSummary({ title, totals: t, focus, schedule, projection: p, range, className }: FocusSummaryProps) {
     const trip = focus.kind === 'trip' ? schedule.trips.find(x => x.id === focus.id) : undefined;
     return (
         <section aria-label={title} className={cn('panel p-card', className)}>
@@ -165,6 +168,19 @@ export function FocusSummary({ title, totals: t, focus, schedule, className }: F
                 {t.played ? (
                     <Row label="Record">
                         {t.w}-{t.l}-{t.otl}
+                        {p?.record ? null : <span className="text-fg-3"> · {p?.actualPts ?? 2 * t.w + t.otl} of {2 * t.gp} pts</span>}
+                    </Row>
+                ) : null}
+                {p?.record && p.pts != null ? (
+                    <Row label="Proj">
+                        <span className="text-model">{recordText(p.record)}</span>
+                        <span className="text-fg-3"> · </span>
+                        <span className="text-model">{Math.round(p.pts)}</span>
+                        <span className="text-fg-3">
+                            {' '}
+                            of {p.possible} pts
+                            {(range ?? p.range) && (range ?? p.range)![1] > (range ?? p.range)![0] ? ` · ${(range ?? p.range)![0]}–${(range ?? p.range)![1]}` : ''}
+                        </span>
                     </Row>
                 ) : null}
                 <Row label="Travel">{miles(t.mi)}</Row>
