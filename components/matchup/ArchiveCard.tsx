@@ -39,7 +39,7 @@ function Side({ s, lost, home }: { s: ArchiveSide; lost: boolean; home?: boolean
  * A game outside the live prediction file: a final (score + the graded
  * pregame pick) or a scheduled game whose prediction hasn't posted yet.
  */
-export function ArchiveCard({ g }: { g: ArchiveGame }) {
+export function ArchiveCard({ g, highlighted = false }: { g: ArchiveGame; highlighted?: boolean }) {
     const final = isFinalState(g.state);
     const live = g.state === 'LIVE' || g.state === 'CRIT';
     const hs = g.home.score ?? 0;
@@ -57,7 +57,12 @@ export function ArchiveCard({ g }: { g: ArchiveGame }) {
         <article
             id={anchor}
             aria-label={`${g.away.name} at ${g.home.name}${score ? `, ${final ? 'final' : 'live'} ${score}` : ''}`}
-            className={cn('panel team-wash relative flex flex-col gap-2.5 px-3 py-2.5 md:px-4 md:py-3', (final || live) && 'panel-hover')}
+            className={cn(
+                'panel team-wash relative flex flex-col gap-2.5 px-3 py-2.5 transition-[box-shadow,border-color] duration-300 md:px-4 md:py-3',
+                (final || live) && 'panel-hover',
+                // A deep link to this game: the same glow as the live slate's cards.
+                highlighted && 'border-brand shadow-glow',
+            )}
             style={washVars(colors.away, colors.home)}
         >
             <div className="flex min-h-6 items-center justify-between gap-2">

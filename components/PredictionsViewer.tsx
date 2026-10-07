@@ -274,7 +274,7 @@ export default function PredictionsViewer({
                     <ul className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 md:gap-4" aria-label={`Games, ${weekdayDate(headDate)}`}>
                         {offFile.games.map((g, i) => (
                             <li key={g.id} className={styles.rise} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
-                                <ArchiveCard g={g} />
+                                <ArchiveCard g={g} highlighted={target === `${g.away.tri}-${g.home.tri}`.toLowerCase()} />
                             </li>
                         ))}
                     </ul>
