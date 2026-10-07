@@ -15,9 +15,10 @@ import { useWidth } from './Pulse';
  *     moment of each goal he was on the ice for at even strength or with an
  *     empty net: his goal, his primary assist, another goal for, a goal
  *     against;
- *   - bars between linemates grow with even-strength time together;
- *     hovering a player (box or Minutes row) lights his boxes and dashed
- *     links to partners on other lines, and fades everyone else;
+ *   - bars between linemates grow with even-strength time together, the
+ *     centre in the middle of his line; hovering a player (box or Minutes
+ *     row) lights his boxes, everyone he shared a line, pair or unit with,
+ *     and dashed links to partners on other lines, and fades everyone else;
  *   - the top two power-play and penalty-kill units, with their own markers;
  *   - the goalie's share of the game with each goal against;
  *   - every skater's minutes at even strength, on the power play and on the
@@ -87,7 +88,9 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
 
     // Layout: sections stacked, nodes on a three-column grid (five for special teams).
     const nodes: (Node & { ctx: 'es' | 'pp' | 'sh'; tint: string | null })[] = [];
-    const links: { a: Node; b: Node; t: number; inLine: boolean }[] = [];
+    const links: { a: Node; b: Node; t: number; inLine: boolean; ctx: 'es' | 'pp' | 'sh' }[] = [];
+    // Per section, everyone a player shared his line, pair or unit with (not just the boxes beside his).
+    const mates = new Map<string, Set<number>>();
     const titles: { y: number; text: string }[] = [];
     let y = 0;
 
@@ -102,12 +105,13 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
             const offset = ((cols - ids.length) * (nodeW + gap)) / 2;
             const row = ids.map((id, i) => ({ id, x: pad + offset + i * (nodeW + gap), y: y + NAME_H, w: nodeW }));
             row.forEach(n => nodes.push({ ...n, ctx, tint }));
+            for (const id of ids) ids.forEach(o => o !== id && (mates.get(`${ctx}:${id}`) ?? mates.set(`${ctx}:${id}`, new Set()).get(`${ctx}:${id}`)!).add(o));
             placed.push(row);
             y += ROW;
         });
         // Links: neighbours on a row, and (even strength only) across rows.
         placed.forEach(row => {
-            for (let i = 0; i < row.length - 1; i++) links.push({ a: row[i], b: row[i + 1], t: data.pairs.get(pairKey(row[i].id, row[i + 1].id)) ?? 0, inLine: true });
+            for (let i = 0; i < row.length - 1; i++) links.push({ a: row[i], b: row[i + 1], t: data.pairs.get(pairKey(row[i].id, row[i + 1].id)) ?? 0, inLine: true, ctx });
         });
         if (ctx === 'es') {
             for (let r = 0; r < placed.length; r++) {
@@ -115,7 +119,7 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                     for (const a of placed[r]) {
                         for (const b of placed[q]) {
                             const t = data.pairs.get(pairKey(a.id, b.id)) ?? 0;
-                            if (t >= 60) links.push({ a, b, t, inLine: false });
+                            if (t >= 60) links.push({ a, b, t, inLine: false, ctx });
                         }
                     }
                 }
@@ -138,9 +142,11 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
     }
     const H = y;
     const maxPair = Math.max(60, ...links.filter(l => l.inLine).map(l => l.t));
-    // Focus (a hovered box or Minutes row): his boxes and his other-line partners stay lit, the rest fade.
-    const partners = new Set(focus != null ? links.filter(l => l.a.id === focus || l.b.id === focus).flatMap(l => [l.a.id, l.b.id]) : []);
-    const dim = (id: number) => focus != null && id !== focus && !partners.has(id);
+    // Focus (a hovered box or Minutes row): in each section his boxes, his linemates or unit, and (at even strength) his partners on other lines stay lit; the rest fade.
+    const partners = (ctx: 'es' | 'pp' | 'sh') =>
+        new Set(focus == null ? [] : [...(mates.get(`${ctx}:${focus}`) ?? []), ...links.filter(l => !l.inLine && l.ctx === ctx && (l.a.id === focus || l.b.id === focus)).flatMap(l => [l.a.id, l.b.id])]);
+    const lit = { es: partners('es'), pp: partners('pp'), sh: partners('sh') };
+    const dim = (id: number, ctx: 'es' | 'pp' | 'sh') => focus != null && id !== focus && !lit[ctx].has(id);
     // Touch has no hover: a tap on a box lights him (again, or open ice, lets go).
     const lastType = React.useRef('mouse');
 
@@ -186,7 +192,7 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                         .map((l, i) => {
                             const h = 2 + 9 * Math.min(1, l.t / maxPair);
                             return (
-                                <rect key={`l${i}`} x={l.a.x + l.a.w} y={l.a.y + BOX_H / 2 - h / 2} width={Math.max(0, l.b.x - (l.a.x + l.a.w))} height={h} className="fill-line-strong transition-opacity" opacity={dim(l.a.id) || dim(l.b.id) ? 0.3 : 1}>
+                                <rect key={`l${i}`} x={l.a.x + l.a.w} y={l.a.y + BOX_H / 2 - h / 2} width={Math.max(0, l.b.x - (l.a.x + l.a.w))} height={h} className="fill-line-strong transition-opacity" opacity={dim(l.a.id, l.ctx) || dim(l.b.id, l.ctx) ? 0.3 : 1}>
                                     <title>{`${label(l.a.id)} with ${label(l.b.id)}: ${clockOf(l.t)}`}</title>
                                 </rect>
                             );
@@ -194,7 +200,7 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
                     {nodes.map(n => (
                         <g
                             key={`${n.ctx}-${n.id}-${n.y}`}
-                            opacity={dim(n.id) ? 0.3 : 1}
+                            opacity={dim(n.id, n.ctx) ? 0.3 : 1}
                             className="transition-opacity"
                             onPointerEnter={e => {
                                 if (e.pointerType === 'mouse') setFocus(n.id);

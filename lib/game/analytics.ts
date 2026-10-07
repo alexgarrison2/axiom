@@ -1092,9 +1092,17 @@ export function lineup(m: GameModel, side: Side): { forwards: number[][]; defens
         }
         const rest = rows.filter(r => (r.player.pos === 'D') === (kind === 'D') && !used.has(r.player.id)).map(r => r.player.id);
         while (out.length < count && rest.length) out.push(rest.splice(0, size));
-        // Order lines by even-strength time of their players.
+        // Order lines by even-strength time of their players; in a trio the centre (most faceoffs) sits in the middle.
         const toi = new Map(rows.map(r => [r.player.id, r.toi]));
-        return out.map(ids => [...ids].sort((a, b) => (toi.get(b) ?? 0) - (toi.get(a) ?? 0))).sort((a, b) => b.reduce((s, id) => s + (toi.get(id) ?? 0), 0) - a.reduce((s, id) => s + (toi.get(id) ?? 0), 0));
+        const draws = new Map(rows.map(r => [r.player.id, r.foW + r.foL]));
+        const arrange = (ids: number[]) => {
+            const byToi = [...ids].sort((a, b) => (toi.get(b) ?? 0) - (toi.get(a) ?? 0));
+            if (byToi.length !== 3) return byToi;
+            const c = byToi.reduce((best, id) => ((draws.get(id) ?? 0) > (draws.get(best) ?? 0) ? id : best), byToi[1]);
+            const wings = byToi.filter(id => id !== c);
+            return [wings[0], c, wings[1]];
+        };
+        return out.map(arrange).sort((a, b) => b.reduce((s, id) => s + (toi.get(id) ?? 0), 0) - a.reduce((s, id) => s + (toi.get(id) ?? 0), 0));
     };
     return { forwards: take('F', 3, 4), defense: take('D', 2, 3) };
 }
