@@ -10,7 +10,14 @@ import { washVars } from './TeamSide';
 
 function Side({ s, lost, home }: { s: ArchiveSide; lost: boolean; home?: boolean }) {
     return (
-        <a href={`/teams/${s.tri}`} className={cn('relative z-10 flex min-w-0 items-center gap-2.5 rounded-control', home && 'flex-row-reverse text-right')}>
+        // Under 360px there is no room for crest and tricode side by side: the tricode sits under the crest (crest keeps its size).
+        <a
+            href={`/teams/${s.tri}`}
+            className={cn(
+                'relative z-10 flex min-w-0 items-center gap-2.5 rounded-control max-[359px]:flex-col max-[359px]:gap-1',
+                home ? 'flex-row-reverse text-right max-[359px]:items-end' : 'max-[359px]:items-start',
+            )}
+        >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={`/logos/${s.tri}.svg`}
@@ -20,7 +27,7 @@ function Side({ s, lost, home }: { s: ArchiveSide; lost: boolean; home?: boolean
                 decoding="async"
                 className={cn('h-14 w-14 shrink-0 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,.65)] md:h-16 md:w-16', lost && 'opacity-50 grayscale-[40%]')}
             />
-            <span className={cn('truncate font-display text-title font-bold uppercase tracking-[0.02em]', lost ? 'text-fg-3' : 'text-fg-1')}>
+            <span className={cn('shrink-0 font-display text-title font-bold uppercase tracking-[0.02em]', lost ? 'text-fg-3' : 'text-fg-1')}>
                 {s.tri}
                 <span className="sr-only"> {s.name}</span>
             </span>

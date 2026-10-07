@@ -42,6 +42,9 @@ export interface PredictionsViewerProps {
 
 const noopSubscribe = () => () => {};
 
+/** False once the home slate has mounted in this document (see the deep-link effect). */
+let firstMount = true;
+
 /*
  * The desktop rail + pane (xl and up) is a second rendering of the slate. It
  * mounts in the browser only, once the viewport is wide enough: phones never
@@ -127,9 +130,19 @@ export default function PredictionsViewer({
     );
 
     useEffect(() => {
-        const onHash = () => {
+        // A deep link jumps once. Coming back to its history entry (Back from a game page, a
+        // reload) restores the reader's own scroll position instead of jumping to the card again.
+        // The document's navigation type only speaks for the first mount (a full load from Back).
+        const nav = firstMount ? (performance.getEntriesByType?.('navigation')[0] as PerformanceNavigationTiming | undefined) : undefined;
+        firstMount = false;
+        const revisit = (history.state as { hashHandled?: boolean } | null)?.hashHandled === true || nav?.type === 'back_forward';
+        const onHash = (e?: HashChangeEvent) => {
             const a = window.location.hash.slice(1).toLowerCase();
             if (!/^[a-z]{3}-[a-z]{3}$/.test(a)) return;
+            if (!e && revisit) return;
+            // Handled: the hash leaves the URL, so Back to this entry restores the reader's scroll
+            // instead of the browser jumping to the card again.
+            history.replaceState({ ...(history.state as object | null), hashHandled: true }, '', window.location.pathname + window.location.search);
             const p = predictions.find(x => cardAnchor(x) === a && (!window.location.search.includes('date=') || x.date === new URLSearchParams(window.location.search).get('date')));
             if (p) {
                 setDate(p.date);
