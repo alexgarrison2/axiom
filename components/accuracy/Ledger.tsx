@@ -281,14 +281,17 @@ export function Ledger({
                                                 <tr key={`${b.gameId}-${b.team}`}>
                                                     <td className="text-fg-3">{shortDate(b.date)}</td>
                                                     <td>
-                                                        <span className="flex items-center gap-1.5 font-bold text-fg-1">
-                                                            <Crest tri={tri} size={22} className="drop-shadow-none" />
-                                                            {tri}
-                                                            <span className="font-normal text-fg-3">
-                                                                {b.side === 'home' ? 'vs' : '@'} {opp}
+                                                        {/* Under 375px LEGACY drops under the team so result and units stay on screen. */}
+                                                        <span className="flex items-center gap-1.5 font-bold text-fg-1 max-[374.98px]:flex-wrap max-[374.98px]:gap-y-0">
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Crest tri={tri} size={22} className="drop-shadow-none" />
+                                                                {tri}
+                                                                <span className="font-normal text-fg-3">
+                                                                    {b.side === 'home' ? 'vs' : '@'} {opp}
+                                                                </span>
                                                             </span>
                                                             {b.legacy && currentSeason && b.season >= currentSeason ? (
-                                                                <GlossLink term="legacy" desc="Published by the previous site model" className="font-normal">
+                                                                <GlossLink term="legacy" desc="Published by the previous site model" className="font-normal max-[374.98px]:-mt-0.5 max-[374.98px]:mb-1 max-[374.98px]:basis-full max-[374.98px]:pl-7">
                                                                     <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">LEGACY</span>
                                                                 </GlossLink>
                                                             ) : null}
