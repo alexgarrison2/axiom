@@ -28,11 +28,13 @@ function impactTag(season: string | null | undefined, home: boolean) {
     );
 }
 
-/** A team's player news, collapsed under its lineup. */
+/** A team's player news under its lineup: open on desktop, one tap away on phones and tablets. */
 function TeamNews({ news, tri }: { news: PlayerNewsItem[]; tri: string }) {
+    // Client-only (the card mounts its details on tap), so the viewport is known on first render.
+    const [open] = useState(() => typeof window === 'undefined' || window.matchMedia('(min-width: 1024px)').matches);
     if (!news.length) return null;
     return (
-        <details open className="group rounded-[10px] border border-line px-3 py-1.5">
+        <details open={open} className="group rounded-[10px] border border-line px-3 py-1.5">
             <summary className="flex min-h-7 cursor-pointer list-none items-center justify-between coarse:min-h-11">
                 <span className="label">
                     News <span className="text-fg-2">{news.length}</span>

@@ -27,17 +27,24 @@ export function SiteNavLinks() {
             const right = nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1;
             setEdges(e => (e.left === left && e.right === right ? e : { left, right }));
         };
-        // The active section is scrolled into view (sideways only) when it sits past the edge.
-        const active = nav.querySelector<HTMLElement>('[aria-current="page"]');
-        if (active && nav.scrollWidth > nav.clientWidth) {
+        // The active section is scrolled into view (sideways only) when it sits past the edge;
+        // again once the web font has replaced the fallback and the links have their real widths.
+        let live = true;
+        const reveal = () => {
+            const active = nav.querySelector<HTMLElement>('[aria-current="page"]');
+            if (!live || !active || nav.scrollWidth <= nav.clientWidth) return;
             const n = nav.getBoundingClientRect();
             const a = active.getBoundingClientRect();
-            if (a.right > n.right) nav.scrollLeft += a.right - n.right + 24;
-        }
+            if (a.right > n.right - 32) nav.scrollLeft += a.right - n.right + 40;
+            check();
+        };
+        reveal();
+        document.fonts?.ready.then(reveal);
         check();
         nav.addEventListener('scroll', check, { passive: true });
         window.addEventListener('resize', check);
         return () => {
+            live = false;
             nav.removeEventListener('scroll', check);
             window.removeEventListener('resize', check);
         };

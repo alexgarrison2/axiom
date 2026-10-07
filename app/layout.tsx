@@ -95,7 +95,8 @@ export default function RootLayout({
       className={`${sans.variable} ${sansItalic.variable}`}
       suppressHydrationWarning
     >
-      <body className="antialiased">
+      {/* viewport-fit=cover: in landscape the notch side is padded so nothing sits under it (0 elsewhere). */}
+      <body className="pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] antialiased">
         <link rel="expect" href={RENDER_AFTER_PARSE} blocking="render" />
         <script dangerouslySetInnerHTML={{ __html: WARM_INTL }} />
         <a

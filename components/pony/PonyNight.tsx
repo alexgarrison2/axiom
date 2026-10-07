@@ -52,10 +52,17 @@ function Row({ r, rank, players, reach }: { r: (string | number)[]; rank: number
                 {p?.[4] ? <img src={p[4]} alt="" width={36} height={36} loading="lazy" className="headshot h-full w-full" /> : null}
             </span>
             <span className="min-w-0 leading-tight">
-                <Link href={`/players/${id}`} className="block truncate font-bold text-fg-1 underline-offset-4 hover:text-brand hover:underline">
-                    {p ? `${p[0].charAt(0)}. ${p[1]}` : id}
+                {/* Touch: the name's target also covers the headshot and the row's top padding; the game line keeps its own. */}
+                <Link
+                    href={`/players/${id}`}
+                    className="block font-bold text-fg-1 underline-offset-4 hover:text-brand hover:underline coarse:relative coarse:after:absolute coarse:after:-left-10 coarse:after:-top-1.5 coarse:after:bottom-0 coarse:after:right-0 coarse:after:content-['']"
+                >
+                    <span className="block truncate">{p ? `${p[0].charAt(0)}. ${p[1]}` : id}</span>
                 </Link>
-                <Link href={`/games/${game}`} className="flex items-center gap-1 whitespace-nowrap text-micro text-fg-3 hover:text-fg-1">
+                <Link
+                    href={`/games/${game}`}
+                    className="flex items-center gap-1 whitespace-nowrap text-micro text-fg-3 hover:text-fg-1 coarse:relative coarse:after:absolute coarse:after:-bottom-1.5 coarse:after:left-0 coarse:after:right-0 coarse:after:top-0 coarse:after:content-['']"
+                >
                     {/* eslint-disable-next-line @next/next/no-img-element -- team logo */}
                     <img src={`/logos/${team}.svg`} alt="" width={14} height={14} className="h-3.5 w-3.5" />
                     {team} vs {opp}
@@ -125,10 +132,10 @@ export function PonyNight({ date }: { date: string }) {
             {g && gp ? (
                 <p className="panel flex flex-wrap items-center gap-x-3 gap-y-1 px-card py-2.5 text-caption">
                     <span className="label">Goalie</span>
-                    <Link href={`/players/${g[1]}`} className="font-bold text-goalie underline-offset-4 hover:underline">
+                    <Link href={`/players/${g[1]}`} className="font-bold text-goalie underline-offset-4 hover:underline coarse:relative coarse:after:absolute coarse:after:-inset-y-2.5 coarse:after:inset-x-0 coarse:after:content-['']">
                         {gp[0]} {gp[1]}
                     </Link>
-                    <Link href={`/games/${g[0]}`} className="text-fg-3 hover:text-fg-1">
+                    <Link href={`/games/${g[0]}`} className="text-fg-3 hover:text-fg-1 coarse:relative coarse:after:absolute coarse:after:-inset-y-2.5 coarse:after:inset-x-0 coarse:after:content-['']">
                         {g[2]} vs {g[3]} · {Number(g[5]) - Number(g[6])} saves on {g[5]}
                     </Link>
                     <span className="ml-auto font-display text-body font-bold tabular-nums text-fg-1">
