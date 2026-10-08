@@ -17,7 +17,8 @@ import { finalizeRows, parseGameRow } from './game-row';
 import { seasonGames, seasonLabel, prevSeasonId } from './season';
 import { computeStandings, withStandings } from './standings';
 import { ALL_TEAMS, TEAM_TRICODES } from './teams';
-import type { GameRow, LeaguePayload, Matchup, TeamRatingEntry, TeamStat } from './types';
+import { isWin } from './game-row';
+import type { GameRow, LeaguePayload, Matchup, Record3, TeamExtra, TeamProjection, TeamRatingEntry, TeamStat } from './types';
 
 const ROOT = process.cwd();
 const PUBLIC_DATA = path.join(ROOT, 'public', 'data');
@@ -137,6 +138,8 @@ export interface Projection {
     won_division_pct?: number;
     won_cup_pct?: number;
     avg_points?: number;
+    /** Simulated final points: {points: count}. */
+    point_dist?: Record<string, number>;
     simulations?: number;
 }
 
@@ -289,12 +292,82 @@ export function loadRatingsView(): Record<string, TeamRatingEntry> | null {
             },
             rapm: { f: toiNet(f, t.tri, false), d: toiNet(d, t.tri, true) },
             goalie: g.reduce((s, name) => s + (goalieByKey.get(goalieKey(name))?.gsax_per_game ?? 0), 0),
+            pp_rating: val('pp_rating'),
+            pk_rating: val('pk_rating'),
+            pp_xg: val('pp_xgf_per_opp'),
+            pk_xg: val('pk_xga_per_opp'),
         };
     }
     return out;
 }
 
 // ── /teams payload ───────────────────────────────────────────────────────────
+
+const record3 = (games: GameRow[]): Record3 => {
+    const w = games.filter(g => isWin(g.result)).length;
+    const l = games.filter(g => g.result === 'RL').length;
+    return [w, l, games.length - w - l];
+};
+
+/** Form tape, home / away, last ten and streak from each team's regular-season games. */
+export function teamExtras(games: GameRow[]): Record<string, TeamExtra> {
+    const byTeam = groupByTeam(games.filter(g => g.type === 2));
+    const out: Record<string, TeamExtra> = {};
+    for (const tri of TEAM_TRICODES) {
+        const gs = [...(byTeam.get(tri) ?? [])].sort((a, b) => a.gn - b.gn);
+        const kind = (g: GameRow) => (isWin(g.result) ? 'W' : g.result === 'RL' ? 'L' : 'OT');
+        let streak: string | null = null;
+        if (gs.length) {
+            const last = kind(gs[gs.length - 1]);
+            let n = 0;
+            for (let i = gs.length - 1; i >= 0 && kind(gs[i]) === last; i--) n++;
+            streak = `${last}${n}`;
+        }
+        const last10 = gs.slice(-10);
+        out[tri] = {
+            form: last10.map(g => ({
+                xs: g.xgf + g.xga > 0 ? Math.round((g.xgf / (g.xgf + g.xga)) * 1000) / 1000 : 0.5,
+                r: g.result,
+                home: g.home,
+                opp: g.opp,
+                gf: g.gf,
+                ga: g.ga,
+            })),
+            home: record3(gs.filter(g => g.home)),
+            away: record3(gs.filter(g => !g.home)),
+            l10: record3(last10),
+            streak,
+        };
+    }
+    return out;
+}
+
+/** Playoff and Cup odds, projected points and the likely (10th–90th percentile) range. */
+export function projectionSummary(): Record<string, TeamProjection> | null {
+    const proj = loadProjections();
+    if (!proj) return null;
+    const out: Record<string, TeamProjection> = {};
+    for (const [tri, p] of Object.entries(proj)) {
+        const dist = Object.entries(p.point_dist ?? {})
+            .map(([k, n]) => [Number(k), Number(n)] as const)
+            .filter(([k, n]) => Number.isFinite(k) && n > 0)
+            .sort((a, b) => a[0] - b[0]);
+        const total = dist.reduce((s, [, n]) => s + n, 0);
+        const at = (q: number) => {
+            let acc = 0;
+            for (const [k, n] of dist) if ((acc += n) >= total * q) return k;
+            return NaN;
+        };
+        out[tri] = {
+            playoff: p.make_playoffs_pct,
+            cup: p.won_cup_pct ?? 0,
+            points: p.avg_points ?? NaN,
+            p10: total ? at(0.1) : NaN,
+            p90: total ? at(0.9) : NaN,
+        };
+    }
+    return out;
+}
 
 const round3 = (v: number) => (Number.isFinite(v) ? Math.round(v * 1000) / 1000 : v);
 function roundStat(s: TeamStat): TeamStat {
@@ -335,6 +408,8 @@ export function buildLeaguePayload(season: string): LeaguePayload {
         ratings: isCurrent ? loadRatingsView() : null,
         ratingsSeasonLabel: rs ? seasonLabel(rs) : null,
         matchups: isCurrent ? loadMatchups() : [],
+        extras: teamExtras(games),
+        projections: isCurrent ? projectionSummary() : null,
         seasonStartsOn,
         generatedAt: new Date().toISOString(),
     };

@@ -205,6 +205,47 @@ export interface TeamRatingEntry {
     lines: { f1: number; f2: number; f3: number; f4: number; d1: number; d2: number; d3: number };
     rapm: { f: number; d: number };
     goalie: number;
+    /** Power-play / penalty-kill %, this season shrunk toward the league. */
+    pp_rating?: number | null;
+    pk_rating?: number | null;
+    /** xG for per power play / against per penalty kill, shrunk toward the league (~0.18). */
+    pp_xg?: number | null;
+    pk_xg?: number | null;
+}
+
+/** One regular-season game for the form tape (oldest first). */
+export interface FormGame {
+    /** xG share, 0–1. */
+    xs: number;
+    r: ResultCode;
+    home: boolean;
+    opp: string;
+    gf: number;
+    ga: number;
+}
+
+/** Wins, regulation losses, OT/SO losses. */
+export type Record3 = [number, number, number];
+
+/** Per-team extras for the league table that need the game log. */
+export interface TeamExtra {
+    /** Last ten regular-season games, oldest first. */
+    form: FormGame[];
+    home: Record3;
+    away: Record3;
+    l10: Record3;
+    /** "W3", "L1", "OT2"; null before a game. */
+    streak: string | null;
+}
+
+/** Season simulation summary for one team. */
+export interface TeamProjection {
+    playoff: number;
+    cup: number;
+    points: number;
+    /** Likely range: 10th and 90th percentile of simulated points. */
+    p10: number;
+    p90: number;
 }
 
 export interface Matchup {
@@ -244,6 +285,10 @@ export interface LeaguePayload {
     ratings: Record<string, TeamRatingEntry> | null;
     ratingsSeasonLabel: string | null;
     matchups: Matchup[];
+    /** Form, home / away records, last ten and streak per team (regular season). */
+    extras: Record<string, TeamExtra>;
+    /** Current season only. */
+    projections: Record<string, TeamProjection> | null;
     /** First scheduled game date when the season has not started. */
     seasonStartsOn: string | null;
     generatedAt: string;

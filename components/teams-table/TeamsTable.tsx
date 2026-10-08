@@ -23,25 +23,37 @@ import { compareOfficial, computeStandings, officialKeysOf } from '@/utils/team-
 import { DIVISION_OF, DIVISIONS, DIVISION_LABEL, TEAM_TRICODES } from '@/utils/team-stats/teams';
 import type { Division, GameRow, LeaguePayload, Matchup, PackedGames, PeriodFilter, TeamStat } from '@/utils/team-stats/types';
 import {
-    COLUMN_BY_KEY, COLUMN_GROUPS, DEFAULT_HIDDEN, EMPHASIS_MIN_GP, SSR_GROUPS, PRESETS, THIN_CHANCES, columnValue, emphasisMap,
-    type Emphasis, type StatColumn,
+    COLUMN_BY_KEY, COLUMN_GROUPS, DEFAULT_HIDDEN, EMPHASIS_MIN_GP, THIN_CHANCES, columnValue, emphasisMap,
+    type ColumnCtx, type Emphasis, type StatColumn,
 } from './columns';
+import { LENSES, LENS_BY_KEY, isLensKey, lensColumn, lensColumns, type LensKey } from './lenses';
+import {
+    CentreBar, Dash, DepthCells, DepthHeader, FormTape, Flow, Frac, OddsBar, Ordinal, ProjRange, RecordCell, SignedText, Streak,
+} from './cells';
 import { FilterSheet } from '@/components/ui/filter-sheet';
 import { Field, RangeFields } from './FilterFields';
 import { HeaderCell, type SortDir } from './HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from './table-style';
 import { PINNED_HEAD_HIDE, StickyHead, TableScroller } from './TableScroller';
 
-/** Column groups left out of the server HTML; revealed one per idle task after hydration. */
-const DEFERRED_GROUPS = COLUMN_GROUPS.filter(g => !SSR_GROUPS.includes(g.name));
+const STORAGE_KEY = 'ponyxg:teams-table:v4';
 
-const STORAGE_KEY = 'ponyxg:teams-table:v3';
+type Sort = { key: string; dir: SortDir };
+type StandView = 'league' | 'conference' | 'division' | 'wildcard';
+const STAND_VIEWS: { value: StandView; label: string }[] = [
+    { value: 'league', label: 'League' },
+    { value: 'conference', label: 'Conference' },
+    { value: 'division', label: 'Division' },
+    { value: 'wildcard', label: 'Wild card' },
+];
 
 interface Persisted {
     filters?: unknown;
-    /** Column keys the user turned off (everything else shows). */
+    /** "All" lens: column keys the user turned off (everything else shows). */
     hidden?: string[];
-    sort?: { key?: string; dir?: string };
+    lens?: string;
+    sorts?: Record<string, { key?: string; dir?: string }>;
+    stand?: string;
 }
 
 function readPersisted(): Persisted {
@@ -79,12 +91,12 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const [payloads, setPayloads] = React.useState<Record<string, LeaguePayload>>(() => (initial ? { [initial.season]: initial } : {}));
     const [filters, setFilters] = React.useState<TableFilters>(DEFAULT_FILTERS);
     const [hidden, setHidden] = React.useState<string[]>(DEFAULT_HIDDEN);
-    // The server HTML carries only SSR_GROUPS; the other default columns are added once the page is idle.
-    const [revealed, setRevealed] = React.useState(0);
-    const hiddenRef = React.useRef(hidden);
-    hiddenRef.current = hidden;
+    const [lensKey, setLensKey] = React.useState<LensKey>('overview');
+    const [sorts, setSorts] = React.useState<Partial<Record<LensKey, Sort>>>({});
+    const [standView, setStandView] = React.useState<StandView>('division');
     const [perGameOpen, setPerGameOpen] = React.useState(false);
-    const [sort, setSort] = React.useState<{ key: string; dir: SortDir }>({ key: 'points', dir: 'desc' });
+    const lens = LENS_BY_KEY.get(lensKey)!;
+    const sort: Sort = sorts[lensKey] ?? lens.sort;
     const [games, setGames] = React.useState<Record<string, GameRow[]>>({});
     const [loadError, setLoadError] = React.useState<string | null>(null);
     const [hydrated, setHydrated] = React.useState(false);
@@ -103,42 +115,25 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const allowPlayoffs = !!payload?.hasPlayoffGames;
     const allowBracket = !!payload?.isCurrent && !!payload?.hasPlayoffGames;
 
-    // Restore the session's view (validated), and ?season= from the URL.
+    // Restore the session's view (validated), then ?season= and ?tab= from the URL.
     React.useEffect(() => {
         const saved = readPersisted();
         const params = new URLSearchParams(window.location.search);
         const qs = params.get('season');
         if (qs && (TEAM_SEASONS as readonly string[]).includes(qs)) setSeason(qs);
         if (Array.isArray(saved.hidden)) setHidden(saved.hidden.filter(k => COLUMN_BY_KEY.has(k)));
-        if (saved.sort?.key && COLUMN_BY_KEY.has(saved.sort.key)) setSort({ key: saved.sort.key, dir: saved.sort.dir === 'asc' ? 'asc' : 'desc' });
+        const tab = params.get('tab') ?? saved.lens;
+        if (isLensKey(tab)) setLensKey(tab);
+        if (saved.sorts && typeof saved.sorts === 'object') {
+            const ok: Partial<Record<LensKey, Sort>> = {};
+            for (const [k, v] of Object.entries(saved.sorts)) {
+                if (isLensKey(k) && v?.key && lensColumn(v.key)) ok[k] = { key: v.key, dir: v.dir === 'asc' ? 'asc' : 'desc' };
+            }
+            setSorts(ok);
+        }
+        if (STAND_VIEWS.some(v => v.value === saved.stand)) setStandView(saved.stand as StandView);
         if (saved.filters) setFilters(sanitizeFilters(saved.filters, { playoffs: true, bracket: true }));
         setHydrated(true);
-        // One column group per idle task, so no single render is a long task on a slow phone.
-        let n = 0;
-        let cancelled = false;
-        const later = (cb: () => void) => {
-            if ('requestIdleCallback' in window) {
-                const id = window.requestIdleCallback(cb, { timeout: 300 });
-                return () => window.cancelIdleCallback(id);
-            }
-            const id = globalThis.setTimeout(cb, 16);
-            return () => globalThis.clearTimeout(id);
-        };
-        let cancel = () => {};
-        const step = () => {
-            if (cancelled) return;
-            // Groups with every column off cost nothing to show, so skip them.
-            while (n < DEFERRED_GROUPS.length && DEFERRED_GROUPS[n].cols.every(k => hiddenRef.current.includes(k))) n++;
-            if (n >= DEFERRED_GROUPS.length) return setRevealed(DEFERRED_GROUPS.length);
-            n++;
-            setRevealed(n);
-            cancel = later(step);
-        };
-        cancel = later(step);
-        return () => {
-            cancelled = true;
-            cancel();
-        };
     }, []);
 
     // Re-validate filters whenever the season (and what it allows) changes.
@@ -153,11 +148,11 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     React.useEffect(() => {
         if (!hydrated) return;
         try {
-            window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ filters, hidden, sort }));
+            window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ filters, hidden, lens: lensKey, sorts, stand: standView }));
         } catch {
             /* private mode */
         }
-    }, [filters, hidden, sort, hydrated]);
+    }, [filters, hidden, lensKey, sorts, standView, hydrated]);
 
     // Season payloads (the current one arrives with the page).
     React.useEffect(() => {
@@ -256,41 +251,83 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
 
     const hiddenSet = React.useMemo(() => new Set(hidden), [hidden]);
     const ratingsMissing = !payload?.ratings;
-    // Every group in order; a column shows unless the user hid it (rating columns need the ratings file).
-    const columns: { col: StatColumn; groupEnd: boolean; group: string }[] = React.useMemo(
-        () =>
-            COLUMN_GROUPS.filter(g => SSR_GROUPS.includes(g.name) || DEFERRED_GROUPS.indexOf(g) < revealed).flatMap(g => {
-                const cols = g.cols
-                    .map(k => COLUMN_BY_KEY.get(k))
-                    .filter((c): c is StatColumn => !!c && !hiddenSet.has(c.key) && !(c.rating && ratingsMissing));
-                return cols.map((col, i) => ({ col, groupEnd: i === cols.length - 1, group: g.name }));
-            }),
-        [hiddenSet, ratingsMissing, revealed],
+    const ctx: ColumnCtx = React.useMemo(
+        () => ({ ratings: payload?.ratings ?? null, extras: payload?.extras ?? null, projections: payload?.projections ?? null, seasonGames: seasonGames(season) }),
+        [payload, season],
     );
+    // The lens's columns; "All" is every raw column the user has not hidden. Columns with no value for
+    // any team (model numbers for a past season) drop out, and so do ranks of a dropped column.
+    const columns: { col: StatColumn; groupEnd: boolean; group: string; link?: LensKey }[] = React.useMemo(() => {
+        const base =
+            lensKey === 'all'
+                ? COLUMN_GROUPS.flatMap(g => {
+                      const cols = g.cols.map(k => COLUMN_BY_KEY.get(k)).filter((c): c is StatColumn => !!c && !hiddenSet.has(c.key) && !(c.rating && ratingsMissing));
+                      return cols.map((col, i) => ({ col, groupEnd: i === cols.length - 1, group: g.name }));
+                  })
+                : lensColumns(lens);
+        const teams = payload?.standings ?? [];
+        const has = (c: StatColumn | undefined): boolean => {
+            if (!c) return false;
+            if (c.rankOf) return has(lensColumn(c.rankOf));
+            if (!c.derive && !c.rating) return true;
+            return teams.some(r => Number.isFinite(columnValue(c, r, ctx)));
+        };
+        const kept = base.filter(c => has(c.col));
+        // Re-mark group ends after dropping columns.
+        return kept.map((c, i) => ({ ...c, groupEnd: i === kept.length - 1 || kept[i + 1].group !== c.group }));
+    }, [lensKey, lens, hiddenSet, ratingsMissing, payload, ctx]);
     const groupSpans = React.useMemo(() => {
-        const out: { name: string; n: number }[] = [];
+        const out: { name: string; n: number; link?: LensKey }[] = [];
         for (const c of columns) {
             const last = out[out.length - 1];
             if (last && last.name === c.group) last.n++;
-            else out.push({ name: c.group, n: 1 });
+            else out.push({ name: c.group, n: 1, link: c.link });
         }
         return out;
     }, [columns]);
 
+    // League rank (1 = best, ties share) for every ordinal column and every column a rank cell shows.
+    const ranks = React.useMemo(() => {
+        const out = new Map<string, Map<string, number>>();
+        if (!model) return out;
+        const want = new Set<string>();
+        for (const { col } of columns) {
+            if (col.kind === 'ordinal') want.add(col.rankOf ?? col.key);
+            if (col.kind === 'rank' && col.rankOf) want.add(col.rankOf);
+        }
+        for (const key of want) {
+            const col = lensColumn(key);
+            if (!col || col.better === 'none') continue;
+            const vals = model.league
+                .filter(r => col.model || col.rating || r.gp > 0)
+                .map(r => [r.tri, columnValue(col, r, ctx)] as const)
+                .filter(([, v]) => Number.isFinite(v))
+                .sort((x, y) => (col.better === 'low' ? x[1] - y[1] : y[1] - x[1]));
+            const m = new Map<string, number>();
+            vals.forEach(([tri, v], i) => m.set(tri, i > 0 && v === vals[i - 1][1] ? m.get(vals[i - 1][0])! : i + 1));
+            out.set(key, m);
+        }
+        return out;
+    }, [model, columns, ctx]);
+    const valueOf = React.useCallback(
+        (col: StatColumn, r: TeamStat) => (col.kind === 'rank' && col.rankOf ? (ranks.get(col.rankOf)?.get(r.tri) ?? NaN) : columnValue(col, r, ctx)),
+        [ranks, ctx],
+    );
+
     // Per column: the league's top and bottom few (bold / dim). Results need EMPHASIS_MIN_GP games
-    // and enough chances; ratings are season-independent.
+    // and enough chances; ratings and model numbers are season-independent. Drawn cells carry their own marks.
     const emphasis = React.useMemo(() => {
         const out = new Map<string, Map<string, Emphasis>>();
         if (!model) return out;
         for (const { col } of columns) {
-            if (col.better === 'none') continue;
+            if (col.better === 'none' || (col.kind && col.kind !== 'num' && col.kind !== 'ordinal')) continue;
             const entries = model.league
-                .filter(r => (col.rating || r.gp >= EMPHASIS_MIN_GP) && !col.thin?.(r))
-                .map(r => [r.tri, columnValue(col, r, payload?.ratings ?? null)] as const);
+                .filter(r => (col.rating || col.model || r.gp >= EMPHASIS_MIN_GP) && !col.thin?.(r))
+                .map(r => [r.tri, valueOf(col, r)] as const);
             out.set(col.key, emphasisMap(entries, col.better));
         }
         return out;
-    }, [model, columns, payload]);
+    }, [model, columns, valueOf]);
 
     // Column widths from the widest label or formatted value, so numbers never crowd.
     const widths = React.useMemo(() => {
@@ -299,32 +336,43 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         for (const { col } of columns) {
             let chars = 0;
             for (const r of rows) {
-                const v = columnValue(col, r, payload?.ratings ?? null);
+                const v = valueOf(col, r);
                 if (Number.isFinite(v)) chars = Math.max(chars, col.format(v).length);
             }
             out.set(col.key, colWidth(col, chars));
         }
+        // A group header wider than its columns (a one-column group) widens the group's last column.
+        let start = 0;
+        columns.forEach((c, i) => {
+            if (!c.groupEnd) return;
+            const span = columns.slice(start, i + 1);
+            const need = Math.round(c.group.length * 8.4) + (c.link ? 40 : 26);
+            const have = span.reduce((w, x) => w + (out.get(x.col.key) ?? 0), 0);
+            if (need > have) out.set(c.col.key, (out.get(c.col.key) ?? 0) + need - have);
+            start = i + 1;
+        });
         return out;
-    }, [model, columns, payload]);
+    }, [model, columns, valueOf]);
     const widthOf = (col: StatColumn) => widths.get(col.key) ?? colWidth(col, 0);
 
-    // A sort key from another section (sessions persist it) falls back to points.
-    // Until the idle expansion the column set is partial, so a sort on a column that is only not rendered yet still holds.
-    const sortable = columns.some(c => c.col.key === sort.key) || (revealed < DEFERRED_GROUPS.length && COLUMN_BY_KEY.has(sort.key) && !hiddenSet.has(sort.key));
-    const activeSort = sortable ? sort : { key: 'points', dir: 'desc' as SortDir };
+    // A sort on a column this lens does not show falls back to the lens's own sort.
+    const activeSort: Sort = columns.some(c => c.col.key === sort.key && !NO_SORT.has(c.col.kind ?? 'num')) ? sort : lens.sort;
+
+    const officialPos = React.useMemo(() => {
+        if (!payload) return new Map<string, number>();
+        const order = [...payload.standings].sort((a, b) => compareOfficial(officialKeysOf(a), officialKeysOf(b)) || a.tri.localeCompare(b.tri));
+        return new Map(order.map((r, i) => [r.tri, i]));
+    }, [payload]);
 
     const sorted = React.useMemo(() => {
         if (!model) return [];
         if (model.paired) return model.rows;
-        const col = COLUMN_BY_KEY.get(activeSort.key);
-        const order = [...payload!.standings]
-            .sort((a, b) => compareOfficial(officialKeysOf(a), officialKeysOf(b)) || a.tri.localeCompare(b.tri))
-            .map(r => r.tri);
-        const pos = new Map(order.map((t, i) => [t, i]));
+        const col = lensColumn(activeSort.key);
+        const pos = officialPos;
         // Rank sorts by official order: ascending is first place first.
         const val = (r: TeamRow) => {
             if (!col || col.key === 'ranking') return pos.get(r.tri) ?? 99;
-            const v = columnValue(col, r, payload?.ratings ?? null);
+            const v = valueOf(col, r);
             return Number.isFinite(v) ? v : null;
         };
         return [...model.rows].sort((a, b) => {
@@ -336,7 +384,42 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
             if (va !== vb) return activeSort.dir === 'desc' ? vb - va : va - vb;
             return (pos.get(a.tri) ?? 0) - (pos.get(b.tri) ?? 0);
         });
-    }, [model, activeSort.key, activeSort.dir, payload]);
+    }, [model, activeSort.key, activeSort.dir, officialPos, valueOf]);
+
+    // Standings lens: sections (league, conference, division, wild card) with playoff cut lines.
+    const items = React.useMemo((): TableItem[] => {
+        const plain = sorted.map((row, i) => ({ type: 'row' as const, row, pos: i + 1 }));
+        if (lensKey !== 'standings' || model?.paired || !payload) return plain;
+        const present = new Set(sorted.map(r => r.tri));
+        const conf = (tri: string) => payload.teams.find(t => t.tri === tri)?.conference;
+        const section = (title: string, rows: TeamRow[], cut?: number, cutLabel?: string, posLabel?: (i: number) => string): TableItem[] =>
+            rows.length
+                ? [
+                      { type: 'section', title },
+                      ...rows.flatMap((row, i): TableItem[] => [
+                          ...(cut !== undefined && i === cut ? [{ type: 'cut' as const, label: cutLabel ?? '' }] : []),
+                          { type: 'row', row, pos: i + 1, posLabel: posLabel?.(i) },
+                      ]),
+                  ]
+                : [];
+        const byOfficial = (rows: TeamRow[]) => [...rows].sort((a, b) => (officialPos.get(a.tri) ?? 0) - (officialPos.get(b.tri) ?? 0));
+        if (standView === 'league') return plain;
+        if (standView === 'conference')
+            return (['Eastern', 'Western'] as const).flatMap(c => section(c, sorted.filter(r => conf(r.tri) === c), 8, 'Playoff line'));
+        if (standView === 'division') return DIVISIONS.flatMap(d => section(DIVISION_LABEL[d], sorted.filter(r => DIVISION_OF[r.tri] === d), 3, 'Top 3'));
+        // Wild card: each division's top three, then the conference race for the last two spots.
+        const all = byOfficial(payload.standings as TeamRow[]).map(r => sorted.find(x => x.tri === r.tri) ?? r);
+        return (['Eastern', 'Western'] as const).flatMap(c => {
+            const divs = DIVISIONS.filter(d => all.some(r => DIVISION_OF[r.tri] === d && conf(r.tri) === c));
+            const tops = divs.map(d => all.filter(r => DIVISION_OF[r.tri] === d).slice(0, 3));
+            const rest = all.filter(r => conf(r.tri) === c && !tops.flat().includes(r));
+            const keep = (rows: TeamRow[]) => rows.filter(r => present.has(r.tri));
+            return [
+                ...divs.flatMap((d, i) => section(DIVISION_LABEL[d], keep(tops[i]))),
+                ...section(`${c} wild card`, keep(rest), 2, 'Playoff line', i => (i < 2 ? `WC${i + 1}` : String(i + 1))),
+            ];
+        });
+    }, [sorted, lensKey, standView, model, payload, officialPos]);
 
     // ── handlers ────────────────────────────────────────────────────────────
     const setF = <K extends keyof TableFilters>(k: K, v: TableFilters[K]) => setFilters(f => ({ ...f, [k]: v }));
@@ -351,8 +434,25 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
             /* ignore */
         }
     };
-    const onSort = (key: string) =>
-        setSort(s => (s.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: key === 'ranking' ? 'asc' : 'desc' }));
+    const onSort = (col: StatColumn) =>
+        setSorts(prev => ({
+            ...prev,
+            [lensKey]:
+                activeSort.key === col.key
+                    ? { key: col.key, dir: activeSort.dir === 'desc' ? 'asc' : 'desc' }
+                    : { key: col.key, dir: col.key === 'ranking' || col.kind === 'rank' || col.better === 'low' ? 'asc' : 'desc' },
+        }));
+    const selectLens = (k: LensKey) => {
+        setLensKey(k);
+        try {
+            const url = new URL(window.location.href);
+            if (k === 'overview') url.searchParams.delete('tab');
+            else url.searchParams.set('tab', k);
+            window.history.replaceState(window.history.state, '', url);
+        } catch {
+            /* ignore */
+        }
+    };
 
     // Phones: "26-27" season labels so the switcher sits beside the heading (as on the team page).
     const seasonOptions = TEAM_SEASONS.map(s => ({
@@ -403,6 +503,11 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
             {pending ? <span className="live-dot ml-1" role="status" aria-label="Updating" /> : null}
         </>
     );
+    // One points scale for every projection cell.
+    const projVals = Object.values(payload.projections ?? {});
+    const projRange: [number, number] = projVals.length
+        ? [Math.min(...projVals.map(p => p.p10).filter(Number.isFinite)) - 2, Math.max(...projVals.map(p => p.p90).filter(Number.isFinite)) + 2]
+        : [0, 1];
     // Team column: crest + tricode only; paired views add the starter and the moneyline.
     const paired = !!model?.paired;
     const teamColClass = !paired ? '[--team-col:84px] md:[--team-col:96px]' : filters.withStarter ? '[--team-col:132px] md:[--team-col:184px]' : '[--team-col:80px] md:[--team-col:128px]';
@@ -419,9 +524,23 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         <>
             <tr>
                 <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6')} />
-                {groupSpans.map(g => (
-                    <th key={g.name} scope="colgroup" colSpan={g.n} className={cn(HEAD_CELL, 'h-6 overflow-hidden border-r border-r-line-strong px-2.5 text-left')}>
-                        <span className="whitespace-nowrap text-micro font-semibold uppercase tracking-label text-fg-2">{g.name}</span>
+                {groupSpans.map((g, i) => (
+                    <th key={`${g.name}-${i}`} scope="colgroup" colSpan={g.n} className={cn(HEAD_CELL, 'h-6 overflow-hidden border-r border-r-line-strong px-2.5 text-left')}>
+                        {g.link ? (
+                            <button
+                                type="button"
+                                onClick={() => selectLens(g.link!)}
+                                title={`Open ${LENS_BY_KEY.get(g.link)?.label}`}
+                                className="group/gl inline-flex items-center gap-1.5 whitespace-nowrap text-micro font-semibold uppercase tracking-label text-fg-2 hover:text-brand"
+                            >
+                                {g.name}
+                                <span aria-hidden="true" className="text-fg-3 group-hover/gl:text-brand">
+                                    ›
+                                </span>
+                            </button>
+                        ) : (
+                            <span className="whitespace-nowrap text-micro font-semibold uppercase tracking-label text-fg-2">{g.name}</span>
+                        )}
                     </th>
                 ))}
             </tr>
@@ -432,11 +551,11 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                 {columns.map(({ col, groupEnd }) => (
                     <HeaderCell
                         key={col.key}
-                        label={col.label}
+                        label={col.kind === 'depth' ? <DepthHeader /> : col.label}
                         title={col.title}
-                        direction={model?.paired ? undefined : activeSort.key === col.key ? activeSort.dir : null}
-                        onSort={model?.paired ? undefined : () => onSort(col.key)}
-                        align={col.key === 'ranking' ? 'left' : 'right'}
+                        direction={model?.paired || NO_SORT.has(col.kind ?? 'num') ? undefined : activeSort.key === col.key ? activeSort.dir : null}
+                        onSort={model?.paired || NO_SORT.has(col.kind ?? 'num') ? undefined : () => onSort(col)}
+                        align={LEFT_KINDS.has(col.kind ?? (col.key === 'ranking' ? 'ranking' : 'num')) ? 'left' : 'right'}
                         className={cn(HEAD_CELL, 'top-6 border-b-line-strong', groupEnd && 'border-r border-r-line-strong', activeSort.key === col.key && !model?.paired && 'shadow-[inset_0_-2px_0_rgb(var(--brand-rgb))]')}
                         caseless
                     />
@@ -467,29 +586,32 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                 <FilterSheet activeCount={active} onReset={() => setFilters({ ...DEFAULT_FILTERS, ranges: {} })}>
                     <FilterBar filters={filters} setF={setF} setFilters={setFilters} allowPlayoffs={allowPlayoffs} allowBracket={allowBracket} chips={chips} perGameOpen sheet />
                 </FilterSheet>
-                <FilterSheet title="Columns" triggerLabel="Columns">
-                    <ColumnPicker hidden={hidden} setHidden={setHidden} ratingsMissing={ratingsMissing} sheet />
-                </FilterSheet>
+                {lensKey === 'all' ? (
+                    <FilterSheet title="Columns" triggerLabel="Columns">
+                        <ColumnPicker hidden={hidden} setHidden={setHidden} ratingsMissing={ratingsMissing} sheet />
+                    </FilterSheet>
+                ) : null}
                 {phoneChips.length > 0 ? <ActiveChips chips={phoneChips} /> : null}
             </div>
             <FilterBar filters={filters} setF={setF} setFilters={setFilters} allowPlayoffs={allowPlayoffs} allowBracket={allowBracket} chips={chips} perGameOpen={perGameOpen} />
-            <ColumnPicker
-                hidden={hidden}
-                setHidden={setHidden}
-                ratingsMissing={ratingsMissing}
-                extra={
-                    <>
-                        <FilterChip className={CHIP} selected={perGameOpen || hasPerGame(filters)} onSelectedChange={setPerGameOpen} aria-expanded={perGameOpen}>
-                            Per game
-                        </FilterChip>
-                        {active > 0 ? (
-                            <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, ranges: {} })} className="min-h-7 px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:min-h-9">
-                                Clear {active}
-                            </button>
-                        ) : null}
-                    </>
-                }
-            />
+            <div className="hidden items-center justify-end gap-1 lg:flex">
+                <FilterChip className={CHIP} selected={perGameOpen || hasPerGame(filters)} onSelectedChange={setPerGameOpen} aria-expanded={perGameOpen}>
+                    Per game
+                </FilterChip>
+                {active > 0 ? (
+                    <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, ranges: {} })} className="min-h-7 px-2 text-micro font-medium uppercase tracking-chip text-fg-3 hover:text-fg-1 coarse:min-h-9">
+                        Clear {active}
+                    </button>
+                ) : null}
+            </div>
+
+            <LensBar value={lensKey} onChange={selectLens} />
+            {lensKey === 'standings' && !paired ? (
+                <div className="flex items-center gap-3">
+                    <Segmented label="Standings" size="sm" value={standView} onChange={setStandView} options={STAND_VIEWS} />
+                </div>
+            ) : null}
+            {lensKey === 'all' ? <ColumnPicker hidden={hidden} setHidden={setHidden} ratingsMissing={ratingsMissing} /> : null}
 
             {loadError ? (
                 <p role="alert" className="text-micro uppercase tracking-label text-neg">
@@ -526,20 +648,39 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                                     </td>
                                 </tr>
                             ) : (
-                                sorted.map((row, idx) => (
-                                    <Row
-                                        key={`${row.tri}-${idx}`}
-                                        row={row}
-                                        columns={columns}
-                                        emphasis={emphasis}
-                                        sortKey={model?.paired ? null : activeSort.key}
-                                        payload={payload}
-                                        paired={!!model?.paired}
-                                        period={filters.period}
-                                        showStarter={filters.withStarter}
-                                        pairEnd={!!model?.paired && idx % 2 === 1 && idx < sorted.length - 1}
-                                    />
-                                ))
+                                items.map((it, idx) =>
+                                    it.type === 'section' ? (
+                                        <tr key={`s-${it.title}`}>
+                                            <th scope="rowgroup" colSpan={columns.length + 1} className="h-8 border-b border-line-strong bg-bg px-2.5 pt-2 text-left">
+                                                <span className="sticky left-2.5 text-micro font-bold uppercase tracking-label text-fg-2">{it.title}</span>
+                                            </th>
+                                        </tr>
+                                    ) : it.type === 'cut' ? (
+                                        <tr key={`c-${idx}`} aria-hidden="true">
+                                            <td colSpan={columns.length + 1} className="h-4 border-t border-dashed border-line-strong bg-surface-1 p-0 text-left">
+                                                <span className="sticky left-2.5 text-micro uppercase tracking-label text-fg-3">{it.label}</span>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        <Row
+                                            key={`${it.row.tri}-${idx}`}
+                                            row={it.row}
+                                            pos={it.posLabel ?? String(it.pos)}
+                                            columns={columns}
+                                            emphasis={emphasis}
+                                            ranks={ranks}
+                                            valueOf={valueOf}
+                                            ctx={ctx}
+                                            projRange={projRange}
+                                            sortKey={model?.paired ? null : activeSort.key}
+                                            payload={payload}
+                                            paired={!!model?.paired}
+                                            period={filters.period}
+                                            showStarter={filters.withStarter}
+                                            pairEnd={!!model?.paired && idx % 2 === 1 && idx < items.length - 1}
+                                        />
+                                    ),
+                                )
                             )}
                         </tbody>
                     </table>
@@ -551,9 +692,47 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     );
 }
 
-/** Wide enough for the label (12px, tracked) or the widest value (13px tabular) plus padding. */
-const colWidth = (c: StatColumn, valueChars: number) =>
-    c.key === 'ranking' ? 72 : Math.max(44, Math.round(c.label.length * 7.2) + 22, Math.round(valueChars * 7.4) + 22);
+/** Wide enough for the label (12px, tracked) or the widest value (13px tabular) plus padding; drawn cells are fixed. */
+const colWidth = (c: StatColumn, valueChars: number) => {
+    if (c.key === 'ranking') return 72;
+    if (c.kind === 'rank' || c.kind === 'pos') return 52;
+    if (c.width) return c.width;
+    const extra = c.kind === 'ordinal' ? 36 : 0;
+    return Math.max(44, Math.round(c.label.length * 7.2) + 22, Math.round(valueChars * 7.4) + 22 + extra);
+};
+
+/** Drawn and positional cells that do not sort. */
+const NO_SORT = new Set(['pos', 'record', 'homeRec', 'awayRec', 'l10', 'streak', 'form', 'depth', 'frac']);
+/** Cells that read from the left: ranks, bars, tapes. */
+const LEFT_KINDS = new Set(['ranking', 'pos', 'rank', 'modelBar', 'share', 'odds', 'proj', 'flow', 'depth', 'form', 'frac']);
+
+type TableItem =
+    | { type: 'row'; row: TeamRow; pos: number; posLabel?: string }
+    | { type: 'section'; title: string }
+    | { type: 'cut'; label: string };
+
+/** The lens tabs: one question each. Scrolls sideways on phones. */
+function LensBar({ value, onChange }: { value: LensKey; onChange: (k: LensKey) => void }) {
+    return (
+        <div role="tablist" aria-label="Table view" className="-mx-4 flex overflow-x-auto border-b border-line px-4 [scrollbar-width:none] md:mx-0 md:px-0">
+            {LENSES.map(l => (
+                <button
+                    key={l.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={value === l.key}
+                    onClick={() => onChange(l.key)}
+                    className={cn(
+                        '-mb-px whitespace-nowrap border-b-2 px-3.5 py-2.5 text-micro font-semibold uppercase tracking-label transition-colors coarse:min-h-11',
+                        value === l.key ? 'border-brand text-brand' : 'border-transparent text-fg-3 hover:text-fg-1',
+                    )}
+                >
+                    {l.label}
+                </button>
+            ))}
+        </div>
+    );
+}
 
 /** Record counts read 0 (not —) before a team's first game. */
 const COUNTING = new Set(['gp', 'wins', 'losses', 'otl', 'points', 'rw', 'ranking']);
@@ -564,11 +743,16 @@ const DIV_SHORT: Record<Division, string> = { Atlantic: 'ATL', Metro: 'MET', Cen
 const SORTED_WASH = { backgroundImage: 'linear-gradient(rgb(var(--brand-rgb) / 0.045), rgb(var(--brand-rgb) / 0.045))' };
 
 function Row({
-    row, columns, emphasis, sortKey, payload, paired, period, showStarter, pairEnd,
+    row, pos, columns, emphasis, ranks, valueOf, ctx, projRange, sortKey, payload, paired, period, showStarter, pairEnd,
 }: {
     row: TeamRow;
+    pos: string;
     columns: { col: StatColumn; groupEnd: boolean }[];
     emphasis: Map<string, Map<string, Emphasis>>;
+    ranks: Map<string, Map<string, number>>;
+    valueOf: (col: StatColumn, r: TeamStat) => number;
+    ctx: ColumnCtx;
+    projRange: [number, number];
     sortKey: string | null;
     payload: LeaguePayload;
     paired: boolean;
@@ -617,9 +801,18 @@ function Row({
             </th>
             {columns.map(({ col, groupEnd }) => {
                 const sorted = sortKey === col.key;
-                const base = cn(CELL_BG, 'h-8 shadow-[inset_0_-1px_0_var(--line)] px-2.5 text-right text-fg-2', groupEnd && 'border-r border-r-line-strong');
+                const kind = col.kind ?? 'num';
+                const base = cn('lt-cell', LEFT_KINDS.has(kind) ? 'text-left' : 'text-right', groupEnd && 'border-r border-r-line-strong');
                 const style = sorted ? SORTED_WASH : undefined;
-                const dash = <span className="text-fg-disabled">—</span>;
+                const dash = <Dash />;
+                const drawn = drawnCell(kind, row, pos, ctx, projRange);
+                if (drawn !== undefined) {
+                    return (
+                        <td key={col.key} className={base} style={style}>
+                            {drawn}
+                        </td>
+                    );
+                }
                 if (col.key === 'ranking') {
                     const rank = row.ranking && row.ranking !== '—' ? row.ranking.slice(1) : null;
                     const div = DIVISION_OF[row.tri] as Division | undefined;
@@ -639,8 +832,15 @@ function Row({
                     );
                 }
                 const counting = COUNTING.has(col.key);
-                const blank = row.gp === 0 && !col.rating && !counting ? true : period !== 'All' && col.fullGameOnly;
-                const v = blank ? NaN : columnValue(col, row, payload.ratings);
+                const blank = row.gp === 0 && !col.rating && !col.model && !counting ? true : period !== 'All' && col.fullGameOnly;
+                const v = blank ? NaN : valueOf(col, row);
+                if (kind === 'rank') {
+                    return (
+                        <td key={col.key} className={cn(base, 'text-body font-bold text-fg-1')} style={style}>
+                            {Number.isFinite(v) ? v : dash}
+                        </td>
+                    );
+                }
                 if (!Number.isFinite(v) || (col.count && v === 0)) {
                     return (
                         <td key={col.key} className={base} style={style}>
@@ -650,6 +850,16 @@ function Row({
                 }
                 const thin = !col.rating && col.thin?.(row);
                 const e = thin ? undefined : emphasis.get(col.key)?.get(row.tri);
+                let body: React.ReactNode = col.format(v);
+                if (kind === 'signed') body = <SignedText col={col} v={v} />;
+                else if (kind === 'ordinal') body = <Ordinal text={col.format(v)} rank={thin ? undefined : ranks.get(col.rankOf ?? col.key)?.get(row.tri)} />;
+                else if (kind === 'modelBar' && col.bar) body = <CentreBar v={v} mid={col.bar.mid} span={col.bar.span} text={col.format(v)} tone="model" />;
+                else if (kind === 'share' && col.bar) body = <CentreBar v={v} mid={col.bar.mid} span={col.bar.span} text={col.format(v)} tone="sign" width={64} />;
+                else if (kind === 'odds') body = <OddsBar pct={v} />;
+                else if (kind === 'frac' && col.frac) {
+                    const [n, d] = col.frac(row);
+                    body = <Frac n={n} d={d} />;
+                }
                 return (
                     <td
                         key={col.key}
@@ -657,12 +867,43 @@ function Row({
                         className={cn(base, e === 'hi' && 'font-semibold text-fg-1', (e === 'lo' || thin) && 'text-fg-3', col.count && !e && 'text-fg-1', col.key === 'points' && 'font-bold text-fg-1')}
                         style={style}
                     >
-                        {col.format(v)}
+                        {body}
                     </td>
                 );
             })}
         </tr>
     );
+}
+
+/** Cells drawn from the row and its extras rather than one number; undefined = not a drawn kind. */
+function drawnCell(kind: string, row: TeamRow, pos: string, ctx: ColumnCtx, projRange: [number, number]): React.ReactNode | undefined {
+    const ex = ctx.extras?.[row.tri];
+    switch (kind) {
+        case 'pos':
+            return <span className={cn('text-body font-bold', /^WC/.test(pos) ? 'text-micro text-fg-2' : 'text-fg-1')}>{pos}</span>;
+        case 'record':
+            return row.gp ? <RecordCell rec={[row.wins, row.losses, row.otl]} strong /> : <Dash />;
+        case 'homeRec':
+            return ex ? <RecordCell rec={ex.home} /> : <Dash />;
+        case 'awayRec':
+            return ex ? <RecordCell rec={ex.away} /> : <Dash />;
+        case 'l10':
+            return ex ? <RecordCell rec={ex.l10} /> : <Dash />;
+        case 'streak':
+            return <Streak s={ex?.streak ?? null} />;
+        case 'form':
+            return <FormTape extra={ex} />;
+        case 'flow':
+            return <Flow row={row} />;
+        case 'depth':
+            return <DepthCells r={ctx.ratings?.[row.tri] ?? undefined} />;
+        case 'proj': {
+            const p = ctx.projections?.[row.tri];
+            return p && Number.isFinite(p.points) ? <ProjRange p={p} lo={projRange[0]} hi={projRange[1]} /> : <Dash />;
+        }
+        default:
+            return undefined;
+    }
 }
 
 /** One line: what bold and dim mean, the thin-sample rule, and (when they exist) the clinch codes. */
@@ -884,7 +1125,7 @@ function ActiveChips({ chips }: { chips: { key: string; label: string; clear: ()
     );
 }
 
-/** Every column starts on. Presets narrow to one topic; chips below hide or show single columns. */
+/** The All lens's column chooser: the default set or everything, and chips to hide or show single columns. */
 function ColumnPicker({
     hidden, setHidden, ratingsMissing, extra, sheet,
 }: {
@@ -902,7 +1143,6 @@ function ColumnPicker({
     const shown = allKeys.filter(k => !hiddenSet.has(k)).length;
     const toggle = (k: string) => setHidden(h => (h.includes(k) ? h.filter(x => x !== k) : [...h, k]));
     const setGroup = (cols: string[], on: boolean) => setHidden(h => (on ? h.filter(k => !cols.includes(k)) : [...new Set([...h, ...cols])]));
-    const preset = (cols: string[]) => setHidden(allKeys.filter(k => !cols.includes(k)));
     const isPreset = (cols: string[]) => allKeys.every(k => cols.includes(k) === !hiddenSet.has(k));
     const chipCls = sheet ? undefined : CHIP;
     const presets = (
@@ -913,11 +1153,6 @@ function ColumnPicker({
             <FilterChip className={chipCls} selected={hidden.length === 0} onSelectedChange={() => setHidden([])}>
                 All
             </FilterChip>
-            {PRESETS.map(pr => (
-                <FilterChip key={pr.key} className={chipCls} selected={isPreset(pr.cols)} onSelectedChange={() => preset(pr.cols)}>
-                    {pr.label}
-                </FilterChip>
-            ))}
         </>
     );
     return (

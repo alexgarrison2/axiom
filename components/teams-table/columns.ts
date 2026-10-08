@@ -1,8 +1,23 @@
 import type { GlossaryTerm } from '@/lib/glossary';
 import { mmss, pct3, signed } from '@/utils/team-stats/format';
-import type { TeamRatingEntry, TeamStat } from '@/utils/team-stats/types';
+import type { TeamExtra, TeamProjection, TeamRatingEntry, TeamStat } from '@/utils/team-stats/types';
 
 export type Better = 'high' | 'low' | 'none';
+
+/** How a cell draws its value (default: the formatted number). */
+export type CellKind =
+    | 'num' | 'ordinal' | 'signed' | 'rank' | 'pos' | 'ranking'
+    | 'modelBar' | 'share' | 'odds' | 'proj' | 'flow' | 'depth' | 'form'
+    | 'record' | 'homeRec' | 'awayRec' | 'l10' | 'streak' | 'frac';
+
+/** Data beyond the stat row: current ratings, the game-log extras and the season simulation. */
+export interface ColumnCtx {
+    ratings: Record<string, TeamRatingEntry> | null;
+    extras: Record<string, TeamExtra> | null;
+    projections: Record<string, TeamProjection> | null;
+    /** Regular-season length of the table's season. */
+    seasonGames: number;
+}
 
 export interface StatColumn {
     key: string;
@@ -19,6 +34,21 @@ export interface StatColumn {
     count?: boolean;
     /** Too few chances to rank: the value shows dim and never takes emphasis. */
     thin?: (row: TeamStat) => boolean;
+    kind?: CellKind;
+    /** Derived value (lens columns); wins over `rating` and the row field. */
+    derive?: (row: TeamStat, ctx: ColumnCtx) => number;
+    /** Season-independent model number: no games-played gate. */
+    model?: boolean;
+    /** Bars: the neutral middle and the distance that fills half the bar. */
+    bar?: { mid: number; span: number };
+    /** Signed cells colour green / red beyond this distance from zero. */
+    signAt?: number;
+    /** 'rank' cells: the column whose league rank they show. */
+    rankOf?: string;
+    /** 'frac' cells: numerator / denominator. */
+    frac?: (row: TeamStat) => [number, number];
+    /** Fixed width for drawn cells (bars, tapes). */
+    width?: number;
 }
 
 const int = (v: number) => (Number.isFinite(v) ? String(Math.round(v)) : '—');
@@ -156,12 +186,6 @@ export interface SectionGroup {
     cols: string[];
 }
 
-export interface Section {
-    key: string;
-    label: string;
-    groups: SectionGroup[];
-}
-
 const G = (name: string, cols: string[]): SectionGroup => ({ name, cols });
 
 const RECORD = G('Record', ['ranking', 'gp', 'wins', 'losses', 'otl', 'points', 'pt_pct', 'rw']);
@@ -181,30 +205,6 @@ const RATINGS_GROUPS: SectionGroup[] = [
     G('RAPM & goalie', ['rapm_f', 'rapm_d', 'goalie_impact']),
 ];
 
-export const SECTIONS: Section[] = [
-    {
-        key: 'overview',
-        label: 'Overview',
-        groups: [G('Record', ['points', 'pt_pct', 'gp', 'ranking', 'wins', 'losses', 'otl']), G('Form', ['goal_diff', 'xgf_pct', 'pp_pct', 'pk_pct'])],
-    },
-    { key: 'record', label: 'Record', groups: [RECORD] },
-    { key: 'goals', label: 'Goals', groups: [RECORD_MIN(), GOALS] },
-    { key: 'special', label: 'PP/PK', groups: [RECORD_MIN(), PP, PK] },
-    { key: 'shots', label: 'Shots', groups: [RECORD_MIN(), SAVES, SHOTS] },
-    { key: 'xg', label: 'xG', groups: [RECORD_MIN(), XG, SAVES] },
-    { key: 'state', label: 'State', groups: [RECORD_MIN(), STATE, COMEBACKS] },
-    { key: 'empty-net', label: 'Empty net', groups: [RECORD_MIN(), EN] },
-    {
-        key: 'ratings',
-        label: 'Ratings',
-        groups: [
-            RECORD_MIN(),
-            ...RATINGS_GROUPS,
-        ],
-    },
-    { key: 'all', label: 'All', groups: [RECORD, GOALS, PP, PK, SAVES, SHOTS, XG, STATE, COMEBACKS, EN] },
-];
-
 /** The default league table: every group, in order. Users hide columns from here. */
 export const COLUMN_GROUPS: SectionGroup[] = [RECORD, GOALS, PP, PK, SAVES, SHOTS, XG, STATE, COMEBACKS, EN, ...RATINGS_GROUPS];
 
@@ -215,26 +215,14 @@ export const COLUMN_GROUPS: SectionGroup[] = [RECORD, GOALS, PP, PK, SAVES, SHOT
  */
 export const DEFAULT_HIDDEN: string[] = [...COMEBACKS.cols, ...EN.cols, ...RATINGS_GROUPS.flatMap(g => g.cols)];
 
-/** Groups rendered into the server HTML (the HTML budget is 400KB); the rest of the default columns follow once the page is interactive. */
-export const SSR_GROUPS = ['Record', 'Goals'];
-
-/** One-click column presets: the columns of each section. */
-export const PRESETS: { key: string; label: string; cols: string[] }[] = SECTIONS.filter(sec => sec.key !== 'all').map(sec => ({
-    key: sec.key,
-    label: sec.label,
-    cols: [...new Set(sec.groups.flatMap(g => g.cols))],
-}));
-
-function RECORD_MIN(): SectionGroup {
-    return G('Record', ['gp', 'points', 'pt_pct']);
-}
-
-export const SECTION_KEYS = SECTIONS.map(s => s.key);
-
-/** Value of a column for a team row (ratings read the Ratings payload). */
-export function columnValue(col: StatColumn, row: TeamStat, ratings: Record<string, TeamRatingEntry> | null): number {
+/** Value of a column for a team row (ratings read the Ratings payload; lens columns derive theirs). */
+export function columnValue(col: StatColumn, row: TeamStat, ctx: ColumnCtx): number {
+    if (col.derive) {
+        const v = col.derive(row, ctx);
+        return typeof v === 'number' ? v : NaN;
+    }
     if (col.rating) {
-        const r = ratings?.[row.tri];
+        const r = ctx.ratings?.[row.tri];
         const v = r ? col.rating(r) : null;
         return v === null || v === undefined ? NaN : v;
     }

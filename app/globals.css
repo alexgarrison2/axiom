@@ -254,6 +254,25 @@
 }
 
 @layer components {
+  /* ---- League table cell (/teams) ----
+     CELL_BG + the 32px row, inset row line and secondary text as one class:
+     the table has ~350 of these in the static HTML, so the long utility list
+     would cost ~70KB. Zebra and hover mix --line into the panel colour so the
+     sticky column stays opaque. */
+  .lt-cell {
+    height: 2rem;
+    padding: 0 10px;
+    background-color: var(--surface-1);
+    box-shadow: inset 0 -1px 0 var(--line);
+    color: var(--text-2);
+  }
+  tr:nth-child(even) > .lt-cell {
+    background-color: color-mix(in srgb, var(--line) 40%, var(--surface-1));
+  }
+  tr:hover > .lt-cell {
+    background-color: color-mix(in srgb, var(--line) 85%, var(--surface-1));
+  }
+
   /* NHL headshots (336px square, head and shoulders) in small round frames:
      zoom onto the face so it reads at 28-64px. */
   .headshot {
