@@ -643,9 +643,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jameson Olive",
-        "updated_at": "2026-10-07T04:20:41.226Z",
-        "fetched_at": "2026-10-07T05:01:18Z"
+        "lineup_source": "Last Game (2026-10-06)",
+        "updated_at": "2026-10-07T14:34:09.879Z",
+        "fetched_at": "2026-10-08T03:04:12Z"
     },
     "TOR": {
         "f1": [
@@ -1921,9 +1921,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Colin Stephenson",
-        "updated_at": "2026-10-06T23:11:15.978Z",
-        "fetched_at": "2026-10-07T00:02:35Z"
+        "lineup_source": "Last Game (2026-10-06)",
+        "updated_at": "2026-10-07T14:22:49.731Z",
+        "fetched_at": "2026-10-08T03:04:12Z"
     },
     "EDM": {
         "f1": [
@@ -4773,9 +4773,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Zach Dooley",
-        "updated_at": "2026-10-07T01:52:52.281Z",
-        "fetched_at": "2026-10-07T01:55:53Z"
+        "lineup_source": "Last Game (2026-10-06)",
+        "updated_at": "2026-10-07T14:36:04.134Z",
+        "fetched_at": "2026-10-08T03:04:12Z"
     },
     "DAL": {
         "f1": [
@@ -6059,9 +6059,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Amanda Stein",
-        "updated_at": "2026-10-07T03:03:35.472Z",
-        "fetched_at": "2026-10-07T03:03:41Z"
+        "lineup_source": "Last Game (2026-10-06)",
+        "updated_at": "2026-10-07T14:20:23.173Z",
+        "fetched_at": "2026-10-08T03:04:12Z"
     },
     "MIN": {
         "f1": [
@@ -7042,74 +7042,42 @@
                 "number": 27,
                 "pos": "lw",
                 "id": 2855,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Ty Dellandrea",
-                "number": 10,
-                "pos": "c",
-                "id": 4813,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "up"
-            },
-            {
                 "name": "Will Smith",
                 "number": 2,
-                "pos": "rw",
+                "pos": "c",
                 "id": 38126,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
-            }
-        ],
-        "f2": [
+            },
             {
                 "name": "Igor Chernyshov",
                 "number": 92,
-                "pos": "lw",
-                "id": 38146,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Michael Misa",
-                "number": 77,
-                "pos": "c",
-                "id": 37508,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Ivar Stenberg",
-                "number": 41,
                 "pos": "rw",
-                "id": 38939,
-                "ppUnit": 2,
+                "id": 38146,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "up"
             }
         ],
-        "f3": [
+        "f2": [
             {
-                "name": "Tyler Toffoli",
-                "number": 73,
+                "name": "Ivar Stenberg",
+                "number": 41,
                 "pos": "lw",
-                "id": 1656,
+                "id": 38939,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Alexander Wennberg",
@@ -7119,7 +7087,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "up"
             },
             {
                 "name": "Kiefer Sherwood",
@@ -7130,6 +7098,38 @@
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Collin Graf",
+                "number": 51,
+                "pos": "lw",
+                "id": 38105,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Michael Misa",
+                "number": 77,
+                "pos": "c",
+                "id": 37508,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Tyler Toffoli",
+                "number": 73,
+                "pos": "rw",
+                "id": 1656,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
             }
         ],
         "f4": [
@@ -7154,10 +7154,10 @@
                 "movement": null
             },
             {
-                "name": "Collin Graf",
-                "number": 51,
+                "name": "Ty Dellandrea",
+                "number": 10,
                 "pos": "rw",
-                "id": 38105,
+                "id": 4813,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -7188,14 +7188,14 @@
         ],
         "d2": [
             {
-                "name": "Sam Dickinson",
-                "number": null,
+                "name": "Nolan Allan",
+                "number": 5,
                 "pos": "ld",
-                "id": 37090,
+                "id": 32541,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jacob Trouba",
@@ -7319,10 +7319,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Sam Dickinson",
-                "number": null,
+                "name": "Nolan Allan",
+                "number": 5,
                 "pos": "sk3",
-                "id": 37090,
+                "id": 32541,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -7337,9 +7337,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-05)",
-        "updated_at": "2026-10-06T14:14:45.631Z",
-        "fetched_at": "2026-10-07T00:02:35Z"
+        "lineup_source": "Sheng Peng",
+        "updated_at": "2026-10-08T02:05:52.282Z",
+        "fetched_at": "2026-10-08T03:04:12Z"
     },
     "SEA": {
         "f1": [
@@ -7652,9 +7652,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "@sound_hockey",
-        "updated_at": "2026-10-07T04:21:12.109Z",
-        "fetched_at": "2026-10-07T05:01:18Z"
+        "lineup_source": "Last Game (2026-10-06)",
+        "updated_at": "2026-10-07T14:33:46.773Z",
+        "fetched_at": "2026-10-08T03:04:12Z"
     },
     "OTT": {
         "f1": [
@@ -8308,9 +8308,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ansar Khan",
-        "updated_at": "2026-10-06T22:45:37.610Z",
-        "fetched_at": "2026-10-06T23:02:38Z"
+        "lineup_source": "Last Game (2026-10-06)",
+        "updated_at": "2026-10-07T13:56:22.756Z",
+        "fetched_at": "2026-10-08T03:04:12Z"
     },
     "UTA": {
         "f1": [
