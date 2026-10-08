@@ -214,9 +214,13 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
         tableTop.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     };
     const colClass = (c: Column) => cn(c.sets.includes(set) ? 'table-cell' : 'hidden md:table-cell', GROUP_START.has(c.key) && 'md:border-l md:border-l-line');
-    /** Focusing the table region scrolls it under the sticky filter bar; nudge it so the header row shows. */
+    /**
+     * Tabbing to the table region scrolls it under the sticky filter bar; nudge it so the header row shows.
+     * Keyboard focus only: a mouse press on a name focuses the region too (Safari, and Chrome on a link), and
+     * scrolling then moved the row away before mouseup, so the first click on a player never opened him.
+     */
     const revealRegion = (e: React.FocusEvent<HTMLDivElement>) => {
-        if (e.target !== e.currentTarget) return;
+        if (e.target !== e.currentTarget || !e.currentTarget.matches(':focus-visible')) return;
         const region = e.currentTarget;
         requestAnimationFrame(() => {
             const bar = filterBar.current?.getBoundingClientRect().bottom ?? 0;
