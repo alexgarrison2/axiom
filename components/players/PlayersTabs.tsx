@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-/** The Players section's two views: IMPACT ratings and the Pony Score leaderboard. */
-export function PlayersTabs({ active }: { active: 'ratings' | 'pony' }) {
-    const tab = (href: string, key: 'ratings' | 'pony', label: string) => (
+/** The Players section's views: IMPACT ratings, the Pony Score leaderboard and the goalies. */
+export function PlayersTabs({ active }: { active: 'ratings' | 'pony' | 'goalies' }) {
+    const tab = (href: string, key: 'ratings' | 'pony' | 'goalies', label: string) => (
         <Link
             href={href}
             aria-current={active === key ? 'page' : undefined}
@@ -19,6 +19,7 @@ export function PlayersTabs({ active }: { active: 'ratings' | 'pony' }) {
         <nav aria-label="Player views" className="flex gap-1.5">
             {tab('/players', 'ratings', 'Ratings')}
             {tab('/players/pony', 'pony', 'Pony score')}
+            {tab('/players/goalies', 'goalies', 'Goalies')}
         </nav>
     );
 }

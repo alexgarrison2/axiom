@@ -22,6 +22,9 @@ import { CareerTable } from '@/components/player/CareerTable';
 import { CareerSwitch } from '@/components/player/CareerSwitch';
 import { loadIsolate } from '@/lib/players/isolate-server';
 import PlayerSwitcher from '@/components/player/PlayerSwitcher';
+import { GoalieSeason, type GoalieNight } from '@/components/goalie/GoalieSeason';
+import { ShotMap } from '@/components/player/ShotMap';
+import { goalieRatings } from '@/lib/goalies';
 
 /*
  * A player's page: the NHL profile (bio, action photo, draft, awards, career
@@ -55,6 +58,8 @@ function impactRow(id: number): Record<string, unknown> | null {
     const r = doc.rows.find(row => Number(row[i]) === id);
     return r ? Object.fromEntries(doc.columns.map((c, k) => [c, r[k]])) : null;
 }
+
+const ord = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th')}`;
 
 function Fact({ k, v }: { k: string; v: React.ReactNode }) {
     return (
@@ -161,6 +166,19 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
     // Isolated impact: skaters only, the season the page shows (fitted on it and the two before).
     const isolate = goalie ? null : loadIsolate(wowySeason, pid);
 
+    // Goalies: save % against the league that season, and the model rating (GSAx per game, shrunk).
+    const gSa = games.goalie.reduce((a, r) => a + r.sa, 0);
+    const gGa = games.goalie.reduce((a, r) => a + r.ga, 0);
+    const leagueSv = goalie && data ? (() => {
+        const sa = data.goalies.reduce((a, r) => a + r.sa, 0);
+        return sa ? 1 - data.goalies.reduce((a, r) => a + r.ga, 0) / sa : null;
+    })() : null;
+    const ratings = goalie ? goalieRatings() : {};
+    const model = goalie ? ratings[`${first} ${last}`.trim()] ?? null : null;
+    const modelRank = model?.gsax_per_game != null ? Object.values(ratings).filter(r => (r.gsax_per_game ?? -Infinity) > model.gsax_per_game!).length + 1 : null;
+    const nights: GoalieNight[] = games.goalie.map(r => ({ game: r.game, date: r.date, opp: r.opp, home: r.home, ps: r.ps, sa: r.sa, ga: r.ga, xga: r.xga, toi: r.toi, decision: r.box?.decision ?? null }));
+    const sv3 = (v: number) => v.toFixed(3).replace(/^0/, '');
+
     return (
         <main className="pb-tabbar">
             <div className="page flex flex-col gap-8 py-5 md:py-7">
@@ -240,17 +258,29 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                 sub={rank ? `${rank.n} of ${rank.of} ${group === 'G' ? 'goalies' : group === 'D' ? 'defencemen' : 'forwards'}` : cur ? `${gp} games` : 'No games yet'}
                                 accent
                             />
-                            <Tile k={goalie ? 'GSAx total' : 'Pony total'} v={gp ? signed(total) : '—'} sub={cur ? [`${gp} games`, seasonLabel(cur.s)] : undefined} />
+                            {goalie ? (
+                                <Tile k="Save %" v={gSa ? sv3(1 - gGa / gSa) : '—'} sub={leagueSv != null ? [`league ${sv3(leagueSv)}`, `${gSa} shots`] : undefined} />
+                            ) : (
+                                <Tile k="Pony total" v={gp ? signed(total) : '—'} sub={cur ? [`${gp} games`, seasonLabel(cur.s)] : undefined} />
+                            )}
                             {goalie ? (
                                 <Tile k="Record" v={thisSeason ? `${thisSeason.w ?? 0}-${thisSeason.l ?? 0}-${thisSeason.otl ?? 0}` : '—'} sub={thisSeason?.svPct != null ? [`SV% ${thisSeason.svPct.toFixed(3).replace(/^0/, '')}`, `GAA ${thisSeason.gaa?.toFixed(2)}`] : undefined} />
                             ) : (
                                 <Tile k="Points" v={thisSeason ? `${thisSeason.g ?? 0}-${thisSeason.a ?? 0}-${thisSeason.p ?? 0}` : '—'} sub={thisSeason ? ['G-A-P', `${thisSeason.gp} GP`, `${thisSeason.toi ?? mmss(toi)} TOI`] : undefined} />
                             )}
-                            <Tile
-                                k="IMPACT"
-                                v={imp && imp.impact != null ? signed(Number(imp.impact), 1) : '—'}
-                                sub={imp && imp.off_impact != null ? ['Goals / 82', `OFF ${signed(Number(imp.off_impact), 1)}`, `DEF ${signed(Number(imp.def_impact), 1)}`] : 'Goals per 82 games'}
-                            />
+                            {goalie ? (
+                                <Tile
+                                    k="Model"
+                                    v={model?.gsax_per_game != null ? <span className="text-model">{signed(model.gsax_per_game)}</span> : '—'}
+                                    sub={modelRank ? ['GSAx / game, shrunk', `${ord(modelRank)} of ${Object.keys(ratings).length}`] : 'GSAx per game'}
+                                />
+                            ) : (
+                                <Tile
+                                    k="IMPACT"
+                                    v={imp && imp.impact != null ? signed(Number(imp.impact), 1) : '—'}
+                                    sub={imp && imp.off_impact != null ? ['Goals / 82', `OFF ${signed(Number(imp.off_impact), 1)}`, `DEF ${signed(Number(imp.def_impact), 1)}`] : 'Goals per 82 games'}
+                                />
+                            )}
                         </div>
                     </div>
                 </section>
@@ -259,7 +289,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                 <section aria-labelledby="pony-h" className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                         <h2 id="pony-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
-                            Pony score
+                            {goalie ? 'Season' : 'Pony score'}
                         </h2>
                         {withGames.length > 1 ? (
                             <nav aria-label="Season" className="flex gap-1.5">
@@ -280,7 +310,9 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                             </nav>
                         ) : null}
                     </div>
-                    {gp ? (
+                    {goalie && gp && cur ? (
+                        <GoalieSeason nights={nights} season={cur.s} id={pid} name={last || first} />
+                    ) : gp ? (
                         <PonyGames
                             trend={trend}
                             color={color}
@@ -318,6 +350,16 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         <p className="panel p-card text-caption text-fg-3">No Pony Score games yet this season.</p>
                     )}
                 </section>
+
+                {/* Shot map: every unblocked attempt this season on the tilted rink. */}
+                {!goalie && gp && cur ? (
+                    <section aria-labelledby="shots-h" className="flex flex-col gap-3">
+                        <h2 id="shots-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
+                            Shot map
+                        </h2>
+                        <ShotMap season={cur.s} id={pid} />
+                    </section>
+                ) : null}
 
                 {/* Isolated impact: where on the ice he changes shots for and against, and its parts in goals. */}
                 {isolate ? (
