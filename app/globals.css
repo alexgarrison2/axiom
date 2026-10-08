@@ -273,6 +273,34 @@
     background-color: color-mix(in srgb, var(--line) 85%, var(--surface-1));
   }
 
+  /* League hero (/teams): a focused team lights its crest, tether, race row
+     and table row; everything else on the map fades back. */
+  .ice-crest {
+    transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease-out;
+  }
+  .ice-tether {
+    opacity: 0;
+    transition: opacity 150ms ease-out;
+  }
+  .ice-tether[data-focus] {
+    opacity: 1;
+  }
+  .league[data-focusing] .ice-crest:not([data-focus]) {
+    opacity: 0.15 !important;
+  }
+  .league tr[data-focus] > .lt-cell {
+    background-color: color-mix(in srgb, var(--line) 85%, var(--surface-1));
+  }
+  .league .race-row[data-focus] {
+    background-color: color-mix(in srgb, var(--line) 60%, transparent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ice-crest,
+    .ice-tether {
+      transition: none;
+    }
+  }
+
   /* NHL headshots (336px square, head and shoulders) in small round frames:
      zoom onto the face so it reads at 28-64px. */
   .headshot {

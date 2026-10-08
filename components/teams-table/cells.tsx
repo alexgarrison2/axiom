@@ -90,20 +90,18 @@ export function Streak({ s }: { s: string | null }) {
     return <span className={s.startsWith('W') ? 'text-pos' : s.startsWith('L') ? 'text-neg' : 'text-fg-2'}>{s}</span>;
 }
 
-/** Bars from a midline: up (green) above, down (red) below, height by size. */
+/** Bars from a midline: up (green) above, down (red) below, height by size. One SVG per cell (DOM budget). */
 function Strip({ vals, scale, title }: { vals: number[]; scale: number; title: string }) {
+    const w = vals.length * 8;
     return (
-        <span className="inline-flex h-6 items-center gap-0.5 align-middle" title={title}>
+        <svg width={w} height={24} viewBox={`0 0 ${w} 24`} className="inline-block align-middle" role="img" aria-label={title}>
+            <title>{title}</title>
+            <line x1={0} x2={w} y1={12.5} y2={12.5} className="stroke-line-strong" />
             {vals.map((v, i) => {
                 const h = Math.max(2, Math.min(12, Math.abs(v) * scale));
-                return (
-                    <span key={i} className="relative block h-6 w-1.5">
-                        <span className="absolute inset-x-[-1px] top-3 h-px bg-line-strong" />
-                        <span className={cn('absolute inset-x-0 rounded-[1px]', v >= 0 ? 'bottom-3 bg-pos/80' : 'top-3 bg-neg/80')} style={{ height: h }} />
-                    </span>
-                );
+                return <rect key={i} x={i * 8} y={v >= 0 ? 12 - h : 13} width={6} height={h} rx={1} className={v >= 0 ? 'fill-pos/80' : 'fill-neg/80'} />;
             })}
-        </span>
+        </svg>
     );
 }
 
@@ -185,6 +183,48 @@ export function Frac({ n, d }: { n: number; d: number }) {
             <span className="min-w-[2ch] text-right">{n}</span>
             <span className="mx-px text-fg-disabled">/</span>
             <span className="min-w-[2ch] text-left">{d}</span>
+        </span>
+    );
+}
+
+/** One side of the special-teams split: centred on the league average, green right / red left. */
+function SplitBar({ v, avg, span }: { v: number; avg: number; span: number }) {
+    const w = Math.min(1, Math.abs(v - avg) / span) * 50;
+    const up = v >= avg;
+    return (
+        <span className="relative block h-1.5 w-7 rounded-[2px] bg-line">
+            <span className="absolute -inset-y-0.5 left-1/2 w-px bg-fg-3" />
+            <span className={cn('absolute inset-y-0 rounded-[2px]', up ? 'bg-pos/80' : 'bg-neg/80')} style={up ? { left: '50%', width: `${w}%` } : { right: '50%', width: `${w}%` }} />
+        </span>
+    );
+}
+
+/** Header over the split bars: "PP PK" above each bar, then the index label. */
+export function StSplitHeader({ label }: { label: string }) {
+    return (
+        <span className="inline-flex w-[172px] items-center">
+            <span className="inline-flex gap-1.5">
+                <b className="w-7 text-center font-medium">PP</b>
+                <b className="w-7 text-center font-medium">PK</b>
+            </span>
+            <span className="ml-auto">{label}</span>
+        </span>
+    );
+}
+
+/** Where a special-teams index comes from: PP and PK each against the league, then the index and its rank. */
+export function StSplit({ pp, pk, avg, children }: { pp: number; pk: number; avg: { pp: number; pk: number }; children: React.ReactNode }) {
+    return (
+        <span className="flex w-full items-center">
+            <span
+                className="inline-flex gap-1.5"
+                title={`Power play ${pp.toFixed(1)}% (league ${avg.pp.toFixed(1)}) · penalty kill ${pk.toFixed(1)}% (league ${avg.pk.toFixed(1)})`}
+                aria-label={`Power play ${pp.toFixed(1)}%, penalty kill ${pk.toFixed(1)}%`}
+            >
+                <SplitBar v={pp} avg={avg.pp} span={5} />
+                <SplitBar v={pk} avg={avg.pk} span={4} />
+            </span>
+            <span className="ml-auto">{children}</span>
         </span>
     );
 }

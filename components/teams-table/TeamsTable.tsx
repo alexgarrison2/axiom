@@ -28,13 +28,14 @@ import {
 } from './columns';
 import { LENSES, LENS_BY_KEY, isLensKey, lensColumn, lensColumns, type LensKey } from './lenses';
 import {
-    CentreBar, Dash, DepthCells, DepthHeader, FormTape, Flow, Frac, OddsBar, Ordinal, ProjRange, RecordCell, SignedText, Streak,
+    CentreBar, Dash, DepthCells, DepthHeader, FormTape, Flow, Frac, OddsBar, Ordinal, ProjRange, RecordCell, SignedText, StSplit, StSplitHeader, Streak,
 } from './cells';
 import { FilterSheet } from '@/components/ui/filter-sheet';
 import { Field, RangeFields } from './FilterFields';
 import { HeaderCell, type SortDir } from './HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from './table-style';
 import { PINNED_HEAD_HIDE, StickyHead, TableScroller } from './TableScroller';
+import { LeagueHero, focusTeam } from './LeagueHero';
 
 const STORAGE_KEY = 'ponyxg:teams-table:v4';
 
@@ -101,6 +102,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const [loadError, setLoadError] = React.useState<string | null>(null);
     const [hydrated, setHydrated] = React.useState(false);
     const captionId = React.useId();
+    const rootRef = React.useRef<HTMLElement>(null);
     // Pinned header copy (below lg): follows the table's horizontal scroll and fades with it.
     const headRef = React.useRef<HTMLDivElement>(null);
     const [headMore, setHeadMore] = React.useState(false);
@@ -252,7 +254,15 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const hiddenSet = React.useMemo(() => new Set(hidden), [hidden]);
     const ratingsMissing = !payload?.ratings;
     const ctx: ColumnCtx = React.useMemo(
-        () => ({ ratings: payload?.ratings ?? null, extras: payload?.extras ?? null, projections: payload?.projections ?? null, seasonGames: seasonGames(season) }),
+        () => {
+            const rs = Object.values(payload?.ratings ?? {});
+            const avg = (k: 'pp_rating' | 'pk_rating') => {
+                const v = rs.map(r => r[k]).filter((x): x is number => typeof x === 'number');
+                return v.length ? v.reduce((s, x) => s + x, 0) / v.length : NaN;
+            };
+            const leagueSt = rs.length ? { pp: avg('pp_rating'), pk: avg('pk_rating') } : null;
+            return { ratings: payload?.ratings ?? null, extras: payload?.extras ?? null, projections: payload?.projections ?? null, seasonGames: seasonGames(season), leagueSt };
+        },
         [payload, season],
     );
     // The lens's columns; "All" is every raw column the user has not hidden. Columns with no value for
@@ -292,7 +302,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         if (!model) return out;
         const want = new Set<string>();
         for (const { col } of columns) {
-            if (col.kind === 'ordinal') want.add(col.rankOf ?? col.key);
+            if (col.kind === 'ordinal' || col.kind === 'stSplit') want.add(col.rankOf ?? col.key);
             if (col.kind === 'rank' && col.rankOf) want.add(col.rankOf);
         }
         for (const key of want) {
@@ -320,7 +330,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         const out = new Map<string, Map<string, Emphasis>>();
         if (!model) return out;
         for (const { col } of columns) {
-            if (col.better === 'none' || (col.kind && col.kind !== 'num' && col.kind !== 'ordinal')) continue;
+            if (col.better === 'none' || (col.kind && col.kind !== 'num' && col.kind !== 'ordinal' && col.kind !== 'stSplit')) continue;
             const entries = model.league
                 .filter(r => (col.rating || col.model || r.gp >= EMPHASIS_MIN_GP) && !col.thin?.(r))
                 .map(r => [r.tri, valueOf(col, r)] as const);
@@ -551,7 +561,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                 {columns.map(({ col, groupEnd }) => (
                     <HeaderCell
                         key={col.key}
-                        label={col.kind === 'depth' ? <DepthHeader /> : col.label}
+                        label={col.kind === 'depth' ? <DepthHeader /> : col.kind === 'stSplit' ? <StSplitHeader label={col.label} /> : col.label}
                         title={col.title}
                         direction={model?.paired || NO_SORT.has(col.kind ?? 'num') ? undefined : activeSort.key === col.key ? activeSort.dir : null}
                         onSort={model?.paired || NO_SORT.has(col.kind ?? 'num') ? undefined : () => onSort(col)}
@@ -567,7 +577,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     const tableStyle = { width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + widthOf(c.col), 0)}px)`, minWidth: '100%' };
 
     return (
-        <section aria-label="League table" className="flex flex-col gap-1.5">
+        <section ref={rootRef} aria-label="League table" className="league flex flex-col gap-1.5">
             <PageHeading
                 title="Teams"
                 tag={isPrior ? shortSeasonTag(season) : undefined}
@@ -580,6 +590,12 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                     </div>
                 }
             />
+
+            {payload.isCurrent || payload.maxGp > 0 ? (
+                <div className="mb-2">
+                    <LeagueHero key={payload.season} payload={payload} rootRef={rootRef} />
+                </div>
+            ) : null}
 
             {/* Phones and tablets (incl. landscape phones): every filter and column choice in two sheets; the active filters stay on the page. */}
             <div className="flex flex-wrap items-center gap-2 lg:hidden">
@@ -704,7 +720,7 @@ const colWidth = (c: StatColumn, valueChars: number) => {
 /** Drawn and positional cells that do not sort. */
 const NO_SORT = new Set(['pos', 'record', 'homeRec', 'awayRec', 'l10', 'streak', 'form', 'depth', 'frac']);
 /** Cells that read from the left: ranks, bars, tapes. */
-const LEFT_KINDS = new Set(['ranking', 'pos', 'rank', 'modelBar', 'share', 'odds', 'proj', 'flow', 'depth', 'form', 'frac']);
+const LEFT_KINDS = new Set(['ranking', 'pos', 'rank', 'modelBar', 'share', 'odds', 'proj', 'flow', 'depth', 'form', 'frac', 'stSplit']);
 
 type TableItem =
     | { type: 'row'; row: TeamRow; pos: number; posLabel?: string }
@@ -771,7 +787,13 @@ function Row({
         router.push(href);
     };
     return (
-        <tr onClick={open} className={cn('group cursor-pointer', pairEnd && '[&>*]:border-b-8 [&>*]:border-b-bg')}>
+        <tr
+            data-tri={row.tri}
+            onClick={open}
+            onMouseEnter={e => focusTeam(e.currentTarget.closest('.league'), row.tri)}
+            onMouseLeave={e => focusTeam(e.currentTarget.closest('.league'), null)}
+            className={cn('group cursor-pointer', pairEnd && '[&>*]:border-b-8 [&>*]:border-b-bg')}
+        >
             <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 shadow-[inset_0_-1px_0_var(--line)] pl-2 pr-1.5 text-left font-normal md:pl-2.5')}>
                 <div className="flex h-8 items-center gap-2">
                     <Link href={href} prefetch={false} title={meta?.name} className="flex h-8 min-w-0 items-center gap-2 group-hover:text-brand">
@@ -856,6 +878,18 @@ function Row({
                 else if (kind === 'modelBar' && col.bar) body = <CentreBar v={v} mid={col.bar.mid} span={col.bar.span} text={col.format(v)} tone="model" />;
                 else if (kind === 'share' && col.bar) body = <CentreBar v={v} mid={col.bar.mid} span={col.bar.span} text={col.format(v)} tone="sign" width={64} />;
                 else if (kind === 'odds') body = <OddsBar pct={v} />;
+                else if (kind === 'stSplit') {
+                    const r = ctx.ratings?.[row.tri];
+                    const inner = <Ordinal text={col.format(v)} rank={ranks.get(col.rankOf ?? col.key)?.get(row.tri)} />;
+                    body =
+                        r && typeof r.pp_rating === 'number' && typeof r.pk_rating === 'number' && ctx.leagueSt ? (
+                            <StSplit pp={r.pp_rating} pk={r.pk_rating} avg={ctx.leagueSt}>
+                                {inner}
+                            </StSplit>
+                        ) : (
+                            inner
+                        );
+                }
                 else if (kind === 'frac' && col.frac) {
                     const [n, d] = col.frac(row);
                     body = <Frac n={n} d={d} />;

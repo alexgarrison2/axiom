@@ -8,7 +8,7 @@ export type Better = 'high' | 'low' | 'none';
 export type CellKind =
     | 'num' | 'ordinal' | 'signed' | 'rank' | 'pos' | 'ranking'
     | 'modelBar' | 'share' | 'odds' | 'proj' | 'flow' | 'depth' | 'form'
-    | 'record' | 'homeRec' | 'awayRec' | 'l10' | 'streak' | 'frac';
+    | 'record' | 'homeRec' | 'awayRec' | 'l10' | 'streak' | 'frac' | 'stSplit';
 
 /** Data beyond the stat row: current ratings, the game-log extras and the season simulation. */
 export interface ColumnCtx {
@@ -17,6 +17,8 @@ export interface ColumnCtx {
     projections: Record<string, TeamProjection> | null;
     /** Regular-season length of the table's season. */
     seasonGames: number;
+    /** League-average model PP% and PK% (the centre of the special-teams split bars). */
+    leagueSt?: { pp: number; pk: number } | null;
 }
 
 export interface StatColumn {

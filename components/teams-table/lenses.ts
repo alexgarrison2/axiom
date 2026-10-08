@@ -86,7 +86,7 @@ export const LENS_COLUMNS: Record<string, StatColumn> = {
 
     // special teams
     st_index: X({ key: 'st_index', label: 'PP% + PK%', title: 'Model power-play % + model penalty-kill % (100 = league average)', better: 'high', kind: 'modelBar', model: true, bar: { mid: 100, span: 6 }, derive: stIndex, format: d1, width: 160 }),
-    st_ord: X({ key: 'st_ord', label: 'PP% + PK%', title: 'Model power-play % + model penalty-kill % (100 = league average), league rank', better: 'high', kind: 'ordinal', model: true, rankOf: 'st_index', derive: stIndex, format: d1 }),
+    st_ord: X({ key: 'st_ord', label: 'PP% + PK%', title: 'Power play and penalty kill against the league average (bars), and model PP% + PK% with league rank (100 = average)', better: 'high', kind: 'stSplit', model: true, rankOf: 'st_index', derive: stIndex, format: d1, width: 196 }),
     pp_model: X({ key: 'pp_model', label: 'Model', title: 'Model power-play %: this season shrunk toward the league (league rank)', better: 'high', kind: 'ordinal', model: true, derive: (r, c) => fin(rt(r, c)?.pp_rating), format: d1 }),
     pp_xg: X({ key: 'pp_xg', label: 'xG / chance', title: 'Expected goals per power play, shrunk toward the league (≈ .18), league rank', better: 'high', kind: 'ordinal', model: true, derive: (r, c) => fin(rt(r, c)?.pp_xg), format: r3 }),
     pp_frac: X({ key: 'pp_frac', label: 'G / chances', title: 'Power-play goals / chances', better: 'none', kind: 'frac', frac: r => [r.pp_goals, r.pp_opps], derive: r => r.pp_opps, fullGameOnly: true }),
