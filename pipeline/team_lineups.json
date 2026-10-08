@@ -1976,7 +1976,7 @@
                 "id": 2160,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             },
             {
@@ -2002,38 +2002,6 @@
                 "movement": null
             },
             {
-                "name": "Josh Samanski",
-                "number": null,
-                "pos": "c",
-                "id": 38438,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Isaac Howard",
-                "number": 53,
-                "pos": "rw",
-                "id": 33270,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Max Jones",
-                "number": 46,
-                "pos": "lw",
-                "id": 2657,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Owen Michaels",
                 "number": 43,
                 "pos": "c",
@@ -2041,13 +2009,45 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Mathieu Joseph",
                 "number": 21,
                 "pos": "rw",
                 "id": 3891,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Isaac Howard",
+                "number": 53,
+                "pos": "lw",
+                "id": 33270,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Josh Samanski",
+                "number": null,
+                "pos": "c",
+                "id": 38438,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Max Jones",
+                "number": 46,
+                "pos": "rw",
+                "id": 2657,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -2213,7 +2213,7 @@
                 "id": 2160,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Alex Formenton",
@@ -2281,9 +2281,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": null,
-        "updated_at": "2026-10-07T20:59:28.115Z",
-        "fetched_at": "2026-10-07T23:02:33Z"
+        "lineup_source": "@EdmontonOilers",
+        "updated_at": "2026-10-08T02:01:27.351Z",
+        "fetched_at": "2026-10-08T02:02:34Z"
     },
     "VAN": {
         "f1": [
@@ -5717,9 +5717,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Zach Cavanagh",
-        "updated_at": "2026-10-07T17:10:33.431Z",
-        "fetched_at": "2026-10-07T18:03:28Z"
+        "lineup_source": "Anaheim Ducks",
+        "updated_at": "2026-10-08T02:00:18.597Z",
+        "fetched_at": "2026-10-08T02:02:34Z"
     },
     "NJD": {
         "f1": [
