@@ -5,7 +5,7 @@ import Link from 'next/link';
 import * as Popover from '@radix-ui/react-popover';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
-import { isoRings, resample, ringsPath, type Pt } from '@/lib/players/isolate-contour';
+import { RinkTerrain } from '@/components/rink/RinkTerrain';
 import { MAP_TYPE, minutes, ordinal, PART_KEYS, PART_LABEL, sgn, sgnPct, THIN_MIN, windowLabel, type Dist, type DistKey, type IsolateView, type MapKey, type PartKey } from '@/lib/players/isolate';
 
 /**
@@ -30,9 +30,6 @@ const FEWER = '#38c6e6';
 const PANEL = '#0a0e15';
 /** Band opacities, low to high; the thresholds are the file's per-type levels (league quantiles). */
 const ALPHA = [0.22, 0.34, 0.47, 0.6, 0.75, 0.92];
-const W = 85;
-const H = 80;
-const CORNER = 28;
 
 type Strength = 'ev' | 'st';
 
@@ -40,29 +37,6 @@ function mix(hex: string, a: number): string {
     const p = (h: string, i: number) => parseInt(h.slice(i, i + 2), 16);
     const c = [1, 3, 5].map(i => Math.round(p(hex, i) * a + p(PANEL, i) * (1 - a)));
     return `rgb(${c.join(',')})`;
-}
-
-const RINK = `M0,${H}L0,${CORNER}A${CORNER},${CORNER} 0 0 1 ${CORNER},0L${W - CORNER},0A${CORNER},${CORNER} 0 0 1 ${W},${CORNER}L${W},${H}Z`;
-// Goal line 11 ft from the end boards, where it meets the rounded corners.
-const GOAL_Y = 11;
-const GOAL_X = CORNER - Math.sqrt(CORNER ** 2 - (CORNER - GOAL_Y) ** 2);
-
-/** The half rink's markings (net at the top), under the data. */
-function RinkLines() {
-    return (
-        <g fill="none" className="stroke-fg-3" strokeOpacity={0.45} strokeWidth={0.45}>
-            <line x1={GOAL_X} x2={W - GOAL_X} y1={GOAL_Y} y2={GOAL_Y} />
-            <line x1={0} x2={W} y1={75} y2={75} strokeWidth={1.1} />
-            {[20.5, 64.5].map(cx => (
-                <g key={cx}>
-                    <circle cx={cx} cy={31} r={15} />
-                    <circle cx={cx} cy={31} r={0.9} className="fill-fg-3" stroke="none" fillOpacity={0.6} />
-                </g>
-            ))}
-            <path d={`M${W / 2 - 6},${GOAL_Y}A6,6 0 0 0 ${W / 2 + 6},${GOAL_Y}`} />
-            <rect x={W / 2 - 3} y={GOAL_Y - 3.3} width={6} height={3.3} rx={0.6} />
-        </g>
-    );
 }
 
 interface MapSpec {
@@ -75,51 +49,8 @@ interface MapSpec {
     levels: number[];
 }
 
-/** Filled contour bands for one map's int8 codes. */
-function useBands(codes: number[] | null, nx: number, ny: number, ts: number[]) {
-    return React.useMemo(() => {
-        if (!codes) return null;
-        const lat = resample(codes, nx, ny, 4);
-        const neg = { ...lat, v: lat.v.map(x => -x) };
-        const cellPx = 5 * lat.step;
-        // lattice (i along the rink, j across) -> drawing: net at the top, the shooter's left on the left
-        const to = ([i, j]: Pt): Pt => [W - j * cellPx, H - i * cellPx];
-        return {
-            more: ts.map(t => ringsPath(isoRings(lat, t), to, 1)),
-            fewer: ts.map(t => ringsPath(isoRings(neg, t), to, 1)),
-        };
-    }, [codes, nx, ny, ts]);
-}
-
-function RinkMap({ spec, nx, ny, thin, id }: { spec: MapSpec; nx: number; ny: number; thin: boolean; id: string }) {
-    const bands = useBands(spec.codes, nx, ny, spec.levels);
-    return (
-        <svg viewBox={`-1 -1 ${W + 2} ${H + 2}`} className="block h-auto w-full select-none" aria-hidden="true">
-            <defs>
-                <clipPath id={id}>
-                    <path d={RINK} />
-                </clipPath>
-            </defs>
-            <path d={RINK} fill={PANEL} />
-            <g clipPath={`url(#${id})`} opacity={thin ? 0.6 : 1}>
-                {bands
-                    ? ALPHA.slice(0, spec.levels.length).map((a, k) => (
-                          <React.Fragment key={k}>
-                              {bands.more[k] ? <path d={bands.more[k]} fill={mix(MORE, a)} fillRule="evenodd" /> : null}
-                              {bands.fewer[k] ? <path d={bands.fewer[k]} fill={mix(FEWER, a)} fillRule="evenodd" /> : null}
-                          </React.Fragment>
-                      ))
-                    : null}
-            </g>
-            <RinkLines />
-            <path d={RINK.replace(/Z$/, '')} fill="none" className="stroke-line-strong" strokeWidth={0.7} />
-            {!spec.codes ? (
-                <text x={W / 2} y={H / 2 + 8} textAnchor="middle" className="fill-fg-3 uppercase" style={{ fontSize: 4.2, letterSpacing: '0.16em' }}>
-                    No time
-                </text>
-            ) : null}
-        </svg>
-    );
+function RinkMap({ spec, nx, ny, thin }: { spec: MapSpec; nx: number; ny: number; thin: boolean; id?: string }) {
+    return <RinkTerrain codes={spec.codes} nx={nx} ny={ny} levels={spec.levels} thin={thin} label={`${spec.label} impact map`} />;
 }
 
 /** The legend: six bands each way, fewer (blue) to more (orange) shots. */
