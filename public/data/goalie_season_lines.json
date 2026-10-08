@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-10-08T03:04:39Z",
+ "generated_at": "2026-10-08T12:02:33Z",
  "goalies": {
   "Adin Hill": {
    "cur": {
@@ -458,12 +458,12 @@
   },
   "Devon Levi": {
    "cur": {
-    "w": 2,
+    "w": 3,
     "l": 0,
     "ot": 0,
-    "svpct": 0.80952,
-    "gaa": 4.02,
-    "gp": 2
+    "svpct": 0.86301,
+    "gaa": 3.35,
+    "gp": 3
    },
    "prev": null
   },
@@ -1020,11 +1020,11 @@
   "Lukas Dostal": {
    "cur": {
     "w": 2,
-    "l": 0,
+    "l": 1,
     "ot": 0,
-    "svpct": 0.91803,
-    "gaa": 2.42,
-    "gp": 2
+    "svpct": 0.87179,
+    "gaa": 3.67,
+    "gp": 3
    },
    "prev": {
     "w": 30,
@@ -1428,7 +1428,14 @@
    }
   },
   "Ville Husso": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 0,
+    "ot": 0,
+    "svpct": 1.0,
+    "gaa": 0.0,
+    "gp": 1
+   },
    "prev": {
     "w": 10,
     "l": 8,
