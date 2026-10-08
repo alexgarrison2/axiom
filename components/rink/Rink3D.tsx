@@ -18,16 +18,26 @@ import { S, type ShotRow } from '@/lib/shots';
 
 export type RinkTone = 'pos' | 'neg';
 
-const TH = (50 * Math.PI) / 180; // camera pitch
-const VC = -8; // camera distance behind the blue line (ft)
-const HC = 58; // camera height (ft)
+/** Camera: pitch down from level (degrees), position along the rink (ft; the blue line is 25) and height (ft). */
+export interface RinkView {
+    pitch: number;
+    at: number;
+    height: number;
+}
+/** The broadcast-like view of the shot maps. */
+export const SHOT_VIEW: RinkView = { pitch: 50, at: -8, height: 58 };
+/** Steeper and higher, for surfaces (impact terrain), so the rink's shape stays readable under them. */
+export const MAP_VIEW: RinkView = { pitch: 64, at: 6, height: 100 };
+const VC = SHOT_VIEW.at;
+const HC = SHOT_VIEW.height;
 const BOARD = 3.5;
 
-function project(u: number, v: number, z = 0): [number, number, number] {
-    const dv = v - VC;
-    const dz = z - HC;
-    const yc = dv * Math.sin(TH) + dz * Math.cos(TH);
-    const zc = dv * Math.cos(TH) - dz * Math.sin(TH);
+function project(u: number, v: number, z = 0, view: RinkView = SHOT_VIEW): [number, number, number] {
+    const th = (view.pitch * Math.PI) / 180;
+    const dv = v - view.at;
+    const dz = z - view.height;
+    const yc = dv * Math.sin(th) + dz * Math.cos(th);
+    const zc = dv * Math.cos(th) - dz * Math.sin(th);
     return [u / zc, -yc / zc, zc];
 }
 
@@ -42,18 +52,25 @@ export const OUTLINE: [number, number][] = (() => {
     return out;
 })();
 
-const BOUNDS = (() => {
-    const pts = [[-42.5, 25], [42.5, 25], [-42.5, 100], [42.5, 100]].flatMap(([u, v]) => [project(u, v), project(u, v, BOARD)]);
-    return { minX: Math.min(...pts.map(p => p[0])), maxX: Math.max(...pts.map(p => p[0])), minY: Math.min(...pts.map(p => p[1])), maxY: Math.max(...pts.map(p => p[1])) };
-})();
+const boundsCache = new Map<RinkView, { minX: number; maxX: number; minY: number; maxY: number }>();
+function bounds(view: RinkView) {
+    let b = boundsCache.get(view);
+    if (!b) {
+        const pts = [[-42.5, 25], [42.5, 25], [-42.5, 100], [42.5, 100]].flatMap(([u, v]) => [project(u, v, 0, view), project(u, v, BOARD, view)]);
+        b = { minX: Math.min(...pts.map(p => p[0])), maxX: Math.max(...pts.map(p => p[0])), minY: Math.min(...pts.map(p => p[1])), maxY: Math.max(...pts.map(p => p[1])) };
+        boundsCache.set(view, b);
+    }
+    return b;
+}
 
 /** Screen mapping for a rink drawn `W` px wide; `top` / `bottom` px of headroom for things above or below the ice. */
-export function rinkFrame(W: number, top = 30, bottom = 10) {
-    const scale = (W - 8) / (BOUNDS.maxX - BOUNDS.minX);
-    const H = Math.round((BOUNDS.maxY - BOUNDS.minY) * scale + top + bottom);
+export function rinkFrame(W: number, top = 30, bottom = 10, view: RinkView = SHOT_VIEW) {
+    const B = bounds(view);
+    const scale = (W - 8) / (B.maxX - B.minX);
+    const H = Math.round((B.maxY - B.minY) * scale + top + bottom);
     const T = (u: number, v: number, z = 0) => {
-        const [x, y, zc] = project(u, v, z);
-        return [4 + (x - BOUNDS.minX) * scale, top + (y - BOUNDS.minY) * scale, zc] as const;
+        const [x, y, zc] = project(u, v, z, view);
+        return [4 + (x - B.minX) * scale, top + (y - B.minY) * scale, zc] as const;
     };
     const pt = (q: readonly number[]) => `${q[0].toFixed(1)},${q[1].toFixed(1)}`;
     const poly = (pts: readonly (readonly [number, number])[], z = 0) => pts.map(([u, v]) => pt(T(u, v, z))).join(' ');
