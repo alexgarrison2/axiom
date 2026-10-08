@@ -12,7 +12,7 @@ export function emptyTeamStat(tri: string): TeamStat {
         pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_lev: 0, pk_time_per_game: 0, pk_time_per_goal_allowed: null,
         sf_per_game: 0, sa_per_game: 0, cf_per_game: 0, ca_per_game: 0, hdf_per_game: 0, hda_per_game: 0,
         sh_pct: 0, sv_pct: 0, engf: 0, enga: 0, en_attempts: 0, ens_pct: 0,
-        xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0,
+        xgf_per_game: 0, xga_per_game: 0, xgf_pct: 0, gsax: 0, otml: 0, otmw: 0,
         time_leading_per_game: 0, time_trailing_per_game: 0, time_tied_per_game: 0, control_score: 1,
         nlw: 0, ntw: 0, ntl: 0, bl: 0, bl_3p: 0, bl_2plus: 0, bl_3plus: 0, cw: 0, cw_3p: 0, cw_2plus: 0, cw_3plus: 0,
     };
@@ -39,7 +39,7 @@ export function calculateTeamStats(tri: string, games: GameRow[], period: Period
     let ppg = 0, ppo = 0, ppt = 0, pkga = 0, pko = 0, pkt = 0;
     let sf = 0, sa = 0, cf = 0, ca = 0, hdf = 0, hda = 0, saves = 0;
     let engf = 0, enga = 0, enppgf = 0, enppga = 0, enatt = 0;
-    let xgf = 0, xga = 0, xgane = 0, otml = 0;
+    let xgf = 0, xga = 0, xgane = 0, otml = 0, otmw = 0;
     let tl = 0, tt = 0, tti = 0, ctrl = 0;
     let nlw = 0, ntw = 0, ntl = 0, bl = 0, bl3p = 0, bl2 = 0, bl3 = 0, cw = 0, cw3p = 0, cw2 = 0, cw3 = 0;
 
@@ -82,7 +82,9 @@ export function calculateTeamStats(tri: string, games: GameRow[], period: Period
         tti += pick(g.tti, g.p.tti);
         ctrl += pick(g.ctrl, g.p.ctrl);
 
+        // Off the mat: the trailing side pulled its goalie and the leader shot at the empty net without scoring.
         if (g.enatt > 0 && g.engf < 1 && loss) otml++;
+        if (g.enattag > 0 && g.enga < 1 && win) otmw++;
         if (win && g.tl === 0) nlw++;
         if (win && g.tt === 0) ntw++;
         if (loss && g.tt === 0) ntl++;
@@ -142,6 +144,7 @@ export function calculateTeamStats(tri: string, games: GameRow[], period: Period
         xgf_pct: xgf + xga > 0 ? (xgf / (xgf + xga)) * 100 : 0,
         gsax: pi < 0 ? xgane - (ga - enga) : xgane - ga,
         otml,
+        otmw,
         time_leading_per_game: tl / gp,
         time_trailing_per_game: tt / gp,
         time_tied_per_game: tti / gp,

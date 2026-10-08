@@ -460,8 +460,9 @@ export const GLOSSARY = {
     'empty-net': {
         label: 'Empty net',
         title: 'Empty-net play',
-        short: 'EN GF/GA are empty-net goals. EN Att counts attempts at an empty net; ENS% is the share that scored. OtmL = losses where the team pulled its goalie and still lost.',
-        aliases: ['EN', 'ENS%', 'OtmL', 'off the mat'],
+        short: 'EN GF/GA are empty-net goals; EN Att counts attempts at an empty net and ENS% the share that scored. OtmW and OtmL count games that turned after an empty-net miss.',
+        detail: 'OtmW (off the mat win): you pulled your goalie, the opponent shot at the empty net and missed, and you won. OtmL (let them off the mat): the opponent pulled its goalie, you shot at the empty net and missed, and you lost.',
+        aliases: ['EN', 'ENS%', 'OtmW', 'OtmL', 'off the mat'],
     },
     'clinch-codes': {
         label: 'X / Y / Z / P / E',

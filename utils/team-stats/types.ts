@@ -165,6 +165,8 @@ export interface TeamStat {
     xgf_pct: number;
     gsax: number;
     otml: number;
+    /** Wins after pulling the goalie where the opponent shot at the empty net and missed. */
+    otmw: number;
 
     time_leading_per_game: number;
     time_trailing_per_game: number;

@@ -15,6 +15,10 @@ export interface StatColumn {
     format: (v: number) => string;
     /** Value source: 'rating' columns read the Ratings payload. */
     rating?: (r: TeamRatingEntry) => number | null;
+    /** A tally: zero reads as a dash so the few non-zero counts stand out. */
+    count?: boolean;
+    /** Too few chances to rank: the value shows dim and never takes emphasis. */
+    thin?: (row: TeamStat) => boolean;
 }
 
 const int = (v: number) => (Number.isFinite(v) ? String(Math.round(v)) : '—');
@@ -100,7 +104,8 @@ export const COLUMNS: StatColumn[] = [
     C('engf', 'EN GF', 'Empty-net goals for', 'high', int, { tip: 'empty-net', fullGameOnly: true }),
     C('en_attempts', 'EN Att', 'Attempts at an empty net', 'none', int, { tip: 'empty-net', fullGameOnly: true }),
     C('ens_pct', 'ENS%', 'Empty-net success rate', 'high', pc1, { tip: 'empty-net', fullGameOnly: true }),
-    C('otml', 'OtmL', 'Losses after pulling the goalie', 'low', int, { tip: 'empty-net', fullGameOnly: true }),
+    C('otmw', 'OtmW', 'Off the mat wins: pulled the goalie, the opponent missed the empty net, and won', 'high', int, { tip: 'empty-net', fullGameOnly: true }),
+    C('otml', 'OtmL', 'Let them off the mat: the opponent pulled its goalie, the team missed the empty net, and lost', 'low', int, { tip: 'empty-net', fullGameOnly: true }),
     C('enga', 'EN GA', 'Empty-net goals against', 'low', int, { tip: 'empty-net', fullGameOnly: true }),
 
     // Ratings (current ratings; season-independent)
@@ -128,6 +133,22 @@ export const COLUMNS: StatColumn[] = [
     C('goalie_impact', 'G Impact', 'Goalie impact (GSAx per game, top two goalies)', 'high', d2, { tip: 'gsax', rating: r => r.goalie }),
 ];
 
+/** Power-play / penalty-kill rates rank once a team has this many chances. */
+export const THIN_CHANCES = 15;
+
+const THIN: Record<string, (r: TeamStat) => boolean> = {
+    pp_pct: r => r.pp_opps < THIN_CHANCES,
+    pk_pct: r => r.pk_opps < THIN_CHANCES,
+    pp_time_per_goal: r => r.pp_goals < 3,
+    pk_time_per_goal_allowed: r => r.pk_goals_allowed < 3,
+    ens_pct: r => r.en_attempts < 5,
+};
+const COUNTS = ['nlw', 'ntw', 'ntl', 'bl', 'bl_3p', 'bl_2plus', 'bl_3plus', 'cw', 'cw_3p', 'cw_2plus', 'cw_3plus', 'engf', 'en_attempts', 'enga', 'otmw', 'otml'];
+for (const c of COLUMNS) {
+    if (THIN[c.key]) c.thin = THIN[c.key];
+    if (COUNTS.includes(c.key)) c.count = true;
+}
+
 export const COLUMN_BY_KEY = new Map(COLUMNS.map(c => [c.key, c]));
 
 export interface SectionGroup {
@@ -152,7 +173,7 @@ const SHOTS = G('Shots', ['sf_per_game', 'sa_per_game', 'cf_per_game', 'ca_per_g
 const XG = G('Expected goals', ['xgf_per_game', 'xga_per_game', 'xgf_pct']);
 const STATE = G('Game state', ['time_leading_per_game', 'time_trailing_per_game', 'time_tied_per_game', 'control_score', 'nlw', 'ntw', 'ntl']);
 const COMEBACKS = G('Leads & comebacks', ['bl', 'bl_3p', 'bl_2plus', 'bl_3plus', 'cw', 'cw_3p', 'cw_2plus', 'cw_3plus']);
-const EN = G('Empty net', ['engf', 'en_attempts', 'ens_pct', 'otml', 'enga']);
+const EN = G('Empty net', ['engf', 'en_attempts', 'ens_pct', 'enga', 'otmw', 'otml']);
 
 const RATINGS_GROUPS: SectionGroup[] = [
     G('xG ratings', ['xgf_rating', 'xga_rating', 'xgf_rolling', 'xga_rolling', 'xgf_5v5', 'xga_5v5']),
@@ -221,61 +242,32 @@ export function columnValue(col: StatColumn, row: TeamStat, ratings: Record<stri
     return typeof v === 'number' ? v : v === null ? NaN : NaN;
 }
 
-// ── colour ────────────────────────────────────────────────────────────────────
-// Diverging cell-background tint by league rank: cool cyan (the --brand hue)
-// for good, warm orange for bad, untinted around the league median. Blue vs
-// orange is the colour-blind-safe diverging pair, and the text stays --text-1
-// on every tint (contrast checked in columns.test.ts). The tint is laid over
-// the cell's own background (zebra / hover) as a background-image, so those
-// row states still show through.
+// ── emphasis ──────────────────────────────────────────────────────────────────
+// No cell fills. In each column the league's best few values go bold ink and
+// the worst few dim; everything between stays secondary. Ties at the cut take
+// neither, so a column of zeros never lights up at random.
 
-export const HEAT_GOOD: readonly [number, number, number] = [41, 231, 255];
-export const HEAT_BAD: readonly [number, number, number] = [255, 138, 61];
-/** Strongest tint alpha. Orange is darker than cyan, so it gets a little more to read as equally strong. */
-export const HEAT_MAX_ALPHA = { good: 0.3, bad: 0.36 } as const;
-/** Below this strength a cell stays untinted (the neutral middle of the league). */
-const HEAT_FLOOR = 0.06;
-/** Games after which a team's tint reaches full strength. */
-export const HEAT_FULL_GP = 10;
+/** Games a team needs before its results can take emphasis (ratings are exempt). */
+export const EMPHASIS_MIN_GP = 3;
+
+export type Emphasis = 'hi' | 'lo';
 
 /**
- * Where `value` sits in the league, 0 (lowest) to 1 (highest), by mid-rank so
- * tied values share a position. `sorted` is every team's value, ascending.
+ * Top and bottom of a column: up to five each, a third of the eligible teams at
+ * most, and never a value tied with the first team past the cut.
+ * `entries` are [team, value] for the eligible teams.
  */
-export function leaguePercentile(value: number, sorted: readonly number[]): number | null {
-    if (!Number.isFinite(value) || sorted.length < 2) return null;
-    let below = 0;
-    let equal = 0;
-    for (const v of sorted) {
-        if (v < value) below++;
-        else if (v === value) equal++;
-    }
-    const pos = below + Math.max(0, equal - 1) / 2;
-    return Math.max(0, Math.min(1, pos / (sorted.length - 1)));
-}
-
-/**
- * How much of the tint a team's sample earns: under half at 1 GP, full at
- * HEAT_FULL_GP. Early-season colour is honest (faint) rather than missing.
- */
-export function sampleWeight(gp: number): number {
-    if (!(gp > 0)) return 0;
-    return Math.min(1, 0.4 + 0.6 * (gp / HEAT_FULL_GP));
-}
-
-/**
- * Cell tint for a league percentile (see leaguePercentile), as an rgb() colour
- * with alpha, or undefined for the untinted middle / unrated columns.
- * `weight` (0–1) scales the strength, e.g. sampleWeight(gp).
- */
-export function heatTint(percentile: number | null, better: Better, weight = 1): string | undefined {
-    if (better === 'none' || percentile === null || !Number.isFinite(percentile)) return undefined;
-    let d = Math.max(0, Math.min(1, percentile)) * 2 - 1; // -1 lowest … +1 highest
-    if (better === 'low') d = -d;
-    const strength = Math.abs(d) * Math.max(0, Math.min(1, weight));
-    if (strength < HEAT_FLOOR) return undefined;
-    const good = d > 0;
-    const [r, g, b] = good ? HEAT_GOOD : HEAT_BAD;
-    const a = Math.round(strength * (good ? HEAT_MAX_ALPHA.good : HEAT_MAX_ALPHA.bad) * 1000) / 1000;
-    return `rgb(${r} ${g} ${b} / ${a})`;
+export function emphasisMap(entries: readonly (readonly [string, number])[], better: Better, max = 5): Map<string, Emphasis> {
+    const out = new Map<string, Emphasis>();
+    if (better === 'none') return out;
+    const ranked = entries.filter(([, v]) => Number.isFinite(v)).sort((a, b) => (better === 'high' ? b[1] - a[1] : a[1] - b[1]));
+    const k = Math.min(max, Math.floor(ranked.length / 3));
+    if (!k) return out;
+    const cutHi = ranked[k][1];
+    const cutLo = ranked[ranked.length - 1 - k][1];
+    ranked.forEach(([tri, v], i) => {
+        if (i < k && v !== cutHi) out.set(tri, 'hi');
+        else if (i >= ranked.length - k && v !== cutLo) out.set(tri, 'lo');
+    });
+    return out;
 }

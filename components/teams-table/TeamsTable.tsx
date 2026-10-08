@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Segmented } from '@/components/ui/segmented';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { PageHeading } from '@/components/ui/page-heading';
@@ -22,8 +23,8 @@ import { compareOfficial, computeStandings, officialKeysOf } from '@/utils/team-
 import { DIVISION_OF, DIVISIONS, DIVISION_LABEL, TEAM_TRICODES } from '@/utils/team-stats/teams';
 import type { Division, GameRow, LeaguePayload, Matchup, PackedGames, PeriodFilter, TeamStat } from '@/utils/team-stats/types';
 import {
-    COLUMN_BY_KEY, COLUMN_GROUPS, DEFAULT_HIDDEN, SSR_GROUPS, HEAT_BAD, HEAT_FULL_GP, HEAT_GOOD, HEAT_MAX_ALPHA, PRESETS, columnValue, heatTint, leaguePercentile, sampleWeight,
-    type StatColumn,
+    COLUMN_BY_KEY, COLUMN_GROUPS, DEFAULT_HIDDEN, EMPHASIS_MIN_GP, SSR_GROUPS, PRESETS, THIN_CHANCES, columnValue, emphasisMap,
+    type Emphasis, type StatColumn,
 } from './columns';
 import { FilterSheet } from '@/components/ui/filter-sheet';
 import { Field, RangeFields } from './FilterFields';
@@ -276,22 +277,36 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         return out;
     }, [columns]);
 
-    // Every team's value per column (ascending), for the rank-based cell tint.
-    // Ratings are season-independent; everything else counts teams with a game.
-    const dists = React.useMemo(() => {
-        const out = new Map<string, number[]>();
+    // Per column: the league's top and bottom few (bold / dim). Results need EMPHASIS_MIN_GP games
+    // and enough chances; ratings are season-independent.
+    const emphasis = React.useMemo(() => {
+        const out = new Map<string, Map<string, Emphasis>>();
         if (!model) return out;
         for (const { col } of columns) {
             if (col.better === 'none') continue;
-            const vals = model.league
-                .filter(r => col.rating || r.gp > 0)
-                .map(r => columnValue(col, r, payload?.ratings ?? null))
-                .filter(Number.isFinite)
-                .sort((a, b) => a - b);
-            if (vals.length > 1 && vals[0] !== vals[vals.length - 1]) out.set(col.key, vals);
+            const entries = model.league
+                .filter(r => (col.rating || r.gp >= EMPHASIS_MIN_GP) && !col.thin?.(r))
+                .map(r => [r.tri, columnValue(col, r, payload?.ratings ?? null)] as const);
+            out.set(col.key, emphasisMap(entries, col.better));
         }
         return out;
     }, [model, columns, payload]);
+
+    // Column widths from the widest label or formatted value, so numbers never crowd.
+    const widths = React.useMemo(() => {
+        const out = new Map<string, number>();
+        const rows = model?.league ?? [];
+        for (const { col } of columns) {
+            let chars = 0;
+            for (const r of rows) {
+                const v = columnValue(col, r, payload?.ratings ?? null);
+                if (Number.isFinite(v)) chars = Math.max(chars, col.format(v).length);
+            }
+            out.set(col.key, colWidth(col, chars));
+        }
+        return out;
+    }, [model, columns, payload]);
+    const widthOf = (col: StatColumn) => widths.get(col.key) ?? colWidth(col, 0);
 
     // A sort key from another section (sessions persist it) falls back to points.
     // Until the idle expansion the column set is partial, so a sort on a column that is only not rendered yet still holds.
@@ -390,29 +405,29 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     );
     // Team column: crest + tricode only; paired views add the starter and the moneyline.
     const paired = !!model?.paired;
-    const teamColClass = !paired ? '[--team-col:76px] md:[--team-col:96px]' : filters.withStarter ? '[--team-col:132px] md:[--team-col:184px]' : '[--team-col:80px] md:[--team-col:128px]';
+    const teamColClass = !paired ? '[--team-col:84px] md:[--team-col:96px]' : filters.withStarter ? '[--team-col:132px] md:[--team-col:184px]' : '[--team-col:80px] md:[--team-col:128px]';
 
     const colgroup = (
         <colgroup>
             <col style={{ width: 'var(--team-col)' }} />
             {columns.map(({ col }) => (
-                <col key={col.key} style={{ width: colWidth(col) }} />
+                <col key={col.key} style={{ width: widthOf(col) }} />
             ))}
         </colgroup>
     );
     const headRows = (
         <>
             <tr>
-                <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-4 border-b-0')} />
+                <td className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6')} />
                 {groupSpans.map(g => (
-                    <th key={g.name} scope="colgroup" colSpan={g.n} className={cn(HEAD_CELL, 'h-4 overflow-hidden border-b-0 border-r px-2 text-left leading-4')}>
-                        <span className="text-micro font-medium uppercase leading-4 tracking-wide text-fg-2">{g.name}</span>
+                    <th key={g.name} scope="colgroup" colSpan={g.n} className={cn(HEAD_CELL, 'h-6 overflow-hidden border-r border-r-line-strong px-2.5 text-left')}>
+                        <span className="whitespace-nowrap text-micro font-semibold uppercase tracking-label text-fg-2">{g.name}</span>
                     </th>
                 ))}
             </tr>
             <tr>
-                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 px-2 text-left top-4')}>
-                    <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">Team</span>
+                <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'top-6 z-[4] h-8 border-b-line-strong px-2.5 text-left')}>
+                    <span className="text-micro font-medium tracking-[0.04em] text-fg-3">Team</span>
                 </th>
                 {columns.map(({ col, groupEnd }) => (
                     <HeaderCell
@@ -421,15 +436,16 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                         title={col.title}
                         direction={model?.paired ? undefined : activeSort.key === col.key ? activeSort.dir : null}
                         onSort={model?.paired ? undefined : () => onSort(col.key)}
-                        className={cn(HEAD_CELL, 'top-4', groupEnd && 'border-r')}
-                        dense
+                        align={col.key === 'ranking' ? 'left' : 'right'}
+                        className={cn(HEAD_CELL, 'top-6 border-b-line-strong', groupEnd && 'border-r border-r-line-strong', activeSort.key === col.key && !model?.paired && 'shadow-[inset_0_-2px_0_rgb(var(--brand-rgb))]')}
+                        caseless
                     />
                 ))}
             </tr>
         </>
     );
     const tableCls = cn('table-fixed border-separate border-spacing-0 text-caption tabular-nums', teamColClass);
-    const tableStyle = { width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + colWidth(c.col), 0)}px)`, minWidth: '100%' };
+    const tableStyle = { width: `calc(var(--team-col) + ${columns.reduce((w, c) => w + widthOf(c.col), 0)}px)`, minWidth: '100%' };
 
     return (
         <section aria-label="League table" className="flex flex-col gap-1.5">
@@ -514,9 +530,9 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                                     <Row
                                         key={`${row.tri}-${idx}`}
                                         row={row}
-                                        idx={idx}
                                         columns={columns}
-                                        dists={dists}
+                                        emphasis={emphasis}
+                                        sortKey={model?.paired ? null : activeSort.key}
                                         payload={payload}
                                         paired={!!model?.paired}
                                         period={filters.period}
@@ -535,37 +551,48 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
     );
 }
 
-/** Narrow columns: the label (or a 6-character value) plus 8px of padding, never under 44px. */
-const colWidth = (c: StatColumn) => Math.max(44, Math.round(c.label.length * 7) + 14);
+/** Wide enough for the label (12px, tracked) or the widest value (13px tabular) plus padding. */
+const colWidth = (c: StatColumn, valueChars: number) =>
+    c.key === 'ranking' ? 72 : Math.max(44, Math.round(c.label.length * 7.2) + 22, Math.round(valueChars * 7.4) + 22);
 
 /** Record counts read 0 (not —) before a team's first game. */
 const COUNTING = new Set(['gp', 'wins', 'losses', 'otl', 'points', 'rw', 'ranking']);
 
+const DIV_SHORT: Record<Division, string> = { Atlantic: 'ATL', Metro: 'MET', Central: 'CEN', Pacific: 'PAC' };
+
+/** The sorted column's faint cyan wash, laid over the zebra / hover background. */
+const SORTED_WASH = { backgroundImage: 'linear-gradient(rgb(var(--brand-rgb) / 0.045), rgb(var(--brand-rgb) / 0.045))' };
+
 function Row({
-    row, idx, columns, dists, payload, paired, period, showStarter, pairEnd,
+    row, columns, emphasis, sortKey, payload, paired, period, showStarter, pairEnd,
 }: {
     row: TeamRow;
-    idx: number;
     columns: { col: StatColumn; groupEnd: boolean }[];
-    dists: Map<string, number[]>;
+    emphasis: Map<string, Map<string, Emphasis>>;
+    sortKey: string | null;
     payload: LeaguePayload;
     paired: boolean;
     period: PeriodFilter;
     showStarter: boolean;
     pairEnd: boolean;
 }) {
+    const router = useRouter();
     const meta = payload.teams.find(t => t.tri === row.tri);
     const clinch = row.clinch ?? null;
     const odds = paired && row.matchup && row.side ? { ml: row.side === 'home' ? row.matchup.homeVegasOdds : row.matchup.awayVegasOdds } : null;
-    const weight = sampleWeight(row.gp);
+    const href = `/teams/${row.tri}`;
+    // The whole row opens the team page; the crest + tricode stay the keyboard / link target.
+    const open = (e: React.MouseEvent) => {
+        if ((e.target as HTMLElement).closest('a,button') || e.metaKey || e.ctrlKey) return;
+        router.push(href);
+    };
     return (
-        <tr className={cn('group', pairEnd && '[&>*]:border-b-8 [&>*]:border-b-bg')}>
-            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-6 shadow-[inset_0_-1px_0_var(--line)] pl-1 pr-1.5 text-left font-normal md:pl-2')}>
-                <div className="flex h-6 items-center gap-1.5">
-                    {!paired ? <span className="hidden w-4 shrink-0 text-right text-micro text-fg-3 md:inline">{idx + 1}</span> : null}
-                    <Link href={`/teams/${row.tri}`} prefetch={false} title={meta?.name} className="flex h-6 min-w-0 items-center gap-1.5 hover:text-brand">
-                        <Crest tri={row.tri} size={20} className="h-5 w-5 drop-shadow-none" />
-                        <span className="font-bold text-fg-1 group-hover:text-inherit">{row.tri}</span>
+        <tr onClick={open} className={cn('group cursor-pointer', pairEnd && '[&>*]:border-b-8 [&>*]:border-b-bg')}>
+            <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 shadow-[inset_0_-1px_0_var(--line)] pl-2 pr-1.5 text-left font-normal md:pl-2.5')}>
+                <div className="flex h-8 items-center gap-2">
+                    <Link href={href} prefetch={false} title={meta?.name} className="flex h-8 min-w-0 items-center gap-2 group-hover:text-brand">
+                        <Crest tri={row.tri} size={28} className="-my-0.5 h-7 w-7 drop-shadow-none" />
+                        <span className="text-body font-bold text-fg-1 group-hover:text-inherit">{row.tri}</span>
                         {meta ? <span className="sr-only">, {meta.name}</span> : null}
                         {paired && showStarter && row.starterName ? (
                             <span className="truncate text-micro text-fg-2">
@@ -589,28 +616,48 @@ function Row({
                 </div>
             </th>
             {columns.map(({ col, groupEnd }) => {
-                const base = cn(CELL_BG, 'h-6 shadow-[inset_0_-1px_0_var(--line)] px-1 text-center', groupEnd && 'border-r');
+                const sorted = sortKey === col.key;
+                const base = cn(CELL_BG, 'h-8 shadow-[inset_0_-1px_0_var(--line)] px-2.5 text-right text-fg-2', groupEnd && 'border-r border-r-line-strong');
+                const style = sorted ? SORTED_WASH : undefined;
+                const dash = <span className="text-fg-disabled">—</span>;
                 if (col.key === 'ranking') {
+                    const rank = row.ranking && row.ranking !== '—' ? row.ranking.slice(1) : null;
+                    const div = DIVISION_OF[row.tri] as Division | undefined;
                     return (
-                        <td key={col.key} className={cn(base, row.isPlayoff ? 'font-bold text-fg-1' : 'text-fg-3')}>
-                            {row.ranking && row.ranking !== '—' ? row.ranking : '—'}
-                            {row.isPlayoff ? <span className="sr-only"> (playoff position)</span> : null}
+                        <td key={col.key} className={cn(base, 'text-left')} style={style}>
+                            {rank && div ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <span aria-hidden="true" className={cn('h-1.5 w-1.5 rounded-full', row.isPlayoff ? 'bg-pos' : 'border border-fg-disabled')} />
+                                    <span className="text-micro tracking-[0.08em] text-fg-3">{DIV_SHORT[div]}</span>
+                                    <span className="font-semibold text-fg-1">{rank}</span>
+                                    <span className="sr-only">{row.isPlayoff ? ' (in a playoff spot)' : ' (outside the playoff spots)'}</span>
+                                </span>
+                            ) : (
+                                dash
+                            )}
                         </td>
                     );
                 }
                 const counting = COUNTING.has(col.key);
                 const blank = row.gp === 0 && !col.rating && !counting ? true : period !== 'All' && col.fullGameOnly;
                 const v = blank ? NaN : columnValue(col, row, payload.ratings);
-                const dist = dists.get(col.key);
-                // League-rank tint, faded by sample size (ratings are season-independent: full strength).
-                const tint = dist && (col.rating || row.gp > 0) ? heatTint(leaguePercentile(v, dist), col.better, col.rating ? 1 : weight) : undefined;
+                if (!Number.isFinite(v) || (col.count && v === 0)) {
+                    return (
+                        <td key={col.key} className={base} style={style}>
+                            {dash}
+                        </td>
+                    );
+                }
+                const thin = !col.rating && col.thin?.(row);
+                const e = thin ? undefined : emphasis.get(col.key)?.get(row.tri);
                 return (
                     <td
                         key={col.key}
-                        className={cn(base, 'text-fg-1', col.key === 'points' && 'font-bold')}
-                        style={tint ? { backgroundImage: `linear-gradient(${tint}, ${tint})` } : undefined}
+                        title={thin ? `Thin sample: no rank yet` : undefined}
+                        className={cn(base, e === 'hi' && 'font-semibold text-fg-1', (e === 'lo' || thin) && 'text-fg-3', col.count && !e && 'text-fg-1', col.key === 'points' && 'font-bold text-fg-1')}
+                        style={style}
                     >
-                        {Number.isFinite(v) ? col.format(v) : <span className="text-fg-disabled">—</span>}
+                        {col.format(v)}
                     </td>
                 );
             })}
@@ -618,29 +665,20 @@ function Row({
     );
 }
 
-const rgba = (c: readonly number[], a: number) => `rgb(${c.join(' ')} / ${a})`;
-
-/** One label row: the rank tint scale and (when they exist) the clinch codes. */
+/** One line: what bold and dim mean, the thin-sample rule, and (when they exist) the clinch codes. */
 function Legend({ clinch }: { clinch: boolean }) {
     return (
-        <div aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-micro uppercase tracking-label text-fg-3">
-            <span className="inline-flex items-center gap-1.5">
-                <span>Worse</span>
-                <span className="flex overflow-hidden rounded-[3px] border border-line bg-surface-1">
-                    {[-1, -0.5, 0, 0.5, 1].map(d => (
-                        <span
-                            key={d}
-                            className="h-3 w-4"
-                            style={d === 0 ? undefined : { background: rgba(d > 0 ? HEAT_GOOD : HEAT_BAD, Math.abs(d) * (d > 0 ? HEAT_MAX_ALPHA.good : HEAT_MAX_ALPHA.bad)) }}
-                        />
-                    ))}
-                </span>
-                <span>Better</span>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-micro text-fg-3">
+            <span>
+                <b className="font-semibold text-fg-1">Bold</b> top 5
             </span>
-            <span>Faint &lt;{HEAT_FULL_GP} GP</span>
+            <span>Dim bottom 5</span>
+            <span>
+                Dim PP% / PK% under {THIN_CHANCES} chances; ranks start at {EMPHASIS_MIN_GP} GP
+            </span>
             {clinch
                 ? (['x', 'y', 'z', 'p', 'e'] as const).map(c => (
-                      <span key={c} className="inline-flex items-center gap-1">
+                      <span key={c} className="inline-flex items-center gap-1 uppercase tracking-label">
                           <b className={c === 'e' ? 'text-neg' : 'text-pos'}>{c}</b>
                           {CLINCH_SHORT[c]}
                       </span>
@@ -656,7 +694,10 @@ const CLINCH_SHORT: Record<string, string> = { x: 'Playoffs', y: 'Conf', z: 'Div
 function Group({ label, sheet, children }: { label: string; sheet?: boolean; children: React.ReactNode }) {
     if (sheet) return <Field label={label}>{children}</Field>;
     return (
-        <div role="group" aria-label={label} title={label} className="flex min-w-0 items-center">
+        <div role="group" aria-label={label} className="flex min-w-0 items-center gap-2">
+            <span aria-hidden="true" className="text-micro font-medium uppercase tracking-label text-fg-3">
+                {label}
+            </span>
             {children}
         </div>
     );
@@ -931,13 +972,14 @@ function ColumnPicker({
 function activeChips(f: TableFilters, set: React.Dispatch<React.SetStateAction<TableFilters>>, complete = false) {
     const out: { key: string; label: string; clear: () => void }[] = [];
     const reset = <K extends keyof TableFilters>(k: K) => () => set(prev => ({ ...prev, [k]: DEFAULT_FILTERS[k] }));
-    if (f.scope !== 'regular') out.push({ key: 'scope', label: 'Playoffs', clear: reset('scope') });
-    if (f.view !== 'all') out.push({ key: 'view', label: f.view === 'today' ? 'Today' : f.view === 'tomorrow' ? 'Tomorrow' : 'Bracket', clear: reset('view') });
+    // The desktop bar shows every segmented control, so only filters hidden behind Per game get a chip there.
+    if (complete && f.scope !== 'regular') out.push({ key: 'scope', label: 'Playoffs', clear: reset('scope') });
+    if (complete && f.view !== 'all') out.push({ key: 'view', label: f.view === 'today' ? 'Today' : f.view === 'tomorrow' ? 'Tomorrow' : 'Bracket', clear: reset('view') });
     if (complete && f.location !== 'All') out.push({ key: 'location', label: f.location, clear: reset('location') });
-    if (f.recent !== 'All' && (complete || f.recent !== 10)) out.push({ key: 'recent', label: `L${f.recent}`, clear: reset('recent') });
-    if (f.period !== 'All') out.push({ key: 'period', label: f.period, clear: reset('period') });
-    if (f.divisions.length) out.push({ key: 'divisions', label: f.divisions.map(d => DIVISION_LABEL[d]).join('+'), clear: () => set(prev => ({ ...prev, divisions: [] })) });
-    if (f.position !== 'All') out.push({ key: 'position', label: f.position === 'In' ? 'In spot' : 'Out of spot', clear: reset('position') });
+    if (complete && f.recent !== 'All') out.push({ key: 'recent', label: `L${f.recent}`, clear: reset('recent') });
+    if (complete && f.period !== 'All') out.push({ key: 'period', label: f.period, clear: reset('period') });
+    if (complete && f.divisions.length) out.push({ key: 'divisions', label: f.divisions.map(d => DIVISION_LABEL[d]).join('+'), clear: () => set(prev => ({ ...prev, divisions: [] })) });
+    if (complete && f.position !== 'All') out.push({ key: 'position', label: f.position === 'In' ? 'In spot' : 'Out of spot', clear: reset('position') });
     if (f.ppg !== 'All') out.push({ key: 'ppg', label: f.ppg === 'Yes' ? 'PPG' : 'No PPG', clear: reset('ppg') });
     if (f.ppga !== 'All') out.push({ key: 'ppga', label: f.ppga === 'Yes' ? 'PPGA' : 'No PPGA', clear: reset('ppga') });
     if (f.scoredFirst !== 'All') out.push({ key: 'sfirst', label: f.scoredFirst === 'Yes' ? 'Scored 1st' : 'Trailed 1st', clear: reset('scoredFirst') });

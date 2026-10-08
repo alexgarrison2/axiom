@@ -1,77 +1,36 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hexToRgb } from '@/components/ui/color';
-import { HEAT_BAD, HEAT_GOOD, HEAT_MAX_ALPHA, heatTint, leaguePercentile, sampleWeight } from './columns';
+import { COLUMN_BY_KEY, emphasisMap } from './columns';
 
-const css = readFileSync(resolve(__dirname, '../../app/globals.css'), 'utf8');
-const token = (name: string) => {
-    const m = css.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`));
-    if (!m) throw new Error(`token --${name} not found`);
-    return m[1];
-};
-const hex = (c: number[]) => `#${c.map(v => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
-const mix = (a: number[], b: number[], t: number) => a.map((x, i) => x + (b[i] - x) * t);
-const alphaOf = (tint: string | undefined) => Number(tint?.match(/\/ ([\d.]+)\)/)?.[1] ?? 0);
+const e = (vals: number[]) => vals.map((v, i) => [`T${i}`, v] as const);
 
-describe('leaguePercentile', () => {
-    const sorted = [1, 2, 3, 4, 5];
-    it('maps lowest to 0, highest to 1, median to 0.5', () => {
-        expect(leaguePercentile(1, sorted)).toBe(0);
-        expect(leaguePercentile(5, sorted)).toBe(1);
-        expect(leaguePercentile(3, sorted)).toBe(0.5);
-    });
-    it('gives tied values the same mid-rank', () => {
-        expect(leaguePercentile(0, [0, 0, 1, 1])).toBeCloseTo(1 / 6);
-        expect(leaguePercentile(1, [0, 0, 1, 1])).toBeCloseTo(5 / 6);
-        expect(leaguePercentile(2, [2, 2, 2])).toBe(0.5);
-    });
-    it('is null without a value or a league to compare to', () => {
-        expect(leaguePercentile(NaN, sorted)).toBeNull();
-        expect(leaguePercentile(3, [3])).toBeNull();
-    });
-});
-
-describe('heatTint', () => {
-    it('is cyan for the best, orange for the worst, untinted in the middle', () => {
-        expect(heatTint(1, 'high')).toBe(`rgb(${HEAT_GOOD.join(' ')} / ${HEAT_MAX_ALPHA.good})`);
-        expect(heatTint(0, 'high')).toBe(`rgb(${HEAT_BAD.join(' ')} / ${HEAT_MAX_ALPHA.bad})`);
-        expect(heatTint(0.5, 'high')).toBeUndefined();
-        expect(heatTint(0.51, 'high')).toBeUndefined();
+describe('emphasisMap', () => {
+    it('marks up to five best and five worst', () => {
+        const m = emphasisMap(e([...Array(32).keys()]), 'high');
+        expect([...m].filter(([, x]) => x === 'hi').map(([t]) => t)).toEqual(['T31', 'T30', 'T29', 'T28', 'T27']);
+        expect([...m].filter(([, x]) => x === 'lo')).toHaveLength(5);
+        expect(m.get('T0')).toBe('lo');
     });
     it('flips for lower-is-better columns and skips neutral ones', () => {
-        expect(heatTint(0, 'low')).toContain(HEAT_GOOD.join(' '));
-        expect(heatTint(1, 'low')).toContain(HEAT_BAD.join(' '));
-        expect(heatTint(1, 'none')).toBeUndefined();
-        expect(heatTint(null, 'high')).toBeUndefined();
+        expect(emphasisMap(e([...Array(32).keys()]), 'low').get('T0')).toBe('hi');
+        expect(emphasisMap(e([1, 2, 3]), 'none').size).toBe(0);
     });
-    it('scales with rank distance and sample weight', () => {
-        expect(alphaOf(heatTint(0.9, 'high'))).toBeGreaterThan(alphaOf(heatTint(0.7, 'high')));
-        expect(alphaOf(heatTint(1, 'high', 0.25))).toBeCloseTo(HEAT_MAX_ALPHA.good * 0.25);
+    it('caps at a third of the teams', () => {
+        expect([...emphasisMap(e([1, 2, 3, 4, 5, 6]), 'high').values()].filter(x => x === 'hi')).toHaveLength(2);
+        expect(emphasisMap(e([1, 2]), 'high').size).toBe(0);
     });
-});
-
-describe('sampleWeight', () => {
-    it('is faint at 1 GP, full at 10, zero before a game', () => {
-        expect(sampleWeight(0)).toBe(0);
-        expect(sampleWeight(1)).toBeCloseTo(0.46);
-        expect(sampleWeight(10)).toBe(1);
-        expect(sampleWeight(40)).toBe(1);
+    it('never marks values tied with the cut', () => {
+        const zeros = [...Array(28).fill(0), 1, 1, 2, 3];
+        const m = emphasisMap(e(zeros), 'high');
+        expect([...m.values()].filter(x => x === 'hi')).toHaveLength(4);
+        expect([...m.values()].filter(x => x === 'lo')).toHaveLength(0);
     });
 });
 
-describe('tint legibility', () => {
-    // The row states the tint sits on (CELL_BG): plain, zebra, hover.
-    const surface = hexToRgb(token('surface-1'));
-    const line = hexToRgb(token('line'));
-    const rows = { plain: surface, zebra: mix(surface, line, 0.4), hover: mix(surface, line, 0.85) };
-    it.each([
-        ['good', HEAT_GOOD, HEAT_MAX_ALPHA.good],
-        ['bad', HEAT_BAD, HEAT_MAX_ALPHA.bad],
-    ] as const)('--text-1 stays well above AA (6:1) on the strongest %s tint in every row state', (_, color, alpha) => {
-        for (const [state, bg] of Object.entries(rows)) {
-            const cell = hex(mix(bg, [...color], alpha));
-            expect(contrastRatio(token('text-1'), cell), `${state} ${cell}`).toBeGreaterThanOrEqual(6);
-        }
+describe('column flags', () => {
+    it('treats tallies as counts and thin-samples the special-teams rates', () => {
+        expect(COLUMN_BY_KEY.get('otmw')?.count).toBe(true);
+        expect(COLUMN_BY_KEY.get('otml')?.count).toBe(true);
+        expect(COLUMN_BY_KEY.get('pp_pct')?.thin?.({ pp_opps: 14 } as never)).toBe(true);
+        expect(COLUMN_BY_KEY.get('pp_pct')?.thin?.({ pp_opps: 15 } as never)).toBe(false);
     });
 });

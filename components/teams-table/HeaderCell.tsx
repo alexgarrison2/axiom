@@ -15,8 +15,10 @@ interface HeaderCellProps {
     align?: 'left' | 'center' | 'right';
     className?: string;
     style?: React.CSSProperties;
-    /** 24px row (the league table, so all 32 teams fit one screen) instead of 32px. */
+    /** 24px row instead of 32px. */
     dense?: boolean;
+    /** Keep the label's own case (TruGF, xGF%) instead of uppercasing it. */
+    caseless?: boolean;
 }
 
 /**
@@ -25,11 +27,11 @@ interface HeaderCellProps {
  * the cell (same contract as the SortHeader primitive, plus a native
  * tooltip carrying the full column name).
  */
-export function HeaderCell({ label, title, direction, onSort, align = 'center', className, style, dense }: HeaderCellProps) {
+export function HeaderCell({ label, title, direction, onSort, align = 'center', className, style, dense, caseless }: HeaderCellProps) {
     const sortable = direction !== undefined && !!onSort;
     const ariaSort = !sortable ? undefined : direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none';
     const justify = align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start';
-    const text = 'whitespace-nowrap text-micro font-medium uppercase tracking-[0.06em]';
+    const text = cn('whitespace-nowrap text-micro font-medium', caseless ? 'tracking-[0.04em]' : 'uppercase tracking-[0.06em]');
     return (
         <th scope="col" aria-sort={ariaSort} className={cn(dense ? 'h-6' : 'h-8', 'p-0 align-middle font-medium', className)} style={style}>
             {sortable ? (
@@ -38,7 +40,7 @@ export function HeaderCell({ label, title, direction, onSort, align = 'center', 
                     onClick={onSort}
                     title={title}
                     className={cn(
-                        'inline-flex h-full w-full items-center px-1.5 transition-colors hover:text-fg-1 focus-visible:outline-offset-[-2px] coarse:min-h-11',
+                        'inline-flex h-full w-full items-center transition-colors', caseless ? 'px-2.5' : 'px-1.5', 'hover:text-fg-1 focus-visible:outline-offset-[-2px] coarse:min-h-11',
                         dense ? 'min-h-6' : 'min-h-8',
                         justify,
                         text,
@@ -47,7 +49,7 @@ export function HeaderCell({ label, title, direction, onSort, align = 'center', 
                 >
                     {/* Arrow is out of flow so the label lines up with its column's values; the negative
                         margin cancels the trailing letter-spacing. */}
-                    <span className={cn('relative', align === 'right' && '-mr-[0.06em]')}>
+                    <span className={cn('relative', align === 'right' && !caseless && '-mr-[0.06em]')}>
                         {label}
                         {direction ? (
                             <svg
@@ -62,7 +64,7 @@ export function HeaderCell({ label, title, direction, onSort, align = 'center', 
                     {title ? <span className="sr-only">, {title}</span> : null}
                 </button>
             ) : (
-                <span title={title} className={cn('flex items-center px-1.5 text-fg-3', dense ? 'min-h-6' : 'min-h-8', justify, text)}>
+                <span title={title} className={cn('flex items-center text-fg-3', caseless ? 'px-2.5' : 'px-1.5', dense ? 'min-h-6' : 'min-h-8', justify, text)}>
                     {label}
                     {title ? <span className="sr-only">, {title}</span> : null}
                 </span>
