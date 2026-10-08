@@ -913,6 +913,8 @@ def aggregate_game_stats(pbp_json, game_info, game_date, xg_model=None, home_res
                 "period": period_num,
                 "team_id": owner_id,
                 "player_id": details.get("shootingPlayerId") or details.get("scoringPlayerId"),
+                # The goalie in net (absent on an empty net); goalie_shots.py keys on it.
+                "goalie_id": details.get("goalieInNetId"),
                 "shot_type": details.get("shotType", "Unknown"),
                 "x": x,
                 "y": y,
