@@ -682,14 +682,14 @@
         ],
         "f2": [
             {
-                "name": "Gavin McKenna",
-                "number": 92,
+                "name": "Easton Cowan",
+                "number": 53,
                 "pos": "lw",
-                "id": 37717,
+                "id": 35106,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "John Tavares",
@@ -714,14 +714,14 @@
         ],
         "f3": [
             {
-                "name": "Easton Cowan",
-                "number": 53,
+                "name": "Gavin McKenna",
+                "number": 92,
                 "pos": "lw",
-                "id": 35106,
+                "id": 37717,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Nick Paul",
@@ -967,9 +967,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-06)",
-        "updated_at": "2026-10-07T13:49:33.329Z",
-        "fetched_at": "2026-10-08T12:02:37Z"
+        "lineup_source": "David Alter",
+        "updated_at": "2026-10-08T19:20:10.053Z",
+        "fetched_at": "2026-10-08T20:02:41Z"
     },
     "MTL": {
         "f1": [
@@ -2607,7 +2607,7 @@
                 "number": 49,
                 "pos": "lw",
                 "id": 2737,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2671,7 +2671,7 @@
                 "number": 24,
                 "pos": "lw",
                 "id": 36773,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2687,14 +2687,14 @@
                 "movement": null
             },
             {
-                "name": "Victor Olofsson",
-                "number": 95,
+                "name": "Raphael Lavoie",
+                "number": 36,
                 "pos": "rw",
-                "id": 4718,
-                "ppUnit": 1,
+                "id": 27948,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "f4": [
@@ -2821,8 +2821,8 @@
                 "number": 95,
                 "pos": "ir1",
                 "id": 4718,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -2902,9 +2902,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-06)",
-        "updated_at": "2026-10-07T14:32:44.266Z",
-        "fetched_at": "2026-10-07T15:02:41Z"
+        "lineup_source": "Jesse Granger",
+        "updated_at": "2026-10-08T19:16:51.126Z",
+        "fetched_at": "2026-10-08T20:02:41Z"
     },
     "CHI": {
         "f1": [
@@ -7983,10 +7983,10 @@
     "DET": {
         "f1": [
             {
-                "name": "Lucas Raymond",
-                "number": 23,
+                "name": "Viktor Arvidsson",
+                "number": 33,
                 "pos": "lw",
-                "id": 31783,
+                "id": 2453,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8003,10 +8003,10 @@
                 "movement": null
             },
             {
-                "name": "Viktor Arvidsson",
-                "number": 33,
+                "name": "Lucas Raymond",
+                "number": 23,
                 "pos": "rw",
-                "id": 2453,
+                "id": 31783,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8079,20 +8079,20 @@
         ],
         "f4": [
             {
-                "name": "Carter Mazur",
-                "number": 43,
-                "pos": "lw",
-                "id": 34532,
+                "name": "Nate Danielson",
+                "number": 29,
+                "pos": "c",
+                "id": 31508,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Nate Danielson",
-                "number": 29,
-                "pos": "c",
-                "id": 31508,
+                "name": "Carter Mazur",
+                "number": 43,
+                "pos": "rw",
+                "id": 34532,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8133,26 +8133,26 @@
                 "movement": null
             },
             {
-                "name": "Axel Sandin-Pellikka",
-                "number": null,
-                "pos": "rd",
-                "id": 38121,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Anton Johansson",
                 "number": null,
-                "pos": "ld",
+                "pos": "rd",
                 "id": 36465,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "William Wallinder",
+                "number": null,
+                "pos": "ld",
+                "id": 33029,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Justin Faulk",
@@ -8290,9 +8290,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-06)",
-        "updated_at": "2026-10-07T13:56:22.756Z",
-        "fetched_at": "2026-10-08T19:02:36Z"
+        "lineup_source": "Ansar Khan",
+        "updated_at": "2026-10-08T19:21:07.386Z",
+        "fetched_at": "2026-10-08T20:02:41Z"
     },
     "UTA": {
         "f1": [
