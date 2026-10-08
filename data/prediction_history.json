@@ -39037,5 +39037,73 @@
         "market_p": 0.3246
       }
     }
+  },
+  {
+    "gameId": 2026020055,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-07",
+    "homeTeam": "Ducks",
+    "awayTeam": "Oilers",
+    "homeScore": 2,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.14,
+    "awayXg": 3.43,
+    "homeWinProb": 45.3,
+    "predictedWinner": "Oilers",
+    "actualWinner": "Oilers",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2052,
+    "logLoss": 0.6033,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-08T01:03:00Z",
+    "startUtc": "2026-10-08T02:00:00Z",
+    "marketHomeProb": 44.5,
+    "modelHomeProb": 45.5,
+    "homeOdds": 114.0,
+    "awayOdds": -135.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 45.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.435,
+        "ll": 0.8324,
+        "naive_ll": 0.7661,
+        "market_p": 0.4346
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.32,
+        "ll": 1.1394,
+        "naive_ll": 1.1659,
+        "market_p": 0.3323
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.516,
+        "ll": 0.6616,
+        "naive_ll": 0.6615,
+        "market_p": 0.5674
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.32,
+        "ll": 1.1394,
+        "naive_ll": 1.1143,
+        "market_p": 0.324
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.472,
+        "ll": 0.7508,
+        "naive_ll": 0.7653,
+        "market_p": 0.4663
+      }
+    }
   }
 ]
