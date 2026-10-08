@@ -181,17 +181,23 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                     </ol>
                     <PlayerSwitcher current={pid} name={`${first} ${last}`.trim()} team={team} />
                 </nav>
-                {/* Hero: the action photo bleeding off the right, the name and the night-to-night headline on the left. */}
+                {/* Hero: the action photo bleeding off the right, the name and the night-to-night headline on the left.
+                    Below md the 16:9 photo is a banner across the top instead (a tall card would crop it to a sliver),
+                    and the headshot and name overlap its fading bottom edge. */}
                 <section className="relative overflow-hidden rounded-card border border-line bg-surface-1" style={{ boxShadow: `inset 0 3px 0 ${color}` }}>
                     {profile?.hero ? (
                         <>
+                            <div className="relative aspect-video max-h-80 w-full overflow-hidden md:hidden" aria-hidden="true">
+                                {/* eslint-disable-next-line @next/next/no-img-element -- NHL action photo, decorative */}
+                                <img src={profile.hero} alt="" className="h-full w-full object-cover object-[60%_30%] opacity-90" />
+                                <div className="absolute inset-0 bg-[linear-gradient(0deg,var(--surface-1)_0%,rgb(var(--surface-1-rgb)/0.92)_24%,rgb(var(--surface-1-rgb)/0.4)_48%,transparent_72%)]" />
+                            </div>
                             {/* eslint-disable-next-line @next/next/no-img-element -- NHL action photo, decorative */}
-                            <img src={profile.hero} alt="" className="absolute inset-y-0 right-0 h-full w-full object-cover object-right opacity-60 md:w-[68%]" />
-                            <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--surface-1)_0%,var(--surface-1)_34%,rgb(var(--surface-1-rgb)/0.75)_55%,rgb(var(--surface-1-rgb)/0.15)_100%)]" aria-hidden="true" />
-                            <div className="absolute inset-0 bg-[linear-gradient(0deg,var(--surface-1)_0%,transparent_45%)] md:hidden" aria-hidden="true" />
+                            <img src={profile.hero} alt="" className="absolute inset-y-0 right-0 hidden h-full w-[68%] object-cover object-right opacity-60 md:block" />
+                            <div className="absolute inset-0 hidden bg-[linear-gradient(90deg,var(--surface-1)_0%,var(--surface-1)_34%,rgb(var(--surface-1-rgb)/0.75)_55%,rgb(var(--surface-1-rgb)/0.15)_100%)] md:block" aria-hidden="true" />
                         </>
                     ) : null}
-                    <div className="relative flex flex-col gap-6 p-5 max-[359px]:p-4 md:p-8">
+                    <div className={cn('relative flex flex-col gap-6 p-5 max-[359px]:p-4 md:p-8', profile?.hero && 'max-md:-mt-12 max-md:pt-0')}>
                         <div className="flex items-center gap-4">
                             {profile?.headshot ? (
                                 <span className="block h-20 w-20 shrink-0 overflow-hidden rounded-full border-[3px] bg-surface-2 md:h-24 md:w-24" style={{ borderColor: color }}>
