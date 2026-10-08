@@ -3638,7 +3638,7 @@
                 "id": 2407,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             }
         ],
@@ -3762,18 +3762,9 @@
         ],
         "ir": [
             {
-                "name": "Bryan Rust",
-                "number": 17,
-                "pos": "ir2",
-                "id": 2407,
-                "ppUnit": 2,
-                "injuryStatus": "out",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Justin Brazeau",
                 "number": 15,
-                "pos": "ir4",
+                "pos": "ir1",
                 "id": 28622,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
@@ -3856,9 +3847,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Seth Rorabaugh",
-        "updated_at": "2026-10-06T17:54:20.652Z",
-        "fetched_at": "2026-10-07T17:03:02Z"
+        "lineup_source": "Last Game (2026-10-07)",
+        "updated_at": "2026-10-08T12:47:15.613Z",
+        "fetched_at": "2026-10-08T13:02:26Z"
     },
     "NYI": {
         "f1": [
@@ -4477,9 +4468,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Bailey Curtis",
-        "updated_at": "2026-10-07T15:04:52.801Z",
-        "fetched_at": "2026-10-08T12:02:37Z"
+        "lineup_source": "Last Game (2026-10-07)",
+        "updated_at": "2026-10-08T12:50:10.892Z",
+        "fetched_at": "2026-10-08T13:02:26Z"
     },
     "LAK": {
         "f1": [
@@ -5717,9 +5708,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Anaheim Ducks",
-        "updated_at": "2026-10-08T02:00:18.597Z",
-        "fetched_at": "2026-10-08T02:02:34Z"
+        "lineup_source": "Last Game (2026-10-07)",
+        "updated_at": "2026-10-08T12:54:06.015Z",
+        "fetched_at": "2026-10-08T13:02:26Z"
     },
     "NJD": {
         "f1": [
@@ -6526,7 +6517,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -6538,7 +6529,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Vincent Desharnais",
@@ -6560,7 +6551,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Dylan McIlrath",
@@ -6570,7 +6561,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -6689,9 +6680,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Sammi Silber",
-        "updated_at": "2026-10-06T15:36:43.017Z",
-        "fetched_at": "2026-10-06T16:03:07Z"
+        "lineup_source": "Last Game (2026-10-07)",
+        "updated_at": "2026-10-08T12:48:38.325Z",
+        "fetched_at": "2026-10-08T13:02:26Z"
     },
     "CBJ": {
         "f1": [
@@ -8755,7 +8746,7 @@
                 "id": 2144,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -8851,6 +8842,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Josh Morrissey",
+                "number": 44,
+                "pos": "ir3",
+                "id": 2144,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -8929,9 +8929,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ken Wiebe",
-        "updated_at": "2026-10-07T22:06:19.781Z",
-        "fetched_at": "2026-10-07T23:02:33Z"
+        "lineup_source": "Last Game (2026-10-07)",
+        "updated_at": "2026-10-08T12:51:14.685Z",
+        "fetched_at": "2026-10-08T13:02:26Z"
     },
     "BUF": {
         "f1": [
