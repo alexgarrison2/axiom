@@ -152,11 +152,11 @@
         "awayTeam": "Flyers",
         "homeTeamAbbrev": "OTT",
         "awayTeamAbbrev": "PHI",
-        "homeGoalieConfirmed": "Samuel Ersson",
+        "homeGoalieConfirmed": "Linus Ullmark",
         "homeGoalieStatus": "Unconfirmed",
         "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": true,
-        "homeGoalieAlt": "Linus Ullmark",
+        "homeGoalieConflict": false,
+        "homeGoalieAlt": null,
         "awayGoalieConfirmed": "Joseph Woll",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
@@ -682,6 +682,11 @@
             }
         ],
         "tvBroadcasts": [
+            {
+                "network": "SN",
+                "market": "N",
+                "countryCode": "CA"
+            },
             {
                 "network": "SN1",
                 "market": "N",
