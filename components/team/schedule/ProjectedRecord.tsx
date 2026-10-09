@@ -12,13 +12,11 @@ const Dot = () => (
 /**
  * One line for the focused month / trip / season: the record so far, the
  * model's projected record and expected points of those possible (magenta),
- * quietly the likely range of points (10th-90th percentile), the days off
- * in it and the miles traveled.
+ * the days off in it and the miles traveled.
  */
-export function ProjectedRecord({ p, range, daysOff, mi, className }: { p: RecordProjection; range?: [number, number] | null; daysOff?: number | null; mi?: number | null; className?: string }) {
+export function ProjectedRecord({ p, daysOff, mi, className }: { p: RecordProjection; daysOff?: number | null; mi?: number | null; className?: string }) {
     if (!p.games) return null;
     const projected = p.record && p.pts != null;
-    const lo = range ?? p.range;
     return (
         <p className={cn('flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-micro font-medium uppercase tracking-label text-fg-3 [&>span]:whitespace-nowrap', className)}>
             {p.played ? (
@@ -35,11 +33,6 @@ export function ProjectedRecord({ p, range, daysOff, mi, className }: { p: Recor
                     <Dot />
                     <span>
                         <span className="font-bold tabular-nums text-model">{Math.round(p.pts!)}</span> of {p.possible} pts
-                        {lo && lo[1] > lo[0] ? (
-                            <span className="ml-1.5 text-fg-3" title="Points in 8 of 10 simulated outcomes (10th to 90th percentile)">
-                                likely <span className="tabular-nums normal-case tracking-normal">{lo[0]}–{lo[1]}</span>
-                            </span>
-                        ) : null}
                     </span>
                 </>
             ) : p.played === p.games ? (

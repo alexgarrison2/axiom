@@ -156,12 +156,11 @@ interface FocusSummaryProps {
     focus: Focus;
     schedule: TeamSchedule;
     projection?: RecordProjection;
-    range?: [number, number] | null;
     className?: string;
 }
 
 /** What the card shows when no game is picked: the focus in numbers. */
-export function FocusSummary({ title, totals: t, focus, schedule, projection: p, range, className }: FocusSummaryProps) {
+export function FocusSummary({ title, totals: t, focus, schedule, projection: p, className }: FocusSummaryProps) {
     const trip = focus.kind === 'trip' ? schedule.trips.find(x => x.id === focus.id) : undefined;
     return (
         <section aria-label={title} className={cn('panel p-card', className)}>
@@ -185,7 +184,6 @@ export function FocusSummary({ title, totals: t, focus, schedule, projection: p,
                         <span className="text-fg-3">
                             {' '}
                             of {p.possible} pts
-                            {(range ?? p.range) && (range ?? p.range)![1] > (range ?? p.range)![0] ? ` · ${(range ?? p.range)![0]}–${(range ?? p.range)![1]}` : ''}
                         </span>
                     </Row>
                 ) : null}

@@ -191,11 +191,15 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
             schedule.legs.map(l => {
                 const a = ll(l.from);
                 const b = ll(l.to);
+                const pts = arcPath(a, b, tilt, 0.2);
                 return {
                     leg: l,
-                    air: pathOf(arcPath(a, b, tilt, 0.2)),
+                    air: pathOf(pts),
                     ground: pathOf(arcPath(a, b, tilt, 0)),
                     abroad: isAbroad(l.from) || isAbroad(l.to),
+                    // Ends of the flight, for the tail-to-head gradient that says which way it went.
+                    from: pts[0],
+                    to: pts[pts.length - 1],
                 };
             }),
         [schedule.legs, tilt],
@@ -224,7 +228,15 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
                             <stop offset="0" stopColor="#000" stopOpacity="0.55" />
                             <stop offset="1" stopColor="#000" stopOpacity="0" />
                         </radialGradient>
-                        <style>{`@keyframes sched-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}.sched-draw{stroke-dasharray:1;animation:sched-draw .9s cubic-bezier(.16,1,.3,1) both}@media (prefers-reduced-motion:reduce){.sched-draw{animation:none}}`}</style>
+                        <style>{`@keyframes sched-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}.sched-draw{stroke-dasharray:1;animation:sched-draw .9s cubic-bezier(.16,1,.3,1) both}@keyframes sched-glint{0%{stroke-dashoffset:.07;opacity:0}12%{opacity:1}88%{opacity:1}100%{stroke-dashoffset:-.93;opacity:0}}.sched-glint{stroke-dasharray:.07 .93;animation:sched-glint 2.6s cubic-bezier(.45,0,.25,1) infinite both}@media (prefers-reduced-motion:reduce){.sched-draw{animation:none}.sched-glint{display:none}}`}</style>
+                        {/* Each flight fades in from where it left: faint tail at the origin, full colour at the arrival. */}
+                        {arcs.map((a, i) => (
+                            <linearGradient key={`dir-${i}`} id={`sched-dir-${i}`} gradientUnits="userSpaceOnUse" x1={a.from[0]} y1={a.from[1]} x2={a.to[0]} y2={a.to[1]}>
+                                <stop offset="0" stopColor={teamColor} stopOpacity={0.12} />
+                                <stop offset="0.55" stopColor={teamColor} stopOpacity={0.7} />
+                                <stop offset="1" stopColor={teamColor} stopOpacity={1} />
+                            </linearGradient>
+                        ))}
                     </defs>
                     <g transform={matrix}>
                         <path d={base.grat} fill="none" stroke="rgb(var(--line-rgb))" strokeOpacity={0.7} strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
@@ -239,8 +251,8 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
                                     key={`all-${i}`}
                                     d={a.air}
                                     fill="none"
-                                    stroke={teamColor}
-                                    strokeOpacity={focus.kind === 'season' ? 0.42 : 0.14}
+                                    stroke={focus.kind === 'season' ? `url(#sched-dir-${i})` : teamColor}
+                                    strokeOpacity={focus.kind === 'season' ? 0.6 : 0.14}
                                     strokeWidth={focus.kind === 'season' ? 1.1 : 0.9}
                                     strokeDasharray={a.abroad ? '3 3' : undefined}
                                     vectorEffect="non-scaling-stroke"
@@ -257,8 +269,9 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
                                         <path key={`gr-${i}`} d={a.ground} fill="none" stroke="#000" strokeOpacity={0.32} strokeWidth={2} vectorEffect="non-scaling-stroke" />
                                     ))}
                                 {arcs
-                                    .filter(a => legIn(a.leg))
-                                    .map((a, i) => (
+                                    .map((a, i) => ({ a, i }))
+                                    .filter(({ a }) => legIn(a.leg))
+                                    .map(({ a, i: gi }, i) => (
                                         <path
                                             key={`fx-${i}`}
                                             d={a.air}
@@ -266,8 +279,8 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
                                             className={a.abroad ? undefined : 'sched-draw'}
                                             style={a.abroad ? undefined : { animationDelay: `${Math.min(i, 12) * 45}ms` }}
                                             fill="none"
-                                            stroke={teamColor}
-                                            strokeOpacity={0.95}
+                                            stroke={`url(#sched-dir-${gi})`}
+                                            strokeOpacity={1}
                                             strokeWidth={2}
                                             strokeDasharray={a.abroad ? '4 3' : undefined}
                                             strokeLinecap="round"
@@ -335,6 +348,38 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
                     <g>
                         <circle cx={homeXY[0]} cy={homeXY[1]} r={9} fill={teamColor} fillOpacity={0.18} />
                         <circle cx={homeXY[0]} cy={homeXY[1]} r={4.5} fill={teamColor} stroke="var(--panel-bottom)" strokeWidth={1.5} />
+                    </g>
+                </svg>
+            ) : null}
+            {width > 0 && base ? (
+                // Glints ride each flight from origin to arrival, in the order they were flown. They live in their
+                // own light layer so the moving dash repaints a few paths, not the whole map. Their width is set in
+                // map units (not non-scaling), since a non-scaling stroke lays dashes out in screen pixels and
+                // would ignore pathLength.
+                <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true" className="pointer-events-none absolute inset-0 block">
+                    <g transform={matrix}>
+                        {focus.kind !== 'season'
+                            ? arcs
+                                  .filter(a => legIn(a.leg) && !a.abroad)
+                                  .map((a, i, list) => (
+                                      <path
+                                          key={`${focusKey}-gl-${i}`}
+                                          d={a.air}
+                                          pathLength={1}
+                                          className="sched-glint"
+                                          style={{ animationDelay: `${900 + (i % 16) * (2600 / Math.min(list.length, 16))}ms` }}
+                                          fill="none"
+                                          stroke="rgb(var(--text-1-rgb))"
+                                          strokeWidth={2.5 / k}
+                                          strokeLinecap="round"
+                                      />
+                                  ))
+                            : null}
+                        {arcs
+                            .filter(a => selIdx >= 0 && a.leg.toGame === selIdx && !a.abroad)
+                            .map((a, i) => (
+                                <path key={`sel-gl-${i}`} d={a.air} pathLength={1} className="sched-glint" fill="none" stroke="rgb(var(--text-1-rgb))" strokeWidth={3 / k} strokeLinecap="round" />
+                            ))}
                     </g>
                 </svg>
             ) : (

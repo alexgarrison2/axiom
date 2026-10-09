@@ -16,6 +16,8 @@ interface RhythmStripProps {
     onHover: (id: number | null) => void;
     onSelect: (id: number) => void;
     onTrip: (id: number) => void;
+    /** A stretch of games picked by dragging the window's edges (indices into the season, inclusive). */
+    onRange: (first: number, last: number) => void;
 }
 
 // Vertical layout (px).
@@ -85,7 +87,7 @@ function markFill(g: SchedGame): { fill: string; opacity: number; stroke?: strin
  * ice-grey ribbon on top is rolling difficulty, and brackets under the road
  * marks are road trips. Hover (mouse) or tap a game; tap a bracket for its trip.
  */
-export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId, onHover, onSelect, onTrip }: RhythmStripProps) {
+export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId, onHover, onSelect, onTrip, onRange }: RhythmStripProps) {
     const [ref, width] = useWidth<HTMLDivElement>();
     const games = schedule.games;
     const d0 = games.length ? dayOf(games[0]) - 1 : 0;
@@ -152,12 +154,46 @@ export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId,
         return ((e.clientX - r.left) / r.width) * W;
     };
 
-    const focusRange = React.useMemo(() => {
-        if (focus.kind === 'season') return null;
-        const fs = games.filter(g => inFocus(g, focus));
-        if (!fs.length) return null;
-        return [x(dayOf(fs[0])) - Math.max(dayW, 4), x(dayOf(fs[fs.length - 1])) + Math.max(dayW, 4)] as const;
-    }, [focus, games, x, dayW]);
+    // The focus as a window of games: the season is the whole strip.
+    const win = React.useMemo(() => {
+        if (!games.length) return null;
+        if (focus.kind === 'season') return { first: 0, last: games.length - 1 };
+        let first = -1;
+        let last = -1;
+        games.forEach((g, i) => {
+            if (!inFocus(g, focus)) return;
+            if (first < 0) first = i;
+            last = i;
+        });
+        return first < 0 ? null : { first, last };
+    }, [focus, games]);
+    const edgePad = Math.max(dayW, 4);
+    const focusRange = win && focus.kind !== 'season' ? ([gx(win.first) - edgePad, gx(win.last) + edgePad] as const) : null;
+
+    // Dragging an edge: the window snaps to games, live, and the other edge stays put.
+    const svgRef = React.useRef<SVGSVGElement>(null);
+    const drag = React.useRef<{ edge: 'first' | 'last'; first: number; last: number } | null>(null);
+    const [dragging, setDragging] = React.useState<'first' | 'last' | null>(null);
+    const indexAt = (clientX: number) => {
+        const r = svgRef.current?.getBoundingClientRect();
+        if (!r) return 0;
+        const px = ((clientX - r.left) / r.width) * W;
+        let best = 0;
+        let bd = Infinity;
+        games.forEach((g, i) => {
+            const d = Math.abs(x(dayOf(g)) - px);
+            if (d < bd) {
+                bd = d;
+                best = i;
+            }
+        });
+        return best;
+    };
+    const moveEdge = (edge: 'first' | 'last', i: number, from: { first: number; last: number }) => {
+        const next = edge === 'first' ? { first: Math.min(i, from.last), last: from.last } : { first: from.first, last: Math.max(i, from.first) };
+        if (next.first !== from.first || next.last !== from.last || focus.kind !== 'range') onRange(next.first, next.last);
+        return next;
+    };
 
     const activeId = hoverId ?? selectedId;
     const onKey = (e: React.KeyboardEvent) => {
@@ -172,6 +208,7 @@ export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId,
         <div ref={ref} className="relative w-full select-none">
             {width > 0 ? (
                 <svg
+                    ref={svgRef}
                     role="group"
                     aria-label="Season rhythm. Left and right arrows step through games."
                     tabIndex={0}
@@ -295,6 +332,98 @@ export function RhythmStrip({ schedule, today, focus, lens, selectedId, hoverId,
                             </g>
                         );
                     })}
+
+                    {/* range handles: drag either edge of the window (the whole season when nothing is focused) */}
+                    {win
+                        ? (['first', 'last'] as const).map(edge => {
+                              const hx = edge === 'first' ? gx(win.first) - edgePad : gx(win.last) + edgePad;
+                              const active = dragging === edge;
+                              const quiet = focus.kind === 'season' && !active;
+                              const g = games[win[edge]];
+                              return (
+                                  <g
+                                      key={edge}
+                                      role="slider"
+                                      tabIndex={0}
+                                      aria-label={edge === 'first' ? 'Start of the stretch' : 'End of the stretch'}
+                                      aria-valuemin={1}
+                                      aria-valuemax={games.length}
+                                      aria-valuenow={win[edge] + 1}
+                                      aria-valuetext={`Game ${win[edge] + 1}, ${g.date}`}
+                                      className="group/edge cursor-ew-resize outline-none"
+                                      style={{ touchAction: 'none' }}
+                                      onPointerDown={e => {
+                                          e.stopPropagation();
+                                          (e.currentTarget as SVGGElement).setPointerCapture(e.pointerId);
+                                          drag.current = { edge, first: win.first, last: win.last };
+                                          setDragging(edge);
+                                      }}
+                                      onPointerMove={e => {
+                                          const d = drag.current;
+                                          if (!d) return;
+                                          e.stopPropagation();
+                                          const next = moveEdge(d.edge, indexAt(e.clientX), d);
+                                          drag.current = { ...d, ...next };
+                                      }}
+                                      onPointerUp={() => {
+                                          drag.current = null;
+                                          setDragging(null);
+                                      }}
+                                      onPointerCancel={() => {
+                                          drag.current = null;
+                                          setDragging(null);
+                                      }}
+                                      onClick={e => e.stopPropagation()}
+                                      onKeyDown={e => {
+                                          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          moveEdge(edge, Math.min(games.length - 1, Math.max(0, win[edge] + (e.key === 'ArrowRight' ? 1 : -1))), win);
+                                      }}
+                                  >
+                                      <rect x={hx - 14} y={0} width={28} height={MONTH_Y - 10} fill="transparent" />
+                                      <line
+                                          x1={hx}
+                                          x2={hx}
+                                          y1={2}
+                                          y2={MONTH_Y - 12}
+                                          stroke={C.brand}
+                                          strokeOpacity={quiet ? 0.25 : active ? 1 : 0.7}
+                                          strokeWidth={active ? 2 : 1.5}
+                                          className="transition-[stroke-opacity] group-hover/edge:[stroke-opacity:1] group-focus-visible/edge:[stroke-opacity:1]"
+                                      />
+                                      <rect
+                                          x={hx - 4.5}
+                                          y={AXIS - 13}
+                                          width={9}
+                                          height={26}
+                                          rx={4.5}
+                                          fill="var(--surface-1)"
+                                          stroke={C.brand}
+                                          strokeOpacity={quiet ? 0.4 : 1}
+                                          strokeWidth={1.25}
+                                          className="transition-[stroke-opacity] group-hover/edge:[stroke-opacity:1] group-focus-visible/edge:[stroke-opacity:1]"
+                                      />
+                                      <g stroke={C.brand} strokeOpacity={quiet ? 0.5 : 1} strokeWidth={1} strokeLinecap="round">
+                                          <line x1={hx - 1.5} x2={hx - 1.5} y1={AXIS - 5} y2={AXIS + 5} />
+                                          <line x1={hx + 1.5} x2={hx + 1.5} y1={AXIS - 5} y2={AXIS + 5} />
+                                      </g>
+                                      {active || focus.kind === 'range' ? (
+                                          <text
+                                              x={edge === 'first' ? hx + 7 : hx - 7}
+                                              y={10}
+                                              textAnchor={edge === 'first' ? 'start' : 'end'}
+                                              className="text-micro font-medium uppercase tabular-nums"
+                                              fill={C.brand}
+                                              style={{ letterSpacing: '0.08em', paintOrder: 'stroke', stroke: 'var(--surface-1)', strokeWidth: 3 }}
+                                          >
+                                              {g.date.slice(5).replace('-', '/')}
+                                          </text>
+                                      ) : null}
+                                  </g>
+                              );
+                          })
+                        : null}
 
                     {/* months */}
                     {monthTicks.map(m => (
