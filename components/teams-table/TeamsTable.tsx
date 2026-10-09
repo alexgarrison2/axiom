@@ -568,6 +568,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
                         align={LEFT_KINDS.has(col.kind ?? (col.key === 'ranking' ? 'ranking' : 'num')) ? 'left' : 'right'}
                         className={cn(HEAD_CELL, 'top-6 border-b-line-strong', groupEnd && 'border-r border-r-line-strong', activeSort.key === col.key && !model?.paired && 'shadow-[inset_0_-2px_0_rgb(var(--brand-rgb))]')}
                         caseless
+                        stretch={col.kind === 'stSplit'}
                     />
                 ))}
             </tr>

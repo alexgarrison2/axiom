@@ -19,6 +19,8 @@ interface HeaderCellProps {
     dense?: boolean;
     /** Keep the label's own case (TruGF, xGF%) instead of uppercasing it. */
     caseless?: boolean;
+    /** The label spans the cell (a label laid out like the cells below it). */
+    stretch?: boolean;
 }
 
 /**
@@ -27,7 +29,7 @@ interface HeaderCellProps {
  * the cell (same contract as the SortHeader primitive, plus a native
  * tooltip carrying the full column name).
  */
-export function HeaderCell({ label, title, direction, onSort, align = 'center', className, style, dense, caseless }: HeaderCellProps) {
+export function HeaderCell({ label, title, direction, onSort, align = 'center', className, style, dense, caseless, stretch }: HeaderCellProps) {
     const sortable = direction !== undefined && !!onSort;
     const ariaSort = !sortable ? undefined : direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none';
     const justify = align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start';
@@ -49,7 +51,7 @@ export function HeaderCell({ label, title, direction, onSort, align = 'center', 
                 >
                     {/* Arrow is out of flow so the label lines up with its column's values; the negative
                         margin cancels the trailing letter-spacing. */}
-                    <span className={cn('relative', align === 'right' && !caseless && '-mr-[0.06em]')}>
+                    <span className={cn('relative', align === 'right' && !caseless && '-mr-[0.06em]', stretch && 'w-full')}>
                         {label}
                         {direction ? (
                             <svg

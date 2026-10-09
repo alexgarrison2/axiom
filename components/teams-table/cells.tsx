@@ -203,7 +203,7 @@ function SplitBar({ v, avg, span }: { v: number; avg: number; span: number }) {
     const w = Math.min(1, Math.abs(v - avg) / span) * 50;
     const up = v >= avg;
     return (
-        <span className="relative block h-1.5 w-7 rounded-[2px] bg-line">
+        <span className="st-bar">
             <span className="absolute -inset-y-0.5 left-1/2 w-px bg-fg-3" />
             <span className={cn('absolute inset-y-0 rounded-[2px]', up ? 'bg-pos/80' : 'bg-neg/80')} style={up ? { left: '50%', width: `${w}%` } : { right: '50%', width: `${w}%` }} />
         </span>
@@ -213,12 +213,12 @@ function SplitBar({ v, avg, span }: { v: number; avg: number; span: number }) {
 /** Header over the split bars: "PP PK" above each bar, then the index label. */
 export function StSplitHeader({ label }: { label: string }) {
     return (
-        <span className="inline-flex w-[172px] items-center">
-            <span className="inline-flex gap-1.5">
-                <b className="w-7 text-center font-medium">PP</b>
-                <b className="w-7 text-center font-medium">PK</b>
+        <span className="flex w-full items-center">
+            <span className="flex min-w-0 flex-1 gap-2">
+                <b className="min-w-11 max-w-24 flex-1 text-center font-medium">PP</b>
+                <b className="min-w-11 max-w-24 flex-1 text-center font-medium">PK</b>
             </span>
-            <span className="ml-auto">{label}</span>
+            <span className="ml-auto pl-2">{label}</span>
         </span>
     );
 }
@@ -228,14 +228,14 @@ export function StSplit({ pp, pk, avg, children }: { pp: number; pk: number; avg
     return (
         <span className="flex w-full items-center">
             <span
-                className="inline-flex gap-1.5"
+                className="flex min-w-0 flex-1 gap-2"
                 title={`Power play ${pp.toFixed(1)}% (league ${avg.pp.toFixed(1)}) · penalty kill ${pk.toFixed(1)}% (league ${avg.pk.toFixed(1)})`}
                 aria-label={`Power play ${pp.toFixed(1)}%, penalty kill ${pk.toFixed(1)}%`}
             >
                 <SplitBar v={pp} avg={avg.pp} span={5} />
                 <SplitBar v={pk} avg={avg.pk} span={4} />
             </span>
-            <span className="ml-auto">{children}</span>
+            <span className="ml-auto pl-2">{children}</span>
         </span>
     );
 }

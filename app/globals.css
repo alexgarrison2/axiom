@@ -267,6 +267,17 @@
     color: var(--text-2);
     white-space: nowrap;
   }
+  /* Teams table, PP / PK split: each bar shares the cell's slack, within limits. */
+  .st-bar {
+    position: relative;
+    display: block;
+    height: 0.5rem;
+    min-width: 2.75rem;
+    max-width: 6rem;
+    flex: 1 1 0%;
+    border-radius: 2px;
+    background-color: var(--line);
+  }
   tr:nth-child(even) > .lt-cell {
     background-color: color-mix(in srgb, var(--line) 40%, var(--surface-1));
   }
