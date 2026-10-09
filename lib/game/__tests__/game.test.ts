@@ -102,6 +102,18 @@ describe('game model', () => {
         expect(later.goalie.away!.sa).toBe(1);
     });
 
+    it('reads a whistle moment from the players on for it, not the faceoff group after', () => {
+        // Home 21 is on until the goal at 5:00 and 25 jumps on for the faceoff after it.
+        const p1 = shifts.data.filter(r => r.period !== 1 || (r.playerId !== 21 && r.playerId !== 25));
+        const changed = { data: [...p1, { typeCode: 517, playerId: 21, period: 1, startTime: '00:00', endTime: '05:00' }, { typeCode: 517, playerId: 25, period: 1, startTime: '05:00', endTime: '20:00' }] };
+        const g = buildGame({ pbp, shifts: changed }, xg, null);
+        const snap = iceAt(g, 300)!;
+        const scorer = snap.skaters.home.find(r => r.player.id === 21);
+        expect(scorer?.shift).toBe(300);
+        expect(scorer?.g).toBe(1);
+        expect(snap.skaters.home.some(r => r.player.id === 25)).toBe(false);
+    });
+
     it('counts unit results and stints per period', () => {
         const [line] = units(m, 'home', 'F');
         expect(line.gf).toBe(1);

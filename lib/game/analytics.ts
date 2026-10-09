@@ -1142,9 +1142,13 @@ export interface IceSnapshot {
 
 const POS_ORDER: Record<Pos, number> = { C: 0, L: 1, R: 2, D: 3, G: 4 };
 
-/** Who was on the ice at game time t, with each player's box score up to that moment. */
+/**
+ * Who was on the ice at game time t, with each player's box score up to that moment. A whistle (a goal, a
+ * penalty) ends every shift at that second and the faceoff group's shifts start at it, so the moment is read
+ * from the stretch just before: the players on for it, each shift running up to t (not the next group at 0:00).
+ */
 export function iceAt(m: GameModel, t: number): IceSnapshot | null {
-    const seg = segAt(segments(m), Math.min(t, m.end - 0.01));
+    const seg = segAt(segments(m), Math.max(0, Math.min(t, m.end) - 0.5));
     if (!seg) return null;
     const byId = new Map(m.players.map(p => [p.id, p]));
     const shiftInfo = (id: number) => {
@@ -1155,8 +1159,8 @@ export function iceAt(m: GameModel, t: number): IceSnapshot | null {
         list.forEach(([a, b], i) => {
             if (a >= t) return;
             toi += Math.min(b, t) - a;
-            if (b > t) {
-                shift = Math.min(b, t) - a;
+            if (b >= t) {
+                shift = t - a;
                 shiftNo = i + 1;
             }
         });
