@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { teamPalette } from '@/components/ui/team-color';
 import { cn } from '@/lib/utils';
-import type { LeaderRow } from '@/lib/pony/data';
+import { SortLink } from '@/components/pony/SortLink';
+import type { LeaderRow, SortKey } from '@/lib/pony/data';
 import { PARTS, signed, stack } from '@/lib/pony/parts';
 
 /**
@@ -44,6 +45,8 @@ export function Form({ values, reach = 1.5 }: { values: number[]; reach?: number
     );
 }
 
+const TD = 'px-2 text-right tabular-nums';
+
 type Metric = 'avg' | 'total' | 'per60' | 'off' | 'def';
 const METRICS: Record<Metric, { label: string; goalie: string; title: string; value: (r: LeaderRow) => number; digits: number }> = {
     avg: { label: 'Pony/GP', goalie: 'GSAx/GP', title: 'Per game, in goals', value: r => r.avg, digits: 2 },
@@ -53,10 +56,31 @@ const METRICS: Record<Metric, { label: string; goalie: string; title: string; va
     def: { label: 'Def/GP', goalie: 'Def/GP', title: 'Defence per game', value: r => r.def, digits: 2 },
 };
 
-/** The ranking metric leads (big, right after the name); the rest of per game / total / per 60 follow. */
-export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: LeaderRow[]; start?: number; goalies: boolean; sort?: Metric }) {
-    const lead = METRICS[sort];
-    const rest = (['avg', 'total', 'per60'] as Metric[]).filter(k => k !== sort).map(k => METRICS[k]);
+/**
+ * Per game leads (big, right after the name); ranking by offence or defence
+ * puts that column ahead of it. Every number column sorts: a click ranks by
+ * it, a second click flips the order (both through the URL, the server sorts).
+ */
+export function LeaderTable({
+    rows,
+    start = 0,
+    goalies,
+    sort = 'avg',
+    dir = 'top',
+    sortHref,
+}: {
+    rows: LeaderRow[];
+    start?: number;
+    goalies: boolean;
+    sort?: SortKey;
+    dir?: 'top' | 'bottom';
+    sortHref: (key: SortKey) => string;
+}) {
+    const split = sort === 'off' || sort === 'def' ? METRICS[sort] : null;
+    const head = (key: SortKey, label: string, title?: string, className?: string) => (
+        <SortLink href={sortHref(key)} direction={sort === key ? (dir === 'top' ? 'desc' : 'asc') : null} label={label} title={title} className={className} />
+    );
+    const num = (key: SortKey) => cn(TD, sort === key ? 'font-semibold text-fg-1' : 'text-fg-2');
     let reach = 0.5;
     for (const r of rows) {
         if (r.parts) {
@@ -71,7 +95,6 @@ export function LeaderTable({ rows, start = 0, goalies, sort = 'avg' }: { rows: 
     }
     reach = Math.ceil(reach * 4) / 4;
     const TH = 'px-2 py-2 text-right text-micro font-semibold uppercase tracking-label text-fg-3';
-    const TD = 'px-2 text-right tabular-nums';
     // Below lg the table scrolls sideways under a pinned player column.
     const PIN = 'max-lg:sticky max-lg:left-0 max-lg:z-10 max-lg:bg-surface-1';
 // The pinned cell's right hairline (a pseudo-element: collapsed table cells drop box-shadow).
@@ -84,27 +107,23 @@ const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:
                     <tr className="border-b border-line">
                         <th className={cn(TH, 'w-10 max-sm:w-7 max-sm:px-1')}>#</th>
                         <th className={cn(TH, PIN, PIN_EDGE, 'text-left')}>Player</th>
-                        <th className={cn(TH, 'text-fg-1')} title={lead.title}>
-                            {goalies ? lead.goalie : lead.label}
-                        </th>
-                        <th className={TH}>GP</th>
+                        {split ? head(sort, split.label, split.title) : null}
+                        {head('avg', goalies ? METRICS.avg.goalie : METRICS.avg.label, METRICS.avg.title)}
+                        {head('gp', 'GP', 'Games played')}
                         {goalies ? (
                             <>
-                                <th className={TH} title="Shots against">SA</th>
-                                <th className={TH}>SV%</th>
-                                <th className={TH} title="pony xG against, in goals">xGA</th>
+                                {head('sa', 'SA', 'Shots against')}
+                                {head('sv', 'SV%', 'Save percentage')}
+                                {head('xga', 'xGA', 'pony xG against, in goals')}
                             </>
                         ) : (
-                            <th className={TH} title="Time on ice per game">TOI</th>
+                            head('toi', 'TOI', 'Time on ice per game')
                         )}
-                        {rest.map(m => (
-                            <th key={m.label} className={TH} title={m.title}>
-                                {goalies ? m.goalie : m.label}
-                            </th>
-                        ))}
+                        {head('total', goalies ? METRICS.total.goalie : METRICS.total.label, METRICS.total.title)}
+                        {head('per60', METRICS.per60.label, METRICS.per60.title)}
                         <th className={cn(TH, 'w-44 text-center')}>Breakdown</th>
                         <th className={cn(TH, 'text-center')}>Last 10</th>
-                        <th className={cn(TH, 'text-left')}>Best</th>
+                        {head('best', 'Best', 'Best single game', '[&_button]:justify-start')}
                     </tr>
                 </thead>
                 <tbody>
@@ -132,22 +151,20 @@ const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:
                                         </span>
                                     </Link>
                                 </td>
-                                <td className={cn(TD, 'font-display text-body font-bold', lead.value(r) < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(lead.value(r), lead.digits)}</td>
-                                <td className={cn(TD, 'text-fg-2')}>{r.gp}</td>
+                                {split ? <td className={cn(TD, 'font-display text-body font-bold', split.value(r) < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(split.value(r), split.digits)}</td> : null}
+                                <td className={cn(TD, 'font-display text-body font-bold', split ? 'text-fg-2' : r.avg < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.avg)}</td>
+                                <td className={num('gp')}>{r.gp}</td>
                                 {goalies ? (
                                     <>
-                                        <td className={cn(TD, 'text-fg-2')}>{r.goalie?.sa ?? '—'}</td>
-                                        <td className={cn(TD, 'text-fg-2')}>{sv}</td>
-                                        <td className={cn(TD, 'text-model')}>{r.goalie ? r.goalie.xga.toFixed(1) : '—'}</td>
+                                        <td className={num('sa')}>{r.goalie?.sa ?? '—'}</td>
+                                        <td className={num('sv')}>{sv}</td>
+                                        <td className={cn(TD, 'text-model', sort === 'xga' && 'font-semibold')}>{r.goalie ? r.goalie.xga.toFixed(1) : '—'}</td>
                                     </>
                                 ) : (
-                                    <td className={cn(TD, 'text-fg-2')}>{mmss(r.toi)}</td>
+                                    <td className={num('toi')}>{mmss(r.toi)}</td>
                                 )}
-                                {rest.map(m => (
-                                    <td key={m.label} className={cn(TD, 'text-fg-2')}>
-                                        {signed(m.value(r), m.digits)}
-                                    </td>
-                                ))}
+                                <td className={num('total')}>{signed(r.total)}</td>
+                                <td className={num('per60')}>{signed(r.per60)}</td>
                                 <td className="px-2">
                                     <Breakdown row={r} reach={reach} />
                                 </td>

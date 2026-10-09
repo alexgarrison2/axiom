@@ -68,7 +68,13 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
                     {games ? (
                         <PonyNights best={games.best} worst={games.worst} dates={games.dates} from={f.from} to={f.to} href={href} />
                     ) : rows.length ? (
-                        <LeaderTable rows={rows.slice(0, n)} goalies={f.pos === 'G'} sort={f.sort} />
+                        <LeaderTable
+                            rows={rows.slice(0, n)}
+                            goalies={f.pos === 'G'}
+                            sort={f.sort}
+                            dir={f.dir}
+                            sortHref={k => href(k === f.sort ? { dir: f.dir === 'top' ? 'bottom' : null } : { sort: k === 'avg' ? null : k, dir: null })}
+                        />
                     ) : (
                         <p className="py-10 text-center text-caption text-fg-3">No player matches these filters.</p>
                     )}

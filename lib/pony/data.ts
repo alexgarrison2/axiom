@@ -249,7 +249,8 @@ export function loadPonySeason(season: string): PonySeason | null {
 /* ── Leaderboard ───────────────────────────────────────────────────────── */
 
 export type PosFilter = 'all' | 'F' | 'D' | 'G';
-export type SortKey = 'avg' | 'total' | 'per60' | 'off' | 'def';
+export const SORT_KEYS = ['avg', 'total', 'per60', 'off', 'def', 'gp', 'toi', 'sa', 'sv', 'xga', 'best'] as const;
+export type SortKey = (typeof SORT_KEYS)[number];
 
 export interface PonyFilters {
     season: string;
@@ -309,7 +310,7 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>, 
         vs: vs && /^([A-Z]{3}|div:[A-Za-z]+|conf:(East|West))$/.test(vs) ? vs : null,
         team: team && /^[A-Z]{3}$/.test(team) ? team : null,
         minGp: Number.isInteger(minGp) && minGp > 0 && minGp <= 200 ? minGp : 0,
-        sort: pick(g('sort'), ['avg', 'total', 'per60', 'off', 'def'] as const, 'avg'),
+        sort: pick(g('sort'), SORT_KEYS, 'avg'),
         dir: pick(g('dir'), ['top', 'bottom'] as const, 'top'),
         view: pick(g('view'), ['players', 'nights'] as const, 'players'),
     };
@@ -408,7 +409,21 @@ export function leaderboard(data: PonySeason, f: PonyFilters): LeaderRow[] {
             });
         }
     }
-    const key = (r: LeaderRow) => (f.sort === 'total' ? r.total : f.sort === 'per60' ? r.per60 : f.sort === 'off' ? r.off : f.sort === 'def' ? r.def : r.avg);
+    const sv = (r: LeaderRow) => (r.goalie?.sa ? (r.goalie.sa - r.goalie.ga) / r.goalie.sa : 0);
+    const KEY: Record<SortKey, (r: LeaderRow) => number> = {
+        avg: r => r.avg,
+        total: r => r.total,
+        per60: r => r.per60,
+        off: r => r.off,
+        def: r => r.def,
+        gp: r => r.gp,
+        toi: r => r.toi,
+        sa: r => r.goalie?.sa ?? 0,
+        sv,
+        xga: r => r.goalie?.xga ?? 0,
+        best: r => r.best?.ps ?? 0,
+    };
+    const key = KEY[f.sort];
     out.sort((a, b) => (f.dir === 'top' ? key(b) - key(a) : key(a) - key(b)) || b.gp - a.gp);
     return out;
 }
