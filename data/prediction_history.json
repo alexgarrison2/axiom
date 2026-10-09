@@ -39506,5 +39506,141 @@
         "market_p": 0.6827
       }
     }
+  },
+  {
+    "gameId": 2026020062,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-08",
+    "homeTeam": "Islanders",
+    "awayTeam": "Blackhawks",
+    "homeScore": 4,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 3.49,
+    "awayXg": 2.52,
+    "homeWinProb": 65.8,
+    "predictedWinner": "Islanders",
+    "actualWinner": "Islanders",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.117,
+    "logLoss": 0.4186,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-08T22:03:00Z",
+    "startUtc": "2026-10-08T23:30:00Z",
+    "marketHomeProb": 63.0,
+    "modelHomeProb": 66.5,
+    "homeOdds": -185.0,
+    "awayOdds": 154.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 66.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.541,
+        "ll": 0.6143,
+        "naive_ll": 0.5607,
+        "market_p": 0.4942
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.416,
+        "ll": 0.8771,
+        "naive_ll": 0.9088,
+        "market_p": 0.4007
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.471,
+        "ll": 0.7529,
+        "naive_ll": 0.7702,
+        "market_p": 0.4654
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.419,
+        "ll": 0.8699,
+        "naive_ll": 0.8444,
+        "market_p": 0.3797
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.621,
+        "ll": 0.4764,
+        "naive_ll": 0.4786,
+        "market_p": 0.5922
+      }
+    }
+  },
+  {
+    "gameId": 2026020063,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-08",
+    "homeTeam": "Blues",
+    "awayTeam": "Sharks",
+    "homeScore": 2,
+    "awayScore": 3,
+    "decision": "OT",
+    "homeXg": 3.56,
+    "awayXg": 2.65,
+    "homeWinProb": 64.7,
+    "predictedWinner": "Blues",
+    "actualWinner": "Sharks",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.4186,
+    "logLoss": 1.0413,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-08T23:37:00Z",
+    "startUtc": "2026-10-09T00:00:00Z",
+    "marketHomeProb": 59.9,
+    "modelHomeProb": 65.9,
+    "homeOdds": -162.0,
+    "awayOdds": 136.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 65.9,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.21,
+        "ll": 1.5606,
+        "naive_ll": 1.8614,
+        "market_p": 0.2175
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.592,
+        "ll": 0.5242,
+        "naive_ll": 0.5056,
+        "market_p": 0.654
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.437,
+        "ll": 0.8278,
+        "naive_ll": 0.8466,
+        "market_p": 0.4654
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.408,
+        "ll": 0.8965,
+        "naive_ll": 0.8508,
+        "market_p": 0.3684
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.602,
+        "ll": 0.5075,
+        "naive_ll": 0.4933,
+        "market_p": 0.5598
+      }
+    }
   }
 ]
