@@ -50,7 +50,7 @@ export const LENS_COLUMNS: Record<string, StatColumn> = {
     away_rec: X({ key: 'away_rec', label: 'Away', title: 'Road record', better: 'none', kind: 'awayRec', width: 76 }),
     l10: X({ key: 'l10', label: 'L10', title: 'Record, last 10 games', better: 'none', kind: 'l10', width: 68 }),
     streak: X({ key: 'streak', label: 'Strk', title: 'Current streak', better: 'none', kind: 'streak', width: 52 }),
-    form: X({ key: 'form', label: 'Last games', title: 'xG share each game, oldest to newest (up = more than half)', better: 'none', kind: 'form', width: 96 }),
+    form: X({ key: 'form', label: 'Last games', title: 'Each game, oldest to newest: up = won the xG share; green win, red loss, orange OT/SO loss', better: 'none', kind: 'form', width: 96 }),
 
     // model / projections
     rating: X({ key: 'rating', label: 'xGΔ / game', title: 'Model rating: expected-goal differential per game (xGF − xGA)', better: 'high', kind: 'modelBar', model: true, bar: { mid: 0, span: 0.9 }, derive: ratingNet, format: s2, width: 168 }),

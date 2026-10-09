@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { signed } from '@/utils/team-stats/format';
-import type { Record3, TeamExtra, TeamProjection, TeamRatingEntry, TeamStat } from '@/utils/team-stats/types';
+import type { Record3, ResultCode, TeamExtra, TeamProjection, TeamRatingEntry, TeamStat } from '@/utils/team-stats/types';
 import type { StatColumn } from './columns';
 
 /**
@@ -91,25 +91,36 @@ export function Streak({ s }: { s: string | null }) {
 }
 
 /** Bars from a midline: up (green) above, down (red) below, height by size. One SVG per cell (DOM budget). */
-function Strip({ vals, scale, title }: { vals: number[]; scale: number; title: string }) {
-    const w = vals.length * 8;
+const RESULT_FILL: Record<ResultCode, string> = {
+    RW: 'var(--pos)',
+    OTW: 'var(--pos)',
+    SOW: 'var(--pos)',
+    RL: 'var(--neg)',
+    OTL: 'var(--pk)',
+    SOL: 'var(--pk)',
+};
+const RESULT_WORD: Record<ResultCode, string> = { RW: 'W', OTW: 'W OT', SOW: 'W SO', RL: 'L', OTL: 'L OT', SOL: 'L SO' };
+
+/**
+ * Each game oldest to newest: the bar's direction and length are the xG share
+ * against 50% (up = outplayed them), its colour the result (green win, red
+ * regulation loss, orange overtime or shootout loss).
+ */
+export function FormTape({ extra }: { extra: TeamExtra | undefined }) {
+    if (!extra?.form.length) return <Dash />;
+    const title = extra.form.map(f => `${RESULT_WORD[f.r]} ${f.home ? 'vs' : '@'} ${f.opp} ${f.gf}-${f.ga}, xG ${Math.round(f.xs * 100)}%`).join(' · ');
+    const w = extra.form.length * 8;
     return (
         <svg width={w} height={24} viewBox={`0 0 ${w} 24`} className="inline-block align-middle" role="img" aria-label={title}>
             <title>{title}</title>
             <line x1={0} x2={w} y1={12.5} y2={12.5} className="stroke-line-strong" />
-            {vals.map((v, i) => {
-                const h = Math.max(2, Math.min(12, Math.abs(v) * scale));
-                return <rect key={i} x={i * 8} y={v >= 0 ? 12 - h : 13} width={6} height={h} rx={1} className={v >= 0 ? 'fill-pos/80' : 'fill-neg/80'} />;
+            {extra.form.map((f, i) => {
+                const v = f.xs - 0.5;
+                const h = Math.max(2, Math.min(12, Math.abs(v) * 53));
+                return <rect key={i} x={i * 8} y={v >= 0 ? 12 - h : 13} width={6} height={h} rx={1} fill={RESULT_FILL[f.r]} opacity={0.85} />;
             })}
         </svg>
     );
-}
-
-/** Each game's xG share against 50%, oldest to newest. */
-export function FormTape({ extra }: { extra: TeamExtra | undefined }) {
-    if (!extra?.form.length) return <Dash />;
-    const title = extra.form.map(f => `${f.home ? 'vs' : '@'} ${f.opp} ${f.gf}-${f.ga}, xG ${Math.round(f.xs * 100)}%`).join(' · ');
-    return <Strip vals={extra.form.map(f => f.xs - 0.5)} scale={53} title={title} />;
 }
 
 const LINES = ['f1', 'f2', 'f3', 'f4'] as const;
