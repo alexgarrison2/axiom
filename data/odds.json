@@ -44,7 +44,7 @@
         "sources": [
             "bovada"
         ],
-        "fetched_at": "2026-10-09T14:03:23Z",
+        "fetched_at": "2026-10-09T15:03:19Z",
         "Rangers_puckline": -225,
         "Rangers_puckline_spread": "+1.5",
         "Capitals_puckline": 185,
@@ -59,8 +59,8 @@
         "home_ml": -142,
         "away_ml": 122,
         "Rangers_three_way": 185,
-        "Capitals_three_way": 110,
-        "three_way_tie": 305,
+        "Capitals_three_way": 109,
+        "three_way_tie": 310,
         "Rangers_1p_three_way": 195,
         "Capitals_1p_three_way": 167,
         "1p_three_way_tie": 173
@@ -77,7 +77,7 @@
         "sources": [
             "bovada"
         ],
-        "fetched_at": "2026-10-09T13:02:48Z",
+        "fetched_at": "2026-10-09T15:03:19Z",
         "Penguins_puckline": -250,
         "Penguins_puckline_spread": "+1.5",
         "Blue Jackets_puckline": 210,
@@ -92,10 +92,10 @@
         "home_ml": -122,
         "away_ml": 102,
         "Penguins_three_way": 157,
-        "Blue Jackets_three_way": 127,
-        "three_way_tie": 310,
+        "Blue Jackets_three_way": 126,
+        "three_way_tie": 315,
         "Penguins_1p_three_way": 180,
-        "Blue Jackets_1p_three_way": 173,
+        "Blue Jackets_1p_three_way": 172,
         "1p_three_way_tie": 185
     },
     "2026020069": {
@@ -110,7 +110,7 @@
         "sources": [
             "bovada"
         ],
-        "fetched_at": "2026-10-09T14:03:23Z",
+        "fetched_at": "2026-10-09T15:03:19Z",
         "Ducks_puckline": -260,
         "Ducks_puckline_spread": "+1.5",
         "Jets_puckline": 215,
@@ -124,12 +124,75 @@
         "Ducks": -103,
         "home_ml": -117,
         "away_ml": -103,
-        "Ducks_three_way": 152,
-        "Jets_three_way": 132,
-        "three_way_tie": 305,
-        "Ducks_1p_three_way": 178,
-        "Jets_1p_three_way": 175,
+        "Ducks_three_way": 153,
+        "Jets_three_way": 130,
+        "three_way_tie": 310,
+        "Ducks_1p_three_way": 180,
+        "Jets_1p_three_way": 173,
         "1p_three_way_tie": 183
+    },
+    "2026020070": {
+        "game_id": 2026020070,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-10T17:00:00Z",
+        "home_team": "Bruins",
+        "away_team": "Flyers",
+        "home_abbrev": "BOS",
+        "away_abbrev": "PHI",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Bruins": -130,
+        "Flyers": 110,
+        "home_ml": -130,
+        "away_ml": 110,
+        "total_line": "5.5",
+        "total_over": -130,
+        "total_under": 110
+    },
+    "2026020071": {
+        "game_id": 2026020071,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-10T19:30:00Z",
+        "home_team": "Devils",
+        "away_team": "Canucks",
+        "home_abbrev": "NJD",
+        "away_abbrev": "VAN",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Devils": -278,
+        "Canucks": 225,
+        "home_ml": -278,
+        "away_ml": 225,
+        "total_line": "6.5",
+        "total_over": 105,
+        "total_under": -125
+    },
+    "2026020072": {
+        "game_id": 2026020072,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-10T20:00:00Z",
+        "home_team": "Sharks",
+        "away_team": "Oilers",
+        "home_abbrev": "SJS",
+        "away_abbrev": "EDM",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Sharks": 120,
+        "Oilers": -142,
+        "home_ml": 120,
+        "away_ml": -142,
+        "total_line": "6.5",
+        "total_over": -112,
+        "total_under": -108
     },
     "2026020073": {
         "game_id": 2026020073,
@@ -143,13 +206,139 @@
         "sources": [
             "espn_draftkings"
         ],
-        "fetched_at": "2026-10-09T05:15:10Z",
-        "Panthers": -142,
-        "Wild": 120,
-        "home_ml": -142,
-        "away_ml": 120,
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Panthers": -135,
+        "Wild": 114,
+        "home_ml": -135,
+        "away_ml": 114,
         "total_line": "6.5",
         "total_over": 110,
         "total_under": -130
+    },
+    "2026020074": {
+        "game_id": 2026020074,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-10T23:00:00Z",
+        "home_team": "Sabres",
+        "away_team": "Mammoth",
+        "home_abbrev": "BUF",
+        "away_abbrev": "UTA",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Sabres": -120,
+        "Mammoth": 100,
+        "home_ml": -120,
+        "away_ml": 100,
+        "total_line": "6.5",
+        "total_over": -105,
+        "total_under": -115
+    },
+    "2026020075": {
+        "game_id": 2026020075,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-10T23:00:00Z",
+        "home_team": "Canadiens",
+        "away_team": "Red Wings",
+        "home_abbrev": "MTL",
+        "away_abbrev": "DET",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Canadiens": -218,
+        "Red Wings": 180,
+        "home_ml": -218,
+        "away_ml": 180,
+        "total_line": "6.5",
+        "total_over": -105,
+        "total_under": -115
+    },
+    "2026020078": {
+        "game_id": 2026020078,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-10T23:00:00Z",
+        "home_team": "Blackhawks",
+        "away_team": "Hurricanes",
+        "home_abbrev": "CHI",
+        "away_abbrev": "CAR",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Blackhawks": 180,
+        "Hurricanes": -218,
+        "home_ml": 180,
+        "away_ml": -218,
+        "total_line": "5.5",
+        "total_over": -130,
+        "total_under": 110
+    },
+    "2026020079": {
+        "game_id": 2026020079,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-10T23:00:00Z",
+        "home_team": "Blues",
+        "away_team": "Blue Jackets",
+        "home_abbrev": "STL",
+        "away_abbrev": "CBJ",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Blues": -125,
+        "Blue Jackets": 105,
+        "home_ml": -125,
+        "away_ml": 105,
+        "total_line": "5.5",
+        "total_over": -125,
+        "total_under": 105
+    },
+    "2026020080": {
+        "game_id": 2026020080,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-10T23:00:00Z",
+        "home_team": "Avalanche",
+        "away_team": "Maple Leafs",
+        "home_abbrev": "COL",
+        "away_abbrev": "TOR",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Avalanche": -180,
+        "Maple Leafs": 150,
+        "home_ml": -180,
+        "away_ml": 150,
+        "total_line": "6.5",
+        "total_over": -105,
+        "total_under": -115
+    },
+    "2026020082": {
+        "game_id": 2026020082,
+        "game_date": "2026-10-10",
+        "start_time_utc": "2026-10-11T02:00:00Z",
+        "home_team": "Flames",
+        "away_team": "Ducks",
+        "home_abbrev": "CGY",
+        "away_abbrev": "ANA",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-10-09T15:03:19Z",
+        "Flames": 114,
+        "Ducks": -135,
+        "home_ml": 114,
+        "away_ml": -135,
+        "total_line": "6.5",
+        "total_over": 102,
+        "total_under": -122
     }
 }

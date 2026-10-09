@@ -650,11 +650,11 @@
     "TOR": {
         "f1": [
             {
-                "name": "Kirill Marchenko",
-                "number": 86,
+                "name": "Jack Roslovic",
+                "number": 96,
                 "pos": "lw",
-                "id": 29119,
-                "ppUnit": 1,
+                "id": 2499,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -670,14 +670,14 @@
                 "movement": null
             },
             {
-                "name": "Jack Roslovic",
-                "number": 96,
+                "name": "William Nylander",
+                "number": 88,
                 "pos": "rw",
-                "id": 2499,
-                "ppUnit": 2,
+                "id": 2375,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -702,14 +702,14 @@
                 "movement": null
             },
             {
-                "name": "William Nylander",
-                "number": 88,
+                "name": "Kirill Marchenko",
+                "number": 86,
                 "pos": "rw",
-                "id": 2375,
+                "id": 29119,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f3": [
@@ -828,7 +828,7 @@
                 "id": 1172,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -888,6 +888,15 @@
                 "id": 25020,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
+                "pos": "ir4",
+                "id": 1172,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -955,7 +964,7 @@
                 "id": 1172,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Darren Raddysh",
@@ -967,9 +976,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "David Alter",
-        "updated_at": "2026-10-09T01:45:26.938Z",
-        "fetched_at": "2026-10-09T02:03:54Z"
+        "lineup_source": "Last Game (2026-10-08)",
+        "updated_at": "2026-10-09T14:07:11.367Z",
+        "fetched_at": "2026-10-09T15:03:27Z"
     },
     "MTL": {
         "f1": [
@@ -4189,14 +4198,14 @@
                 "movement": null
             },
             {
-                "name": "Martin Necas",
-                "number": 88,
+                "name": "Nazem Kadri",
+                "number": 91,
                 "pos": "rw",
-                "id": 2804,
+                "id": 1425,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -4221,14 +4230,14 @@
                 "movement": null
             },
             {
-                "name": "Nazem Kadri",
-                "number": 91,
+                "name": "Martin Necas",
+                "number": 88,
                 "pos": "rw",
-                "id": 1425,
+                "id": 2804,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f3": [
@@ -4329,14 +4338,14 @@
                 "movement": null
             },
             {
-                "name": "Sam Malinski",
-                "number": 70,
+                "name": "Noah Juulsen",
+                "number": 47,
                 "pos": "rd",
-                "id": 37993,
+                "id": 2500,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d3": [
@@ -4468,9 +4477,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Aarif Deen",
-        "updated_at": "2026-10-08T17:13:07.449Z",
-        "fetched_at": "2026-10-08T18:03:10Z"
+        "lineup_source": "Last Game (2026-10-08)",
+        "updated_at": "2026-10-09T14:04:50.912Z",
+        "fetched_at": "2026-10-09T15:03:27Z"
     },
     "LAK": {
         "f1": [
