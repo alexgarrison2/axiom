@@ -7,10 +7,11 @@ import type { Phase } from '@/lib/matchup/lifecycle';
 import { loadJson } from '@/lib/client-data';
 import { modelWeight, pickForm } from '@/lib/matchup/edge';
 import { fmtSigned, fmtSv, gsaxHeadline, goalieSeasonLine, shortDate, vsOppTone } from '@/lib/matchup/format';
-import { buildEntries, recordOfEntries, type FormEntry } from '@/lib/matchup/form';
+import { buildEntries, entryStartedBy, recordOfEntries, type FormEntry } from '@/lib/matchup/form';
 import { unpackTeamGames, type MatchupGame, type TeamGamesPayload } from '@/lib/matchup/matchup-stats';
 import { termHref } from '@/lib/matchup/glossary-links';
 import { clashSafePair } from '@/components/ui/team-color';
+import { Crest } from '@/components/ui/crest';
 import { cn } from '@/lib/utils';
 import { WhyThisPick } from './WhyThisPick';
 import { ContextChips } from './ContextChips';
@@ -128,61 +129,134 @@ function Goalies({ p, state }: { p: Prediction; state: DetailsState }) {
 
 /* ── Form ─────────────────────────────────────────────────────────────── */
 
-const OUTCOME_CLS = { W: 'bg-pos/15 text-pos', L: 'bg-well text-fg-3', OTL: 'bg-amber/10 text-amber' } as const;
+const RESULT = {
+    W: { text: 'W', cls: 'text-pos', label: 'Win' },
+    L: { text: 'L', cls: 'text-fg-3', label: 'Loss' },
+    OTL: { text: 'OTL', cls: 'text-amber', label: 'Overtime loss' },
+} as const;
 
-/** Last five results as tiles, newest nearest the centre; a strip under each tile is that game's xG share in the team colour. */
-function Tiles({ entries, home, color }: { entries: FormEntry[]; home: boolean; color: string }) {
-    const shown = home ? entries : [...entries].reverse();
-    if (!entries.length) return dash;
+/** Rest before tonight: amber on a back-to-back. */
+function restText(s: SideData): React.ReactNode {
+    if (s.isB2b) return <span className="font-bold text-amber">B2B</span>;
+    if (s.restDays == null) return null;
+    return `${s.restDays}d rest`;
+}
+
+/** Plot height of one game's bars, each way from the axis (px). */
+const HALF = 44;
+
+/** One side of a game's plot: the xG bar (solid team colour for, outlined grey against) with a white tick at the goals. */
+function Half({ xg, goals, scale, color, up }: { xg: number; goals: number; scale: number; color: string | null; up: boolean }) {
+    const px = (v: number) => (Math.min(v, scale) / scale) * HALF;
     return (
-        <span className={cn('flex gap-1', home && 'justify-end')}>
-            {shown.map(e => {
-                const r = e.game?.row;
-                const share = r && r.xgf + r.xga > 0 ? r.xgf / (r.xgf + r.xga) : null;
-                const title = `${shortDate(e.date)} ${e.home ? 'vs' : '@'} ${e.opp}: ${e.outcome === 'W' ? 'W' : e.outcome === 'OTL' ? 'OTL' : 'L'} ${e.gf}-${e.ga}${r ? `, xG ${r.xgf.toFixed(1)}-${r.xga.toFixed(1)}` : ''}`;
-                return (
-                    <span key={e.key} title={title} className="flex w-6 flex-col gap-[3px]">
-                        <span className={cn('grid h-6 place-items-center rounded-[5px] text-micro font-bold', OUTCOME_CLS[e.outcome])}>
-                            <span aria-hidden="true">{e.outcome === 'OTL' ? 'O' : e.outcome}</span>
-                            <span className="sr-only">{title}</span>
-                        </span>
-                        <span aria-hidden="true" className="relative block h-[3px] overflow-hidden rounded-full bg-track">
-                            {share != null ? <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${share * 100}%`, background: color }} /> : null}
-                        </span>
-                    </span>
-                );
-            })}
+        <span className={cn('relative flex w-full flex-1 flex-col items-center', up ? 'justify-end' : 'justify-start')}>
+            <span
+                className={cn('relative w-10', up ? 'rounded-t-[3px]' : 'rounded-b-[3px] border-x border-b')}
+                style={{ height: Math.max(2, px(xg)), background: color ?? 'rgb(var(--text-3-rgb) / 0.3)', borderColor: color ? undefined : 'rgb(var(--text-3-rgb) / 0.9)' }}
+            />
+            {goals > 0 ? <span className="absolute -ml-6 w-12 rounded-full bg-fg-1 shadow-[0_0_4px_rgba(0,0,0,.9)]" style={{ height: 2, left: '50%', [up ? 'bottom' : 'top']: px(goals) - 1 }} /> : null}
         </span>
     );
 }
 
-const record = (es: FormEntry[]) => {
-    const r = recordOfEntries(es);
-    return `${r.w}-${r.l}-${r.otl}`;
-};
-
-function restWords(s: SideData): React.ReactNode {
-    if (s.isB2b) return <span className="font-bold text-amber">B2B</span>;
-    if (s.restDays == null) return dash;
-    return `${s.restDays} day${s.restDays === 1 ? '' : 's'}`;
+/**
+ * One game as a column, oldest left: the result and score on top, then how it
+ * really went around an axis: xG for rising in the team colour, xG against
+ * hanging below as an outline, a white tick on each at the goals actually
+ * scored, all on one scale shared by every game on the sheet; the opponent's
+ * crest at the foot. A magenta dot marks a game tonight's goalie started. A
+ * game the log has not caught up with shows its result only.
+ */
+function GameColumn({ e, color, scale, goalie }: { e: FormEntry; color: string; scale: number; goalie: string | null }) {
+    const r = e.game?.row;
+    const res = RESULT[e.outcome];
+    const started = entryStartedBy(e, goalie);
+    const label = `${shortDate(e.date)} ${e.home ? 'vs' : 'at'} ${e.opp}: ${res.label} ${e.gf}-${e.ga}${e.extra ? ` ${e.extra}` : ''}${r ? `, xG ${r.xgf.toFixed(1)} to ${r.xga.toFixed(1)}` : ''}${started ? `, ${goalie} started` : ''}`;
+    return (
+        <li className="flex min-w-0 flex-col items-center gap-1.5" title={label}>
+            <span className="sr-only">{label}</span>
+            <span aria-hidden="true" className="flex items-baseline gap-1 whitespace-nowrap tabular-nums">
+                <span className={cn('text-micro font-bold', res.cls)}>{res.text}</span>
+                <span className="text-body font-bold text-fg-1">
+                    {e.gf}-{e.ga}
+                </span>
+                {started ? <span className="h-1.5 w-1.5 self-center rounded-full bg-magenta shadow-[0_0_6px_rgb(var(--model-rgb))]" /> : null}
+            </span>
+            <span aria-hidden="true" className="flex w-full flex-col items-center" style={{ height: HALF * 2 + 1 }}>
+                {r ? (
+                    <>
+                        <Half xg={r.xgf} goals={e.gf} scale={scale} color={color} up />
+                        <span className="h-px w-full bg-line-strong" />
+                        <Half xg={r.xga} goals={e.ga} scale={scale} color={null} up={false} />
+                    </>
+                ) : (
+                    <span className="my-auto w-full border-t border-dashed border-line-strong" />
+                )}
+            </span>
+            <span aria-hidden="true" className="flex w-full items-center justify-center gap-1 text-micro tabular-nums text-fg-3">
+                {r ? (
+                    <span>
+                        <b className="font-bold text-fg-1">{r.xgf.toFixed(1)}</b>-{r.xga.toFixed(1)}
+                    </span>
+                ) : (
+                    <span>—</span>
+                )}
+            </span>
+            <span aria-hidden="true" className="flex items-center gap-0.5 text-micro text-fg-3">
+                <span>{e.home ? 'vs' : '@'}</span>
+                <Crest tri={e.opp} size={24} className="drop-shadow-none" />
+            </span>
+        </li>
+    );
 }
 
-function Outs({ list, home }: { list: InjuryView[]; home: boolean }) {
-    if (!list.length) return <span className="text-fg-3">None</span>;
+function TeamForm({ s, entries, scale, color, outs }: { s: SideData; entries: FormEntry[] | null; scale: number; color: string; outs: InjuryView[] | null }) {
+    const tri = s.team.triCode;
+    const rec = entries ? recordOfEntries(entries) : null;
+    const rest = restText(s);
     return (
-        <span className={cn('flex min-w-0 flex-wrap gap-x-2 gap-y-0.5 whitespace-normal', home && 'justify-end')}>
-            {list.map(i => (
-                <span key={i.name} title={[i.status, i.detail, i.returnLabel ? `back ~${i.returnLabel}` : null].filter(Boolean).join(' · ')} className="whitespace-nowrap">
-                    {i.display}
-                    {i.detail ? <span className="ml-1 text-micro text-fg-3">{i.detail}</span> : null}
-                </span>
-            ))}
-        </span>
+        <div className="flex min-w-0 flex-col gap-2">
+            <div className="flex items-center gap-2">
+                <Crest tri={tri} size={26} className="drop-shadow-none" />
+                <span className="font-display text-title font-bold uppercase text-fg-1">{tri}</span>
+                {rec ? (
+                    <span className="text-caption tabular-nums text-fg-2">
+                        {rec.w}-{rec.l}-{rec.otl} <span className="text-micro uppercase tracking-wide text-fg-3">L{entries!.length}</span>
+                    </span>
+                ) : null}
+                {rest ? <span className="ml-auto text-micro uppercase tracking-wide text-fg-3">{rest}</span> : null}
+            </div>
+            {entries ? (
+                entries.length ? (
+                    <ol className="grid grid-cols-5 gap-1">
+                        {[...entries].reverse().map(e => (
+                            <GameColumn key={e.key} e={e} color={color} scale={scale} goalie={s.goalie} />
+                        ))}
+                    </ol>
+                ) : (
+                    <p className="label py-6 text-center text-fg-3">No games yet</p>
+                )
+            ) : (
+                <span className="block h-[168px] animate-pulse rounded-[10px] bg-surface-2" />
+            )}
+            {outs?.length ? (
+                <p className="text-caption leading-snug text-fg-2">
+                    <span className="mr-1.5 text-micro font-medium uppercase tracking-wide text-fg-3">Out</span>
+                    {outs.map((i, k) => (
+                        <span key={i.name} title={[i.status, i.detail, i.returnLabel ? `back ~${i.returnLabel}` : null].filter(Boolean).join(' · ')}>
+                            {k ? <span className="text-fg-3"> · </span> : null}
+                            {i.display}
+                        </span>
+                    ))}
+                </p>
+            ) : null}
+        </div>
     );
 }
 
 const NO_RECENT: RecentGame[] = [];
 
+/** Last five games per team as xG columns, away left and home right, with rest, the season series and who is out. */
 function Form({ p, state }: { p: Prediction; state: DetailsState }) {
     const [games, setGames] = useState<Record<Side, MatchupGame[]> | null>(null);
     const a = p.away.team.triCode;
@@ -205,19 +279,43 @@ function Form({ p, state }: { p: Prediction; state: DetailsState }) {
         for (const sd of SIDES) out[sd] = buildEntries(games[sd], d?.[sd].recent ?? NO_RECENT, p.id, p.date, 5);
         return out;
     }, [games, d, p.id, p.date]);
+    let scale = 2;
+    for (const sd of SIDES) for (const e of entries?.[sd] ?? []) if (e.game) scale = Math.max(scale, e.game.row.xgf, e.game.row.xga, e.gf, e.ga);
+    const h2h = p.away.h2hRecord || p.home.h2hRecord;
     return (
-        <section aria-label="Form and availability" className="flex flex-col gap-1.5">
-            <Heading>Form</Heading>
-            <div className="flex flex-col">
-                <Mirror
-                    label="Last 5"
-                    away={entries ? <Tiles entries={entries.away} home={false} color={colors.away} /> : <span className="block h-7 w-32 animate-pulse rounded bg-surface-2" />}
-                    home={entries ? <Tiles entries={entries.home} home color={colors.home} /> : <span className="ml-auto block h-7 w-32 animate-pulse rounded bg-surface-2" />}
-                />
-                {entries ? <Mirror label="Record" away={record(entries.away)} home={record(entries.home)} /> : null}
-                {p.away.h2hRecord || p.home.h2hRecord ? <Mirror label="H2H" term="h2h" away={p.away.h2hRecord ?? '—'} home={p.home.h2hRecord ?? '—'} /> : null}
-                <Mirror label="Rest" term="rest" away={restWords(p.away)} home={restWords(p.home)} />
-                {d ? <Mirror label="Out" away={<Outs list={d.away.injuries} home={false} />} home={<Outs list={d.home.injuries} home />} /> : null}
+        <section aria-label="Form" className="flex flex-col gap-2">
+            <Heading
+                aside={
+                    <span className="inline-flex flex-wrap items-center justify-end gap-x-3">
+                        <span className="inline-flex items-center gap-1.5 uppercase tracking-wide">
+                            <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] bg-fg-2" />
+                            xG for
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 uppercase tracking-wide">
+                            <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[2px] border" style={{ background: 'rgb(var(--text-3-rgb) / 0.3)', borderColor: 'rgb(var(--text-3-rgb) / 0.9)' }} />
+                            xG against
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 uppercase tracking-wide">
+                            <span aria-hidden="true" className="h-0.5 w-3 bg-fg-1" />
+                            Goals
+                        </span>
+                        {h2h ? (
+                            <span>
+                                <span className="uppercase tracking-wide">Series</span>{' '}
+                                <b className="font-bold text-fg-1">
+                                    {a} {p.away.h2hRecord ?? '—'}
+                                </b>
+                            </span>
+                        ) : null}
+                    </span>
+                }
+            >
+                Form
+            </Heading>
+            <div className="grid grid-cols-1 gap-x-10 gap-y-4 cq-lg:grid-cols-2">
+                {SIDES.map(sd => (
+                    <TeamForm key={sd} s={p[sd]} entries={entries?.[sd] ?? null} scale={scale} color={colors[sd]} outs={d ? d[sd].injuries : null} />
+                ))}
             </div>
         </section>
     );
@@ -325,7 +423,6 @@ export function PreviewPanel({ p, phase, state, implication }: { p: Prediction; 
                     <ContextChips p={p} />
                 </section>
                 <Goalies p={p} state={state} />
-                <Form p={p} state={state} />
             </div>
             <div className="flex min-w-0 flex-col gap-5">
                 <section aria-label="Tale of the tape" className="flex flex-col gap-2">
@@ -333,6 +430,9 @@ export function PreviewPanel({ p, phase, state, implication }: { p: Prediction; 
                     <MatchupPanel p={p} state={state} compact />
                 </section>
                 <Extras p={p} state={state} implication={implication} />
+            </div>
+            <div className="min-w-0 cq-lg:col-span-2">
+                <Form p={p} state={state} />
             </div>
         </div>
     );
