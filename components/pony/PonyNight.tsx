@@ -2,10 +2,9 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { teamPalette } from '@/components/ui/team-color';
-import { cn } from '@/lib/utils';
+import { NightRow, reachOf, type NightEntry } from '@/components/pony/NightRow';
 import type { GsPart } from '@/lib/game/analytics';
-import { ORDER, PARTS, signed, stack } from '@/lib/pony/parts';
+import { ORDER, signed } from '@/lib/pony/parts';
 import { useDataEpoch } from '@/lib/fresh';
 
 /**
@@ -41,46 +40,20 @@ function load(season: string, epoch: number) {
     return docs.get(k)!;
 }
 
-function Row({ r, rank, players, reach }: { r: (string | number)[]; rank: number; players: Record<string, Player>; reach: number }) {
+/** A stored row (skater_cols: game, player, team, opp, ps, then the parts) as a list entry. */
+function entry(r: (string | number)[], players: Record<string, Player>): NightEntry {
     const [game, id, team, opp, ps] = r as [number, number, string, string, number];
-    const parts = Object.fromEntries(ORDER.map((k, i) => [k, Number(r[5 + i])])) as Record<GsPart, number>;
     const p = players[String(id)];
-    const x = (v: number) => 50 + (v / reach) * 48;
-    return (
-        // Phone-width panels give the name the room: a shorter bar (same scale, same parts) and tighter gaps.
-        <li className="grid grid-cols-[1rem_2rem_minmax(0,1fr)_2.5rem_3.25rem] items-center gap-x-2 py-1.5 coarse:relative [@container(min-width:18rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_3.5rem_3.5rem] [@container(min-width:26rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_5.5rem_3.5rem] [@container(min-width:26rem)]:gap-x-2.5">
-            <span className="text-right text-micro tabular-nums text-fg-3">{rank}</span>
-            <span className="block h-8 w-8 overflow-hidden rounded-full border-2 bg-surface-2 [@container(min-width:18rem)]:h-9 [@container(min-width:18rem)]:w-9" style={{ borderColor: teamPalette(team).primary }}>
-                {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshot */}
-                {p?.[4] ? <img src={p[4]} alt="" width={36} height={36} loading="lazy" className="headshot h-full w-full" /> : null}
-            </span>
-            <span className="min-w-0 leading-tight">
-                {/* Touch: the whole row opens the player; the game line sits above it as its own target, a small gap under the name. */}
-                <Link
-                    href={`/players/${id}`}
-                    className="block font-bold text-fg-1 underline-offset-4 hover:text-brand hover:underline coarse:after:absolute coarse:after:inset-0 coarse:after:content-['']"
-                >
-                    <span className="block truncate">{p ? `${p[0].charAt(0)}. ${p[1]}` : id}</span>
-                </Link>
-                <Link
-                    href={`/games/${game}`}
-                    className="flex items-center gap-1 whitespace-nowrap text-micro text-fg-3 hover:text-fg-1 coarse:relative coarse:z-10 coarse:mt-1 coarse:w-fit"
-                >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- team logo */}
-                    <img src={`/logos/${team}.svg`} alt="" width={14} height={14} className="h-3.5 w-3.5" />
-                    {team} vs {opp}
-                </Link>
-            </span>
-            <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="block h-2.5 w-full" aria-hidden="true">
-                <rect x={0} y={0} width={100} height={10} fill="var(--track)" />
-                {stack(parts, x).map(s => (
-                    <rect key={s.k} x={s.x} y={1} width={Math.max(0, s.w - 0.5)} height={8} fill={PARTS[s.k].color} />
-                ))}
-                <line x1={50} x2={50} y1={0} y2={10} className="stroke-fg-3" vectorEffect="non-scaling-stroke" />
-            </svg>
-            <span className={cn('text-right font-display text-body font-bold tabular-nums', ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(ps)}</span>
-        </li>
-    );
+    return {
+        game,
+        player: id,
+        name: p ? `${p[0].charAt(0)}. ${p[1]}` : String(id),
+        headshot: p?.[4] ?? null,
+        team,
+        opp,
+        ps,
+        parts: Object.fromEntries(ORDER.map((k, i) => [k, Number(r[5 + i])])) as Record<GsPart, number>,
+    };
 }
 
 export function PonyNight({ date }: { date: string }) {
@@ -95,17 +68,11 @@ export function PonyNight({ date }: { date: string }) {
     }, [date, epoch]);
     const day = doc?.days[date];
     if (!doc || !day || (!day.top.length && !day.goalie)) return null;
-    let reach = 1;
-    for (const r of [...day.top, ...day.bottom]) {
-        let pos = 0;
-        let neg = 0;
-        for (let i = 5; i < 13; i++) {
-            const v = Number(r[i]);
-            if (v > 0) pos += v;
-            else neg -= v;
-        }
-        reach = Math.max(reach, pos, neg);
-    }
+    const lists = [
+        ['Top', day.top.map(r => entry(r, doc.players))],
+        ['Bottom', day.bottom.map(r => entry(r, doc.players))],
+    ] as const;
+    const reach = reachOf([...lists[0][1], ...lists[1][1]]);
     const g = day.goalie;
     const gp = g ? doc.players[String(g[1])] : null;
     return (
@@ -119,15 +86,12 @@ export function PonyNight({ date }: { date: string }) {
                 </Link>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-                {[
-                    ['Top', day.top],
-                    ['Bottom', day.bottom],
-                ].map(([title, list]) => (
-                    <div key={title as string} className="panel px-card py-3 [container-type:inline-size]">
-                        <p className="label mb-1">{title as string}</p>
+                {lists.map(([title, list]) => (
+                    <div key={title} className="panel px-card py-3 [container-type:inline-size]">
+                        <p className="label mb-1">{title}</p>
                         <ol className="divide-y divide-line/60">
-                            {(list as (string | number)[][]).map((r, i) => (
-                                <Row key={`${r[0]}-${r[1]}`} r={r} rank={i + 1} players={doc.players} reach={reach} />
+                            {list.map((r, i) => (
+                                <NightRow key={`${r.game}-${r.player}`} r={r} rank={i + 1} reach={reach} />
                             ))}
                         </ol>
                     </div>

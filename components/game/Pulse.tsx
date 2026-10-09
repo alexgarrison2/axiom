@@ -19,7 +19,6 @@ import {
     shortName,
     strengthStates,
     winModel,
-    winSeries,
     type FlowMetric,
     type TeamStrength,
 } from '@/lib/game/analytics';
@@ -52,17 +51,6 @@ const SHARE_WINDOW = 5;
 
 const pctText = (p: number) => `${Math.round(p * 100)}%`;
 const fmt = (metric: FlowMetric, v: number) => (metric === 'xg' ? v.toFixed(2) : String(Math.round(v)));
-
-/**
- * Win-lane scale: linear through the middle, stretched near 0 and 100% (a
- * blend with a clipped logit) so a blowout's 95 → 99% still moves instead
- * of pinning to the edge.
- */
-const L995 = Math.log(0.995 / 0.005);
-function winScale(p: number): number {
-    const c = Math.min(0.995, Math.max(0.005, p));
-    return 0.5 + 0.5 * (0.55 * (2 * p - 1) + 0.45 * (Math.log(c / (1 - c)) / L995));
-}
 
 export function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
     const ref = React.useRef<T>(null);
@@ -196,19 +184,17 @@ export function Pulse() {
 
     // Lanes, top to bottom.
     const pinH = pinR * 2 + 6 + (rows - 1) * pinStep + 14;
-    const winH = short ? 54 : compact ? 84 : 120;
-    const barH = short ? 56 : compact ? 96 : 136;
-    const raceH = short ? 44 : compact ? 72 : 110;
+    const barH = short ? 64 : compact ? 112 : 168;
+    const raceH = short ? 48 : compact ? 84 : 136;
     const gap = short ? 8 : 18;
     const stripH = tight ? 16 : 20;
-    const winTop = pinH;
-    const stripTop = winTop + winH + 8;
+    const lanesTop = pinH;
+    const stripTop = lanesTop + 8;
     const barTop = stripTop + stripH + 10;
     const raceTop = barTop + barH + gap;
     const axisTop = raceTop + raceH + 6;
     const H = axisTop + 18;
 
-    const win = React.useMemo(() => winSeries(m), [m]);
     const deserved = React.useMemo(() => deservedSeries(m), [m]);
     const wm = React.useMemo(() => winModel(m), [m]);
     const swings = React.useMemo(() => goalSwings(m), [m]);
@@ -219,7 +205,6 @@ export function Pulse() {
     const chances = m.events.filter(e => isUnblocked(e) && e.type !== 'goal' && (e.xg ?? 0) >= HIGH_DANGER && matchTeamStrength(e, strength));
     const penalties = m.events.filter(e => e.type === 'penalty');
 
-    const yWin = (p: number) => winTop + (1 - winScale(p)) * winH;
     const binMax = Math.max(flowMetric === 'xg' ? 0.2 : 1, ...bins.away, ...bins.home);
     const half = barH / 2;
     const axisY = barTop + half;
@@ -228,9 +213,6 @@ export function Pulse() {
     const raceMax = Math.max(raceMetric === 'xg' ? 1 : 3, races.away[races.away.length - 1][1], races.home[races.home.length - 1][1]);
     const yRace = (v: number) => raceTop + raceH - (v / raceMax) * raceH;
 
-    const winPath = stepPath(win, x, yWin);
-    const winArea = `${winPath}V${yWin(0.5)}H${x(0).toFixed(1)}Z`;
-    const deservedPath = stepPath(deserved, x, yWin);
     const nOT = m.end > 3600 ? Math.ceil((m.end - 3600) / m.otLength) : 0;
     const seams = [1200, 2400, 3600, ...Array.from({ length: Math.max(0, nOT - 1) }, (_, k) => 3600 + (k + 1) * m.otLength)].filter(t => t < domain);
     const periods = [1, 2, 3, ...Array.from({ length: nOT }, (_, k) => 4 + k)];
@@ -435,12 +417,9 @@ export function Pulse() {
         ? flip
             ? { right: W - chipLeft + 10 }
             : { left: chipLeft + 10 }
-        : // Phones: over the bars lane (the win line at the playhead stays clear), on the roomier side of the playhead.
+        : // Phones: over the bars lane, on the roomier side of the playhead.
           { left: chipLeft >= W / 2 ? Math.max(4, chipLeft - 10 - chipW) : Math.min(chipLeft + 10, W - chipW - 4) };
-    const chipTop = compact ? barTop + 2 : winTop + 12;
-    const lastWin = win[win.length - 1][1];
-    let deservedEndY = yWin(finalDeserved) + 4;
-    if (Math.abs(deservedEndY - (yWin(lastWin) + 4)) < 13) deservedEndY += deservedEndY >= yWin(lastWin) + 4 ? 13 - (deservedEndY - yWin(lastWin) - 4) : -13;
+    const chipTop = barTop + 2;
 
     return (
         <div className="panel overflow-hidden">
@@ -521,7 +500,7 @@ export function Pulse() {
                         width="100%"
                         height={H}
                         role="img"
-                        aria-label={`Win probability, ${metricLabel(barMetric)} per minute and running ${metricLabel(raceMetric)} for ${m.teams.away.tri} at ${m.teams.home.tri}, ${goals.length} goals. A table of goals and penalties follows the chart.`}
+                        aria-label={`${metricLabel(barMetric)} per minute and running ${metricLabel(raceMetric)} for ${m.teams.away.tri} at ${m.teams.home.tri}, ${goals.length} goals. A table of goals and penalties follows the chart.`}
                         className="block select-none font-mono tabular-nums"
                         style={{ touchAction: 'pan-y pinch-zoom' }}
                     >
@@ -532,12 +511,6 @@ export function Pulse() {
                                     <line x1={0} y1={0} x2={0} y2={6} stroke={colors[side]} strokeWidth={1.6} strokeOpacity={0.45} />
                                 </pattern>
                             ))}
-                            <clipPath id="pulse-home">
-                                <rect x={0} y={winTop} width={W} height={yWin(0.5) - winTop} />
-                            </clipPath>
-                            <clipPath id="pulse-away">
-                                <rect x={0} y={yWin(0.5)} width={W} height={winTop + winH - yWin(0.5)} />
-                            </clipPath>
                             <clipPath id="pulse-above">
                                 <rect x={0} y={barTop} width={W} height={half} />
                             </clipPath>
@@ -563,7 +536,7 @@ export function Pulse() {
                             return (
                                 <g key={i}>
                                     <title>{`${w.kind === 'pp' ? `${tri} power play` : w.kind === 'extra' ? `${tri} extra attacker` : 'Reduced strength'} ${w.label} · ${clockOf(w.b - w.a)}`}</title>
-                                    <rect x={x0} y={winTop} width={wd} height={raceTop + raceH - winTop} fill={c} opacity={w.kind === 'reduced' ? 0.05 : 0.09} />
+                                    <rect x={x0} y={lanesTop} width={wd} height={raceTop + raceH - lanesTop} fill={c} opacity={w.kind === 'reduced' ? 0.05 : 0.09} />
                                     {w.side ? <rect x={x0} y={w.side === 'home' ? barTop : axisY} width={wd} height={half} fill={`url(#pulse-hatch-${w.side})`} /> : null}
                                     <rect x={x0} y={stripTop} width={wd} height={stripH} rx={2} fill={c} opacity={w.kind === 'reduced' ? 0.35 : 0.9} />
                                     {text ? (
@@ -584,45 +557,8 @@ export function Pulse() {
 
                         {/* Period seams. */}
                         {seams.map(t => (
-                            <line key={t} x1={x(t)} x2={x(t)} y1={winTop} y2={axisTop} className="stroke-line-strong" strokeWidth={1} />
+                            <line key={t} x1={x(t)} x2={x(t)} y1={lanesTop} y2={axisTop} className="stroke-line-strong" strokeWidth={1} />
                         ))}
-
-                        {/* Win probability lane: home at the top, away at the bottom; the leader's half tinted.
-                            Solid = the score model, dashed = deserved (from the shots' xG). */}
-                        <line x1={padL} x2={W - padR} y1={yWin(0.5)} y2={yWin(0.5)} className="stroke-line-strong" strokeDasharray="2 4" />
-                        <path d={winArea} fill={colors.home} opacity={0.2} clipPath="url(#pulse-home)" />
-                        <path d={winArea} fill={colors.away} opacity={0.2} clipPath="url(#pulse-away)" />
-                        {m.events.some(e => e.xg != null) ? <path d={deservedPath} fill="none" className="stroke-model" strokeWidth={1.25} strokeDasharray="3 3" opacity={0.75} /> : null}
-                        <path d={winPath} fill="none" className="stroke-model" strokeWidth={2} strokeLinejoin="round" />
-                        <text x={padL - 6} y={winTop + 10} textAnchor="end" className="fill-fg-3 text-micro uppercase">
-                            Win
-                        </text>
-                        <text x={padL + 4} y={winTop + 11} className="text-micro font-semibold uppercase" fill={ink.home} stroke="var(--surface-1)" strokeWidth={3} paintOrder="stroke">
-                            {m.teams.home.tri}
-                        </text>
-                        <text x={padL + 4} y={winTop + winH - 3} className="text-micro font-semibold uppercase" fill={ink.away} stroke="var(--surface-1)" strokeWidth={3} paintOrder="stroke">
-                            {m.teams.away.tri}
-                        </text>
-                        {/* Puck-drop anchors: a dot where our pregame call starts the line and a tick at the de-vigged market;
-                            their values ride the lane's top row so the line never runs through them. */}
-                        {pg && callSide ? (
-                            <g>
-                                {pg.marketHome != null ? <line x1={padL} x2={padL + 16} y1={yWin(pg.marketHome)} y2={yWin(pg.marketHome)} className="stroke-fg-1" strokeWidth={2} /> : null}
-                                <circle cx={x(0)} cy={yWin(pg.homeWin)} r={3.5} className="fill-model" stroke="var(--surface-1)" strokeWidth={1} />
-                                <text x={padL + 40} y={winTop + 11} className="text-micro" stroke="var(--surface-1)" strokeWidth={3} paintOrder="stroke">
-                                    <tspan className="fill-model font-semibold">PONY {m.teams[callSide].tri} {pctText(Math.max(pg.homeWin, 1 - pg.homeWin))}</tspan>
-                                    {pg.marketHome != null && mktSide ? <tspan className="fill-fg-2"> · MKT {m.teams[mktSide].tri} {pctText(Math.max(pg.marketHome, 1 - pg.marketHome))}</tspan> : null}
-                                </text>
-                            </g>
-                        ) : null}
-                        <text x={W - padR + 6} y={yWin(lastWin) + 4} className="fill-model text-micro font-semibold">
-                            {pctText(Math.max(lastWin, 1 - lastWin))}
-                        </text>
-                        {m.events.some(e => e.xg != null) ? (
-                            <text x={W - padR + 6} y={deservedEndY} className="fill-model text-micro" opacity={0.8}>
-                                xG {pctText(Math.max(finalDeserved, 1 - finalDeserved))}
-                            </text>
-                        ) : null}
 
                         {/* Bars lane: per-minute bars (home above the axis, away below), or the rolling xG share. */}
                         {barMetric === 'share' && sharePath ? (
@@ -693,20 +629,20 @@ export function Pulse() {
                         {/* The stop: a cyan flag on the selected event. */}
                         {sel ? (
                             <g pointerEvents="none">
-                                <line x1={x(sel.t)} x2={x(sel.t)} y1={winTop} y2={axisTop} className="stroke-brand" strokeWidth={1.5} />
-                                <path d={`M${x(sel.t)},${winTop} l7,4 l-7,4z`} className="fill-brand" />
+                                <line x1={x(sel.t)} x2={x(sel.t)} y1={lanesTop} y2={axisTop} className="stroke-brand" strokeWidth={1.5} />
+                                <path d={`M${x(sel.t)},${lanesTop} l7,4 l-7,4z`} className="fill-brand" />
                             </g>
                         ) : null}
                         {/* A held moment (click, tap, keys, shared link). */}
-                        {pinT != null && hover == null ? <line x1={x(pinT)} x2={x(pinT)} y1={winTop} y2={axisTop} className="stroke-fg-1" strokeOpacity={0.7} strokeDasharray="3 3" pointerEvents="none" /> : null}
+                        {pinT != null && hover == null ? <line x1={x(pinT)} x2={x(pinT)} y1={lanesTop} y2={axisTop} className="stroke-fg-1" strokeOpacity={0.7} strokeDasharray="3 3" pointerEvents="none" /> : null}
 
                         {/* Playhead and pointer capture. */}
-                        {hover != null ? <line x1={x(hover)} x2={x(hover)} y1={winTop} y2={axisTop} className="stroke-fg-1" strokeOpacity={0.4} pointerEvents="none" /> : null}
+                        {hover != null ? <line x1={x(hover)} x2={x(hover)} y1={lanesTop} y2={axisTop} className="stroke-fg-1" strokeOpacity={0.4} pointerEvents="none" /> : null}
                         <rect
                             x={padL}
-                            y={winTop}
+                            y={lanesTop}
                             width={plot}
-                            height={axisTop - winTop}
+                            height={axisTop - lanesTop}
                             fill="transparent"
                             onPointerMove={onMove}
                             onPointerDown={onDown}
@@ -769,7 +705,7 @@ export function Pulse() {
                             x={0}
                             y={0}
                             width={W}
-                            height={winTop}
+                            height={lanesTop}
                             fill="transparent"
                             aria-hidden="true"
                             className="pointer-events-none coarse:pointer-events-auto"
@@ -801,7 +737,7 @@ export function Pulse() {
                         />
                     </svg>
                 ) : (
-                    <div className="h-[340px] md:h-[470px]" aria-hidden="true" />
+                    <div className="h-[310px] md:h-[440px]" aria-hidden="true" />
                 )}
 
                 {/* Playhead chip: the moment's clock, score and race values on each team's side, and the win read. */}

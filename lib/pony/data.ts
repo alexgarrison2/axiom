@@ -265,6 +265,8 @@ export interface PonyFilters {
     minGp: number;
     sort: SortKey;
     dir: 'top' | 'bottom';
+    /** Players ranks seasons; Nights ranks single games (best and worst). */
+    view: 'players' | 'nights';
 }
 
 export const DEFAULT_FILTERS: Omit<PonyFilters, 'season'> = {
@@ -280,6 +282,7 @@ export const DEFAULT_FILTERS: Omit<PonyFilters, 'season'> = {
     minGp: 0,
     sort: 'avg',
     dir: 'top',
+    view: 'players',
 };
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -308,6 +311,7 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>, 
         minGp: Number.isInteger(minGp) && minGp > 0 && minGp <= 200 ? minGp : 0,
         sort: pick(g('sort'), ['avg', 'total', 'per60', 'off', 'def'] as const, 'avg'),
         dir: pick(g('dir'), ['top', 'bottom'] as const, 'top'),
+        view: pick(g('view'), ['players', 'nights'] as const, 'players'),
     };
 }
 
@@ -407,6 +411,38 @@ export function leaderboard(data: PonySeason, f: PonyFilters): LeaderRow[] {
     const key = (r: LeaderRow) => (f.sort === 'total' ? r.total : f.sort === 'per60' ? r.per60 : f.sort === 'off' ? r.off : f.sort === 'def' ? r.def : r.avg);
     out.sort((a, b) => (f.dir === 'top' ? key(b) - key(a) : key(a) - key(b)) || b.gp - a.gp);
     return out;
+}
+
+/* ── Nights ────────────────────────────────────────────────────────────── */
+
+/** A night's minimum ice time to count, as on the slate's Pony night: 10 minutes for a skater, 30 for a goalie. */
+const NIGHT_TOI = { skater: 600, goalie: 1800 };
+
+export interface NightGame {
+    row: SkaterGame | GoalieGame;
+    player: PonyPlayer;
+}
+
+/**
+ * Single games that pass the filters, best and worst first (`last` and the
+ * minimum games don't apply to one game), and every night of the season with
+ * a game, oldest first, for stepping through them.
+ */
+export function nightGames(data: PonySeason, f: PonyFilters, n = 10): { best: NightGame[]; worst: NightGame[]; total: number; dates: string[] } {
+    const rows: (SkaterGame | GoalieGame)[] =
+        f.pos === 'G'
+            ? data.goalies.filter(r => r.toi >= NIGHT_TOI.goalie && keep(r, f))
+            : data.skaters.filter(r => r.toi >= NIGHT_TOI.skater && (f.pos === 'all' || r.pos === f.pos) && keep(r, f));
+    const sorted = rows.filter(r => data.players.has(r.player)).sort((a, b) => b.ps - a.ps);
+    const take = (rs: (SkaterGame | GoalieGame)[]) => rs.map(row => ({ row, player: data.players.get(row.player)! }));
+    // A short list (one quiet night) is split, never shown twice.
+    const k = Math.min(n, Math.ceil(sorted.length / 2));
+    return {
+        best: take(sorted.slice(0, k)),
+        worst: take(sorted.slice(sorted.length - Math.min(n, sorted.length - k)).reverse()),
+        total: sorted.length,
+        dates: [...new Set([...data.games.values()].map(g => g.date))].sort(),
+    };
 }
 
 /** One player's games in a season, oldest first. */

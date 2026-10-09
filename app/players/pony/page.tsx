@@ -5,7 +5,8 @@ import { LedWord } from '@/components/ui/led-word';
 import { PlayersTabs } from '@/components/players/PlayersTabs';
 import { PonyFilters } from '@/components/pony/PonyFilters';
 import { LeaderTable } from '@/components/pony/LeaderTable';
-import { leaderboard, loadPonySeason, parseFilters, ponySeasons } from '@/lib/pony/data';
+import { PonyNights } from '@/components/pony/PonyNights';
+import { leaderboard, loadPonySeason, nightGames, parseFilters, ponySeasons } from '@/lib/pony/data';
 
 export const metadata: Metadata = {
     title: 'Pony Score leaders',
@@ -21,14 +22,26 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
     const seasons = ponySeasons();
     const f = parseFilters(sp, seasons);
     const data = f.season ? loadPonySeason(f.season) : null;
-    const rows = data ? leaderboard(data, f) : [];
+    const nights = f.view === 'nights';
+    const rows = data && !nights ? leaderboard(data, f) : [];
+    const games = data && nights ? nightGames(data, f) : null;
     const n = Math.min(rows.length, Math.max(PAGE, Number(Array.isArray(sp.n) ? sp.n[0] : sp.n) || PAGE));
     const dates = data && data.games.size ? (() => {
         const ds = [...data.games.values()].map(g => g.date).sort();
         return { min: ds[0], max: ds[ds.length - 1] };
     })() : null;
-    const more = new URLSearchParams(Object.entries(sp).flatMap(([k, v]) => (v == null ? [] : (Array.isArray(v) ? v : [v]).map(x => [k, x] as [string, string]))));
+    const params = () => new URLSearchParams(Object.entries(sp).flatMap(([k, v]) => (v == null ? [] : (Array.isArray(v) ? v : [v]).map(x => [k, x] as [string, string]))));
+    const more = params();
     more.set('n', String(n + PAGE));
+    const href = (patch: Record<string, string | null>) => {
+        const q = params();
+        for (const [k, v] of Object.entries(patch)) {
+            if (v == null) q.delete(k);
+            else q.set(k, v);
+        }
+        return `/players/pony${q.size ? `?${q}` : ''}`;
+    };
+    const who = f.pos === 'G' ? 'goalies' : f.pos === 'F' ? 'forwards' : f.pos === 'D' ? 'defencemen' : 'players';
 
     return (
         <main className="pb-tabbar">
@@ -45,16 +58,16 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
                         <PonyFilters seasons={seasons} dates={dates} />
                     </Suspense>
                     <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-micro uppercase tracking-label text-fg-3">
-                        <span className="text-fg-2">
-                            {rows.length} {f.pos === 'G' ? 'goalies' : f.pos === 'F' ? 'forwards' : f.pos === 'D' ? 'defencemen' : 'players'}
-                        </span>
+                        <span className="text-fg-2">{games ? `${games.total} games · ${f.pos === 'G' ? '30' : '10'}+ min` : `${rows.length} ${who}`}</span>
                         <span>{data ? `${data.games.size} games · ${seasonLabel(f.season)}` : 'No games yet'}</span>
                         <span className="max-sm:order-1 max-sm:flex-1 max-sm:basis-48">Goals per game above an average player at his position</span>
                         <Link href="/methodology#pony-score" className="ml-auto underline-offset-4 max-sm:order-2 hover:text-fg-1 hover:underline coarse:py-3">
                             Method
                         </Link>
                     </p>
-                    {rows.length ? (
+                    {games ? (
+                        <PonyNights best={games.best} worst={games.worst} dates={games.dates} from={f.from} to={f.to} href={href} />
+                    ) : rows.length ? (
                         <LeaderTable rows={rows.slice(0, n)} goalies={f.pos === 'G'} sort={f.sort} />
                     ) : (
                         <p className="py-10 text-center text-caption text-fg-3">No player matches these filters.</p>

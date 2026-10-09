@@ -277,29 +277,6 @@ export function winModel(m: GameModel): WinModel {
     };
 }
 
-/** Home win probability as a step series: every 30s and at every goal. */
-export function winSeries(m: GameModel): [number, number][] {
-    const wm = winModel(m);
-    const goals = m.events.filter(e => e.type === 'goal');
-    const pts: [number, number][] = [];
-    const end = Math.max(m.end, 1);
-    const lead = (t: number) => goals.filter(g => g.t <= t).reduce((d, g) => d + (g.side === 'home' ? 1 : -1), 0);
-    const ts = new Set<number>();
-    for (let t = 0; t < Math.min(end, 3600); t += 30) ts.add(t);
-    for (const g of goals) {
-        ts.add(Math.max(0, g.t - 0.01));
-        ts.add(g.t);
-    }
-    ts.add(end);
-    for (const t of [...ts].sort((a, b) => a - b)) pts.push([t, wm.at(t, lead(t))]);
-    if (m.state === 'final') {
-        const hs = m.teams.home.score;
-        const as = m.teams.away.score;
-        pts.push([end, hs > as ? 1 : 0]);
-    }
-    return pts;
-}
-
 export interface GoalSwing {
     event: GameEvent;
     before: number;

@@ -57,10 +57,24 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
     const clear = () => start(() => router.replace(`${pathname}${get('season') ? `?season=${get('season')}` : ''}`, { scroll: false }));
     const active = ['from', 'to', 'last', 'venue', 'rest', 'result', 'vs', 'team', 'gp'].some(k => sp.has(k));
     const pos = get('pos', 'all');
+    // Nights rank single games: order, ranking, last N and minimum games don't apply.
+    const nights = get('view') === 'nights';
 
     return (
         <div className={cn('flex flex-col gap-3 transition-opacity', pending && 'opacity-60')} aria-busy={pending}>
             <div className="flex flex-wrap items-center gap-2">
+                <Segmented
+                    label="View"
+                    size="sm"
+                    value={nights ? 'nights' : 'players'}
+                    onChange={v => set({ view: v === 'players' ? null : v })}
+                    className="max-sm:flex max-sm:w-full"
+                    optionClassName="px-2.5 max-sm:flex-1"
+                    options={[
+                        { value: 'players', label: 'Players' },
+                        { value: 'nights', label: 'Nights' },
+                    ]}
+                />
                 {/* Phones: position and rank fill a row each, then order beside the filters button. */}
                 <Segmented
                     label="Position"
@@ -76,35 +90,39 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
                         { value: 'G', label: 'Goalies' },
                     ]}
                 />
-                <Segmented
-                    label="Order"
-                    size="sm"
-                    className="max-sm:order-1"
-                    value={get('dir', 'top')}
-                    onChange={v => set({ dir: v === 'top' ? null : v })}
-                    optionClassName="px-2.5"
-                    options={[
-                        { value: 'top', label: 'Top' },
-                        { value: 'bottom', label: 'Bottom' },
-                    ]}
-                />
-                <Segmented
-                    label="Rank by"
-                    size="sm"
-                    value={get('sort', 'avg')}
-                    onChange={v => set({ sort: v === 'avg' ? null : v })}
-                    className="max-sm:flex max-sm:w-full"
-                    optionClassName="px-2.5 max-sm:flex-1 max-sm:px-1"
-                    options={[
-                        { value: 'avg', label: short('Per game', '/GP'), ariaLabel: 'Per game' },
-                        { value: 'total', label: 'Total' },
-                        { value: 'per60', label: short('Per 60', '/60'), ariaLabel: 'Per 60' },
-                        ...(pos === 'G' ? [] : [
-                            { value: 'off', label: short('Offence', 'Off'), ariaLabel: 'Offence' },
-                            { value: 'def', label: short('Defence', 'Def'), ariaLabel: 'Defence' },
-                        ]),
-                    ]}
-                />
+                {nights ? null : (
+                    <>
+                        <Segmented
+                            label="Order"
+                            size="sm"
+                            className="max-sm:order-1"
+                            value={get('dir', 'top')}
+                            onChange={v => set({ dir: v === 'top' ? null : v })}
+                            optionClassName="px-2.5"
+                            options={[
+                                { value: 'top', label: 'Top' },
+                                { value: 'bottom', label: 'Bottom' },
+                            ]}
+                        />
+                        <Segmented
+                            label="Rank by"
+                            size="sm"
+                            value={get('sort', 'avg')}
+                            onChange={v => set({ sort: v === 'avg' ? null : v })}
+                            className="max-sm:flex max-sm:w-full"
+                            optionClassName="px-2.5 max-sm:flex-1 max-sm:px-1"
+                            options={[
+                                { value: 'avg', label: short('Per game', '/GP'), ariaLabel: 'Per game' },
+                                { value: 'total', label: 'Total' },
+                                { value: 'per60', label: short('Per 60', '/60'), ariaLabel: 'Per 60' },
+                                ...(pos === 'G' ? [] : [
+                                    { value: 'off', label: short('Offence', 'Off'), ariaLabel: 'Offence' },
+                                    { value: 'def', label: short('Defence', 'Def'), ariaLabel: 'Defence' },
+                                ]),
+                            ]}
+                        />
+                    </>
+                )}
                 {active ? (
                     <button
                         type="button"
@@ -138,7 +156,7 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
                         ))}
                     </select>
                 </Field>
-                <Field label="Games">
+                <Field label="Games" className={cn(nights && 'hidden')}>
                     <select className={SELECT} value={get('last', 'all')} onChange={e => set({ last: e.target.value })}>
                         <option value="all">All</option>
                         {[5, 10, 20, 40].map(n => (
@@ -224,7 +242,7 @@ export function PonyFilters({ seasons, dates }: { seasons: string[]; dates: { mi
                     />
                 </Field>
             </div>
-            <div className={cn('flex-wrap items-center gap-2 text-micro uppercase tracking-label text-fg-3 sm:flex', open ? 'flex' : 'hidden [@media(max-height:500px)_and_(max-width:1023px)]:hidden')}>
+            <div className={cn('flex-wrap items-center gap-2 text-micro uppercase tracking-label text-fg-3 sm:flex', open ? 'flex' : 'hidden [@media(max-height:500px)_and_(max-width:1023px)]:hidden', nights && 'sm:hidden')}>
                 <span>Min games</span>
                 {[0, 3, 5, 10, 20, 40].map(n => (
                     <button

@@ -502,17 +502,18 @@ export default function MethodologyPage() {
 
                         <Section id="game-story" index={++i} title="Game story">
                             <p>
-                                Every finished or live game has a page with a <strong>story</strong> chart. The solid magenta line is the home
-                                team&apos;s win probability from the <strong>score and the clock</strong>: it starts at our frozen pregame call and moves
-                                only when a goal goes in, so it stays flat through a power play or a run of shots. The dashed magenta line is the
-                                <strong> deserved</strong> win probability: every unblocked shot so far counted as a chance to score at its pony xG, with a
-                                level game split evenly. Where the two lines part, finishing and goaltending made the difference. The scale stretches
-                                near 0% and 100% so late movement in a lopsided game stays visible.
+                                Every finished or live game has a page with a <strong>story</strong> chart: goals pinned across the top, per-minute
+                                bars (home above the line, away below) and the running race underneath. Moving the playhead shows the score and the
+                                home team&apos;s win probability at that moment, from the <strong>score and the clock</strong>: it starts at our frozen
+                                pregame call and moves only when a goal goes in. Next to it sits the <strong>deserved</strong> win probability: every
+                                unblocked shot so far counted as a chance to score at its pony xG, with a level game split evenly. Where the two part,
+                                finishing and goaltending made the difference.
                             </p>
                             <p>
-                                At puck drop the chart marks our call (PONY) and the de-vigged closing market (MKT). The coloured blocks in the strength
-                                row belong to the team with the extra skater (5v4, 5v3, 6v5 with the goalie pulled); amber ticks mark penalty calls. Dots
-                                at the edges of the bar lane are chances worth at least 0.20 xG that did not go in. The
+                                Under the chart sit our call, the de-vigged closing market, the xG totals and the goal that swung the game most. The
+                                coloured blocks in the strength row belong to the team with the extra skater (5v4, 5v3, 6v5 with the goalie pulled);
+                                amber ticks mark penalty calls. Dots at the edges of the bar lane are chances worth at least 0.20 xG that did not go
+                                in. The
                                 Share view replaces the bars with a rolling five-minute xG share.
                             </p>
                         </Section>
