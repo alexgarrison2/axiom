@@ -224,7 +224,11 @@ function TeamForm({ s, entries, scale, color, outs }: { s: SideData; entries: Fo
                         {rec.w}-{rec.l}-{rec.otl} <span className="text-micro uppercase tracking-wide text-fg-3">L{entries!.length}</span>
                     </span>
                 ) : null}
-                {rest ? <span className="ml-auto text-micro uppercase tracking-wide text-fg-3">{rest}</span> : null}
+                {rest ? (
+                    <a href={termHref('rest') ?? undefined} className="ml-auto text-micro uppercase tracking-wide text-fg-3 underline decoration-dotted underline-offset-4 hover:text-fg-1">
+                        {rest}
+                    </a>
+                ) : null}
             </div>
             {entries ? (
                 entries.length ? (
