@@ -1,10 +1,12 @@
+import * as React from 'react';
 import Link from 'next/link';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { teamPalette } from '@/components/ui/team-color';
 import { cn } from '@/lib/utils';
 import { SortLink } from '@/components/pony/SortLink';
 import type { LeaderRow, SortKey } from '@/lib/pony/data';
-import { PARTS, signed, stack } from '@/lib/pony/parts';
+import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
+import type { GsPart } from '@/lib/game/analytics';
 
 /**
  * Pony Score leaderboard rows: rank, player, games, minutes, the score per
@@ -47,6 +49,32 @@ export function Form({ values, reach = 1.5 }: { values: number[]; reach?: number
 
 const TD = 'px-2 text-right tabular-nums';
 
+const SHORT: Record<string, string> = { Production: 'Prod', 'Play driving': 'Drive', 'Special teams': 'ST', Usage: 'Use' };
+
+/** One side's open columns: its sum, then the four parts, each headed by its bar colour. */
+function PartHeads({ side, head }: { side: 'off' | 'def'; head: (key: SortKey, label: React.ReactNode, title?: string, className?: string) => React.ReactNode }) {
+    return (
+        <>
+            {head(side, side === 'off' ? 'Off' : 'Def', side === 'off' ? 'Offence per game' : 'Defence per game', 'border-l border-line')}
+            {IDEAS.map(pair => {
+                const k: GsPart = pair[side === 'off' ? 0 : 1];
+                return (
+                    <React.Fragment key={k}>
+                        {head(
+                            k,
+                            <span className="inline-flex items-center gap-1">
+                                <span aria-hidden="true" className="h-2 w-2 rounded-[2px]" style={{ background: PARTS[k].color }} />
+                                {SHORT[PARTS[k].label]}
+                            </span>,
+                            `${side === 'off' ? 'Offence' : 'Defence'}: ${PARTS[k].label.toLowerCase()} per game`,
+                        )}
+                    </React.Fragment>
+                );
+            })}
+        </>
+    );
+}
+
 type Metric = 'avg' | 'total' | 'per60' | 'off' | 'def';
 const METRICS: Record<Metric, { label: string; goalie: string; title: string; value: (r: LeaderRow) => number; digits: number }> = {
     avg: { label: 'Pony/GP', goalie: 'GSAx/GP', title: 'Per game, in goals', value: r => r.avg, digits: 2 },
@@ -60,6 +88,8 @@ const METRICS: Record<Metric, { label: string; goalie: string; title: string; va
  * Per game leads (big, right after the name); ranking by offence or defence
  * puts that column ahead of it. Every number column sorts: a click ranks by
  * it, a second click flips the order (both through the URL, the server sorts).
+ * Skaters: the Breakdown header opens the score's parts as columns, offence
+ * and defence each with its sum, and closes them again.
  */
 export function LeaderTable({
     rows,
@@ -68,6 +98,8 @@ export function LeaderTable({
     sort = 'avg',
     dir = 'top',
     sortHref,
+    expanded = false,
+    expandHref,
 }: {
     rows: LeaderRow[];
     start?: number;
@@ -75,9 +107,15 @@ export function LeaderTable({
     sort?: SortKey;
     dir?: 'top' | 'bottom';
     sortHref: (key: SortKey) => string;
+    /** The parts are open as columns. */
+    expanded?: boolean;
+    /** Opens or closes them. */
+    expandHref?: string;
 }) {
-    const split = sort === 'off' || sort === 'def' ? METRICS[sort] : null;
-    const head = (key: SortKey, label: string, title?: string, className?: string) => (
+    const open = expanded && !goalies;
+    // Open parts carry their own Off and Def columns, so neither leads then.
+    const split = !open && (sort === 'off' || sort === 'def') ? METRICS[sort] : null;
+    const head = (key: SortKey, label: React.ReactNode, title?: string, className?: string) => (
         <SortLink href={sortHref(key)} direction={sort === key ? (dir === 'top' ? 'desc' : 'asc') : null} label={label} title={title} className={className} />
     );
     const num = (key: SortKey) => cn(TD, sort === key ? 'font-semibold text-fg-1' : 'text-fg-2');
@@ -104,6 +142,17 @@ const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:
         <ScrollRegion label="Pony Score leaders" stickyStart>
             <table className="w-full min-w-[40rem] md:min-w-[56rem] border-collapse text-caption">
                 <thead>
+                    {open ? (
+                        <tr>
+                            <th colSpan={(split ? 9 : 8)} aria-hidden="true" />
+                            {(['Offence', 'Defence'] as const).map(g => (
+                                <th key={g} colSpan={5} scope="colgroup" className="border-l border-line px-2 pt-2 text-left text-micro font-semibold uppercase tracking-label text-fg-2">
+                                    {g}
+                                </th>
+                            ))}
+                            <th colSpan={2} aria-hidden="true" />
+                        </tr>
+                    ) : null}
                     <tr className="border-b border-line">
                         <th className={cn(TH, 'w-10 max-sm:w-7 max-sm:px-1')}>#</th>
                         <th className={cn(TH, PIN, PIN_EDGE, 'text-left')}>Player</th>
@@ -121,7 +170,29 @@ const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:
                         )}
                         {head('total', goalies ? METRICS.total.goalie : METRICS.total.label, METRICS.total.title)}
                         {head('per60', METRICS.per60.label, METRICS.per60.title)}
-                        <th className={cn(TH, 'w-44 text-center')}>Breakdown</th>
+                        <th className={cn(TH, 'w-44 p-0 text-center')}>
+                            {expandHref && !goalies ? (
+                                <Link
+                                    href={expandHref}
+                                    scroll={false}
+                                    aria-expanded={open}
+                                    title={open ? 'Hide the parts' : 'Show the parts as columns'}
+                                    className="inline-flex min-h-8 w-full items-center justify-center gap-1.5 px-2 uppercase hover:text-fg-1 coarse:min-h-11"
+                                >
+                                    Breakdown
+                                    <svg viewBox="0 0 8 8" className={cn('h-2 w-2 transition-transform', open && 'rotate-180')} aria-hidden="true">
+                                        <path d="M2.5 1 6 4 2.5 7" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                                    </svg>
+                                </Link>
+                            ) : (
+                                'Breakdown'
+                            )}
+                        </th>
+                        {open
+                            ? (['off', 'def'] as const).map(side => (
+                                  <PartHeads key={side} side={side} head={head} />
+                              ))
+                            : null}
                         <th className={cn(TH, 'text-center')}>Last 10</th>
                         {head('best', 'Best', 'Best single game', '[&_button]:justify-start')}
                     </tr>
@@ -168,6 +239,21 @@ const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:
                                 <td className="px-2">
                                     <Breakdown row={r} reach={reach} />
                                 </td>
+                                {open
+                                    ? (['off', 'def'] as const).map(side => (
+                                          <React.Fragment key={side}>
+                                              <td className={cn(num(side), 'border-l border-line/60')}>{signed(side === 'off' ? r.off : r.def)}</td>
+                                              {IDEAS.map(pair => {
+                                                  const k = pair[side === 'off' ? 0 : 1];
+                                                  return (
+                                                      <td key={k} className={cn(num(k), sort !== k && r.parts && Math.abs(r.parts[k]) < 0.005 && 'text-fg-3')}>
+                                                          {r.parts ? signed(r.parts[k]) : '—'}
+                                                      </td>
+                                                  );
+                                              })}
+                                          </React.Fragment>
+                                      ))
+                                    : null}
                                 <td className="px-2">
                                     <span className="flex justify-center">
                                         <Form values={r.form} />

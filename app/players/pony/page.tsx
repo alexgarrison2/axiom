@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { GS_PARTS } from '@/lib/game/analytics';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { LedWord } from '@/components/ui/led-word';
@@ -41,6 +42,7 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
         }
         return `/players/pony${q.size ? `?${q}` : ''}`;
     };
+    const expanded = (Array.isArray(sp.parts) ? sp.parts[0] : sp.parts) === '1';
     const who = f.pos === 'G' ? 'goalies' : f.pos === 'F' ? 'forwards' : f.pos === 'D' ? 'defencemen' : 'players';
 
     return (
@@ -74,6 +76,9 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
                             sort={f.sort}
                             dir={f.dir}
                             sortHref={k => href(k === f.sort ? { dir: f.dir === 'top' ? 'bottom' : null } : { sort: k === 'avg' ? null : k, dir: null })}
+                            expanded={expanded}
+                            // Closing the parts drops a sort by one of them (its column goes away).
+                            expandHref={href(expanded ? { parts: null, ...((GS_PARTS as string[]).includes(f.sort) ? { sort: null, dir: null } : {}) } : { parts: '1' })}
                         />
                     ) : (
                         <p className="py-10 text-center text-caption text-fg-3">No player matches these filters.</p>

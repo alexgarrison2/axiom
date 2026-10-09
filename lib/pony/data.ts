@@ -249,7 +249,7 @@ export function loadPonySeason(season: string): PonySeason | null {
 /* ── Leaderboard ───────────────────────────────────────────────────────── */
 
 export type PosFilter = 'all' | 'F' | 'D' | 'G';
-export const SORT_KEYS = ['avg', 'total', 'per60', 'off', 'def', 'gp', 'toi', 'sa', 'sv', 'xga', 'best'] as const;
+export const SORT_KEYS = ['avg', 'total', 'per60', 'off', 'def', 'gp', 'toi', 'sa', 'sv', 'xga', 'best', 'oProd', 'oDrive', 'oSpecial', 'oUsage', 'dProd', 'dDrive', 'dSpecial', 'dUsage'] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
 export interface PonyFilters {
@@ -422,6 +422,7 @@ export function leaderboard(data: PonySeason, f: PonyFilters): LeaderRow[] {
         sv,
         xga: r => r.goalie?.xga ?? 0,
         best: r => r.best?.ps ?? 0,
+        ...(Object.fromEntries(GS_PARTS.map(k => [k, (r: LeaderRow) => r.parts?.[k] ?? 0])) as Record<GsPart, (r: LeaderRow) => number>),
     };
     const key = KEY[f.sort];
     out.sort((a, b) => (f.dir === 'top' ? key(b) - key(a) : key(a) - key(b)) || b.gp - a.gp);

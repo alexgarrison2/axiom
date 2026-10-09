@@ -15,7 +15,7 @@ const SELECT =
     'h-8 min-w-0 rounded-control border border-line bg-surface-1 px-2 text-caption uppercase tracking-wide text-fg-1 hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand coarse:h-11';
 
 /** Sorts only one table has: switching position drops them. */
-const SKATER_ONLY = ['off', 'def', 'toi'];
+const SKATER_ONLY = ['off', 'def', 'toi', 'oProd', 'oDrive', 'oSpecial', 'oUsage', 'dProd', 'dDrive', 'dSpecial', 'dUsage'];
 const GOALIE_ONLY = ['sa', 'sv', 'xga'];
 
 const seasonLabel = (s: string) => `${s.slice(0, 4)}-${s.slice(6)}`;
