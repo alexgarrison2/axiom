@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import type { Prediction } from '@/types/prediction';
 import LineupGrid from '@/components/LineupGrid';
-import PlayerNewsList, { listedNews } from '@/components/PlayerNewsList';
-import type { PlayerNewsItem } from '@/utils/data';
 import { Segmented } from '@/components/ui/segmented';
 import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { SEASON_ID } from '@/lib/season';
@@ -28,30 +26,6 @@ function impactTag(season: string | null | undefined, home: boolean) {
     );
 }
 
-/** A team's player news under its lineup: open on desktop, one tap away on phones and tablets. */
-function TeamNews({ news, tri }: { news: PlayerNewsItem[]; tri: string }) {
-    // Client-only (the card mounts its details on tap), so the viewport is known on first render.
-    const [open] = useState(() => typeof window === 'undefined' || typeof window.matchMedia !== 'function' || window.matchMedia('(min-width: 1024px)').matches);
-    // The count is what the list shows (it leaves out goalie-start items).
-    const count = listedNews(news).length;
-    if (!count) return null;
-    return (
-        <details open={open} className="group rounded-[10px] border border-line px-3 py-1.5">
-            <summary className="flex min-h-7 cursor-pointer list-none items-center justify-between coarse:min-h-11">
-                <span className="label">
-                    News <span className="text-fg-2">{count}</span>
-                </span>
-                <span aria-hidden="true" className="text-fg-3 transition-transform group-open:rotate-180">
-                    ▾
-                </span>
-            </summary>
-            <div className="mt-2 pb-1.5">
-                <PlayerNewsList news={news} teamTriCode={tri} />
-            </div>
-        </details>
-    );
-}
-
 /** A team toggle segment: the crest, as large as the segment allows; the other team's crest is dimmed. */
 function Logo({ src, on }: { src: string; on: boolean }) {
     // eslint-disable-next-line @next/next/no-img-element
@@ -59,9 +33,9 @@ function Logo({ src, on }: { src: string; on: boolean }) {
 }
 
 /**
- * Both projected lineups, each team's goalies, injuries and player news. A phone-width card
- * switches between the teams with a crest toggle (news follows the team);
- * a wide card shows them side by side, each with its own news.
+ * Both projected lineups, each team's goalies and injuries. A phone-width card
+ * switches between the teams with a crest toggle; a wide card shows them side by side.
+ * Player news has its own tab.
  */
 export function LineupsPanel({ p, state }: { p: Prediction; state: DetailsState }) {
     const now = new Date();
@@ -84,18 +58,15 @@ export function LineupsPanel({ p, state }: { p: Prediction; state: DetailsState 
                             ]}
                         />
                     </div>
-                    {/* Wide card: both teams share three rows (lineup, goalies, news), so each section starts at the same height. */}
-                    <div className="grid min-w-0 grid-cols-1 gap-3 cq-lg:grid-cols-2 cq-lg:grid-rows-[auto_auto_auto]">
+                    {/* Wide card: both teams share two rows (lineup, goalies), so each section starts at the same height. */}
+                    <div className="grid min-w-0 grid-cols-1 gap-3 cq-lg:grid-cols-2 cq-lg:grid-rows-[auto_auto]">
                         {(['away', 'home'] as const).map(sd => (
-                            <div key={sd} className={cn('flex min-w-0 flex-col gap-3 cq-lg:row-span-3 cq-lg:grid cq-lg:grid-rows-subgrid', side !== sd && 'hidden cq-lg:grid')}>
+                            <div key={sd} className={cn('flex min-w-0 flex-col gap-3 cq-lg:row-span-2 cq-lg:grid cq-lg:grid-rows-subgrid', side !== sd && 'hidden cq-lg:grid')}>
                                 <div className="min-w-0">
                                     <LineupGrid team={p[sd].team} d={d[sd]} now={now} seasonTag={impactTag(d.impactSeason, sd === 'home')} titleWideOnly />
                                 </div>
                                 <div className="min-w-0">
                                     <GoalieSection p={p} state={state} side={sd} />
-                                </div>
-                                <div className="min-w-0">
-                                    <TeamNews news={d[sd].news} tri={p[sd].team.triCode} />
                                 </div>
                             </div>
                         ))}

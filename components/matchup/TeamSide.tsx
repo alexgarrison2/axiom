@@ -104,6 +104,7 @@ export function TeamSide({
     faded,
     chip,
     showStats = true,
+    compact = false,
 }: {
     side: Side;
     s: SideData;
@@ -111,12 +112,14 @@ export function TeamSide({
     faded?: boolean;
     chip?: CardChip | null;
     showStats?: boolean;
+    /** The slate pane's header: a smaller crest beside the name. */
+    compact?: boolean;
 }) {
     const home = side === 'home';
     const st = goalieStatus(s.goalieStatus);
     const src = s.goalieStatusSource === 'DFO' ? 'DailyFaceoff' : s.goalieStatusSource;
     return (
-        <div className={cn(styles.side, home && styles.home)}>
+        <div className={cn(styles.side, home && styles.home, compact && styles.compact)}>
             <span className={styles.crestSlot}>
                 <a href={`/teams/${s.team.triCode}`} aria-label={`${s.team.name} team page`} className={cn(styles.crest, 'relative z-10 block rounded-full')}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}

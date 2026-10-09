@@ -294,118 +294,189 @@ export function MatchupCard({ p, live, implication, playoffOdds, highlighted, se
                     </div>
                 </div>
 
-                {/* Teams. The h2 is the matchup name only: it holds the expand toggle, whose hit area stretches over the card summary. */}
-                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 font-mono cq-sm:gap-2">
-                    <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!(scored || (started && scorePending))} chip={awayChip} />
-                    {finalText ? (
-                        <span id={resultId} className="sr-only">
-                            {finalText}
-                        </span>
-                    ) : null}
-                    <h2 className="flex justify-center">
-                        {phase === 'final' ? (
-                            <Link
-                                href={`/games/${p.id}`}
-                                className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
-                            >
-                                <span id={titleId} className="sr-only">
-                                    {title}
+                {pinned ? (
+                    // Slate pane: the teams flank one centre column (score when there is one, the win bar, the prices,
+                    // projected goals), so the whole verdict fits in one band above the tabs. The goalies' numbers
+                    // live in the Preview tab's duel and the Lines tab, not under their names here.
+                    <div className="grid grid-cols-[minmax(0,12.5rem)_minmax(0,1fr)_minmax(0,12.5rem)] items-center gap-4 font-mono [@container(min-width:58rem)]:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,15rem)] [@container(min-width:58rem)]:gap-6">
+                        <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={false} chip={awayChip} compact />
+                        <div className="flex min-w-0 flex-col gap-2">
+                            {finalText ? (
+                                <span id={resultId} className="sr-only">
+                                    {finalText}
                                 </span>
-                                {scored ? (
-                                    <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
-                                        <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
-                                        <span className="text-[0.7em] text-fg-disabled">-</span>
-                                        <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
-                                    </span>
-                                ) : (
-                                    <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
-                                )}
-                                <span className="sr-only">, game page</span>
-                            </Link>
-                        ) : pinned ? (
-                            <span className="min-h-6 min-w-4 px-0.5 text-center">
-                                <span id={titleId} className="sr-only">
-                                    {title}
-                                </span>
-                                {scored ? (
-                                    <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
-                                        <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
-                                        <span className="text-[0.7em] text-fg-disabled">-</span>
-                                        <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
-                                    </span>
-                                ) : (
-                                    <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
-                                )}
-                            </span>
-                        ) : (
-                            <button
-                                ref={toggleRef}
-                                type="button"
-                                aria-expanded={open}
-                                aria-controls={detailsId}
-                                onClick={() => setOpen(o => !o)}
-                                className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
-                            >
-                                <span id={titleId} className="sr-only">
-                                    {title}
-                                </span>
-                                {scored ? (
-                                    <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
-                                        <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
-                                        <span className="text-[0.7em] text-fg-disabled">-</span>
-                                        <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
-                                    </span>
-                                ) : (
-                                    // Drawn by CSS so the heading's text (and any name built from it) never holds "@".
-                                    <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
-                                )}
-                                <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
-                            </button>
-                        )}
-                    </h2>
-                    <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!(scored || (started && scorePending))} chip={homeChip} />
-                </div>
+                            ) : null}
+                            <h2 className={scored ? 'flex justify-center' : 'sr-only'}>
+                                {/* A final's score opens the game page. */}
+                                {(() => {
+                                    const body = (
+                                        <>
+                                            <span id={titleId} className="sr-only">
+                                                {title}
+                                            </span>
+                                            {scored ? (
+                                                <span aria-hidden="true" className="num-score flex items-center gap-2.5 text-[34px] leading-none">
+                                                    <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
+                                                    <span className="text-[0.7em] text-fg-disabled">-</span>
+                                                    <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                                                </span>
+                                            ) : null}
+                                        </>
+                                    );
+                                    return phase === 'final' ? (
+                                        <Link href={`/games/${p.id}`} className="rounded-control px-1 hover:text-brand">
+                                            {body}
+                                            <span className="sr-only">, game page</span>
+                                        </Link>
+                                    ) : (
+                                        body
+                                    );
+                                })()}
+                            </h2>
+                            {forecast ? (
+                                <WinBar
+                                    away={a}
+                                    home={h}
+                                    pAway={forecast.away / 100}
+                                    market={market}
+                                    model={model}
+                                    awayColor={colors.away}
+                                    homeColor={colors.home}
+                                    size="md"
+                                    dimmed={started}
+                                    digits={coinFlipFinal(p, phase) ? 1 : 0}
+                                    label={started ? 'Pregame win probability' : 'Our forecast win probability'}
+                                    className="pointer-events-none"
+                                />
+                            ) : (
+                                <div className="flex h-[50px] items-center justify-center rounded-bar border border-dashed border-line bg-track">
+                                    <span className="label">{started ? 'No pick' : 'No forecast'}</span>
+                                </div>
+                            )}
 
-                {forecast ? (
-                    <WinBar
-                        away={a}
-                        home={h}
-                        pAway={forecast.away / 100}
-                        market={market}
-                        model={model}
-                        awayColor={colors.away}
-                        homeColor={colors.home}
-                        size="lg"
-                        dimmed={started}
-                        digits={coinFlipFinal(p, phase) ? 1 : 0}
-                        label={started ? 'Pregame win probability' : 'Our forecast win probability'}
-                        className="pointer-events-none"
-                    />
-                ) : (
-                    <div className="flex h-[50px] items-center justify-center rounded-bar border border-dashed border-line bg-track">
-                        <span className="label">{started ? 'No pick' : 'No forecast'}</span>
+                            {/* Footer: tricode + book odds under each end of the bar, our odds and projected goals under them, the flag in the middle.
+                                A phone-width card has no room for the +EV pill between the two odds stacks: it drops to its own row under them. */}
+                            <div
+                                className={cn(
+                                    'grid items-center gap-2',
+                                    betRow
+                                        ? 'grid-cols-2 gap-y-2.5 [@container(min-width:26rem)]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] [@container(min-width:26rem)]:gap-y-2'
+                                        : 'grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]',
+                                )}
+                            >
+                                <FooterSide p={p} side="away" phase={phase} />
+                                <span className={cn('text-center', betRow && 'col-span-2 row-start-2 [@container(min-width:26rem)]:col-span-1 [@container(min-width:26rem)]:row-start-auto')}>
+                                    <Flag p={p} phase={phase} live={live} />
+                                </span>
+                                <FooterSide p={p} side="home" phase={phase} />
+                            </div>
+                            {open && phase !== 'final' && hasPrediction(p) && p.away.xg != null && p.home.xg != null ? (
+                                <GoalsBar away={a} home={h} ax={p.away.xg} hx={p.home.xg} line={fmtLine(p.markets?.total?.line ?? p.totalLine)} colors={colors} compact />
+                            ) : null}
+                        </div>
+                        <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={false} chip={homeChip} compact />
                     </div>
-                )}
+                ) : (
+                    <>
+                    {/* Teams. The h2 is the matchup name only: it holds the expand toggle, whose hit area stretches over the card summary. */}
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 font-mono cq-sm:gap-2">
+                        <TeamSide side="away" s={p.away} opp={h} faded={awayLost} showStats={!(scored || (started && scorePending))} chip={awayChip} />
+                        {finalText ? (
+                            <span id={resultId} className="sr-only">
+                                {finalText}
+                            </span>
+                        ) : null}
+                        <h2 className="flex justify-center">
+                            {phase === 'final' ? (
+                                <Link
+                                    href={`/games/${p.id}`}
+                                    className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                                >
+                                    <span id={titleId} className="sr-only">
+                                        {title}
+                                    </span>
+                                    {scored ? (
+                                        <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
+                                            <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
+                                            <span className="text-[0.7em] text-fg-disabled">-</span>
+                                            <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                                        </span>
+                                    ) : (
+                                        <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
+                                    )}
+                                    <span className="sr-only">, game page</span>
+                                </Link>
+                            ) : (
+                                <button
+                                    ref={toggleRef}
+                                    type="button"
+                                    aria-expanded={open}
+                                    aria-controls={detailsId}
+                                    onClick={() => setOpen(o => !o)}
+                                    className="min-h-6 min-w-4 rounded-control px-0.5 text-center after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-card focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                                >
+                                    <span id={titleId} className="sr-only">
+                                        {title}
+                                    </span>
+                                    {scored ? (
+                                        <span aria-hidden="true" className="num-score flex items-center gap-1.5 text-[30px] leading-none cq-md:gap-2.5 cq-md:text-[40px]">
+                                            <span className={awayLost ? 'text-fg-3' : 'text-fg-1'}>{live.away.score}</span>
+                                            <span className="text-[0.7em] text-fg-disabled">-</span>
+                                            <span className={homeLost ? 'text-fg-3' : 'text-fg-1'}>{live.home.score}</span>
+                                        </span>
+                                    ) : (
+                                        // Drawn by CSS so the heading's text (and any name built from it) never holds "@".
+                                        <span aria-hidden="true" className="text-body font-medium text-fg-disabled before:content-['@']" />
+                                    )}
+                                    <span className="sr-only">{open ? ', hide details' : ', show details'}</span>
+                                </button>
+                            )}
+                        </h2>
+                        <TeamSide side="home" s={p.home} opp={a} faded={homeLost} showStats={!(scored || (started && scorePending))} chip={homeChip} />
+                    </div>
 
-                {/* Footer: tricode + book odds under each end of the bar, our odds and projected goals under them, the flag in the middle.
-                    A phone-width card has no room for the +EV pill between the two odds stacks: it drops to its own row under them. */}
-                <div
-                    className={cn(
-                        'grid items-center gap-2',
-                        betRow
-                            ? 'grid-cols-2 gap-y-2.5 [@container(min-width:26rem)]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] [@container(min-width:26rem)]:gap-y-2'
-                            : 'grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]',
+                    {forecast ? (
+                        <WinBar
+                            away={a}
+                            home={h}
+                            pAway={forecast.away / 100}
+                            market={market}
+                            model={model}
+                            awayColor={colors.away}
+                            homeColor={colors.home}
+                            size="lg"
+                            dimmed={started}
+                            digits={coinFlipFinal(p, phase) ? 1 : 0}
+                            label={started ? 'Pregame win probability' : 'Our forecast win probability'}
+                            className="pointer-events-none"
+                        />
+                    ) : (
+                        <div className="flex h-[50px] items-center justify-center rounded-bar border border-dashed border-line bg-track">
+                            <span className="label">{started ? 'No pick' : 'No forecast'}</span>
+                        </div>
                     )}
-                >
-                    <FooterSide p={p} side="away" phase={phase} />
-                    <span className={cn('text-center', betRow && 'col-span-2 row-start-2 [@container(min-width:26rem)]:col-span-1 [@container(min-width:26rem)]:row-start-auto')}>
-                        <Flag p={p} phase={phase} live={live} />
-                    </span>
-                    <FooterSide p={p} side="home" phase={phase} />
-                </div>
-                {open && phase !== 'final' && hasPrediction(p) && p.away.xg != null && p.home.xg != null ? (
-                    <GoalsBar away={a} home={h} ax={p.away.xg} hx={p.home.xg} line={fmtLine(p.markets?.total?.line ?? p.totalLine)} colors={colors} />
-                ) : null}
+
+                    {/* Footer: tricode + book odds under each end of the bar, our odds and projected goals under them, the flag in the middle.
+                        A phone-width card has no room for the +EV pill between the two odds stacks: it drops to its own row under them. */}
+                    <div
+                        className={cn(
+                            'grid items-center gap-2',
+                            betRow
+                                ? 'grid-cols-2 gap-y-2.5 [@container(min-width:26rem)]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] [@container(min-width:26rem)]:gap-y-2'
+                                : 'grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]',
+                        )}
+                    >
+                        <FooterSide p={p} side="away" phase={phase} />
+                        <span className={cn('text-center', betRow && 'col-span-2 row-start-2 [@container(min-width:26rem)]:col-span-1 [@container(min-width:26rem)]:row-start-auto')}>
+                            <Flag p={p} phase={phase} live={live} />
+                        </span>
+                        <FooterSide p={p} side="home" phase={phase} />
+                    </div>
+                    {open && phase !== 'final' && hasPrediction(p) && p.away.xg != null && p.home.xg != null ? (
+                        <GoalsBar away={a} home={h} ax={p.away.xg} hx={p.home.xg} line={fmtLine(p.markets?.total?.line ?? p.totalLine)} colors={colors} />
+                    ) : null}
+                    </>
+                )}
             </div>
 
             <div id={detailsId} hidden={!open}>

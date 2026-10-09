@@ -52,7 +52,7 @@ export function SlatePane({
     heading: string;
 }) {
     const [picked, setPicked] = useState<{ id: string; dir: 'up' | 'down' | null } | null>(null);
-    const [tab, setTab] = useState<Tab>('form');
+    const [tab, setTab] = useState<Tab>('preview');
     const hydrated = useHydrated();
     const listRef = useRef<HTMLUListElement>(null);
     const navRef = useRef<HTMLElement>(null);

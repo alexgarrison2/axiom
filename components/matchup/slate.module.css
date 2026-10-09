@@ -115,6 +115,14 @@
   }
 }
 
+/* The slate pane's header: the side sits beside the bars, so the crest steps down. */
+@container (min-width: 34rem) {
+  .side.compact .crest {
+    width: 72px;
+    height: 72px;
+  }
+}
+
 /* Tiny goalie stat lines (brief: 10-11px mono, dim; the site floor is 11px). */
 .gstat {
   font-size: 11px;

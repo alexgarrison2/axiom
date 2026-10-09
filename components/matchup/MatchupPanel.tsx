@@ -65,7 +65,7 @@ interface RowModel {
  * the bar grows outward from the axis inside its own track, so nothing can
  * overflow the panel (no horizontal scroll at any width).
  */
-function Bar({ side, cell, color, state, fmt }: { side: Side; cell: Cell; color: string; state: BarState; fmt: (v: number) => string }) {
+function Bar({ side, cell, color, state, fmt, h }: { side: Side; cell: Cell; color: string; state: BarState; fmt: (v: number) => string; h: string }) {
     const away = side === 'away';
     const w = cell.pct == null ? 0 : Math.max(cell.pct, 2);
     const missing = cell.value == null || cell.pct == null;
@@ -81,7 +81,7 @@ function Bar({ side, cell, color, state, fmt }: { side: Side; cell: Cell; color:
         </span>
     );
     const track = (
-        <div className="relative h-7">
+        <div className={cn('relative', h)}>
             {missing ? null : (
                 <div
                     data-bar={state}
@@ -124,20 +124,21 @@ function Wedge({ side }: { side: Side }) {
     );
 }
 
-function ChartRow({ row, colors }: { row: RowModel; colors: Record<Side, string> }) {
+function ChartRow({ row, colors, compact }: { row: RowModel; colors: Record<Side, string>; compact?: boolean }) {
+    const h = compact ? 'h-6' : 'h-7';
     return (
         <div
             className="grid grid-cols-[2.75rem_minmax(0,1fr)_5.25rem_minmax(0,1fr)_2.75rem] items-center gap-x-1.5 cq-md:grid-cols-[3.25rem_minmax(0,1fr)_6rem_minmax(0,1fr)_3.25rem]"
             data-stat={row.stat.key}
             data-adv={row.adv ?? 'none'}
         >
-            <Bar side="away" cell={row.cells.away} color={colors.away} state={barState(row, 'away')} fmt={row.stat.fmt} />
-            <span className="relative flex h-7 items-center justify-center whitespace-nowrap border-x border-line px-3 text-micro font-bold uppercase tracking-wide text-fg-2">
+            <Bar side="away" cell={row.cells.away} color={colors.away} state={barState(row, 'away')} fmt={row.stat.fmt} h={h} />
+            <span className={cn('relative flex items-center justify-center whitespace-nowrap border-x border-line px-3 text-micro font-bold uppercase tracking-wide text-fg-2', h)}>
                 {row.adv === 'away' ? <Wedge side="away" /> : null}
                 {row.stat.label}
                 {row.adv === 'home' ? <Wedge side="home" /> : null}
             </span>
-            <Bar side="home" cell={row.cells.home} color={colors.home} state={barState(row, 'home')} fmt={row.stat.fmt} />
+            <Bar side="home" cell={row.cells.home} color={colors.home} state={barState(row, 'home')} fmt={row.stat.fmt} h={h} />
         </div>
     );
 }
@@ -201,10 +202,35 @@ function TeamHead({ side, tri, gp, pending, tags, standing }: { side: Side; tri:
     );
 }
 
+/** Compact mode: a side's games counted (amber under the minimum), filter tags and games not logged yet, on its edge. */
+function SideCount({ gp, pending, tags, home = false }: { gp: number; pending: number; tags: string[]; home?: boolean }) {
+    return (
+        <span className={cn('flex min-w-0 flex-wrap gap-x-1.5 tabular-nums', home && 'justify-end text-right')}>
+            <span className={gp < MIN_GP ? 'text-warn' : undefined}>
+                GP <b className="font-bold">{gp}</b>
+            </span>
+            {pending > 0 ? (
+                <span className="text-amber" title="Played, but not in these numbers yet: the game log updates after the nightly ingest.">
+                    +{pending} pending
+                </span>
+            ) : null}
+            {tags.map(t => (
+                <span key={t} className="whitespace-nowrap text-brand">
+                    {t}
+                </span>
+            ))}
+        </span>
+    );
+}
+
 const pctText = (c: Cell) => (c.pct == null ? 'no value' : `${ordinal(c.pct)} pct`);
 
-/** Tornado chart: each team's league percentile per stat, away left / home right, with filters for tonight's situation. */
-export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState }) {
+/**
+ * Tornado chart: each team's league percentile per stat, away left / home right, with filters for tonight's situation.
+ * `compact` (the Preview tab, under a header that already names the teams): no team heads, tighter rows; games
+ * counted and any filter tags ride the line above the chart.
+ */
+export function MatchupPanel({ p, state, compact = false }: { p: Prediction; state: DetailsState; compact?: boolean }) {
     const tris: Record<Side, string> = { away: p.away.team.triCode, home: p.home.team.triCode };
     const [load, setLoad] = useState<LoadState>({ status: 'loading' });
     const [useLoc, setUseLoc] = useState(false);
@@ -299,11 +325,13 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
     const name = (s: Side) => tris[s];
 
     return (
-        <div className="flex flex-col gap-2.5">
-            <div className="flex items-center justify-between gap-2">
-                <TeamHead side="away" tri={tris.away} gp={model.gp.away} pending={model.pending.away} tags={tags('away')} standing={standingLine(p.away)} />
-                <TeamHead side="home" tri={tris.home} gp={model.gp.home} pending={model.pending.home} tags={tags('home')} standing={standingLine(p.home)} />
-            </div>
+        <div className={cn('flex flex-col', compact ? 'gap-2' : 'gap-2.5')}>
+            {compact ? null : (
+                <div className="flex items-center justify-between gap-2">
+                    <TeamHead side="away" tri={tris.away} gp={model.gp.away} pending={model.pending.away} tags={tags('away')} standing={standingLine(p.away)} />
+                    <TeamHead side="home" tri={tris.home} gp={model.gp.home} pending={model.pending.home} tags={tags('home')} standing={standingLine(p.home)} />
+                </div>
+            )}
 
             <div className="flex flex-wrap items-center justify-center gap-1.5" role="group" aria-label="Filter each team by its own situation tonight">
                 <FilterChip selected={useLoc} onSelectedChange={setUseLoc} title={`${tris.away} road games, ${tris.home} home games`}>
@@ -333,12 +361,16 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
                 </FilterChip>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-micro uppercase tracking-wide text-fg-3">
-                <SeasonTag>
-                    {windowLabel}
-                    <span className="sr-only"> seasons, regular season</span>
-                </SeasonTag>
-                <span>League pct</span>
+            <div className={cn('items-center gap-2 text-micro uppercase tracking-wide text-fg-3', compact ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-center')}>
+                {compact ? <SideCount gp={model.gp.away} pending={model.pending.away} tags={tags('away')} /> : null}
+                <span className="flex items-center gap-2">
+                    <SeasonTag>
+                        {windowLabel}
+                        <span className="sr-only"> seasons, regular season</span>
+                    </SeasonTag>
+                    <span>League pct</span>
+                </span>
+                {compact ? <SideCount gp={model.gp.home} pending={model.pending.home} tags={tags('home')} home /> : null}
             </div>
 
             {/* Visual chart; the table below is its text equivalent. */}
@@ -347,18 +379,18 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
                 {teamRows
                     .filter(r => r.stat.sub)
                     .map(r => (
-                        <ChartRow key={r.stat.key} row={r} colors={colors} />
+                        <ChartRow key={r.stat.key} row={r} colors={colors} compact={compact} />
                     ))}
                 <GroupTag>All situations</GroupTag>
                 {teamRows
                     .filter(r => !r.stat.sub)
                     .map(r => (
-                        <ChartRow key={r.stat.key} row={r} colors={colors} />
+                        <ChartRow key={r.stat.key} row={r} colors={colors} compact={compact} />
                     ))}
                 <GroupTag extra={lineupImpactSeason && lineupImpactSeason !== SEASON_ID ? <SeasonTag>{shortSeason(lineupImpactSeason)}</SeasonTag> : null}>
                     Ignores filters
                 </GroupTag>
-                <ChartRow row={lineupRow} colors={colors} />
+                <ChartRow row={lineupRow} colors={colors} compact={compact} />
             </div>
 
             <table className="sr-only">

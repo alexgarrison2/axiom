@@ -5,16 +5,14 @@ import type { Prediction } from '@/types/prediction';
 import type { DetailsState } from './DetailsLoading';
 import type { GameImplication } from '@/utils/implications';
 import type { Phase } from '@/lib/matchup/lifecycle';
-import { cn } from '@/lib/utils';
 import { Segmented } from '@/components/ui/segmented';
 import { loadGameDetails } from '@/lib/client-data';
-import { WhyPanel } from './WhyPanel';
-import { FormPanel } from './FormPanel';
+import { PreviewPanel } from './PreviewPanel';
 import { LineupsPanel } from './LineupsPanel';
 import { OddsPanel } from './OddsPanel';
-import { MatchupPanel } from './MatchupPanel';
+import { NewsPanel } from './NewsPanel';
 
-export type Tab = 'form' | 'lines' | 'matchup' | 'odds' | 'why';
+export type Tab = 'preview' | 'lines' | 'odds' | 'news';
 
 export interface DetailsProps {
     p: Prediction;
@@ -28,11 +26,10 @@ export interface DetailsProps {
 }
 
 const TABS: { value: Tab; label: string }[] = [
-    { value: 'form', label: 'Form' },
+    { value: 'preview', label: 'Preview' },
     { value: 'lines', label: 'Lines' },
-    { value: 'matchup', label: 'Matchup' },
     { value: 'odds', label: 'Odds' },
-    { value: 'why', label: 'Why' },
+    { value: 'news', label: 'News' },
 ];
 
 /**
@@ -41,7 +38,7 @@ const TABS: { value: Tab; label: string }[] = [
  * request shared by every card.
  */
 export default function Details({ p, phase, implication, onCollapse, tab: tabProp, onTab }: DetailsProps) {
-    const [tabState, setTabState] = useState<Tab>('form');
+    const [tabState, setTabState] = useState<Tab>('preview');
     const tab = tabProp ?? tabState;
     const setTab = onTab ?? setTabState;
     const [state, setState] = useState<DetailsState>({ status: 'loading' });
@@ -67,13 +64,12 @@ export default function Details({ p, phase, implication, onCollapse, tab: tabPro
                 id={panelId}
                 role="region"
                 aria-label={`${TABS.find(t => t.value === tab)?.label ?? 'Details'}: ${game}`}
-                className={cn('overflow-x-clip', tab === 'matchup' && 'mx-auto max-w-[52rem] max-md:w-full')}
+                className="overflow-x-clip"
             >
-                {tab === 'form' ? <FormPanel p={p} state={state} /> : null}
+                {tab === 'preview' ? <PreviewPanel p={p} phase={phase} state={state} implication={implication} /> : null}
                 {tab === 'lines' ? <LineupsPanel p={p} state={state} /> : null}
-                {tab === 'matchup' ? <MatchupPanel p={p} state={state} /> : null}
                 {tab === 'odds' ? <OddsPanel p={p} phase={phase} /> : null}
-                {tab === 'why' ? <WhyPanel p={p} phase={phase} state={state} implication={implication} /> : null}
+                {tab === 'news' ? <NewsPanel p={p} state={state} /> : null}
             </div>
             {onCollapse ? (
                 <button

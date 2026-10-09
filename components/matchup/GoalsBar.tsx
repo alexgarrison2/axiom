@@ -9,8 +9,25 @@ const GOAL_SCALE = 9;
  * Projected goals on a goal axis, in the win bar's own language: each team's xG
  * stacked end to end (gradient, hatch, the heavier side lit), a white tick at the
  * posted total. Over/under reads as whether the bar passes the tick.
+ * `compact` (the slate pane's header): a slimmer bar, numbers only, the line's value beside the readout.
  */
-export function GoalsBar({ away, home, ax, hx, line, colors }: { away: string; home: string; ax: number; hx: number; line: string | null; colors: { away: string; home: string } }) {
+export function GoalsBar({
+    away,
+    home,
+    ax,
+    hx,
+    line,
+    colors,
+    compact = false,
+}: {
+    away: string;
+    home: string;
+    ax: number;
+    hx: number;
+    line: string | null;
+    colors: { away: string; home: string };
+    compact?: boolean;
+}) {
     const total = ax + hx;
     const lineN = line != null ? Number(line) : null;
     const pos = (g: number) => Math.min(100, (g / GOAL_SCALE) * 100);
@@ -39,17 +56,17 @@ export function GoalsBar({ away, home, ax, hx, line, colors }: { away: string; h
             >
                 <span className="wb-hatch absolute inset-0" />
                 {/* Phones: a segment too short for crest and number keeps the number. */}
-                <Crest tri={tri} size={28} className="relative drop-shadow-none max-lg:hidden max-lg:[@container(min-width:5.25rem)]:block" />
-                <span className="num-pct relative text-[20px] leading-none">{val.toFixed(2)}</span>
+                {compact ? null : <Crest tri={tri} size={28} className="relative drop-shadow-none max-lg:hidden max-lg:[@container(min-width:5.25rem)]:block" />}
+                <span className={cn('num-pct relative leading-none', compact ? 'text-[14px]' : 'text-[20px]')}>{val.toFixed(2)}</span>
             </span>
         );
     };
     return (
-        <div className="flex flex-col gap-1.5 pt-1">
+        <div className={cn('flex flex-col', compact ? 'gap-1' : 'gap-1.5 pt-1')}>
             <div className="flex items-baseline justify-between text-micro font-medium uppercase tracking-wide text-fg-3">
                 <GlossLink term="projected-goals">xG</GlossLink>
                 <span className="tabular-nums">
-                    <span className="num-pct text-title text-fg-1">{total.toFixed(2)}</span>
+                    <span className={cn('num-pct text-fg-1', compact ? 'text-caption' : 'text-title')}>{total.toFixed(2)}</span>
                     {lineN != null ? (
                         <>
                             {' '}
@@ -61,17 +78,17 @@ export function GoalsBar({ away, home, ax, hx, line, colors }: { away: string; h
             <div
                 role="img"
                 aria-label={`Projected goals: ${away} ${ax.toFixed(2)}, ${home} ${hx.toFixed(2)}, total ${total.toFixed(2)}${lineN != null ? ` against a line of ${lineN}` : ''}`}
-                className="relative h-10 w-full rounded-bar bg-track"
+                className={cn('relative w-full rounded-bar bg-track', compact ? 'h-6' : 'h-10')}
             >
                 {seg('away')}
                 {seg('home')}
                 {lineN != null ? (
-                    <span aria-hidden="true" className="pointer-events-none absolute -bottom-[5px] -top-[5px] -ml-px w-0.5" style={{ left: `${pos(lineN)}%` }}>
+                    <span aria-hidden="true" className={cn('pointer-events-none absolute -ml-px w-0.5', compact ? '-bottom-[3px] -top-[3px]' : '-bottom-[5px] -top-[5px]')} style={{ left: `${pos(lineN)}%` }}>
                         <span className="block h-full w-full bg-white shadow-[0_0_8px_rgba(255,255,255,.8)]" />
                     </span>
                 ) : null}
             </div>
-            <div aria-hidden="true" className="relative h-3 text-micro tabular-nums text-fg-3">
+            <div aria-hidden="true" className={cn('relative h-3 text-micro tabular-nums text-fg-3', compact && 'hidden')}>
                 {lineN != null ? (
                     <span className="absolute -translate-x-1/2 font-bold text-fg-1" style={{ left: `${pos(lineN)}%` }}>
                         {lineN}

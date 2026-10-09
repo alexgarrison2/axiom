@@ -6,7 +6,7 @@ import { GoaliesPanel } from '../../../components/matchup/GoaliesPanel';
 import { LineupsPanel } from '../../../components/matchup/LineupsPanel';
 import { ArchiveCard } from '../../../components/matchup/ArchiveCard';
 import { ContextChips } from '../../../components/matchup/ContextChips';
-import { WhyPanel } from '../../../components/matchup/WhyPanel';
+import { PreviewPanel } from '../../../components/matchup/PreviewPanel';
 import { WinBarLegend } from '../../../components/ui/win-bar';
 import type { LiveGame } from '../lifecycle';
 import type { Prediction } from '../../../types/prediction';
@@ -214,7 +214,7 @@ describe('G1-10 glossary links', () => {
         expect(hrefs).toContain('/methodology#term-rest');
         cleanup();
 
-        const why = render(<WhyPanel p={withOverrides(pitPhi, { blendWeight: 0.2, confidenceGrade: null })} phase="pre" state={{ status: 'loading' }} implication={null} />).container;
+        const why = render(<PreviewPanel p={withOverrides(pitPhi, { blendWeight: 0.2, confidenceGrade: null })} phase="pre" state={{ status: 'loading' }} implication={null} />).container;
         expect([...why.querySelectorAll('a')].map(a => a.getAttribute('href'))).toContain('/methodology#term-rest');
         expect(why.textContent).toContain('Forecast = model 20% + market 80%');
     });
