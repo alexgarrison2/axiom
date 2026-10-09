@@ -28,31 +28,39 @@ export interface NightEntry {
     note?: string;
 }
 
-/** The widest side of any row's stack, so a list shares one scale. */
-export function reachOf(rows: NightEntry[]): number {
-    let reach = 1;
-    for (const r of rows) {
-        if (!r.parts) {
-            reach = Math.max(reach, Math.abs(r.ps));
-            continue;
-        }
-        let pos = 0;
-        let neg = 0;
-        for (const k of ORDER) {
-            const v = r.parts[k];
-            if (v > 0) pos += v;
-            else neg -= v;
-        }
-        reach = Math.max(reach, pos, neg);
-    }
-    return reach;
+/** How far the stacks reach each side of zero, so a list shares one scale and spends the bar's width on what is there. */
+export interface Reach {
+    neg: number;
+    pos: number;
 }
 
-export function NightRow({ r, rank, reach }: { r: NightEntry; rank: number; reach: number }) {
-    const x = (v: number) => 50 + (v / reach) * 48;
+export function reachOf(rows: NightEntry[]): Reach {
+    let neg = 0.25;
+    let pos = 0.25;
+    for (const r of rows) {
+        let p = Math.max(0, r.ps);
+        let n = Math.max(0, -r.ps);
+        if (r.parts) {
+            p = 0;
+            n = 0;
+            for (const k of ORDER) {
+                const v = r.parts[k];
+                if (v > 0) p += v;
+                else n -= v;
+            }
+        }
+        pos = Math.max(pos, p);
+        neg = Math.max(neg, n);
+    }
+    return { neg, pos };
+}
+
+export function NightRow({ r, rank, reach }: { r: NightEntry; rank: number; reach: Reach }) {
+    const x = (v: number) => 1 + ((v + reach.neg) / (reach.neg + reach.pos)) * 98;
     return (
         // Phone-width panels give the name the room: a shorter bar (same scale, same parts) and tighter gaps.
-        <li className="grid grid-cols-[1rem_2rem_minmax(0,1fr)_2.5rem_3.25rem] items-center gap-x-2 py-1.5 coarse:relative [@container(min-width:18rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_3.5rem_3.5rem] [@container(min-width:26rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_5.5rem_3.5rem] [@container(min-width:26rem)]:gap-x-2.5">
+        // Wider panels cap the name column and hand the rest to the bar.
+        <li className="grid grid-cols-[1rem_2rem_minmax(0,1fr)_2.5rem_3.25rem] items-center gap-x-2 py-1.5 coarse:relative [@container(min-width:18rem)]:grid-cols-[1.25rem_2.25rem_minmax(0,1fr)_3.5rem_3.5rem] [@container(min-width:26rem)]:grid-cols-[1.25rem_2.25rem_minmax(7rem,1fr)_minmax(5.5rem,2fr)_3.5rem] [@container(min-width:26rem)]:gap-x-3">
             <span className="text-right text-micro tabular-nums text-fg-3">{rank}</span>
             <span className="block h-8 w-8 overflow-hidden rounded-full border-2 bg-surface-2 [@container(min-width:18rem)]:h-9 [@container(min-width:18rem)]:w-9" style={{ borderColor: teamPalette(r.team).primary }}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshot */}
@@ -79,14 +87,14 @@ export function NightRow({ r, rank, reach }: { r: NightEntry; rank: number; reac
                     </span>
                 </Link>
             </span>
-            <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="block h-2.5 w-full" aria-hidden="true">
+            <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="block h-2.5 w-full [@container(min-width:26rem)]:h-4" aria-hidden="true">
                 <rect x={0} y={0} width={100} height={10} fill="var(--track)" />
                 {r.parts ? (
-                    stack(r.parts, x).map(s => <rect key={s.k} x={s.x} y={1} width={Math.max(0, s.w - 0.5)} height={8} fill={PARTS[s.k].color} />)
+                    stack(r.parts, x).map(s => <rect key={s.k} x={s.x} y={1} width={Math.max(0, s.w - 0.3)} height={8} fill={PARTS[s.k].color} />)
                 ) : (
                     <rect x={Math.min(x(0), x(r.ps))} y={1} width={Math.abs(x(r.ps) - x(0))} height={8} fill="var(--goalie)" opacity={0.8} />
                 )}
-                <line x1={50} x2={50} y1={0} y2={10} className="stroke-fg-3" vectorEffect="non-scaling-stroke" />
+                <line x1={x(0)} x2={x(0)} y1={0} y2={10} className="stroke-fg-3" vectorEffect="non-scaling-stroke" />
             </svg>
             <span className={cn('text-right font-display text-body font-bold tabular-nums', r.ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.ps)}</span>
         </li>
