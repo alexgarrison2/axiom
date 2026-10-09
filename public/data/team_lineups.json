@@ -689,7 +689,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "John Tavares",
@@ -721,7 +721,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Nick Paul",
@@ -968,8 +968,8 @@
             }
         ],
         "lineup_source": "David Alter",
-        "updated_at": "2026-10-08T19:20:10.053Z",
-        "fetched_at": "2026-10-08T20:02:41Z"
+        "updated_at": "2026-10-09T01:45:26.938Z",
+        "fetched_at": "2026-10-09T02:03:54Z"
     },
     "MTL": {
         "f1": [
@@ -2006,10 +2006,10 @@
                 "number": 43,
                 "pos": "c",
                 "id": 32239,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mathieu Joseph",
@@ -2019,7 +2019,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -2031,17 +2031,17 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Josh Samanski",
                 "number": null,
                 "pos": "c",
                 "id": 38438,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Max Jones",
@@ -2249,7 +2249,7 @@
                 "number": 43,
                 "pos": "sk1",
                 "id": 32239,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -2281,9 +2281,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "@EdmontonOilers",
-        "updated_at": "2026-10-08T02:01:27.351Z",
-        "fetched_at": "2026-10-08T02:02:34Z"
+        "lineup_source": "Last Game (2026-10-07)",
+        "updated_at": "2026-10-08T12:52:45.006Z",
+        "fetched_at": "2026-10-09T02:03:54Z"
     },
     "VAN": {
         "f1": [
@@ -2694,7 +2694,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -2902,9 +2902,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jesse Granger",
-        "updated_at": "2026-10-08T19:16:51.126Z",
-        "fetched_at": "2026-10-08T20:02:41Z"
+        "lineup_source": "VGK PR",
+        "updated_at": "2026-10-09T01:46:12.884Z",
+        "fetched_at": "2026-10-09T02:03:54Z"
     },
     "CHI": {
         "f1": [
@@ -6050,9 +6050,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-06)",
-        "updated_at": "2026-10-07T14:20:23.173Z",
-        "fetched_at": "2026-10-08T03:04:12Z"
+        "lineup_source": "Kristy Flannery",
+        "updated_at": "2026-10-08T16:14:21.596Z",
+        "fetched_at": "2026-10-09T02:03:54Z"
     },
     "MIN": {
         "f1": [
@@ -9638,21 +9638,21 @@
                 "movement": null
             },
             {
-                "name": "Ryan Strome",
-                "number": 16,
+                "name": "Martin Pospisil",
+                "number": 76,
                 "pos": "c",
-                "id": 1825,
-                "ppUnit": 2,
+                "id": 28414,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Martin Pospisil",
-                "number": 76,
+                "name": "Ryan Strome",
+                "number": 16,
                 "pos": "rw",
-                "id": 28414,
-                "ppUnit": null,
+                "id": 1825,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9863,9 +9863,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Pat Steinberg",
-        "updated_at": "2026-10-08T17:36:09.620Z",
-        "fetched_at": "2026-10-08T18:03:10Z"
+        "lineup_source": "Derek Wills",
+        "updated_at": "2026-10-09T00:51:59.203Z",
+        "fetched_at": "2026-10-09T02:03:54Z"
     },
     "NSH": {
         "f1": [
