@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-10-09T03:04:08Z",
+ "generated_at": "2026-10-09T05:15:13Z",
  "goalies": {
   "Adin Hill": {
    "cur": {
@@ -62,7 +62,14 @@
    }
   },
   "Alex Nedeljkovic": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.92307,
+    "gaa": 1.97,
+    "gp": 1
+   },
    "prev": {
     "w": 18,
     "l": 14,
@@ -169,11 +176,11 @@
   "Arvid Soderblom": {
    "cur": {
     "w": 0,
-    "l": 1,
+    "l": 2,
     "ot": 0,
-    "svpct": 0.8125,
-    "gaa": 6.0,
-    "gp": 1
+    "svpct": 0.82,
+    "gaa": 4.58,
+    "gp": 2
    },
    "prev": {
     "w": 8,
@@ -448,11 +455,11 @@
   "Devin Cooley": {
    "cur": {
     "w": 0,
-    "l": 1,
+    "l": 2,
     "ot": 0,
-    "svpct": 0.88,
-    "gaa": 3.01,
-    "gp": 1
+    "svpct": 0.81818,
+    "gaa": 5.01,
+    "gp": 2
    },
    "prev": {
     "w": 10,
@@ -596,12 +603,12 @@
   },
   "Ilya Sorokin": {
    "cur": {
-    "w": 1,
+    "w": 2,
     "l": 1,
     "ot": 0,
-    "svpct": 0.96825,
-    "gaa": 1.02,
-    "gp": 2
+    "svpct": 0.96511,
+    "gaa": 1.01,
+    "gp": 3
    },
    "prev": {
     "w": 29,
@@ -782,10 +789,10 @@
    "cur": {
     "w": 1,
     "l": 1,
-    "ot": 0,
-    "svpct": 0.95454,
-    "gaa": 1.01,
-    "gp": 2
+    "ot": 1,
+    "svpct": 0.92957,
+    "gaa": 1.68,
+    "gp": 3
    },
    "prev": {
     "w": 24,
@@ -1246,7 +1253,14 @@
    }
   },
   "Scott Wedgewood": {
-   "cur": null,
+   "cur": {
+    "w": 1,
+    "l": 0,
+    "ot": 0,
+    "svpct": 0.89655,
+    "gaa": 3.0,
+    "gp": 1
+   },
    "prev": {
     "w": 31,
     "l": 6,
