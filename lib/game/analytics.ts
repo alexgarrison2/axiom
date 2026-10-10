@@ -414,6 +414,17 @@ const segStrength = (s: Segment, side: Side): 'ev' | 'pp' | 'sh' => {
 };
 const segFive = (s: Segment) => s.skaters.away.length === 5 && s.skaters.home.length === 5 && s.goalie.away != null && s.goalie.home != null;
 
+/** The strength filter from an event's own situation code, for an event no shift stretch covers. */
+function eventMatches(e: GameEvent, side: Side, f: PlayerStrength): boolean {
+    if (f === 'all') return true;
+    const own = side === 'away' ? e.situation.away : e.situation.home;
+    const opp = side === 'away' ? e.situation.home : e.situation.away;
+    if (f === '5v5') return e.fiveOnFive;
+    if (f === 'ev') return own === opp;
+    if (f === 'pp') return own > opp;
+    return own < opp;
+}
+
 function segMatches(s: Segment, side: Side, f: PlayerStrength): boolean {
     switch (f) {
         case 'all':
@@ -557,8 +568,10 @@ export function skaterRows(m: GameModel, side: Side, f: PlayerStrength, period: 
 
     for (const e of m.events) {
         if (!inPeriod(e, period)) continue;
+        // Individual stats stand on the event alone: where the shifts do not reach it (a live game's
+        // report runs a shift behind) the event's own situation decides the strength filter.
         const ice = onIce(m, e);
-        if (!ice || !segMatches(ice, side, f)) continue;
+        if (ice ? !segMatches(ice, side, f) : !eventMatches(e, side, f)) continue;
         // Individual
         const mine = e.side === side;
         if (mine && e.player != null) {
@@ -593,7 +606,7 @@ export function skaterRows(m: GameModel, side: Side, f: PlayerStrength, period: 
             if (p && p.side === side) row(p).blocks += 1;
         }
         // On ice
-        if (!isAttempt(e)) continue;
+        if (!ice || !isAttempt(e)) continue;
         for (const id of ice.skaters[side]) {
             const p = byId.get(id);
             if (!p) continue;

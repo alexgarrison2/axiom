@@ -121,6 +121,13 @@ describe('game model', () => {
         expect(zoneStarts(season, 'away').get(11)!.fly).toEqual([2, 2, 2]);
     });
 
+    it('credits goals and assists the shifts do not reach (a live report a shift behind)', () => {
+        const g = buildGame({ pbp, shifts: { data: [] } }, xg, null);
+        const home = skaterRows(g, 'home', 'all');
+        expect(home.find(r => r.player.id === 21)?.g).toBe(1);
+        expect(home.find(r => r.player.id === 22)?.a1).toBe(1);
+    });
+
     it('counts unit results and stints per period', () => {
         const [line] = units(m, 'home', 'F');
         expect(line.gf).toBe(1);
