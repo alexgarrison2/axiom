@@ -5,6 +5,11 @@
 
 export const MINUS = '−';
 
+/** A whole number with thousands grouped ("2,531"); every count that can pass 999 goes through this. */
+export function fmtInt(n: number): string {
+    return Math.round(n).toLocaleString('en-US');
+}
+
 /**
  * A simulation percentage (0–100) for display. Never prints a hard 0% or
  * 100%: a Monte Carlo run of N seasons can't prove certainty, so the tails

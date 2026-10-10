@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Crest } from '@/components/ui/crest';
 import { Segmented } from '@/components/ui/segmented';
+import { fmtInt } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { DRAW_WINDOW, draws, FO_SPOTS, periodLabel, type Draw } from '@/lib/game/analytics';
 import { other, type Side } from '@/lib/game/types';
@@ -238,20 +239,20 @@ export function Faceoffs() {
                     <div className="flex items-baseline justify-between gap-3">
                         <span className="font-bold text-fg-1">{t.title}</span>
                         <span className="text-caption font-bold tabular-nums">
-                            <span style={{ color: colors.away }}>{t.away}</span>
+                            <span style={{ color: colors.away }}>{fmtInt(t.away)}</span>
                             <span className="px-1 font-normal text-fg-3">–</span>
-                            <span style={{ color: colors.home }}>{t.home}</span>
+                            <span style={{ color: colors.home }}>{fmtInt(t.home)}</span>
                         </span>
                     </div>
                     <p className="text-micro uppercase tracking-label text-fg-3">
-                        {m.teams.away.tri} won <span className="text-fg-1">{tot ? Math.round((t.away / tot) * 100) : 0}%</span> of {tot}
+                        {m.teams.away.tri} won <span className="text-fg-1">{pct(t.away, t.home)}</span> of {fmtInt(tot)}
                     </p>
                     <ol className="flex flex-col gap-1 border-t border-line pt-2 text-caption">
                         {top.map(x => (
                             <li key={x.id} className="flex items-baseline justify-between gap-2">
                                 <span className="truncate font-semibold text-fg-1">{label(x.id)}</span>
                                 <span className="tabular-nums text-fg-2">
-                                    {x.w}–{x.l} <span className="text-fg-3">{Math.round((x.w / Math.max(1, x.w + x.l)) * 100)}%</span>
+                                    {wl(x.w, x.l)} <span className="text-fg-3">{pct(x.w, x.l)}</span>
                                 </span>
                             </li>
                         ))}
@@ -264,9 +265,9 @@ export function Faceoffs() {
                 <div className="flex items-baseline justify-between gap-3">
                     <span className="font-bold text-fg-1">{t.title}</span>
                     <span className="text-caption font-bold tabular-nums">
-                        <span style={{ color: colors.away }}>{t.away}</span>
+                        <span style={{ color: colors.away }}>{fmtInt(t.away)}</span>
                         <span className="px-1 font-normal text-fg-3">–</span>
-                        <span style={{ color: colors.home }}>{t.home}</span>
+                        <span style={{ color: colors.home }}>{fmtInt(t.home)}</span>
                     </span>
                 </div>
                 <ol className="flex max-h-80 flex-col gap-1 overflow-hidden text-caption">
@@ -293,8 +294,24 @@ export function Faceoffs() {
         );
     };
 
-    // A zone record: W–L for a game, win % over a season (four-digit records do not fit a rail).
-    const zoneRec = (w: number, l: number) => (season ? `${w + l ? Math.round((w / (w + l)) * 100) : 0}%` : `${w}–${l}`);
+    const pct = (w: number, l: number) => (w + l ? `${Math.round((w / (w + l)) * 100)}%` : '—');
+    const wl = (w: number, l: number) => `${fmtInt(w)}–${fmtInt(l)}`;
+    // D / N / O side by side: win % over the W–L, three fixed columns so the rows line up.
+    const zoneCells = (z: Record<Zone, [number, number]>, className?: string) => (
+        <span className={cn('grid grid-cols-3 gap-x-2 text-micro tabular-nums', className)}>
+            {(['D', 'N', 'O'] as Zone[]).map(k => {
+                const [w, l] = z[k];
+                return (
+                    <span key={k} className={cn('flex min-w-0 flex-col leading-tight', !(w + l) && 'opacity-40')}>
+                        <span className="whitespace-nowrap text-fg-2">
+                            <span className="text-fg-3">{k}</span> {pct(w, l)}
+                        </span>
+                        <span className="whitespace-nowrap text-fg-3">{w + l ? wl(w, l) : '—'}</span>
+                    </span>
+                );
+            })}
+        </span>
+    );
 
     const rail = (side: Side) => {
         // A season lists the regular takers (10+ draws) and the opponents faced most, or those the picked taker faced.
@@ -316,22 +333,14 @@ export function Faceoffs() {
                     <Crest tri={m.teams[side].tri} size={44} className="h-11 w-11 shrink-0" />
                     <div className="min-w-0 leading-tight">
                         <div className={cn('flex items-baseline gap-2', side === 'home' && 'lg:justify-end')}>
-                            <span className="text-h3 font-bold tabular-nums text-fg-1">
-                                {w}–{l}
-                            </span>
+                            <span className="text-h3 font-bold tabular-nums text-fg-1">{wl(w, l)}</span>
                             <span className="text-caption tabular-nums" style={{ color: colors[side] }}>
-                                {n ? Math.round((w / n) * 100) : 0}%
+                                {pct(w, l)}
                             </span>
                         </div>
-                        <span className={cn('flex items-center gap-2 text-micro tabular-nums text-fg-2', side === 'home' && 'lg:justify-end')}>
-                            {teamZone(side).map(({ z, w: zw, l: zl }) => (
-                                <span key={z} title={`${z === 'O' ? 'Offensive' : z === 'D' ? 'Defensive' : 'Neutral'} zone ${zw}–${zl}`}>
-                                    {z} {zoneRec(zw, zl)}
-                                </span>
-                            ))}
-                        </span>
-                        <span className={cn('flex items-center gap-1 text-micro uppercase tracking-label text-fg-3', side === 'home' && 'lg:justify-end')}>
-                            <SparkIcon /> {ledBy(side)} won into a shot
+                        {zoneCells(Object.fromEntries(teamZone(side).map(({ z, w: zw, l: zl }) => [z, [zw, zl]])) as Record<Zone, [number, number]>, 'mt-1')}
+                        <span className={cn('mt-1 flex items-center gap-1 text-micro uppercase tracking-label text-fg-3', side === 'home' && 'lg:justify-end')}>
+                            <SparkIcon /> {fmtInt(ledBy(side))} won into a shot
                         </span>
                     </div>
                 </div>
@@ -353,42 +362,36 @@ export function Faceoffs() {
                                         setPair(null);
                                     }}
                                     className={cn(
-                                        'grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 rounded-control border px-2 py-1.5 text-left transition-[opacity,background-color,border-color] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand',
+                                        'grid w-full grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 rounded-control border px-2 py-1.5 text-left transition-[opacity,background-color,border-color] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand',
                                         isActive ? 'border-brand/60 bg-surface-2' : 'border-transparent hover:bg-surface-2/60',
                                         faded && 'opacity-35',
                                     )}
                                 >
                                     <JerseyNumber tri={m.teams[side].tri} num={p?.num ?? null} ring={colors[side]} size={24} />
-                                    <span className="min-w-0">
-                                        <span className="block truncate text-caption font-semibold text-fg-1">{label(t.id)}</span>
-                                        <span className="flex items-center gap-2 text-micro tabular-nums text-fg-3">
-                                            {(['D', 'N', 'O'] as Zone[]).map(z =>
-                                                t.zone[z][0] + t.zone[z][1] ? (
-                                                    <span key={z} className="whitespace-nowrap" title={`${t.zone[z][0]}–${t.zone[z][1]}`}>
-                                                        {z} {zoneRec(t.zone[z][0], t.zone[z][1])}
+                                    <span className="flex min-w-0 flex-col gap-1">
+                                        <span className="flex items-baseline justify-between gap-2">
+                                            <span className="flex min-w-0 items-baseline gap-1.5">
+                                                <span className="truncate text-caption font-semibold text-fg-1">{label(t.id)}</span>
+                                                {t.led ? (
+                                                    <span className="flex shrink-0 items-center gap-0.5 text-micro tabular-nums text-fg-3" title="Wins into a shot">
+                                                        <SparkIcon />
+                                                        {fmtInt(t.led)}
                                                     </span>
-                                                ) : null,
-                                            )}
-                                            {t.led ? (
-                                                <span className="flex items-center gap-0.5 text-fg-2">
-                                                    <SparkIcon />
-                                                    {t.led}
-                                                </span>
-                                            ) : null}
-                                        </span>
-                                    </span>
-                                    {rec && !isActive ? (
-                                        <span className="text-right leading-none">
-                                            <span className="block text-micro uppercase tracking-label text-fg-3">vs</span>
-                                            <span className="text-body font-bold tabular-nums text-brand">
-                                                {rec[0]}–{rec[1]}
+                                                ) : null}
                                             </span>
+                                            {rec && !isActive ? (
+                                                <span className="shrink-0 whitespace-nowrap text-caption font-bold tabular-nums text-brand">
+                                                    <span className="mr-1 text-micro font-normal uppercase tracking-label text-fg-3">vs</span>
+                                                    {wl(rec[0], rec[1])} <span className="font-normal">{pct(rec[0], rec[1])}</span>
+                                                </span>
+                                            ) : (
+                                                <span className="shrink-0 whitespace-nowrap text-caption font-bold tabular-nums text-fg-1">
+                                                    {wl(t.w, t.l)} <span className="font-normal text-fg-2">{pct(t.w, t.l)}</span>
+                                                </span>
+                                            )}
                                         </span>
-                                    ) : (
-                                        <span className="text-body font-bold tabular-nums text-fg-1">
-                                            {t.w}–{t.l}
-                                        </span>
-                                    )}
+                                        {zoneCells(t.zone)}
+                                    </span>
                                 </button>
                             </li>
                         );
@@ -454,14 +457,14 @@ export function Faceoffs() {
                     ) : null}
                 </ControlRow>
                 {!n ? <p className="p-card label">No faceoffs at this strength</p> : null}
-                <div className={cn('relative grid gap-5 p-card sm:grid-cols-2 lg:grid-cols-[13.5rem_minmax(0,1fr)_13.5rem] lg:items-start', !n && 'hidden')}>
+                <div className={cn('relative grid gap-5 p-card sm:grid-cols-2 lg:grid-cols-[15.5rem_minmax(0,1fr)_15.5rem] lg:items-start', !n && 'hidden')}>
                     <div className="order-2 lg:order-1">{rail('away')}</div>
                     <div className="order-1 flex min-w-0 flex-col gap-2 sm:col-span-2 lg:order-2 lg:col-span-1">
                         <svg
                             viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
                             className="block h-auto w-full"
                             role="img"
-                            aria-label={`${n} faceoffs: ${m.teams.away.tri} won ${total('away')}, ${m.teams.home.tri} won ${total('home')}`}
+                            aria-label={`${fmtInt(n)} faceoffs: ${m.teams.away.tri} won ${fmtInt(total('away'))}, ${m.teams.home.tri} won ${fmtInt(total('home'))}`}
                         >
                             <defs>
                                 <clipPath id="fo-rink">
@@ -495,7 +498,7 @@ export function Faceoffs() {
                                           const third = x0 < -25 ? 0 : x0 > 25 ? 2 : 1;
                                           return (
                                               <g key={k} transform={`translate(${x0},${-cy})`} style={{ opacity: hot != null && hot !== third ? 0.25 : 1, transition: 'opacity 140ms' }}>
-                                                  <title>{nn ? `${m.teams.away.tri} ${aw}–${nn - aw} (${Math.round((aw / nn) * 100)}%)` : 'No draws'}</title>
+                                                  <title>{nn ? `${m.teams.away.tri} ${wl(aw, nn - aw)} (${pct(aw, nn - aw)})` : 'No draws'}</title>
                                                   {isNeutral(k) ? <circle r={r} fill="none" stroke="var(--line-strong)" strokeWidth={0.3} strokeDasharray="1 1.2" /> : null}
                                                   {/* Even: a tick at six o'clock, where half the ring is lit. */}
                                                   <line x1={0} x2={0} y1={r + br + 0.8} y2={r + br + 3.4} className="stroke-fg-3" strokeWidth={0.5} />
@@ -572,7 +575,7 @@ export function Faceoffs() {
                                         </span>
                                         {/* Tug of war: away wins from the left, home wins from the right. */}
                                         <span className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-body font-bold normal-case tracking-normal tabular-nums">
-                                            <span style={{ color: colors.away }}>{t.away}</span>
+                                            <span style={{ color: colors.away }}>{fmtInt(t.away)}</span>
                                             <span className="flex h-1.5 overflow-hidden rounded-full bg-line" aria-hidden="true">
                                                 {tot ? (
                                                     <>
@@ -581,11 +584,15 @@ export function Faceoffs() {
                                                     </>
                                                 ) : null}
                                             </span>
-                                            <span style={{ color: colors.home }}>{t.home}</span>
+                                            <span style={{ color: colors.home }}>{fmtInt(t.home)}</span>
                                         </span>
                                         <span className="flex justify-between gap-2 whitespace-nowrap">
-                                            <span>{t.caps[0]}</span>
-                                            <span>{t.caps[1]}</span>
+                                            <span>
+                                                {t.caps[0]} <span className="text-fg-2">{pct(t.away, t.home)}</span>
+                                            </span>
+                                            <span>
+                                                <span className="text-fg-2">{pct(t.home, t.away)}</span> {t.caps[1]}
+                                            </span>
                                         </span>
                                     </div>
                                 );
