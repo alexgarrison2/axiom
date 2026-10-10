@@ -10,6 +10,7 @@ import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
 import { RinkMarkings } from './Rink';
 import { Rink3D } from '@/components/rink/Rink3D';
+import { Crest } from '@/components/ui/crest';
 import { ShotDetail, ShotMapFrame, ShotSummary, geometry, useShotPick, type ShotInfo, type ShotPerson } from '@/components/rink/ShotDetail';
 import { OPP_GOALIE } from '@/lib/game/season';
 import type { ShotRow } from '@/lib/shots';
@@ -243,6 +244,14 @@ export function Shots() {
                                     tone="pos"
                                     goalColor={colors[side]}
                                     maxWidth={1100}
+                                    badge={
+                                        m.teams[side].tri === 'OPP' ? (
+                                            <span className="font-display text-h2 font-bold uppercase text-fg-3">Opp</span>
+                                        ) : (
+                                            // The crest fills the open ice above the left boards; smaller on a phone-width map.
+                                            <Crest tri={m.teams[side].tri} size={72} className="h-10 w-10 drop-shadow-[0_6px_16px_rgba(0,0,0,.6)] sm:h-[72px] sm:w-[72px]" />
+                                        )
+                                    }
                                     label={`${m.teams[side].tri} shot attempts: ${shown.filter(e => e.type === 'goal').length} goals, ${shown.filter(e => e.type === 'shot').length} saved, ${shown.filter(e => e.type === 'miss').length} missed.`}
                                     lit={pick.lit}
                                     onHover={pick.onHover}

@@ -167,6 +167,7 @@ export function Rink3D({
     lit = null,
     onHover,
     onTap,
+    badge,
 }: {
     shots: ShotRow[];
     mode: 'shots' | 'zones';
@@ -183,6 +184,8 @@ export function Rink3D({
     onHover?: (i: number | null) => void;
     /** Click or tap on the map: the nearest shot within a fingertip, or null for open ice. */
     onTap?: (i: number | null) => void;
+    /** Whose shots these are (a crest), in the open ice at the top left beside the boards. */
+    badge?: React.ReactNode;
 }) {
     const [ref, w] = useWidth<HTMLDivElement>();
     const id = React.useId().replace(/:/g, '');
@@ -296,7 +299,8 @@ export function Rink3D({
     const litAt = lit != null ? at[lit] : null;
 
     return (
-        <div ref={ref} className="flex w-full justify-center">
+        <div ref={ref} className="relative flex w-full justify-center">
+            {badge && W ? <div className="pointer-events-none absolute left-0 top-0 z-[1]">{badge}</div> : null}
             {W ? (
                 <svg
                     width={W}
