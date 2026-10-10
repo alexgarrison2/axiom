@@ -151,6 +151,15 @@ describe('game model', () => {
         expect(hardMatches(cells, lift).size).toBe(0);
     });
 
+    it('shows the last line-up, flagged, when the shifts trail the play', () => {
+        // Shifts that stop 60s before the end (a live report a shift behind).
+        const short = { ...m, shifts: Object.fromEntries(Object.entries(m.shifts).map(([id, list]) => [id, list.map(([a, b]) => [a, Math.min(b, 3540)] as [number, number])])) };
+        const snap = iceAt(short, 3590)!;
+        expect(snap.asOf).toBe(3540);
+        expect(snap.skaters.home.length).toBe(5);
+        expect(iceAt(m, 1800)!.asOf).toBeNull();
+    });
+
     it('settles markets as soon as they are decided', () => {
         const odds = { source: null, ml: { away: 120, home: -140 }, puckline: { away: null, home: null }, total: { line: 2.5, over: -110, under: -110 }, firstPeriod: { away: 150, home: -170 }, threeWay: null, firstPeriodThreeWay: null };
         const at = (period: number, intermission: boolean, away: number, home: number, line = 2.5) =>

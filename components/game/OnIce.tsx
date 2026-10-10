@@ -5,7 +5,7 @@ import { PlayerLink } from '@/components/players/PlayerLink';
 import { legibleOn } from '@/components/ui/color';
 import { TableScroller } from '@/components/teams-table/TableScroller';
 import { cn } from '@/lib/utils';
-import { clockOf, iceAt, shortName, type GoalieSnap, type SkaterSnap } from '@/lib/game/analytics';
+import { clockOf, iceAt, localT, periodAt, periodLabel, shortName, type GoalieSnap, type SkaterSnap } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
 import { JerseyNumber } from './Jersey';
@@ -137,6 +137,18 @@ function Stat({ k, v, model, tone }: { k: string; v: string; model?: boolean; to
 }
 
 /** Players on the ice at game time t (the Pulse playhead), away then home like the readout. */
+/** The line-up's own time when it is an earlier one than asked for (live shifts trail the play). */
+function AsOf({ at }: { at: number | null }) {
+    const { m } = useGame();
+    if (at == null) return null;
+    const { period, into } = periodAt(localT(m, at), m.otLength);
+    return (
+        <p className="-mt-2 text-micro text-fg-3">
+            Line-up as of {periodLabel(period)} {clockOf(into)} · live shifts trail the play
+        </p>
+    );
+}
+
 export function OnIce({ t, caption }: { t: number; caption: React.ReactNode }) {
     const { m } = useGame();
     const snap = React.useMemo(() => iceAt(m, t), [m, t]);
@@ -144,6 +156,7 @@ export function OnIce({ t, caption }: { t: number; caption: React.ReactNode }) {
     return (
         <div className="grid gap-4 border-t border-line px-card py-3">
             <p className="label">{caption}</p>
+            <AsOf at={snap.asOf} />
             {(['away', 'home'] as Side[]).map(side => (
                 <TeamIce key={side} side={side} skaters={snap.skaters[side]} goalie={snap.goalie[side]} />
             ))}
@@ -235,6 +248,7 @@ export function OnIceRail({ t, caption }: { t: number; caption: React.ReactNode 
     return (
         <div className="flex h-full flex-col gap-3 px-3 py-2.5 text-caption tabular-nums">
             <p className="label">{caption}</p>
+            <AsOf at={snap?.asOf ?? null} />
             <div className="grid grid-cols-[1.25rem_minmax(0,1fr)_2.25rem_2.5rem_1.75rem_1.75rem] gap-x-1.5 text-micro uppercase tracking-label text-fg-3" aria-hidden="true">
                 <span />
                 <span />

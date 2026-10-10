@@ -1395,6 +1395,8 @@ export interface GoalieSnap {
 }
 export interface IceSnapshot {
     t: number;
+    /** When no shift covers t (live shift data runs a shift or so behind the play): the time the line-up shown is from. */
+    asOf: number | null;
     skaters: Record<Side, SkaterSnap[]>;
     goalie: Record<Side, GoalieSnap | null>;
 }
@@ -1407,8 +1409,24 @@ const POS_ORDER: Record<Pos, number> = { C: 0, L: 1, R: 2, D: 3, G: 4 };
  * from the stretch just before: the players on for it, each shift running up to t (not the next group at 0:00).
  */
 export function iceAt(m: GameModel, t: number): IceSnapshot | null {
-    const seg = segAt(segments(m), Math.max(0, Math.min(t, m.end) - 0.5));
+    const segs = segments(m);
+    const probe = Math.max(0, Math.min(t, m.end) - 0.5);
+    let seg = segAt(segs, probe);
+    let asOf: number | null = null;
+    // A gap in the shifts (live reports trail the play by a shift or so): the last line-up before t, in the same
+    // game and within three minutes, flagged with the time it is from.
+    if (!seg) {
+        let i = segs.length - 1;
+        while (i >= 0 && segs[i].a > probe) i--;
+        const prev = i >= 0 ? segs[i] : null;
+        if (prev && probe - prev.b <= 180 && gameIndexAt(m, prev.a) === gameIndexAt(m, probe)) {
+            seg = prev;
+            asOf = prev.b;
+        }
+    }
     if (!seg) return null;
+    // Shift clocks and time on ice run to the line-up's own time when it is an earlier one.
+    const tt = asOf ?? t;
     const byId = new Map(m.players.map(p => [p.id, p]));
     const shiftInfo = (id: number) => {
         const list = m.shifts[id] ?? [];
@@ -1416,10 +1434,10 @@ export function iceAt(m: GameModel, t: number): IceSnapshot | null {
         let shift = 0;
         let shiftNo = 0;
         list.forEach(([a, b], i) => {
-            if (a >= t) return;
-            toi += Math.min(b, t) - a;
-            if (b >= t) {
-                shift = t - a;
+            if (a >= tt) return;
+            toi += Math.min(b, tt) - a;
+            if (b >= tt) {
+                shift = tt - a;
                 shiftNo = i + 1;
             }
         });
@@ -1465,7 +1483,7 @@ export function iceAt(m: GameModel, t: number): IceSnapshot | null {
             .map(skater)
             .filter((r): r is SkaterSnap => r != null)
             .sort((p, q) => POS_ORDER[p.player.pos] - POS_ORDER[q.player.pos] || (p.player.num ?? 0) - (q.player.num ?? 0));
-    return { t, skaters: { away: skaters('away'), home: skaters('home') }, goalie: { away: goalie('away'), home: goalie('home') } };
+    return { t, asOf, skaters: { away: skaters('away'), home: skaters('home') }, goalie: { away: goalie('away'), home: goalie('home') } };
 }
 
 /* ── Pony Score (one game, descriptive, in goals) ──────────────────────── */
