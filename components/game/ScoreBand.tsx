@@ -9,7 +9,7 @@ import { lineScore, marketResults, shortName, type Hit } from '@/lib/game/analyt
 import { other, SIDES, type Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
 import type { SlateGame } from '@/lib/game/fetch';
-import { clockSeconds, periodLength, ppLength, TimeBar } from './TimeBar';
+import { BreakClock, clockSeconds, periodLength, ppLength, TimeBar } from './TimeBar';
 
 const pct = (p: number) => `${Math.round(p * 100)}%`;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -260,11 +260,11 @@ export function CompactScore({ edge = null }: { edge?: Edge }) {
             <span
                 className={cn(
                     'relative overflow-hidden whitespace-nowrap rounded-chip px-1.5 py-0.5 text-[11px] font-bold uppercase leading-tight tracking-label',
-                    live ? 'bg-pos/10 text-pos' : m.state === 'final' ? 'bg-surface-3 text-fg-1' : 'text-fg-3',
+                    m.live?.intermission ? 'bg-pause/15 text-pause' : live ? 'bg-pos/10 text-pos' : m.state === 'final' ? 'bg-surface-3 text-fg-1' : 'text-fg-3',
                 )}
             >
                 {m.live && !m.live.intermission ? <TimeBar left={clockSeconds(m.live.remaining)} total={periodLength(m.live.period, m.otLength)} /> : null}
-                {m.live?.intermission ? `End ${m.live.period <= 3 ? `P${m.live.period}` : 'OT'}` : m.live ? `${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : statusOf(m)}
+                {m.live?.intermission ? <BreakClock period={m.live.period} left={m.live.breakLeft} /> : m.live ? `${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : statusOf(m)}
             </span>
             {side('home')}
         </span>
@@ -289,19 +289,12 @@ export function ScoreBand({ edge = null }: { edge?: Edge }) {
                     <span
                         className={cn(
                             'relative overflow-hidden rounded-chip px-2 py-0.5 text-micro font-bold uppercase tracking-label',
-                            m.state === 'live' ? 'bg-pos/10 text-pos shadow-glow' : m.state === 'final' ? 'bg-surface-3 text-fg-1' : 'text-fg-3',
+                            m.live?.intermission ? 'bg-pause/15 text-pause' : m.state === 'live' ? 'bg-pos/10 text-pos shadow-glow' : m.state === 'final' ? 'bg-surface-3 text-fg-1' : 'text-fg-3',
                         )}
                     >
                         {m.live && !m.live.intermission ? <TimeBar left={clockSeconds(m.live.remaining)} total={periodLength(m.live.period, m.otLength)} /> : null}
-                        {/* Under 360 the live clock takes a second line and an intermission reads "End P2", so the chip stays between the scores. */}
-                        {m.live?.intermission ? (
-                            <>
-                                <span className="max-[359px]:hidden">{status}</span>
-                                <span className="min-[360px]:hidden">End {m.live.period <= 3 ? `P${m.live.period}` : 'OT'}</span>
-                            </>
-                        ) : (
-                            status
-                        )}
+                        {/* Under 360 the live clock takes a second line, so the chip stays between the scores; an intermission counts its break down. */}
+                        {m.live?.intermission ? <BreakClock period={m.live.period} left={m.live.breakLeft} /> : status}
                         {m.live && !m.live.intermission ? (
                             <>
                                 <span className="max-[359px]:hidden"> · </span>

@@ -277,7 +277,7 @@ export function buildGame(
         venue: pbp.venue?.default ?? null,
         state,
         outcome: state === 'final' ? (outcomeType === 'OT' || outcomeType === 'SO' ? outcomeType : 'REG') : null,
-        live: state === 'live' ? { period: clock.period, remaining: clock.seconds != null ? formatClock(clock.seconds) : '', intermission: clock.intermission } : null,
+        live: state === 'live' ? { period: clock.period, remaining: clock.seconds != null ? formatClock(clock.seconds) : '', intermission: clock.intermission, breakLeft: clock.breakLeft } : null,
         otLength,
         end,
         teams: { away: team(pbp.awayTeam, 'away'), home: team(pbp.homeTeam, 'home') },

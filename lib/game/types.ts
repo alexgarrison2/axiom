@@ -147,7 +147,7 @@ export interface GameModel {
     /** OT / SO when the game went past regulation. */
     outcome: 'REG' | 'OT' | 'SO' | null;
     /** Live clock: current period and time remaining in it. */
-    live: { period: number; remaining: string; intermission: boolean } | null;
+    live: { period: number; remaining: string; intermission: boolean; breakLeft?: number | null } | null;
     /** Seconds of regulation per period (1200) and OT length (300 regular season, 1200 playoffs). */
     otLength: number;
     /** Last second of play. */

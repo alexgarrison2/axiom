@@ -18,15 +18,20 @@ export interface PeriodClock {
     intermission: boolean;
     /** Seconds left in `period` (null when unknown or in an intermission). */
     seconds: number | null;
+    /** In an intermission: the break's own countdown, in seconds (the feed runs it in the clock field). */
+    breakLeft: number | null;
 }
+
+/** An NHL intermission: 18 minutes. */
+export const INTERMISSION = 1080;
 
 export function readClock(period: number, clock: string | null | undefined, intermission: boolean, periodLength: number): PeriodClock {
     const seconds = clockSeconds(clock);
-    if (intermission) return { period, intermission: true, seconds: null };
+    if (intermission) return { period, intermission: true, seconds: null, breakLeft: seconds };
     if (seconds != null && seconds > periodLength) {
-        return period > 1 ? { period: period - 1, intermission: true, seconds: null } : { period, intermission: false, seconds: periodLength };
+        return period > 1 ? { period: period - 1, intermission: true, seconds: null, breakLeft: seconds } : { period, intermission: false, seconds: periodLength, breakLeft: null };
     }
-    return { period, intermission: false, seconds };
+    return { period, intermission: false, seconds, breakLeft: null };
 }
 
 /** Overtime length: 20 minutes in the playoffs (game type 03 in the id), 5 in the regular season. */

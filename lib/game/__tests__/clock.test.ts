@@ -23,7 +23,7 @@ describe('period clock', () => {
     });
 
     it('never shows more time than the period has: a 20:11 clock in P2 is the 1st intermission', () => {
-        expect(readClock(2, '20:11', false, 1200)).toEqual({ period: 1, intermission: true, seconds: null });
+        expect(readClock(2, '20:11', false, 1200)).toEqual({ period: 1, intermission: true, seconds: null, breakLeft: 1211 });
         expect(liveClock(live({ clock: '20:11' }))).toBe('1st INT');
         expect(liveClock(live({ period: 1, clock: '20:30' }))).toBe('P1 20:00');
     });

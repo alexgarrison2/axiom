@@ -83,6 +83,7 @@ module.exports = {
         warn: token("warn"),
         info: token("info"),
         playoff: token("playoff"),
+        pause: token("pause"),
         /* Text roles: text-fg-1 / text-fg-2 / text-fg-3 */
         fg: {
           1: token("text-1"),
