@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel } from '../analytics';
+import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
+import { mergeSeason } from '../season';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
 import PONY from '@/public/data/pony_score.json';
 
@@ -112,6 +113,12 @@ describe('game model', () => {
         expect(scorer?.shift).toBe(300);
         expect(scorer?.g).toBe(1);
         expect(snap.skaters.home.some(r => r.player.id === 25)).toBe(false);
+    });
+
+    it('splits a merged season\'s zone starts by each game\'s own period', () => {
+        // Two games on one clock: each period's shift lands in its own column, not all after game 1 in "3rd+".
+        const season = mergeSeason([m, { ...m, id: m.id + 1, date: '2026-10-12' }], 'AAA')!;
+        expect(zoneStarts(season, 'away').get(11)!.fly).toEqual([2, 2, 2]);
     });
 
     it('counts unit results and stints per period', () => {

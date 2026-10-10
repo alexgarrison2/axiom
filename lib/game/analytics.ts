@@ -796,7 +796,8 @@ export function zoneStarts(m: GameModel, side: Side): Map<number, ZoneStarts> {
         if (!p || p.side !== side || p.pos === 'G') continue;
         const z: ZoneStarts = { O: [0, 0, 0], N: [0, 0, 0], D: [0, 0, 0], fly: [0, 0, 0] };
         for (const [a] of shifts) {
-            const pi = Math.min(2, Math.floor(a / 1200));
+            // Period within its own game (a merged season runs every game on one clock).
+            const pi = Math.min(2, Math.floor(localT(m, a) / 1200));
             const fo = faceoffAt.get(a);
             if (fo && fo.zone) {
                 const zone = fo.side === side ? fo.zone : fo.zone === 'O' ? 'D' : fo.zone === 'D' ? 'O' : 'N';
