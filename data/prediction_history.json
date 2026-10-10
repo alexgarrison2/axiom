@@ -40104,5 +40104,141 @@
         "market_p": 0.5337
       }
     }
+  },
+  {
+    "gameId": 2026020071,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-10",
+    "homeTeam": "Devils",
+    "awayTeam": "Canucks",
+    "homeScore": 4,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 4.17,
+    "awayXg": 2.21,
+    "homeWinProb": 79.1,
+    "predictedWinner": "Devils",
+    "actualWinner": "Devils",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.0437,
+    "logLoss": 0.2345,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-10T19:03:00Z",
+    "startUtc": "2026-10-10T19:30:00Z",
+    "marketHomeProb": 73.2,
+    "modelHomeProb": 80.4,
+    "homeOdds": -298.0,
+    "awayOdds": 240.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 80.4,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.688,
+        "ll": 0.374,
+        "naive_ll": 0.3334,
+        "market_p": 0.5978
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.562,
+        "ll": 0.5763,
+        "naive_ll": 0.5755,
+        "market_p": 0.5046
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.517,
+        "ll": 0.6597,
+        "naive_ll": 0.6507,
+        "market_p": 0.5186
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.505,
+        "ll": 0.6832,
+        "naive_ll": 0.6479,
+        "market_p": 0.4332
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.721,
+        "ll": 0.3271,
+        "naive_ll": 0.321,
+        "market_p": 0.6542
+      }
+    }
+  },
+  {
+    "gameId": 2026020072,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-10",
+    "homeTeam": "Sharks",
+    "awayTeam": "Oilers",
+    "homeScore": 1,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 2.78,
+    "awayXg": 3.78,
+    "homeWinProb": 34.3,
+    "predictedWinner": "Oilers",
+    "actualWinner": "Oilers",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1176,
+    "logLoss": 0.4201,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-10T19:03:00Z",
+    "startUtc": "2026-10-10T20:00:00Z",
+    "marketHomeProb": 40.1,
+    "modelHomeProb": 32.9,
+    "homeOdds": 136.0,
+    "awayOdds": -162.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 32.9,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.544,
+        "ll": 0.6088,
+        "naive_ll": 0.5546,
+        "market_p": 0.4739
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.422,
+        "ll": 0.8627,
+        "naive_ll": 0.8814,
+        "market_p": 0.376
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.486,
+        "ll": 0.7215,
+        "naive_ll": 0.7194,
+        "market_p": 0.4722
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.425,
+        "ll": 0.8557,
+        "naive_ll": 0.8244,
+        "market_p": 0.377
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.614,
+        "ll": 0.4878,
+        "naive_ll": 0.4822,
+        "market_p": 0.5598
+      }
+    }
   }
 ]
