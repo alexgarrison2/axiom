@@ -116,7 +116,6 @@
     "david reinbacher": "8484220",
     "patrik laine": "8479339",
     "jared davidson": "8483728",
-    "kaiden guhle": "8482087",
     "owen beck": "8483424",
     "joshua roy": "8482749",
     "samuel blais": "8478104",
@@ -132,7 +131,6 @@
     "brian halonen": "8483531",
     "dennis cholowski": "8479395",
     "lenni hameenaho": "8484177",
-    "johnathan kovacevic": "8480192",
     "nathan legare": "8481594",
     "seamus casey": "8483429",
     "ozzy wiesblatt": "8482103",
@@ -194,6 +192,7 @@
     "kevin hayes": "8475763",
     "ryan graves": "8477435",
     "rafael harvey-pinard": "8481093",
+    "ilya solovyov": "8482470",
     "oscar fisker molgaard": "8484168",
     "john hayden": "8477401",
     "jani nyman": "8483497",
@@ -581,6 +580,7 @@
     "adam engstrom": "8483686",
     "alexandre texier": "8480074",
     "nick suzuki": "8480018",
+    "kaiden guhle": "8482087",
     "jake evans": "8478133",
     "arber xhekaj": "8482964",
     "jayden struble": "8481593",
@@ -607,6 +607,7 @@
     "timo meier": "8478414",
     "stefan noesen": "8476474",
     "jesper bratt": "8479407",
+    "johnathan kovacevic": "8480192",
     "paul cotter": "8481032",
     "connor brown": "8477015",
     "jack hughes": "8481559",
@@ -737,7 +738,6 @@
     "jack st. ivany": "8481030",
     "elmer soderblom": "8481725",
     "connor dewar": "8480980",
-    "ilya solovyov": "8482470",
     "ryan shea": "8478854",
     "kaapo kakko": "8481554",
     "matty beniers": "8482665",
@@ -1858,13 +1858,6 @@
         "team": "MTL"
       }
     ],
-    "guhle": [
-      {
-        "pid": "8482087",
-        "full_name": "kaiden guhle",
-        "team": "MTL"
-      }
-    ],
     "beck": [
       {
         "pid": "8483424",
@@ -1977,13 +1970,6 @@
       {
         "pid": "8484177",
         "full_name": "lenni hameenaho",
-        "team": "NJD"
-      }
-    ],
-    "kovacevic": [
-      {
-        "pid": "8480192",
-        "full_name": "johnathan kovacevic",
         "team": "NJD"
       }
     ],
@@ -2415,6 +2401,13 @@
       {
         "pid": "8481093",
         "full_name": "rafael harvey-pinard",
+        "team": "PIT"
+      }
+    ],
+    "solovyov": [
+      {
+        "pid": "8482470",
+        "full_name": "ilya solovyov",
         "team": "PIT"
       }
     ],
@@ -5062,6 +5055,13 @@
         "team": "MTL"
       }
     ],
+    "guhle": [
+      {
+        "pid": "8482087",
+        "full_name": "kaiden guhle",
+        "team": "MTL"
+      }
+    ],
     "evans": [
       {
         "pid": "8478133",
@@ -5078,7 +5078,7 @@
       {
         "pid": "8481593",
         "full_name": "jayden struble",
-        "team": "MTL"
+        "team": "NSH"
       }
     ],
     "demidov": [
@@ -5218,6 +5218,13 @@
       {
         "pid": "8479407",
         "full_name": "jesper bratt",
+        "team": "NJD"
+      }
+    ],
+    "kovacevic": [
+      {
+        "pid": "8480192",
+        "full_name": "johnathan kovacevic",
         "team": "NJD"
       }
     ],
@@ -6109,13 +6116,6 @@
       {
         "pid": "8480980",
         "full_name": "connor dewar",
-        "team": "PIT"
-      }
-    ],
-    "solovyov": [
-      {
-        "pid": "8482470",
-        "full_name": "ilya solovyov",
         "team": "PIT"
       }
     ],

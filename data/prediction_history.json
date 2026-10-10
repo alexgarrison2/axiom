@@ -40036,5 +40036,73 @@
         "market_p": 0.4776
       }
     }
+  },
+  {
+    "gameId": 2026020070,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-10",
+    "homeTeam": "Bruins",
+    "awayTeam": "Flyers",
+    "homeScore": 5,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 3.22,
+    "awayXg": 2.63,
+    "homeWinProb": 59.9,
+    "predictedWinner": "Bruins",
+    "actualWinner": "Bruins",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1608,
+    "logLoss": 0.5125,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-10T16:35:00Z",
+    "startUtc": "2026-10-10T17:00:00Z",
+    "marketHomeProb": 56.7,
+    "modelHomeProb": 60.6,
+    "homeOdds": -142.0,
+    "awayOdds": 120.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 60.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.479,
+        "ll": 0.7361,
+        "naive_ll": 0.6732,
+        "market_p": 0.4269
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.352,
+        "ll": 1.0441,
+        "naive_ll": 1.0696,
+        "market_p": 0.3256
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.503,
+        "ll": 0.6872,
+        "naive_ll": 0.6727,
+        "market_p": 0.5116
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.385,
+        "ll": 0.9545,
+        "naive_ll": 0.9322,
+        "market_p": 0.3437
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.58,
+        "ll": 0.5447,
+        "naive_ll": 0.5538,
+        "market_p": 0.5337
+      }
+    }
   }
 ]
