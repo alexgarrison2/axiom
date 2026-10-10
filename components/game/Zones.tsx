@@ -1,12 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { Segmented } from '@/components/ui/segmented';
 import { zoneStarts, type ZoneStarts } from '@/lib/game/analytics';
 import { SIDES, type Side } from '@/lib/game/types';
-import { GameSection, useGame } from './GameContext';
+import { GameSection, sideTeams, useGame } from './GameContext';
 import { TipFace, useHoverTip } from './HoverTip';
 import type { Player } from '@/lib/game/types';
+import { TeamToggle } from '@/components/ui/team-toggle';
 
 const sum = (a: [number, number, number]) => a[0] + a[1] + a[2];
 const SHADES = [0.4, 0.68, 1];
@@ -118,7 +118,7 @@ export function Zones() {
         <GameSection
             id="zones"
             title="Zone starts"
-            aside={<Segmented label="Team" size="sm" value={side} onChange={setSide} optionClassName="px-2.5" options={SIDES.map(s => ({ value: s, label: m.teams[s].tri }))} />}
+            aside={<TeamToggle value={side} onChange={setSide} teams={sideTeams(m)} />}
         >
             <div className="panel p-card">
                 <div className="mb-2 grid grid-cols-[7.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] items-end gap-2 text-micro uppercase tracking-label text-fg-3 min-[360px]:grid-cols-[9rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)] sm:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1fr)]">

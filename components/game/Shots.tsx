@@ -7,13 +7,14 @@ import { cn } from '@/lib/utils';
 import { gameIndexAt, inPeriod, isUnblocked, matchTeamStrength, periodLabel, shortName, type TeamStrength } from '@/lib/game/analytics';
 import { SIDES, type GameEvent, type Side } from '@/lib/game/types';
 import { ControlRow } from './ControlRow';
-import { GameSection, useGame } from './GameContext';
+import { GameSection, sideTeams, useGame } from './GameContext';
 import { RinkMarkings } from './Rink';
 import { Rink3D } from '@/components/rink/Rink3D';
 import { Crest } from '@/components/ui/crest';
 import { ShotDetail, ShotMapFrame, ShotSummary, geometry, useShotPick, type ShotInfo, type ShotPerson } from '@/components/rink/ShotDetail';
 import { OPP_GOALIE } from '@/lib/game/season';
 import type { ShotRow } from '@/lib/shots';
+import { TeamToggle } from '@/components/ui/team-toggle';
 
 type Kind = 'goal' | 'shot' | 'miss' | 'block';
 const KINDS: { kind: Kind; label: string }[] = [
@@ -182,7 +183,7 @@ export function Shots() {
             <div className="panel overflow-hidden">
                 <ControlRow label="Shot map controls">
                     {view === 'map' ? (
-                        <Segmented label="Team" size="sm" value={side} onChange={pickSide} optionClassName="px-2.5" options={SIDES.map(sd => ({ value: sd, label: m.teams[sd].tri }))} />
+                        <TeamToggle value={side} onChange={pickSide} teams={sideTeams(m)} />
                     ) : null}
                     <Segmented
                         label="Strength"

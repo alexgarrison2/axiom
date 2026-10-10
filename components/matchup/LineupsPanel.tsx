@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { Prediction } from '@/types/prediction';
 import LineupGrid from '@/components/LineupGrid';
-import { Segmented } from '@/components/ui/segmented';
+import { TeamToggle } from '@/components/ui/team-toggle';
 import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { SEASON_ID } from '@/lib/season';
 import { DetailsLoading, type DetailsState } from './DetailsLoading';
@@ -27,11 +27,6 @@ function impactTag(season: string | null | undefined, home: boolean) {
 }
 
 /** A team toggle segment: the crest, as large as the segment allows; the other team's crest is dimmed. */
-function Logo({ src, on }: { src: string; on: boolean }) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" width={40} height={40} className={cn('h-10 w-10 object-contain transition-[opacity,filter]', !on && 'opacity-40 grayscale')} />;
-}
-
 /**
  * Both projected lineups, each team's goalies and injuries. A phone-width card
  * switches between the teams with a crest toggle; a wide card shows them side by side.
@@ -45,17 +40,12 @@ export function LineupsPanel({ p, state }: { p: Prediction; state: DetailsState 
             {d => (
                 <div className="flex min-w-0 flex-col gap-2.5">
                     <div className="cq-lg:hidden">
-                        <Segmented
+                        <TeamToggle
                             label="Lineup team"
-                            size="sm"
                             block
-                            optionClassName="px-1 py-0.5"
                             value={side}
                             onChange={setSide}
-                            options={[
-                                { value: 'away', label: <Logo src={p.away.team.logoUrl} on={side === 'away'} />, ariaLabel: p.away.team.triCode },
-                                { value: 'home', label: <Logo src={p.home.team.logoUrl} on={side === 'home'} />, ariaLabel: p.home.team.triCode },
-                            ]}
+                            teams={(['away', 'home'] as const).map(sd => ({ value: sd, tri: p[sd].team.triCode }))}
                         />
                     </div>
                     {/* Wide card: both teams share two rows (lineup, goalies), so each section starts at the same height. */}

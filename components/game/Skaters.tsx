@@ -10,8 +10,9 @@ import { cn } from '@/lib/utils';
 import { clockOf, pairRows, periodLabel, playerName, shortName, skaterRows, teamOnIce, type PairRow, type PlayerStrength, type SkaterRow, type TeamOnIce } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { ControlRow } from './ControlRow';
-import { GameSection, useGame } from './GameContext';
+import { GameSection, sideTeams, useGame } from './GameContext';
 import { PIN_COL, PinnedTable } from './PinnedTable';
+import { TeamToggle } from '@/components/ui/team-toggle';
 
 /** Where the header is a pinned copy (phones, short screens), body cells carry the header's min widths so the columns match. */
 const PIN_FIRST = 'max-lg:min-w-[8.5rem] md:max-lg:min-w-[11rem] [@media(max-height:500px)]:min-w-[8.5rem] md:[@media(max-height:500px)]:min-w-[11rem]';
@@ -200,23 +201,7 @@ export function Skaters() {
         <GameSection id="skaters" title="Skaters">
             <div className="panel overflow-hidden max-lg:overflow-clip [@media(max-height:500px)]:overflow-clip">
                 <ControlRow label="Skater table controls">
-                    <Segmented
-                        label="Team"
-                        size="sm"
-                        value={side}
-                        onChange={setSide}
-                        optionClassName="gap-1.5 px-2.5"
-                        options={(['away', 'home'] as Side[]).map(s => ({
-                            value: s,
-                            label: (
-                                <span className="flex items-center gap-1.5">
-                                    <Crest tri={m.teams[s].tri} size={18} className="h-[18px] w-[18px]" />
-                                    {m.teams[s].tri}
-                                </span>
-                            ),
-                            ariaLabel: m.teams[s].name,
-                        }))}
-                    />
+                    <TeamToggle value={side} onChange={setSide} teams={sideTeams(m)} />
                     <Segmented
                         label="View"
                         size="sm"

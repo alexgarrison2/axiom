@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useWidth } from '@/components/game/Pulse';
+import { TeamToggle } from '@/components/ui/team-toggle';
 import { cn } from '@/lib/utils';
 import { equalScale, minApart, placeLabels, rates, ticks, type Box, type LabelIn, type WowyMate, type WowyPlayer } from '@/lib/players/wowy';
 
@@ -195,24 +196,15 @@ export function Wowy({ data, first, last, gp, prior, seasonTag }: { data: WowyPl
         <div className="panel p-card">
             <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-micro uppercase tracking-label text-fg-3">
                 {data.teams.length > 1 ? (
-                    <span className="flex gap-1" role="radiogroup" aria-label="Team">
-                        {data.teams.map((t, i) => (
-                            <button
-                                key={t.team}
-                                type="button"
-                                role="radio"
-                                aria-checked={i === teamAt}
-                                onClick={() => {
-                                    setTeamAt(i);
-                                    setSel(null);
-                                    setHover(null);
-                                }}
-                                className={cn('inline-flex h-7 items-center rounded-full border px-2.5 uppercase tracking-chip coarse:h-11', i === teamAt ? 'border-brand/60 text-brand' : 'border-line text-fg-3 hover:text-fg-1')}
-                            >
-                                {t.team}
-                            </button>
-                        ))}
-                    </span>
+                    <TeamToggle
+                        value={String(teamAt)}
+                        onChange={v => {
+                            setTeamAt(Number(v));
+                            setSel(null);
+                            setHover(null);
+                        }}
+                        teams={data.teams.map((t, i) => ({ value: String(i), tri: t.team }))}
+                    />
                 ) : null}
                 <span className="flex items-center gap-1.5">
                     <Swatch kind="with" /> Together

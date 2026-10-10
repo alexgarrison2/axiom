@@ -1,12 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { Segmented } from '@/components/ui/segmented';
 import { clockOf, goalMarkers, goalieRows, lineup, pairKey, pairTimes, skaterRows, units, type MarkerKind, type SkaterRow } from '@/lib/game/analytics';
-import { SIDES, type Side } from '@/lib/game/types';
-import { GameSection, useGame } from './GameContext';
+import type { Side } from '@/lib/game/types';
+import { GameSection, sideTeams, useGame } from './GameContext';
 import { TipFace, TipRow, useHoverTip } from './HoverTip';
 import { useWidth } from './Pulse';
+import { TeamToggle } from '@/components/ui/team-toggle';
 
 /*
  * Player usage, per team (after hockeyviz's usage chart, in Neon Arcade):
@@ -380,16 +380,13 @@ export function Lines() {
             id="lines"
             title="Lines"
             aside={
-                <Segmented
-                    label="Team"
-                    size="sm"
+                <TeamToggle
                     value={side}
                     onChange={v => {
                         setSide(v);
                         setFocus(null);
                     }}
-                    optionClassName="px-2.5"
-                    options={SIDES.map(s => ({ value: s, label: m.teams[s].tri }))}
+                    teams={sideTeams(m)}
                 />
             }
         >

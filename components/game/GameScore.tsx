@@ -3,18 +3,17 @@
 import * as React from 'react';
 import { PlayerLink } from '@/components/players/PlayerLink';
 import Link from 'next/link';
-import { Crest } from '@/components/ui/crest';
 import { LedWord } from '@/components/ui/led-word';
-import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { clockOf, gameScores, GS_PARTS, type GameScoreRow, type GoalieScoreRow, type GsPart, type PonyConstants } from '@/lib/game/analytics';
 import PONY_JSON from '@/public/data/pony_score.json';
 import type { Side } from '@/lib/game/types';
-import { GameSection, useGame } from './GameContext';
+import { GameSection, sideTeams, useGame } from './GameContext';
 import { TipFace } from './HoverTip';
 import { JerseyNumber } from './Jersey';
 import { useWidth } from './Pulse';
 import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
+import { TeamToggle } from '@/components/ui/team-toggle';
 
 /*
  * Pony Score breakdown: every skater's one-game score in goals (lib/game/analytics.ts gameScores, constants measured by pipeline/tools/pony_score_calibrate.py) as a signed stack of
@@ -378,25 +377,13 @@ export function GameScore() {
             title="Pony score"
             display={<LedWord text="pony score" className="h-7" />}
             aside={
-                <Segmented
-                    label="Team"
-                    size="sm"
+                <TeamToggle
                     value={side}
                     onChange={v => {
                         setSide(v);
                         setTip(null);
                     }}
-                    optionClassName="gap-1.5 px-2.5"
-                    options={(['away', 'home'] as Side[]).map(s => ({
-                        value: s,
-                        label: (
-                            <span className="flex items-center gap-1.5">
-                                <Crest tri={m.teams[s].tri} size={18} className="h-[18px] w-[18px]" />
-                                {m.teams[s].tri}
-                            </span>
-                        ),
-                        ariaLabel: m.teams[s].name,
-                    }))}
+                    teams={sideTeams(m)}
                 />
             }
         >

@@ -4,7 +4,10 @@ import * as React from 'react';
 import { deltaE } from '@/components/ui/color';
 import { clashSafePair, teamPalette } from '@/components/ui/team-color';
 import { nameLabels } from '@/lib/game/analytics';
-import type { GameEvent, GameModel, Player, Side } from '@/lib/game/types';
+import { SIDES, type GameEvent, type GameModel, type Player, type Side } from '@/lib/game/types';
+
+/** Away and home as TeamToggle options. */
+export const sideTeams = (m: GameModel) => SIDES.map(s => ({ value: s, tri: m.teams[s].tri, name: m.teams[s].name }));
 
 interface GameCtx {
     m: GameModel;
