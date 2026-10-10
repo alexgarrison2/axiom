@@ -138,6 +138,15 @@ function Spark({ x, y, a, goal }: { x: number; y: number; a: number; goal: boole
     );
 }
 
+/** Which way a team attacks, under the end it attacks. */
+function Arrow({ dir }: { dir: -1 | 1 }) {
+    return (
+        <svg viewBox="0 0 16 10" className="h-2.5 w-4" aria-hidden="true">
+            <path d={dir < 0 ? 'M15 5H2M6 1L2 5l4 4' : 'M1 5h13M10 1l4 4-4 4'} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
 function SparkIcon() {
     return (
         <svg viewBox="0 0 12 12" className="h-3 w-3" aria-hidden="true">
@@ -188,7 +197,7 @@ export function Faceoffs() {
     const ledBy = (s: Side) => list.filter(d => d.win === s && d.led).length;
     const n = list.length;
 
-    // Each third's draws (only the picked taker's when one is picked); each end is named for the team that defends it.
+    // Each third's draws (only the picked taker's when one is picked); each end is named for the team that attacks it.
     const thirds = THIRDS.map((t, z) => {
         const ds = list.filter(d => thirdOf(d) === z && involved(d));
         const away = m.teams.away.tri;
@@ -196,8 +205,9 @@ export function Faceoffs() {
         return {
             ...t,
             ds,
-            name: z === 0 ? `${away} zone` : z === 2 ? `${home} zone` : 'Neutral',
-            title: z === 0 ? `${away} defensive zone` : z === 2 ? `${home} defensive zone` : 'Neutral ice',
+            // The left end is the away team's own, so the home team attacks it (and the reverse on the right).
+            name: z === 0 ? `${home} attacks` : z === 2 ? `${away} attacks` : 'Neutral',
+            title: z === 0 ? `${home} attacking zone` : z === 2 ? `${away} attacking zone` : 'Neutral ice',
             caps: z === 0 ? [`${away} DZ`, `${home} OZ`] : z === 2 ? [`${away} OZ`, `${home} DZ`] : [`${away} NZ`, `${home} NZ`],
             away: ds.filter(d => d.win === 'away').length,
             home: ds.filter(d => d.win === 'home').length,
@@ -462,8 +472,10 @@ export function Faceoffs() {
                                         className={cn('flex min-w-0 flex-col gap-1 rounded-control px-2 py-1.5 transition-colors', hot === z && 'bg-surface-2')}
                                     >
                                         <span className="flex items-center justify-center gap-1.5 whitespace-nowrap">
-                                            {t.dir ? <Crest tri={t.dir < 0 ? m.teams.away.tri : m.teams.home.tri} size={16} className="h-4 w-4" /> : null}
+                                            {t.dir < 0 ? <Arrow dir={-1} /> : null}
+                                            {t.dir ? <Crest tri={t.dir < 0 ? m.teams.home.tri : m.teams.away.tri} size={16} className="h-4 w-4" /> : null}
                                             {t.name}
+                                            {t.dir > 0 ? <Arrow dir={1} /> : null}
                                         </span>
                                         {/* Tug of war: away wins from the left, home wins from the right. */}
                                         <span className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-body font-bold normal-case tracking-normal tabular-nums">
