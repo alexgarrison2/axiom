@@ -366,7 +366,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sam Reinhart",
@@ -430,7 +430,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Garnet Hathaway",
@@ -462,7 +462,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d2": [
@@ -506,7 +506,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -635,8 +635,8 @@
             }
         ],
         "lineup_source": "Jameson Olive",
-        "updated_at": "2026-10-09T15:45:45.880Z",
-        "fetched_at": "2026-10-09T16:04:35Z"
+        "updated_at": "2026-10-10T21:37:02.249Z",
+        "fetched_at": "2026-10-10T22:02:37Z"
     },
     "TOR": {
         "f1": [
@@ -648,7 +648,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Auston Matthews",
@@ -690,7 +690,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "William Nylander",
@@ -700,7 +700,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -729,10 +729,10 @@
                 "number": 29,
                 "pos": "rw",
                 "id": 28732,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -744,7 +744,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Teddy Blueger",
@@ -786,7 +786,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -808,19 +808,19 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
+                "name": "Nick Blankenburg",
+                "number": 37,
                 "pos": "ld",
-                "id": 1172,
-                "ppUnit": 2,
+                "id": 36299,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Troy Stecher",
@@ -886,7 +886,7 @@
                 "number": 95,
                 "pos": "ir4",
                 "id": 1172,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             },
@@ -958,13 +958,13 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
+                "name": "Nick Blankenburg",
+                "number": 37,
                 "pos": "sk3",
-                "id": 1172,
-                "ppUnit": 2,
+                "id": 36299,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Darren Raddysh",
@@ -977,8 +977,8 @@
             }
         ],
         "lineup_source": "Mark Masters",
-        "updated_at": "2026-10-09T19:47:25.524Z",
-        "fetched_at": "2026-10-09T20:02:38Z"
+        "updated_at": "2026-10-10T21:13:42.934Z",
+        "fetched_at": "2026-10-10T22:02:37Z"
     },
     "MTL": {
         "f1": [
@@ -4215,14 +4215,14 @@
                 "movement": null
             },
             {
-                "name": "Nazem Kadri",
-                "number": 91,
+                "name": "Martin Necas",
+                "number": 88,
                 "pos": "rw",
-                "id": 1425,
+                "id": 2804,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -4247,14 +4247,14 @@
                 "movement": null
             },
             {
-                "name": "Martin Necas",
-                "number": 88,
+                "name": "Nazem Kadri",
+                "number": 91,
                 "pos": "rw",
-                "id": 2804,
+                "id": 1425,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f3": [
@@ -4355,14 +4355,14 @@
                 "movement": null
             },
             {
-                "name": "Noah Juulsen",
-                "number": 47,
+                "name": "Sam Malinski",
+                "number": 70,
                 "pos": "rd",
-                "id": 2500,
+                "id": 37993,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d3": [
@@ -4496,7 +4496,7 @@
         ],
         "lineup_source": "Aarif Deen",
         "updated_at": "2026-10-10T16:06:22.154Z",
-        "fetched_at": "2026-10-10T16:35:05Z"
+        "fetched_at": "2026-10-10T22:02:37Z"
     },
     "LAK": {
         "f1": [
@@ -6147,14 +6147,14 @@
         ],
         "f3": [
             {
-                "name": "Marcus Foligno",
-                "number": 17,
+                "name": "Rieger Lorenz",
+                "number": null,
                 "pos": "lw",
-                "id": 1689,
+                "id": 31571,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Danila Yurov",
@@ -6179,10 +6179,10 @@
         ],
         "f4": [
             {
-                "name": "Yakov Trenin",
-                "number": 13,
+                "name": "Nico Sturm",
+                "number": 78,
                 "pos": "lw",
-                "id": 3775,
+                "id": 27037,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -6199,10 +6199,10 @@
                 "movement": null
             },
             {
-                "name": "Nico Sturm",
-                "number": 78,
+                "name": "Yakov Trenin",
+                "number": 13,
                 "pos": "rw",
-                "id": 27037,
+                "id": 3775,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -6233,14 +6233,14 @@
         ],
         "d2": [
             {
-                "name": "Zach Bogosian",
-                "number": 24,
+                "name": "Olli Maatta",
+                "number": 3,
                 "pos": "ld",
-                "id": 53,
+                "id": 1792,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jonas Brodin",
@@ -6322,6 +6322,24 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Zach Bogosian",
+                "number": 24,
+                "pos": "ir4",
+                "id": 53,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Marcus Foligno",
+                "number": 17,
+                "pos": "ir5",
+                "id": 1689,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -6391,18 +6409,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Zach Bogosian",
-                "number": 24,
+                "name": "Olli Maatta",
+                "number": 3,
                 "pos": "sk4",
-                "id": 53,
+                "id": 1792,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
         "lineup_source": "Michael Russo",
-        "updated_at": "2026-10-09T17:47:05.083Z",
-        "fetched_at": "2026-10-09T18:03:06Z"
+        "updated_at": "2026-10-10T21:41:48.972Z",
+        "fetched_at": "2026-10-10T22:02:37Z"
     },
     "WSH": {
         "f1": [
