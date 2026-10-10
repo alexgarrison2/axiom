@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Crest } from '@/components/ui/crest';
 import { Segmented } from '@/components/ui/segmented';
-import { fmtInt } from '@/components/views/format';
+import { fmtInt, pctTone } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { DRAW_WINDOW, draws, FO_SPOTS, periodLabel, type Draw } from '@/lib/game/analytics';
 import { other, type Side } from '@/lib/game/types';
@@ -157,6 +157,17 @@ function SparkIcon() {
     );
 }
 
+const pct = (w: number, l: number) => (w + l ? `${Math.round((w / (w + l)) * 100)}%` : '—');
+
+/** Win % in context: faceoffs live near 50, so the tone runs from red at 40% through grey at 50 to green at 60%. */
+function Pct({ w, l, className }: { w: number; l: number; className?: string }) {
+    return (
+        <span className={className} style={w + l ? { color: pctTone(50 + ((w / (w + l)) * 100 - 50) * 5) } : undefined}>
+            {pct(w, l)}
+        </span>
+    );
+}
+
 /** A season's dot: a ring of beads filled clockwise in the winner's colours like a gauge (DIAL beads, fewer on the neutral dots). */
 const DIAL = { end: 20, neutral: 12 };
 
@@ -245,14 +256,14 @@ export function Faceoffs() {
                         </span>
                     </div>
                     <p className="text-micro uppercase tracking-label text-fg-3">
-                        {m.teams.away.tri} won <span className="text-fg-1">{pct(t.away, t.home)}</span> of {fmtInt(tot)}
+                        {m.teams.away.tri} won <Pct w={t.away} l={t.home} /> of {fmtInt(tot)}
                     </p>
                     <ol className="flex flex-col gap-1 border-t border-line pt-2 text-caption">
                         {top.map(x => (
                             <li key={x.id} className="flex items-baseline justify-between gap-2">
                                 <span className="truncate font-semibold text-fg-1">{label(x.id)}</span>
                                 <span className="tabular-nums text-fg-2">
-                                    {wl(x.w, x.l)} <span className="text-fg-3">{pct(x.w, x.l)}</span>
+                                    {wl(x.w, x.l)} <Pct w={x.w} l={x.l} />
                                 </span>
                             </li>
                         ))}
@@ -294,7 +305,6 @@ export function Faceoffs() {
         );
     };
 
-    const pct = (w: number, l: number) => (w + l ? `${Math.round((w / (w + l)) * 100)}%` : '—');
     const wl = (w: number, l: number) => `${fmtInt(w)}–${fmtInt(l)}`;
     // D / N / O side by side: win % over the W–L, three fixed columns so the rows line up.
     const zoneCells = (z: Record<Zone, [number, number]>, className?: string) => (
@@ -304,7 +314,7 @@ export function Faceoffs() {
                 return (
                     <span key={k} className={cn('flex min-w-0 flex-col leading-tight', !(w + l) && 'opacity-40')}>
                         <span className="whitespace-nowrap text-fg-2">
-                            <span className="text-fg-3">{k}</span> {pct(w, l)}
+                            <span className="text-fg-3">{k}</span> <Pct w={w} l={l} />
                         </span>
                         <span className="whitespace-nowrap text-fg-3">{w + l ? wl(w, l) : '—'}</span>
                     </span>
@@ -312,6 +322,9 @@ export function Faceoffs() {
             })}
         </span>
     );
+
+    // Whose win % the zone bars state: the picked taker's side, else the away side (the team, on a team page).
+    const view: Side = activeSide ?? 'away';
 
     const rail = (side: Side) => {
         // A season lists the regular takers (10+ draws) and the opponents faced most, or those the picked taker faced.
@@ -334,9 +347,7 @@ export function Faceoffs() {
                     <div className="min-w-0 leading-tight">
                         <div className={cn('flex items-baseline gap-2', side === 'home' && 'lg:justify-end')}>
                             <span className="text-h3 font-bold tabular-nums text-fg-1">{wl(w, l)}</span>
-                            <span className="text-caption tabular-nums" style={{ color: colors[side] }}>
-                                {pct(w, l)}
-                            </span>
+                            <Pct w={w} l={l} className="text-caption font-semibold tabular-nums" />
                         </div>
                         {zoneCells(Object.fromEntries(teamZone(side).map(({ z, w: zw, l: zl }) => [z, [zw, zl]])) as Record<Zone, [number, number]>, 'mt-1')}
                         <span className={cn('mt-1 flex items-center gap-1 text-micro uppercase tracking-label text-fg-3', side === 'home' && 'lg:justify-end')}>
@@ -382,11 +393,11 @@ export function Faceoffs() {
                                             {rec && !isActive ? (
                                                 <span className="shrink-0 whitespace-nowrap text-caption font-bold tabular-nums text-brand">
                                                     <span className="mr-1 text-micro font-normal uppercase tracking-label text-fg-3">vs</span>
-                                                    {wl(rec[0], rec[1])} <span className="font-normal">{pct(rec[0], rec[1])}</span>
+                                                    {wl(rec[0], rec[1])} <Pct w={rec[0]} l={rec[1]} className="font-normal" />
                                                 </span>
                                             ) : (
                                                 <span className="shrink-0 whitespace-nowrap text-caption font-bold tabular-nums text-fg-1">
-                                                    {wl(t.w, t.l)} <span className="font-normal text-fg-2">{pct(t.w, t.l)}</span>
+                                                    {wl(t.w, t.l)} <Pct w={t.w} l={t.l} className="font-normal" />
                                                 </span>
                                             )}
                                         </span>
@@ -587,11 +598,12 @@ export function Faceoffs() {
                                             <span style={{ color: colors.home }}>{fmtInt(t.home)}</span>
                                         </span>
                                         <span className="flex justify-between gap-2 whitespace-nowrap">
+                                            {/* Only the team's (or the picked taker's) win %: the other side's is the rest. */}
                                             <span>
-                                                {t.caps[0]} <span className="text-fg-2">{pct(t.away, t.home)}</span>
+                                                {t.caps[0]} {view === 'away' ? <Pct w={t.away} l={t.home} /> : null}
                                             </span>
                                             <span>
-                                                <span className="text-fg-2">{pct(t.home, t.away)}</span> {t.caps[1]}
+                                                {view === 'home' ? <Pct w={t.home} l={t.away} /> : null} {t.caps[1]}
                                             </span>
                                         </span>
                                     </div>
