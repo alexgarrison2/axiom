@@ -204,11 +204,51 @@ function Outlook() {
     );
 }
 
+/** The game's state in words: Final (/OT /SO), Intermission, Live or Pregame. */
+function statusOf(m: ReturnType<typeof useGame>['m']): string {
+    return m.state === 'final' ? (m.outcome === 'REG' ? 'Final' : `Final/${m.outcome}`) : m.state === 'live' ? (m.live?.intermission ? 'Intermission' : 'Live') : 'Pregame';
+}
+
+/**
+ * The score band in one line, for the sticky section bar once the band has scrolled away:
+ * crest, tricode and score each side of the state chip (live clock while it runs).
+ */
+export function CompactScore() {
+    const { m } = useGame();
+    const live = m.state === 'live';
+    const side = (sd: Side) => {
+        const t = m.teams[sd];
+        const lost = m.state === 'final' && t.score < m.teams[other(sd)].score;
+        return (
+            <span className={cn('flex items-center gap-1.5', sd === 'home' && 'flex-row-reverse')}>
+                <Crest tri={t.tri} size={24} className="h-6 w-6 drop-shadow-none" />
+                <span className="text-micro font-bold uppercase tracking-label text-fg-2">{t.tri}</span>
+                <span className={cn('min-w-[1.25rem] text-center font-display text-title font-bold leading-none tabular-nums', lost ? 'text-fg-3' : 'text-fg-1')}>
+                    {t.score}
+                </span>
+            </span>
+        );
+    };
+    return (
+        <span className="flex shrink-0 items-center gap-2.5" aria-label={`${m.teams.away.tri} ${m.teams.away.score}, ${m.teams.home.tri} ${m.teams.home.score}, ${statusOf(m)}`}>
+            {side('away')}
+            <span
+                className={cn(
+                    'whitespace-nowrap rounded-chip px-1.5 py-0.5 text-[11px] font-bold uppercase leading-tight tracking-label',
+                    live ? 'bg-pos/10 text-pos' : m.state === 'final' ? 'bg-surface-3 text-fg-1' : 'text-fg-3',
+                )}
+            >
+                {m.live?.intermission ? `End ${m.live.period <= 3 ? `P${m.live.period}` : 'OT'}` : m.live ? `${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : statusOf(m)}
+            </span>
+            {side('home')}
+        </span>
+    );
+}
+
 export function ScoreBand() {
     const { m, byId } = useGame();
     const lines = lineScore(m);
-    const status =
-        m.state === 'final' ? (m.outcome === 'REG' ? 'Final' : `Final/${m.outcome}`) : m.state === 'live' ? (m.live?.intermission ? 'Intermission' : 'Live') : 'Pregame';
+    const status = statusOf(m);
     const pg = m.pregame;
     const pick: Side | null = pg && !pg.lean ? (pg.homeWin >= 0.5 ? 'home' : 'away') : null;
     const pickP = pg ? (pick === 'away' ? 1 - pg.homeWin : pg.homeWin) : null;

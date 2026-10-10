@@ -12,7 +12,7 @@ import { Lines } from './Lines';
 import { Faceoffs } from './Faceoffs';
 import { Matchups } from './Matchups';
 import { Pulse } from './Pulse';
-import { ScoreBand } from './ScoreBand';
+import { CompactScore, ScoreBand } from './ScoreBand';
 import { Shots } from './Shots';
 import { Skaters } from './Skaters';
 import { TeamStats } from './TeamStats';
@@ -83,7 +83,7 @@ function LiveRefresh({ live }: { live: boolean }) {
 }
 
 /** Section chips in a sticky bar under the app bar, at every width (the page keeps its full width for the charts). */
-function Rail({ active }: { active: string }) {
+function Rail({ active, score }: { active: string; score: boolean }) {
     // Where the chips overflow (phones), keep the current one in view as the page scrolls.
     const list = React.useRef<HTMLOListElement>(null);
     // Its height, for headers that pin under it (PinnedTable); only while it is showing.
@@ -109,8 +109,14 @@ function Rail({ active }: { active: string }) {
         }
     }, [active]);
     return (
-        <nav ref={nav} aria-label="Game sections" className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:px-6">
-            <ol ref={list} className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+        <nav ref={nav} aria-label="Game sections" className="sticky top-[calc(var(--appbar-h)+var(--vv-top,0px))] z-20 -mx-4 flex flex-col gap-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur md:-mx-6 md:flex-row md:items-center md:gap-4 md:px-6">
+            {/* The score rides along once the score band has scrolled away: its own row on phones, left of the chips wider. */}
+            {score ? (
+                <div className="flex justify-center motion-safe:animate-in motion-safe:fade-in md:justify-start md:border-r md:border-line md:pr-4">
+                    <CompactScore />
+                </div>
+            ) : null}
+            <ol ref={list} className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto scrollbar-hide">
                 {SECTIONS.map(s => (
                     <li key={s.id} className="shrink-0">
                         <a
@@ -130,21 +136,39 @@ function Rail({ active }: { active: string }) {
     );
 }
 
+/** True once the element has scrolled up past the app bar (it is above the viewport's top band). */
+function useScrolledPast<T extends HTMLElement>(): [React.RefObject<T | null>, boolean] {
+    const ref = React.useRef<T>(null);
+    const [past, setPast] = React.useState(false);
+    React.useEffect(() => {
+        const el = ref.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return;
+        const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--appbar-h')) || 56;
+        const io = new IntersectionObserver(([e]) => setPast(!e.isIntersecting && e.boundingClientRect.top < 0), { rootMargin: `-${Math.round(bar + 48)}px 0px 0px 0px` });
+        io.observe(el);
+        return () => io.disconnect();
+    }, []);
+    return [ref, past];
+}
+
 export function GameView({ m }: { m: GameModel }) {
     const active = useActiveSection();
     const started = m.state !== 'pre';
+    const [bandRef, bandGone] = useScrolledPast<HTMLDivElement>();
     return (
         <GameProvider m={m}>
             <LiveRefresh live={m.state === 'live'} />
             <div className="flex flex-col gap-5">
-                <ScoreBand />
+                <div ref={bandRef}>
+                    <ScoreBand />
+                </div>
                 <div className="flex flex-col gap-6">
                     {/* Before puck drop the story is the only section: no chips to dead anchors on phones and tablets. */}
                     {started ? (
-                        <Rail active={active} />
+                        <Rail active={active} score={bandGone} />
                     ) : (
                         <div className="hidden lg:block">
-                            <Rail active={active} />
+                            <Rail active={active} score={bandGone} />
                         </div>
                     )}
                     <div className="flex min-w-0 flex-col gap-10">
