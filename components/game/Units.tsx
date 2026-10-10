@@ -23,7 +23,7 @@ interface Col {
     fmt?: (v: number) => string;
     signed?: boolean;
     model?: boolean;
-    /** The team row: the team's own numbers at this table's strength; stints and zone starts stay blank. */
+    /** The team row: the team's own numbers at this table's strength; shifts and zone starts stay blank. */
     total?: (t: TeamOnIce) => number | null;
 }
 
@@ -34,7 +34,7 @@ const sgn = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toF
 
 const COLS: Col[] = [
     { key: 'toi', label: 'TOI', title: 'Time on ice together', value: u => u.toi, fmt: clockOf, total: t => t.toi },
-    { key: 'stints', label: 'STN', title: 'Stints: separate times on the ice together', value: u => u.stints },
+    { key: 'stints', label: 'SHF', title: 'Shifts: separate times this unit was on the ice together', value: u => u.stints },
     { key: 'cf', label: 'CF', title: 'Shot attempts for', value: u => u.cf, total: t => t.cf },
     { key: 'ca', label: 'CA', title: 'Shot attempts against', value: u => u.ca, total: t => t.ca },
     { key: 'cfp', label: 'CF%', title: 'Shot attempt share', value: u => pct(u.cf, u.ca), fmt: f1p, total: t => pct(t.cf, t.ca) },
@@ -46,8 +46,8 @@ const COLS: Col[] = [
     { key: 'xga', label: 'xGA', title: 'pony xG against', value: u => u.xga, fmt: f2, model: true, total: t => t.xga },
     { key: 'xgfp', label: 'xGF%', title: 'pony xG share', value: u => pct(u.xgf, u.xga), fmt: f1p, model: true, total: t => pct(t.xgf, t.xga) },
     { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: u => u.xgf - u.xga, fmt: sgn, signed: true, total: t => t.xgf - t.xga },
-    { key: 'oz', label: 'OZ', title: 'Stints started on an offensive-zone faceoff', value: u => u.oz },
-    { key: 'dz', label: 'DZ', title: 'Stints started on a defensive-zone faceoff', value: u => u.dz },
+    { key: 'oz', label: 'OZ', title: 'Shifts started on an offensive-zone faceoff', value: u => u.oz },
+    { key: 'dz', label: 'DZ', title: 'Shifts started on a defensive-zone faceoff', value: u => u.dz },
     { key: 'ozp', label: 'OZS%', title: 'Offensive-zone share of O and D faceoff starts', value: u => pct(u.oz, u.dz), fmt: v => `${Math.round(v * 100)}%` },
 ];
 
