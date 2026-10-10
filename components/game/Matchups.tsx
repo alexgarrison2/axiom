@@ -8,23 +8,35 @@ import { GameSection, useGame } from './GameContext';
 import { TipFace, useHoverTip } from './HoverTip';
 import { useWidth } from './Pulse';
 
-/** Skaters in line order: 5v5 forward lines, then D pairs, then anyone left. */
-function ordered(m: ReturnType<typeof useGame>['m'], side: Side, byId: Map<number, Player>): Player[] {
+/** A gap before row/column `at`: between lines and pairs, or (strong) where forwards give way to defence. */
+type Cut = { at: number; strong: boolean };
+
+/** Skaters in line order: 5v5 forward lines, then D pairs, then anyone left, with a cut between each group. */
+function ordered(m: ReturnType<typeof useGame>['m'], side: Side, byId: Map<number, Player>): { list: Player[]; cuts: Cut[] } {
     const seen = new Set<number>();
-    const out: Player[] = [];
-    for (const u of [...units(m, side, 'F').slice(0, 4), ...units(m, side, 'D').slice(0, 3)]) {
-        for (const id of u.ids) {
-            if (seen.has(id)) continue;
-            const p = byId.get(id);
-            if (p) {
-                seen.add(id);
-                out.push(p);
-            }
+    const list: Player[] = [];
+    const cuts: Cut[] = [];
+    const groups = [
+        ...units(m, side, 'F').slice(0, 4).map(u => ({ ids: u.ids, kind: 'F' })),
+        ...units(m, side, 'D').slice(0, 3).map(u => ({ ids: u.ids, kind: 'D' })),
+        { ids: m.players.filter(p => p.side === side && p.pos !== 'G' && m.shifts[p.id]).map(p => p.id), kind: 'X' },
+    ];
+    let prev: string | null = null;
+    for (const g of groups) {
+        const add = g.ids.map(id => byId.get(id)).filter((p): p is Player => !!p && !seen.has(p.id));
+        if (!add.length) continue;
+        if (prev) cuts.push({ at: list.length, strong: prev !== g.kind });
+        prev = g.kind;
+        for (const p of add) {
+            seen.add(p.id);
+            list.push(p);
         }
     }
-    for (const p of m.players) if (p.side === side && p.pos !== 'G' && m.shifts[p.id] && !seen.has(p.id)) out.push(p);
-    return out;
+    return { list, cuts };
 }
+
+/** Offset of row/column `i`: whole cells plus a gap for every cut at or before it. */
+const offsetOf = (i: number, cell: number, gap: number, cuts: Cut[]) => i * cell + gap * cuts.filter(c => c.at <= i).length;
 
 /** Area-true split: the upper-left part of an s-square covering `share` of it, cut along the anti-diagonal direction. */
 function splitPath(x0: number, y0: number, s: number, share: number): string {
@@ -94,20 +106,25 @@ function MatchupTip({ a, h, c }: { a: Player; h: Player; c: Matchup }) {
 export function Matchups() {
     const { m, colors, byId, label } = useGame();
     const grid = React.useMemo(() => matchups(m), [m]);
-    const away = React.useMemo(() => ordered(m, 'away', byId), [m, byId]);
-    const home = React.useMemo(() => ordered(m, 'home', byId), [m, byId]);
+    const rows = React.useMemo(() => ordered(m, 'away', byId), [m, byId]);
+    const cols = React.useMemo(() => ordered(m, 'home', byId), [m, byId]);
+    const away = rows.list;
+    const home = cols.list;
     const { bind, tip } = useHoverTip();
     const [boxRef, boxW] = useWidth<HTMLDivElement>();
     let max = 1;
     for (const row of grid.values()) for (const c of row.values()) max = Math.max(max, c.toi);
     const gutter = 120;
     // Fill the panel: cells grow with the width, 22px floor (the grid scrolls sideways on phones), 44px ceiling.
-    const CELL = Math.max(22, Math.min(44, Math.floor(((boxW || 600) - gutter - 8) / Math.max(1, home.length))));
-    const W = gutter + home.length * CELL;
+    const GAP = (boxW || 600) < 640 ? 4 : 6;
+    const CELL = Math.max(22, Math.min(44, Math.floor(((boxW || 600) - gutter - 8 - GAP * cols.cuts.length) / Math.max(1, home.length))));
+    const X = (j: number) => gutter + offsetOf(j, CELL, GAP, cols.cuts);
+    const W = X(home.length);
     // Room for the slanted column names: 96px on wide screens; phones trim it to the longest name.
     const longest = Math.max(0, ...home.map(p => label(p.id).length));
     const head = boxW > 0 && boxW < 640 ? Math.min(96, Math.ceil(longest * 6.4 * 0.87) + 14) : 96;
-    const H = head + away.length * CELL;
+    const Y = (i: number) => head + offsetOf(i, CELL, GAP, rows.cuts);
+    const H = Y(away.length);
 
     return (
         <GameSection id="matchups" title="Matchups">
@@ -127,18 +144,25 @@ export function Matchups() {
                 <ScrollRegion label="5v5 matchup grid" className="py-card">
                     <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`5v5 time and xG for every ${m.teams.away.tri} skater against every ${m.teams.home.tri} skater`} className="block font-mono">
                         {home.map((p, j) => (
-                            <text key={p.id} transform={`translate(${gutter + j * CELL + CELL / 2 - 4},${head - 6}) rotate(-60)`} className="text-micro" fill={colors.home}>
+                            <text key={p.id} transform={`translate(${X(j) + CELL / 2 - 4},${head - 6}) rotate(-60)`} className="text-micro" fill={colors.home}>
                                 {label(p.id)}
                             </text>
                         ))}
+                        {/* Hairlines in the gaps: faint between lines and pairs, firmer where forwards meet defence. */}
+                        {cols.cuts.map(c => (
+                            <line key={`c${c.at}`} x1={X(c.at) - GAP / 2} x2={X(c.at) - GAP / 2} y1={head} y2={H} className={c.strong ? 'stroke-line-strong' : 'stroke-line'} />
+                        ))}
+                        {rows.cuts.map(c => (
+                            <line key={`r${c.at}`} y1={Y(c.at) - GAP / 2} y2={Y(c.at) - GAP / 2} x1={gutter - 4} x2={W} className={c.strong ? 'stroke-line-strong' : 'stroke-line'} />
+                        ))}
                         {away.map((a, i) => (
-                            <g key={a.id} transform={`translate(0,${head + i * CELL})`}>
+                            <g key={a.id} transform={`translate(0,${Y(i)})`}>
                                 <text x={gutter - 8} y={CELL / 2 + 4} textAnchor="end" className="text-micro" fill={colors.away}>
                                     {label(a.id)}
                                 </text>
                                 {home.map((h, j) => {
                                     const c = grid.get(a.id)?.get(h.id);
-                                    const cx = gutter + j * CELL;
+                                    const cx = X(j);
                                     if (!c || c.toi < 5) return <rect key={h.id} x={cx + CELL / 2 - 1} y={CELL / 2 - 1} width={2} height={2} className="fill-line-strong" />;
                                     const s = Math.max(6, Math.sqrt(c.toi / max) * (CELL - 3));
                                     const x0 = cx + (CELL - s) / 2;
