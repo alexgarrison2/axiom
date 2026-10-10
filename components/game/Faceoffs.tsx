@@ -5,7 +5,7 @@ import { Crest } from '@/components/ui/crest';
 import { Segmented } from '@/components/ui/segmented';
 import { fmtInt, pctTone } from '@/components/views/format';
 import { cn } from '@/lib/utils';
-import { DRAW_WINDOW, draws, FO_SPOTS, periodLabel, type Draw } from '@/lib/game/analytics';
+import { DRAW_WINDOW, draws, FO_SPOTS, inPeriod, periodLabel, type Draw, type PeriodFilter } from '@/lib/game/analytics';
 import { other, type Side } from '@/lib/game/types';
 import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
@@ -176,7 +176,10 @@ export function Faceoffs() {
     const season = !!m.starts?.length;
     const all = React.useMemo(() => draws(m), [m]);
     const [strength, setStrength] = React.useState<Strength>('all');
-    const list = React.useMemo(() => all.filter(d => strengthMatch(d, strength)), [all, strength]);
+    const [period, setPeriod] = React.useState<string>('all');
+    const per: PeriodFilter = period === 'all' ? 'all' : Number(period);
+    const periods = React.useMemo(() => [...new Set(all.map(d => (d.e.period >= 4 ? 4 : d.e.period)))].sort(), [all]);
+    const list = React.useMemo(() => all.filter(d => strengthMatch(d, strength) && inPeriod(d.e, per)), [all, strength, per]);
     const takers = React.useMemo(() => takersOf(list, byId), [list, byId]);
     const [pinned, setPinned] = React.useState<number | null>(null);
     // A taker is picked by click (tap) only; with none picked the board shows both teams.
@@ -465,13 +468,24 @@ export function Faceoffs() {
                             { value: 'homePP', label: `${m.teams.home.tri} PP` },
                         ]}
                     />
+                    <Segmented
+                        label="Period"
+                        size="sm"
+                        value={period}
+                        onChange={v => {
+                            setPeriod(v);
+                            setPair(null);
+                        }}
+                        optionClassName="px-2"
+                        options={[{ value: 'all', label: 'All' }, ...periods.map(p => ({ value: String(p), label: periodLabel(p) }))]}
+                    />
                     {strength === 'awayPP' || strength === 'homePP' ? (
                         <span className="text-micro uppercase tracking-label text-fg-3">
                             {m.teams[strength === 'awayPP' ? 'home' : 'away'].tri} on the kill
                         </span>
                     ) : null}
                 </ControlRow>
-                {!n ? <p className="p-card label">No faceoffs at this strength</p> : null}
+                {!n ? <p className="p-card label">No faceoffs {period === 'all' ? 'at this strength' : 'in this view'}</p> : null}
                 <div className={cn('relative grid gap-5 p-card sm:grid-cols-2 lg:grid-cols-[15.5rem_minmax(0,1fr)_15.5rem] lg:items-start', !n && 'hidden')}>
                     <div className="order-2 lg:order-1">{rail('away')}</div>
                     <div className="order-1 flex min-w-0 flex-col gap-2 sm:col-span-2 lg:order-2 lg:col-span-1">
