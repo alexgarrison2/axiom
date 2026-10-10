@@ -148,3 +148,26 @@ export function goalieShiftRows(
     for (const side of sides) close(side, lastPeriod, opts.final ? periodEnd(lastPeriod) : lastAt);
     return rows;
 }
+
+/** How far into the game (seconds) a set of shift rows reaches. */
+export function shiftCoverage(rows: { typeCode?: number; period?: number; endTime?: string }[] | undefined, otLength: number): number {
+    let end = 0;
+    for (const r of rows ?? []) {
+        if (r.typeCode !== 517 || !r.period || !r.endTime) continue;
+        const base = r.period <= 3 ? (r.period - 1) * 1200 : 3600 + (r.period - 4) * otLength;
+        end = Math.max(end, base + secs(r.endTime));
+    }
+    return end;
+}
+
+/** How far into the game (seconds) the play-by-play reaches. */
+export function playCoverage(plays: PbpPlay[], otLength: number): number {
+    let end = 0;
+    for (const p of plays) {
+        const period = p.periodDescriptor?.number ?? 1;
+        if (period > 5) continue;
+        const base = period <= 3 ? (period - 1) * 1200 : 3600 + (period - 4) * otLength;
+        end = Math.max(end, base + secs(p.timeInPeriod));
+    }
+    return end;
+}

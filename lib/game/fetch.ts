@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getPredictions } from '@/utils/data';
 import { buildGame, type RawFeeds } from './build';
-import { goalieShiftRows, reportCode, reportShiftRows } from './toi-report';
+import { goalieShiftRows, playCoverage, reportCode, reportShiftRows, shiftCoverage } from './toi-report';
 import { loadArtifacts, publishedXg, type XgArtifacts } from './xg';
 import { parseRatings, type EvRatings } from './ratings';
 import type { GameModel, GameOdds, Pregame, SeasonOdds, Side } from './types';
@@ -299,10 +299,17 @@ export async function getGame(idStr: string): Promise<GameModel | null> {
         getJson(`https://api-web.nhle.com/v1/gamecenter/${id}/right-rail`, ttl),
         pregameFor(id),
     ]);
-    // A game under way (or just over) has no shift chart yet: read the live time-on-ice reports.
+    // The shift chart fills in late and in pieces (empty during a game, then partway). When it falls
+    // behind the play-by-play, read the time-on-ice reports too and keep whichever reaches further.
     const started = pbp.gameState !== 'FUT' && pbp.gameState !== 'PRE';
-    const chartRows = (chart as { data?: unknown[] } | null)?.data?.length ?? 0;
-    const shifts = chartRows || !started ? chart : ((await reportShifts(pbp, final, final ? 600 : 30)) ?? chart);
+    const ot = Number(pbp.gameType) === 3 ? 1200 : 300;
+    type Rows = { data?: { typeCode?: number; period?: number; endTime?: string }[] } | null;
+    const chartEnd = shiftCoverage((chart as Rows)?.data, ot);
+    let shifts = chart;
+    if (started && chartEnd < playCoverage(pbp.plays ?? [], ot) - 90) {
+        const report = (await reportShifts(pbp, final, final ? 600 : 30)) as Rows;
+        if (report && shiftCoverage(report.data, ot) > chartEnd) shifts = report;
+    }
     const odds = closingOdds(id);
     const outlook = seasonOutlook({
         startUtc: pbp.startTimeUTC,
