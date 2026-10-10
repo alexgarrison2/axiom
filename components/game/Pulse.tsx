@@ -161,7 +161,7 @@ export function Pulse() {
     const domain = Math.max(3600, m.end);
     const W = Math.max(width, 240);
     const padL = compact ? 36 : 40;
-    const padR = compact ? 46 : 54;
+    const padR = compact ? 50 : 64;
     const plot = W - padL - padR;
     const x = (t: number) => padL + (Math.min(t, domain) / domain) * plot;
 
@@ -607,12 +607,22 @@ export function Pulse() {
                             const last = races[side][races[side].length - 1];
                             const other = races[side === 'away' ? 'home' : 'away'];
                             const oy = yRace(other[other.length - 1][1]);
-                            let ly = yRace(last[1]) + 4;
-                            if (Math.abs(ly - 4 - oy) < 12 && side === 'away') ly = ly - 4 >= oy ? ly + 12 - (ly - 4 - oy) : ly - 12;
+                            // The running total at the right edge, big in the team's ink; a dot ends the line and, while the game is
+                            // still going (the line stops short of the edge), a dotted leader carries it across to its number.
+                            const gapY = compact ? 16 : 22;
+                            const ey = yRace(last[1]);
+                            let ly = ey + (compact ? 5 : 6);
+                            if (Math.abs(ey - oy) < gapY && side === 'away') ly = ey >= oy ? ly + gapY - (ey - oy) : ly - gapY + (oy - ey);
+                            ly = Math.min(ly, raceTop + raceH + 6);
+                            const ex = x(last[0]);
                             return (
-                                <text key={side} x={W - padR + 6} y={Math.min(ly, raceTop + raceH + 4)} className="text-micro font-semibold" fill={ink[side]}>
-                                    {fmt(raceMetric, last[1])}
-                                </text>
+                                <g key={side}>
+                                    {ex < W - padR - 4 ? <line x1={ex} x2={W - padR + 2} y1={ey} y2={ey} stroke={colors[side]} strokeWidth={1} strokeDasharray="2 3" opacity={0.55} /> : null}
+                                    <circle cx={ex} cy={ey} r={3} fill={colors[side]} />
+                                    <text x={W - padR + 6} y={ly} className={cn('font-display font-bold tabular-nums', compact ? 'text-body' : 'text-title')} fill={ink[side]}>
+                                        {fmt(raceMetric, last[1])}
+                                    </text>
+                                </g>
                             );
                         })}
                         <text x={padL - 6} y={raceTop + 10} textAnchor="end" className="fill-fg-3 text-micro uppercase">
