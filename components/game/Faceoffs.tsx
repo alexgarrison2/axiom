@@ -520,6 +520,25 @@ export function Faceoffs() {
                                                             return <line key={i} x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} stroke="var(--bg)" strokeWidth={0.9} />;
                                                         })
                                                       : null}
+                                                  {/* Sparks as a density: along each side's stretch of the ring, as many as its share of wins turned into a shot (one per 15° slot at 100%). */}
+                                                  {nn
+                                                      ? (['away', 'home'] as Side[]).flatMap(sd => {
+                                                            const won = pool.filter(d => d.win === sd);
+                                                            if (!won.length) return [];
+                                                            const f = won.filter(d => d.led).length / won.length;
+                                                            const a0 = -Math.PI / 2 + (sd === 'away' ? 0 : (aw / nn) * 2 * Math.PI);
+                                                            const span = (won.length / nn) * 2 * Math.PI;
+                                                            const lit = Math.round((span / (Math.PI / 12)) * f);
+                                                            const r0 = r + sw / 2 + 0.5;
+                                                            const r1 = r0 + 2.6;
+                                                            return Array.from({ length: lit }, (_, i) => {
+                                                                const a = a0 + ((i + 0.5) * span) / lit;
+                                                                const c = Math.cos(a);
+                                                                const sn = Math.sin(a);
+                                                                return <line key={`${sd}${i}`} x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} className="stroke-fg-1" strokeWidth={0.6} strokeLinecap="round" />;
+                                                            });
+                                                        })
+                                                      : null}
                                                   {/* Even: an index pointer outside the ring at six o'clock, lit in the team's colour once the share passes it. */}
                                                   <path
                                                       d={`M0,${(r + sw / 2 + 0.7).toFixed(2)} l1.5,2.6 h-3 Z`}
@@ -621,11 +640,9 @@ export function Faceoffs() {
                         {beads ? 'Bead = draw, winner\u2019s colour' : 'Ring = win share, clockwise from the top'}
                     </span>
                     <span>{beads ? 'Clockwise from the top in game order' : 'Pointer = 50% · thicker = more draws'}</span>
-                    {beads ? (
-                        <span className="flex items-center gap-1.5">
-                            <SparkIcon /> Shot attempt within {DRAW_WINDOW}s
-                        </span>
-                    ) : null}
+                    <span className="flex items-center gap-1.5">
+                        <SparkIcon /> {beads ? `Shot attempt within ${DRAW_WINDOW}s` : `More sparks = more wins into a shot (${DRAW_WINDOW}s)`}
+                    </span>
                     <span>{season ? 'Hover a zone for its takers' : 'Hover a zone for its draws'} · click a taker to focus</span>
                 </p>
                 {tip}
