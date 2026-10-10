@@ -1,14 +1,21 @@
 import * as React from 'react';
-import { Big_Shoulders, Chakra_Petch, Graduate } from 'next/font/google';
+import { Big_Shoulders, Chakra_Petch, Graduate, Saira } from 'next/font/google';
 
 /*
  * Sweater-number badges. Club number fonts are licensed, so each team gets the
  * closest free athletic face: block (most clubs), varsity slab (the clubs with
- * collegiate numbers) or squared modern (the custom angular sets).
+ * collegiate numbers) or squared modern (the custom angular sets). Small badges
+ * (rails and lists, under 26px) read before they resemble: the condensed block
+ * face gives way to a wide one and no badge carries its trim outline, which at
+ * that size eats thin digits (BOS gold on black).
  */
 const block = Big_Shoulders({ subsets: ['latin'], weight: '900', display: 'swap' });
 const varsity = Graduate({ subsets: ['latin'], weight: '400', display: 'swap' });
 const modern = Chakra_Petch({ subsets: ['latin'], weight: '700', display: 'swap' });
+const wide = Saira({ subsets: ['latin'], weight: '800', display: 'swap' });
+
+/** Below this badge size the number is drawn for legibility. */
+const SMALL = 26;
 
 type Face = 'block' | 'varsity' | 'modern';
 const FACES: Record<Face, { family: string; scale: number }> = {
@@ -69,9 +76,11 @@ const FALLBACK: Sweater = { fill: '#23405F', num: '#FFFFFF', trim: null, face: '
  */
 export function JerseyNumber({ tri, num, ring, size = 34, title }: { tri: string; num: number | null; ring: string; size?: number; title?: string }) {
     const s = SWEATERS[tri] ?? FALLBACK;
-    const face = FACES[s.face];
+    const small = size < SMALL;
+    const face = small && s.face === 'block' ? { family: wide.style.fontFamily, scale: 0.6 } : FACES[s.face];
     const text = num != null ? String(num) : '–';
-    const fs = size * face.scale * (text.length > 1 ? 1 : 1.12);
+    const fs = size * face.scale * (text.length > 1 ? 1 : 1.12) * (small && s.face !== 'block' ? 1.06 : 1);
+    const trim = small ? null : s.trim;
     return (
         <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} className="block shrink-0" role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
             <circle cx={size / 2} cy={size / 2} r={size / 2 - 1} fill={s.fill} stroke={ring} strokeWidth={2} />
@@ -83,11 +92,11 @@ export function JerseyNumber({ tri, num, ring, size = 34, title }: { tri: string
                 fontFamily={face.family}
                 fontSize={fs}
                 fill={s.num}
-                stroke={s.trim ?? 'none'}
-                strokeWidth={s.trim ? Math.max(1.5, size / 16) : 0}
+                stroke={trim ?? 'none'}
+                strokeWidth={trim ? Math.max(1.5, size / 16) : 0}
                 strokeLinejoin="round"
                 paintOrder="stroke"
-                letterSpacing={-0.5}
+                letterSpacing={small ? -0.3 : -0.5}
             >
                 {text}
             </text>
