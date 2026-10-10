@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { clockOf, deployment, deservedSeries, gameScores, GS_PARTS, draws, FO_SPOTS, goalSwings, groupMatchups, hardMatches, lineGroups, matchups, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
+import { clockOf, deployment, deservedSeries, gameScores, GS_PARTS, draws, FO_SPOTS, goalSwings, groupMatchups, hardMatches, lineGroups, marketResults, matchups, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
 import { mergeSeason } from '../season';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
 import PONY from '@/public/data/pony_score.json';
@@ -149,6 +149,23 @@ describe('game model', () => {
         // Always on together is exactly what chance gives: no hard match.
         expect(lift[0][0]).toBe(1);
         expect(hardMatches(cells, lift).size).toBe(0);
+    });
+
+    it('settles markets as soon as they are decided', () => {
+        const odds = { source: null, ml: { away: 120, home: -140 }, puckline: { away: null, home: null }, total: { line: 2.5, over: -110, under: -110 }, firstPeriod: { away: 150, home: -170 }, threeWay: null, firstPeriodThreeWay: null };
+        const at = (period: number, intermission: boolean, away: number, home: number, line = 2.5) =>
+            marketResults({ ...m, state: 'live', live: { period, remaining: '10:00', intermission }, odds: { ...odds, total: { ...odds.total, line } }, teams: { away: { ...m.teams.away, score: away }, home: { ...m.teams.home, score: home } } })!;
+        // Mid 1st: nothing settled; the 1st period goes once it is over.
+        expect(at(1, false, 0, 1).firstPeriod.home).toBeNull();
+        expect(at(1, true, 0, 1).firstPeriod.home).toBe('hit');
+        expect(at(2, false, 0, 1).ml.home).toBeNull();
+        // Tied 1-1: the game must get one more, so 3 goals beat 2.5 already; 3.5 is still open.
+        expect(at(3, false, 1, 1).over).toBe('hit');
+        expect(at(3, false, 1, 1).under).toBe('miss');
+        expect(at(3, false, 1, 1, 3.5).over).toBeNull();
+        // Not tied, 2 goals: the over at 2.5 is not locked.
+        expect(at(3, false, 0, 2).over).toBeNull();
+        expect(marketResults({ ...m, state: 'pre' })).toBeNull();
     });
 
     it('tags each skater with his line or pair game by game', () => {

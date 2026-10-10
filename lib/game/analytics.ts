@@ -1199,20 +1199,31 @@ export function nameLabels(players: Player[]): Map<number, string> {
 export type Hit = 'hit' | 'miss' | 'push';
 
 export interface MarketResults {
-    ml: Record<Side, Hit>;
+    ml: Record<Side, Hit | null>;
     puckline: Record<Side, Hit | null>;
     over: Hit | null;
     under: Hit | null;
-    firstPeriod: Record<Side, Hit>;
-    threeWay: { away: Hit; tie: Hit; home: Hit };
-    firstPeriodThreeWay: { away: Hit; tie: Hit; home: Hit };
+    firstPeriod: Record<Side, Hit | null>;
+    threeWay: { away: Hit | null; tie: Hit | null; home: Hit | null };
+    firstPeriodThreeWay: { away: Hit | null; tie: Hit | null; home: Hit | null };
 }
 
 const grade = (d: number): Hit => (d > 0 ? 'hit' : d < 0 ? 'miss' : 'push');
 
-/** How every pregame market settled (final games). Final score includes the shootout winner's +1, as books grade it. */
+/**
+ * How the pregame markets stand: each settles as soon as it is decided, null until then.
+ *   1st period lines once the 1st is over; regulation 3-way once regulation is;
+ *   the over as soon as it cannot lose - goals past the line, counting the goal a tied game must
+ *   still get (OT or the shootout winner's +1, as books grade totals); the under, the moneyline
+ *   and the puck line at the final.
+ */
 export function marketResults(m: GameModel): MarketResults | null {
-    if (m.state !== 'final') return null;
+    if (m.state === 'pre') return null;
+    const final = m.state === 'final';
+    const per = m.live?.period ?? 0;
+    const pause = !!m.live?.intermission;
+    const p1Done = final || per > 1 || (per === 1 && pause);
+    const regDone = final || per > 3 || (per === 3 && pause);
     const s = { away: m.teams.away.score, home: m.teams.home.score };
     const goalsIn = (pred: (e: GameEvent) => boolean) => ({
         away: m.events.filter(e => e.type === 'goal' && e.side === 'away' && pred(e)).length,
@@ -1220,25 +1231,28 @@ export function marketResults(m: GameModel): MarketResults | null {
     });
     const reg = goalsIn(e => e.t < 3600);
     const p1 = goalsIn(e => e.period === 1);
-    const three = (g: Record<Side, number>) => ({
-        away: g.away > g.home ? ('hit' as Hit) : 'miss',
-        tie: g.away === g.home ? ('hit' as Hit) : 'miss',
-        home: g.home > g.away ? ('hit' as Hit) : 'miss',
+    const three = (g: Record<Side, number>, done: boolean) => ({
+        away: !done ? null : g.away > g.home ? ('hit' as Hit) : 'miss',
+        tie: !done ? null : g.away === g.home ? ('hit' as Hit) : 'miss',
+        home: !done ? null : g.home > g.away ? ('hit' as Hit) : 'miss',
     });
     const pl = m.odds?.puckline;
     const total = m.odds?.total;
+    // A game cannot end tied: while it is, the total is sure to get at least one more.
+    const floor = s.away + s.home + (!final && s.away === s.home ? 1 : 0);
+    const overLocked = !!total && floor > total.line;
     return {
-        ml: { away: s.away > s.home ? 'hit' : 'miss', home: s.home > s.away ? 'hit' : 'miss' },
+        ml: { away: final ? (s.away > s.home ? 'hit' : 'miss') : null, home: final ? (s.home > s.away ? 'hit' : 'miss') : null },
         puckline: {
-            away: pl?.away ? grade(s.away - s.home + pl.away.spread) : null,
-            home: pl?.home ? grade(s.home - s.away + pl.home.spread) : null,
+            away: final && pl?.away ? grade(s.away - s.home + pl.away.spread) : null,
+            home: final && pl?.home ? grade(s.home - s.away + pl.home.spread) : null,
         },
-        over: total ? grade(s.away + s.home - total.line) : null,
-        under: total ? grade(total.line - (s.away + s.home)) : null,
+        over: !total ? null : final ? grade(s.away + s.home - total.line) : overLocked ? 'hit' : null,
+        under: !total ? null : final ? grade(total.line - (s.away + s.home)) : overLocked ? 'miss' : null,
         // Two-way first-period moneyline pushes on a tie.
-        firstPeriod: { away: grade(p1.away - p1.home), home: grade(p1.home - p1.away) },
-        threeWay: three(reg),
-        firstPeriodThreeWay: three(p1),
+        firstPeriod: { away: p1Done ? grade(p1.away - p1.home) : null, home: p1Done ? grade(p1.home - p1.away) : null },
+        threeWay: three(reg, regDone),
+        firstPeriodThreeWay: three(p1, p1Done),
     };
 }
 
