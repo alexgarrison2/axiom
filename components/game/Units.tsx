@@ -129,13 +129,14 @@ export function Units() {
     const kindLabel = KINDS.find(k => k.value === kind)!;
     // Name whose units are missing and why: a team with no power play (or penalty kill) yet, or none in the period.
     const tri = m.teams[side].tri;
-    const when = period === 'all' ? (m.state === 'live' ? ' yet' : ' this game') : ' this period';
+    const live = m.state === 'live';
+    const when = period === 'all' ? '' : ' this period';
     const emptyText =
         kind === 'PP'
-            ? `${tri} has not had a power play${when}`
+            ? live ? `${tri} has not had a power play${when || ' yet'}` : `${tri} had no power play${when}`
             : kind === 'PK'
-              ? `${tri} has not killed a penalty${when}`
-              : `No ${tri} ${kind === 'F' ? 'forward lines' : 'pairs'}${period === 'all' ? (m.state === 'live' ? ' yet' : '') : ' this period'}`;
+              ? live ? `${tri} has not killed a penalty${when || ' yet'}` : `${tri} took no penalty to kill${when}`
+              : `No ${tri} ${kind === 'F' ? 'forward lines' : 'pairs'}${when || (live ? ' yet' : '')}`;
 
     return (
         <GameSection id="units" title="Units">
