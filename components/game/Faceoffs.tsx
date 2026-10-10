@@ -504,7 +504,7 @@ export function Faceoffs() {
                         <svg
                             ref={rinkRef}
                             viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
-                            className="block h-auto w-full"
+                            className="block h-auto w-full overflow-visible"
                             role="img"
                             aria-label={`${fmtInt(n)} faceoffs: ${m.teams.away.tri} won ${fmtInt(total('away'))}, ${m.teams.home.tri} won ${fmtInt(total('home'))}`}
                         >
@@ -547,7 +547,7 @@ export function Faceoffs() {
                                                             return <line key={i} x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} stroke="var(--bg)" strokeWidth={0.9} />;
                                                         })
                                                       : null}
-                                                  {/* One spark from the middle of the team's (or picked taker's) arc in to the centre, labelled with the share of its wins turned into a shot. */}
+                                                  {/* One spark out from the middle of the team's (or picked taker's) arc, the share of its wins turned into a shot at its tip. */}
                                                   {(() => {
                                                       const won = pool.filter(d => d.win === view);
                                                       if (!won.length) return null;
@@ -556,12 +556,23 @@ export function Faceoffs() {
                                                       const mid = -Math.PI / 2 + (view === 'away' ? share / 2 : aw / nn + share / 2) * 2 * Math.PI;
                                                       const c = Math.cos(mid);
                                                       const sn = Math.sin(mid);
-                                                      const r0 = r - sw / 2 - 0.5;
-                                                      const r1 = labelFs * 0.95;
+                                                      const r0 = r + sw / 2 + 0.5;
+                                                      const r1 = r0 + 3.4;
+                                                      const rl = r1 + labelFs * 0.9;
                                                       return (
                                                           <g>
-                                                              {r0 > r1 ? <line x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} className="stroke-fg-1" strokeWidth={0.6} strokeLinecap="round" opacity={0.85} /> : null}
-                                                              <text y={(labelFs * 0.35).toFixed(2)} textAnchor="middle" fontSize={labelFs.toFixed(2)} fontWeight={700} className="fill-fg-1 tabular-nums">
+                                                              <line x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} className="stroke-fg-1" strokeWidth={0.7} strokeLinecap="round" />
+                                                              <text
+                                                                  x={(rl * c).toFixed(2)}
+                                                                  y={(rl * sn + labelFs * 0.35).toFixed(2)}
+                                                                  textAnchor={Math.abs(c) < 0.35 ? 'middle' : c > 0 ? 'start' : 'end'}
+                                                                  fontSize={labelFs.toFixed(2)}
+                                                                  fontWeight={600}
+                                                                  className="fill-fg-1 tabular-nums"
+                                                                  paintOrder="stroke"
+                                                                  stroke="var(--surface-2)"
+                                                                  strokeWidth={labelFs * 0.25}
+                                                              >
                                                                   {Math.round(f * 100)}%
                                                               </text>
                                                           </g>
