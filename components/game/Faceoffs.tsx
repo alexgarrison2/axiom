@@ -214,18 +214,6 @@ export function Faceoffs() {
     const pools = byDot.map(ds => ds.filter(d => involved(d) && (pair == null || vsPair(d))));
     const beads = !season || pools.every((p, k) => p.length <= capOf(ringOf(k)));
 
-    // The rink's drawn width, so the ring labels stay ~11px whatever its size (feet per pixel grow as it shrinks).
-    const rinkRef = React.useRef<SVGSVGElement>(null);
-    const [rinkW, setRinkW] = React.useState(0);
-    React.useLayoutEffect(() => {
-        const el = rinkRef.current;
-        if (!el) return;
-        const ro = new ResizeObserver(([e]) => setRinkW(Math.round(e.contentRect.width)));
-        ro.observe(el);
-        return () => ro.disconnect();
-    }, []);
-    const labelFs = Math.max(4.2, 11 / ((rinkW || 700) / VB.w));
-
     // A zone under the pointer (on the ice or its bar below): its beads stay bright and its draws are listed.
     const [hot, setHot] = React.useState<0 | 1 | 2 | null>(null);
 
@@ -502,9 +490,8 @@ export function Faceoffs() {
                     <div className="order-2 lg:order-1">{rail('away')}</div>
                     <div className="order-1 flex min-w-0 flex-col gap-2 sm:col-span-2 lg:order-2 lg:col-span-1">
                         <svg
-                            ref={rinkRef}
                             viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
-                            className="block h-auto w-full overflow-visible"
+                            className="block h-auto w-full"
                             role="img"
                             aria-label={`${fmtInt(n)} faceoffs: ${m.teams.away.tri} won ${fmtInt(total('away'))}, ${m.teams.home.tri} won ${fmtInt(total('home'))}`}
                         >
@@ -547,38 +534,6 @@ export function Faceoffs() {
                                                             return <line key={i} x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} stroke="var(--bg)" strokeWidth={0.9} />;
                                                         })
                                                       : null}
-                                                  {/* One spark out from the middle of each side's stretch of the ring, the number of its wins turned into a shot at its tip (none when zero). */}
-                                                  {(['away', 'home'] as Side[]).map(sd => {
-                                                      const won = pool.filter(d => d.win === sd);
-                                                      const led = won.filter(d => d.led).length;
-                                                      if (!led) return null;
-                                                      const share = won.length / nn;
-                                                      const mid = -Math.PI / 2 + (sd === 'away' ? share / 2 : aw / nn + share / 2) * 2 * Math.PI;
-                                                      const c = Math.cos(mid);
-                                                      const sn = Math.sin(mid);
-                                                      const r0 = r + (sd === 'away' ? sw / 2 : Math.max(0.3, sw * 0.2)) + 0.5;
-                                                      const r1 = r0 + 3.4;
-                                                      const rl = r1 + labelFs * 0.9;
-                                                      return (
-                                                          <g key={sd}>
-                                                              <line x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} className="stroke-fg-1" strokeWidth={0.7} strokeLinecap="round" />
-                                                              <text
-                                                                  x={(rl * c).toFixed(2)}
-                                                                  y={(rl * sn + labelFs * 0.35).toFixed(2)}
-                                                                  textAnchor={Math.abs(c) < 0.35 ? 'middle' : c > 0 ? 'start' : 'end'}
-                                                                  fontSize={labelFs.toFixed(2)}
-                                                                  fontWeight={600}
-                                                                  fill={sd === 'away' ? 'var(--text-1)' : 'var(--text-2)'}
-                                                                  className="tabular-nums"
-                                                                  paintOrder="stroke"
-                                                                  stroke="var(--surface-2)"
-                                                                  strokeWidth={labelFs * 0.25}
-                                                              >
-                                                                  {fmtInt(led)}
-                                                              </text>
-                                                          </g>
-                                                      );
-                                                  })}
                                                   {/* Even: an index pointer outside the ring at six o'clock, lit in the team's colour once the share passes it. */}
                                                   <path
                                                       d={`M0,${(r + sw / 2 + 0.7).toFixed(2)} l1.5,2.6 h-3 Z`}
@@ -680,9 +635,11 @@ export function Faceoffs() {
                         {beads ? 'Bead = draw, winner\u2019s colour' : 'Ring = win share, clockwise from the top'}
                     </span>
                     <span>{beads ? 'Clockwise from the top in game order' : 'Pointer = 50% · thicker = more draws'}</span>
-                    <span className="flex items-center gap-1.5">
-                        <SparkIcon /> {beads ? `Shot attempt within ${DRAW_WINDOW}s` : `Wins into a shot within ${DRAW_WINDOW}s`}
-                    </span>
+                    {beads ? (
+                        <span className="flex items-center gap-1.5">
+                            <SparkIcon /> Shot attempt within {DRAW_WINDOW}s
+                        </span>
+                    ) : null}
                     <span>{season ? 'Hover a zone for its takers' : 'Hover a zone for its draws'} · click a taker to focus</span>
                 </p>
                 {tip}
