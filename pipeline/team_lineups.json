@@ -5409,20 +5409,52 @@
     "ANA": {
         "f1": [
             {
-                "name": "A.J. Greer",
-                "number": 18,
+                "name": "Beckett Sennecke",
+                "number": 45,
                 "pos": "lw",
-                "id": 2706,
-                "ppUnit": null,
+                "id": 36637,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Leo Carlsson",
                 "number": 91,
                 "pos": "c",
                 "id": 37943,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Sam Colangelo",
+                "number": 12,
+                "pos": "rw",
+                "id": 32857,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            }
+        ],
+        "f2": [
+            {
+                "name": "Nikita Nesterenko",
+                "number": 13,
+                "pos": "lw",
+                "id": 30726,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Mikael Granlund",
+                "number": 64,
+                "pos": "c",
+                "id": 1934,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -5436,10 +5468,10 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
-        "f2": [
+        "f3": [
             {
                 "name": "Alex Killorn",
                 "number": 17,
@@ -5448,39 +5480,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Mikael Granlund",
-                "number": 64,
-                "pos": "c",
-                "id": 1934,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Beckett Sennecke",
-                "number": 45,
-                "pos": "rw",
-                "id": 36637,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Nikita Nesterenko",
-                "number": 13,
-                "pos": "lw",
-                "id": 30726,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Ryan Poehling",
@@ -5493,14 +5493,14 @@
                 "movement": null
             },
             {
-                "name": "Nikita Klepov",
-                "number": 40,
+                "name": "A.J. Greer",
+                "number": 18,
                 "pos": "rw",
-                "id": 38664,
-                "ppUnit": 2,
+                "id": 2706,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -5547,14 +5547,14 @@
                 "movement": null
             },
             {
-                "name": "Tristan Luneau",
+                "name": "Noah Warren",
                 "number": null,
                 "pos": "rd",
-                "id": 34070,
-                "ppUnit": 2,
+                "id": 34076,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -5591,14 +5591,14 @@
                 "movement": null
             },
             {
-                "name": "Noah Warren",
+                "name": "Tristan Luneau",
                 "number": null,
                 "pos": "rd",
-                "id": 34076,
-                "ppUnit": null,
+                "id": 34070,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -5726,9 +5726,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-07)",
-        "updated_at": "2026-10-08T12:54:06.015Z",
-        "fetched_at": "2026-10-08T13:02:26Z"
+        "lineup_source": "@AnaheimDucks",
+        "updated_at": "2026-10-09T23:52:48.103Z",
+        "fetched_at": "2026-10-10T00:02:27Z"
     },
     "NJD": {
         "f1": [
