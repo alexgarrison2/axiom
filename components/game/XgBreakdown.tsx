@@ -6,6 +6,7 @@ import { SIDES, type GameEvent, type Player, type Side } from '@/lib/game/types'
 import { GameSection, useGame } from './GameContext';
 import { TipFace, TipRow, useHoverTip } from './HoverTip';
 import { useWidth } from './Pulse';
+import { fmtInt } from '@/components/views/format';
 
 type Result = 'goal' | 'iron' | 'save' | 'miss';
 type State = 'ev' | 'pp' | 'ea' | 'sh';
@@ -123,6 +124,65 @@ function ShotTip({ e }: { e: GameEvent }) {
     );
 }
 
+/** A season's tile: one shooter's attempts of one result in one strength state, pooled. */
+interface Group {
+    res: Result;
+    st: State;
+    n: number;
+    xg: number;
+}
+
+function GroupTip({ g, who, color }: { g: Group; who: Player | null; color: string }) {
+    return (
+        <div className="flex w-56 flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+                {who ? <TipFace p={who} color={color} /> : null}
+                <span className="min-w-0 leading-tight">
+                    <span className="block truncate font-bold text-fg-1">{who ? `${who.first} ${who.last}` : 'All others'}</span>
+                    <span className="text-micro text-fg-3">
+                        {RESULTS.find(x => x.key === g.res)!.label} · {STATES.find(x => x.key === g.st)!.title}
+                    </span>
+                </span>
+                <span className="ml-auto font-display text-title font-bold text-model">{g.xg.toFixed(2)}</span>
+            </div>
+            <TipRow k={g.res === 'goal' ? 'Goals' : 'Attempts'}>{fmtInt(g.n)}</TipRow>
+            <TipRow k="xG each">{(g.xg / Math.max(1, g.n)).toFixed(3)}</TipRow>
+        </div>
+    );
+}
+
+const ORDER = (g: Group) => RESULTS.findIndex(x => x.key === g.res) * 4 + STATES.findIndex(x => x.key === g.st);
+
+/** A season row in one fixed order (goals, iron, saves, misses; EV, PP, EA, SH inside each), so rows compare left to right. */
+function sliceRow(groups: Group[], x: number, y: number, w: number, h: number): Rect<Group>[] {
+    const total = groups.reduce((a, g) => a + g.xg, 0);
+    if (total <= 0) return [];
+    let xx = x;
+    return [...groups]
+        .sort((a, b) => ORDER(a) - ORDER(b))
+        .map(g => {
+            const gw = (g.xg / total) * w;
+            const r = { x: xx, y, w: gw, h, d: g };
+            xx += gw;
+            return r;
+        });
+}
+
+/** Pool a shooter's attempts by result and strength state (a season is too many tiles to read one by one). */
+function groupShots(shots: GameEvent[]): Group[] {
+    const by = new Map<string, Group>();
+    for (const e of shots) {
+        const res = resultOf(e);
+        const st = stateOf(e);
+        const k = `${res}-${st}`;
+        const g = by.get(k) ?? { res, st, n: 0, xg: 0 };
+        g.n += 1;
+        g.xg += e.xg ?? 0;
+        by.set(k, g);
+    }
+    return [...by.values()];
+}
+
 function Swatch({ r, s, color }: { r: Result; s: State; color: string }) {
     const f = fillFor(r, color);
     return (
@@ -140,6 +200,9 @@ function Swatch({ r, s, color }: { r: Result; s: State; color: string }) {
  */
 export function XgBreakdown() {
     const { m, byId, colors } = useGame();
+    // Several games (a team's Breakdown): the team only, each shooter's attempts pooled by result and strength.
+    const season = !!m.starts?.length;
+    const sides: Side[] = season ? ['away'] : [...SIDES];
     const [ref, width] = useWidth<HTMLDivElement>();
     const { bind, tip } = useHoverTip();
     const compact = width > 0 && width < 640;
@@ -162,7 +225,7 @@ export function XgBreakdown() {
         return out;
     }, [m, byId]);
 
-    const maxTotal = Math.max(data.away.total, data.home.total);
+    const maxTotal = Math.max(...sides.map(sd => data[sd].total));
     if (!maxTotal) {
         return (
             <GameSection id="xg" title="xG breakdown">
@@ -174,7 +237,7 @@ export function XgBreakdown() {
     const W = Math.max(width, 240);
     const gutter = compact ? 104 : 150;
     const gap = compact ? 0 : 28;
-    const colW = compact ? W - gutter - 4 : (W - 2 * gutter - gap) / 2;
+    const colW = compact || season ? W - gutter - 4 : (W - 2 * gutter - gap) / 2;
     const scale = (compact ? 380 : 540) / maxTotal;
     const head = 34;
 
@@ -188,9 +251,9 @@ export function XgBreakdown() {
     };
     const L = { away: layout('away'), home: layout('home') };
     // Side by side the columns share a baseline; stacked (narrow), each block is only as tall as its own column.
-    const colH = Math.max(L.away.h, L.home.h);
+    const colH = season ? L.away.h : Math.max(L.away.h, L.home.h);
     const blockH = head + colH;
-    const H = compact ? head * 2 + L.away.h + L.home.h + 24 : blockH;
+    const H = season ? blockH : compact ? head * 2 + L.away.h + L.home.h + 24 : blockH;
 
     const column = (side: Side, x0: number, top: number) => {
         const { rows, h } = L[side];
@@ -209,7 +272,8 @@ export function XgBreakdown() {
                 </g>
                 {rows.map(r => {
                     const rh = r.xg * scale;
-                    const tiles = squarify(r.shots.map(e => ({ v: e.xg ?? 0, d: e })), x0, y, colW, rh);
+                    const tiles = season ? [] : squarify(r.shots.map(e => ({ v: e.xg ?? 0, d: e })), x0, y, colW, rh);
+                    const pooled = season ? sliceRow(groupShots(r.shots), x0, y, colW, rh) : [];
                     const ly = y + rh / 2 + 4;
                     const el = (
                         <g key={r.key}>
@@ -222,6 +286,22 @@ export function XgBreakdown() {
                                         <rect x={t.x} y={t.y} width={t.w} height={t.h} fill={f.fill} opacity={f.opacity} />
                                         {st !== 'ev' ? <rect x={t.x} y={t.y} width={t.w} height={t.h} fill={`url(#xgb-${st})`} /> : null}
                                         <rect x={t.x} y={t.y} width={t.w} height={t.h} fill="none" stroke="var(--surface-1)" strokeWidth={1} className="hover:stroke-fg-1" />
+                                    </g>
+                                );
+                            })}
+                            {pooled.map(t => {
+                                const f = fillFor(t.d.res, color);
+                                return (
+                                    <g key={`${t.d.res}-${t.d.st}`} {...bind(<GroupTip g={t.d} who={r.player} color={color} />)} className="cursor-crosshair">
+                                        <rect x={t.x} y={t.y} width={t.w} height={t.h} fill={f.fill} opacity={f.opacity} />
+                                        {t.d.st !== 'ev' ? <rect x={t.x} y={t.y} width={t.w} height={t.h} fill={`url(#xgb-${t.d.st})`} /> : null}
+                                        <rect x={t.x} y={t.y} width={t.w} height={t.h} fill="none" stroke="var(--surface-1)" strokeWidth={1.5} className="hover:stroke-fg-1" />
+                                        {/* Goals say how many where the tile has room. */}
+                                        {t.d.res === 'goal' && t.w >= 26 && t.h >= 16 ? (
+                                            <text x={t.x + 5} y={t.y + Math.min(t.h / 2 + 4, 14)} className="pointer-events-none fill-bg text-micro font-bold">
+                                                {fmtInt(t.d.n)} G
+                                            </text>
+                                        ) : null}
                                     </g>
                                 );
                             })}
@@ -265,7 +345,9 @@ export function XgBreakdown() {
                             {s.label}
                         </span>
                     ))}
-                    <span className="ml-auto normal-case tracking-normal">Size = pony xG · blocked attempts carry none</span>
+                    <span className="ml-auto normal-case tracking-normal">
+                        Size = pony xG{season ? ' · each shooter: goals, iron, saves, misses, left to right' : ''} · blocked attempts carry none
+                    </span>
                 </div>
                 <div ref={ref} className="p-card">
                     {width ? (
@@ -282,7 +364,9 @@ export function XgBreakdown() {
                                     <circle cx={3.5} cy={3.5} r={1.2} fill="var(--bg)" fillOpacity={0.75} />
                                 </pattern>
                             </defs>
-                            {compact ? (
+                            {season ? (
+                                column('away', gutter, 0)
+                            ) : compact ? (
                                 <>
                                     {column('away', gutter, 0)}
                                     {column('home', gutter, head + L.away.h + 24)}
