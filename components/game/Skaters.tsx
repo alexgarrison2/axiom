@@ -8,7 +8,7 @@ import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
 import { cn } from '@/lib/utils';
 import { clockOf, pairRows, periodLabel, playerName, shortName, skaterRows, teamOnIce, type PairRow, type PlayerStrength, type SkaterRow, type TeamOnIce } from '@/lib/game/analytics';
-import type { Side } from '@/lib/game/types';
+import type { Player, Side } from '@/lib/game/types';
 import { ControlRow } from './ControlRow';
 import { GameSection, sideTeams, useGame } from './GameContext';
 import { PIN_COL, PinnedTable } from './PinnedTable';
@@ -163,6 +163,7 @@ export function Skaters() {
     const [view, setView] = React.useState<View>('ind');
     const [strength, setStrength] = React.useState<PlayerStrength>('all');
     const [period, setPeriod] = React.useState<string>('all');
+    const [pos, setPos] = React.useState<'all' | 'F' | 'D'>('all');
     const [sort, setSort] = React.useState<{ key: string; dir: SortDir }>({ key: 'toi', dir: 'desc' });
     const per = period === 'all' ? 'all' : Number(period);
     const rows = React.useMemo(() => skaterRows(m, side, strength, per), [m, side, strength, per]);
@@ -174,7 +175,10 @@ export function Skaters() {
     const cols = pairView ? COLS.ind : COLS[view];
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
     const col = cols.find(c => c.key === sort.key) ?? cols[0];
-    const sorted = [...rows].sort((a, b) => {
+    // Forwards or defence only: the table's rows (or the opponents / teammates in a pair view); the focus picker keeps everyone.
+    const shown = (p: Player) => pos === 'all' || (p.pos === 'D') === (pos === 'D');
+    const listed = rows.filter(r => shown(r.player));
+    const sorted = [...listed].sort((a, b) => {
         const va = cell(hasXg, col, a);
         const vb = cell(hasXg, col, b);
         if (va == null) return 1;
@@ -228,6 +232,18 @@ export function Skaters() {
                         </>
                     ) : null}
                     <Segmented
+                        label="Position"
+                        size="sm"
+                        value={pos}
+                        onChange={setPos}
+                        optionClassName="px-2"
+                        options={[
+                            { value: 'all', label: 'All' },
+                            { value: 'F', label: 'F', ariaLabel: 'Forwards' },
+                            { value: 'D', label: 'D', ariaLabel: 'Defence' },
+                        ]}
+                    />
+                    <Segmented
                         label="Strength"
                         size="sm"
                         value={strength}
@@ -260,7 +276,7 @@ export function Skaters() {
                     </div>
                 ) : null}
                 {pairView && pairs ? (
-                    <PairTable rows={view === 'comp' ? pairs.opp : pairs.mates} title={view === 'comp' ? 'Opponent' : 'Teammate'} />
+                    <PairTable rows={(view === 'comp' ? pairs.opp : pairs.mates).filter(r => shown(r.player))} title={view === 'comp' ? 'Opponent' : 'Teammate'} />
                 ) : (
                 <PinnedTable
                     label={`${m.teams[side].name} skaters`}
@@ -313,17 +329,17 @@ export function Skaters() {
                                 </tr>
                             ))}
                         </tbody>
-                        {/* Team row: sums where they add up, the team's own on-ice numbers, blank where a total means nothing. */}
+                        {/* Team row: sums of the rows shown where they add up, the team's own on-ice numbers, blank where a total means nothing. */}
                         <tfoot>
                             <tr>
                                 <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 px-2 text-left font-normal shadow-[inset_0_1px_0_var(--line-strong)]', PIN_FIRST)}>
                                     <span className="flex items-center gap-2">
                                         <Crest tri={m.teams[side].tri} size={18} className="ml-1 h-[18px] w-[18px]" />
-                                        <span className="font-bold uppercase tracking-label text-fg-1">{m.teams[side].tri} total</span>
+                                        <span className="font-bold uppercase tracking-label text-fg-1">{m.teams[side].tri} {view === 'ind' && pos !== 'all' ? (pos === 'F' ? 'forwards' : 'defence') : 'total'}</span>
                                     </span>
                                 </th>
                                 {cols.map(c => {
-                                    const v = c.total && !(c.model && !hasXg) ? c.total(rows, team) : null;
+                                    const v = c.total && !(c.model && !hasXg) ? c.total(listed, team) : null;
                                     return (
                                         <td
                                             key={c.key}
