@@ -521,8 +521,12 @@ export function Faceoffs() {
                                                             return <line key={i} x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} stroke="var(--bg)" strokeWidth={0.9} />;
                                                         })
                                                       : null}
-                                                  {/* Even: a tick across the ring at six o'clock, where half of it is filled. */}
-                                                  <line x1={0} x2={0} y1={r - sw / 2 - 1.2} y2={r + sw / 2 + 2.6} className="stroke-fg-2" strokeWidth={0.6} />
+                                                  {/* Even: an index pointer outside the ring at six o'clock, lit in the team's colour once the share passes it. */}
+                                                  <path
+                                                      d={`M0,${(r + sw / 2 + 0.7).toFixed(2)} l1.5,2.6 h-3 Z`}
+                                                      fill={nn && aw * 2 >= nn ? colors.away : 'var(--text-3)'}
+                                                      opacity={nn && aw * 2 >= nn ? 1 : 0.7}
+                                                  />
                                               </g>
                                           );
                                       });
@@ -617,7 +621,7 @@ export function Faceoffs() {
                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: colors.home }} />
                         {beads ? 'Bead = draw, winner\u2019s colour' : 'Ring = win share, clockwise from the top'}
                     </span>
-                    <span>{beads ? 'Clockwise from the top in game order' : 'Tick = 50% · thicker = more draws'}</span>
+                    <span>{beads ? 'Clockwise from the top in game order' : 'Pointer = 50% · thicker = more draws'}</span>
                     {beads ? (
                         <span className="flex items-center gap-1.5">
                             <SparkIcon /> Shot attempt within {DRAW_WINDOW}s
