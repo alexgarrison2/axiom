@@ -506,12 +506,23 @@ export function Faceoffs() {
                                           return (
                                               <g key={k} transform={`translate(${x0},${-cy})`} style={{ opacity: hot != null && hot !== third ? 0.25 : 1, transition: 'opacity 140ms' }}>
                                                   <title>{nn ? `${m.teams.away.tri} ${wl(aw, nn - aw)} (${pct(aw, nn - aw)})` : 'No draws'}</title>
-                                                  <circle r={r} fill="none" stroke={nn ? colors.home : 'var(--mute)'} strokeWidth={sw} opacity={nn ? 1 : 0.3} />
+                                                  {/* The rest is a thin, faint track in the opponent's colour; the team's share is the thick arc, so its end reads by shape, not by hue. */}
+                                                  <circle r={r} fill="none" stroke={nn ? colors.home : 'var(--mute)'} strokeWidth={Math.max(0.6, sw * 0.4)} opacity={nn ? 0.55 : 0.3} />
                                                   {aw ? (
                                                       <circle r={r} fill="none" stroke={colors.away} strokeWidth={sw} pathLength={100} strokeDasharray={`${((aw / nn) * 100).toFixed(2)} 100`} transform="rotate(-90)" />
                                                   ) : null}
-                                                  {/* Even: a tick at six o'clock, where half the ring is filled. */}
-                                                  <line x1={0} x2={0} y1={r + sw / 2 + 0.8} y2={r + sw / 2 + 3.4} className="stroke-fg-3" strokeWidth={0.5} />
+                                                  {/* Notches where the arc starts (twelve o'clock) and ends. */}
+                                                  {aw && aw < nn
+                                                      ? [-Math.PI / 2, -Math.PI / 2 + (aw / nn) * 2 * Math.PI].map((a, i) => {
+                                                            const c = Math.cos(a);
+                                                            const sn = Math.sin(a);
+                                                            const r0 = r - sw / 2 - 0.4;
+                                                            const r1 = r + sw / 2 + 0.4;
+                                                            return <line key={i} x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} stroke="var(--bg)" strokeWidth={0.9} />;
+                                                        })
+                                                      : null}
+                                                  {/* Even: a tick across the ring at six o'clock, where half of it is filled. */}
+                                                  <line x1={0} x2={0} y1={r - sw / 2 - 1.2} y2={r + sw / 2 + 2.6} className="stroke-fg-2" strokeWidth={0.6} />
                                               </g>
                                           );
                                       });
