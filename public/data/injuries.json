@@ -39,6 +39,19 @@
   "fetched_at": "2026-09-30T20:10:13Z"
  },
  {
+  "playerId": 8479325,
+  "name": "Charlie McAvoy",
+  "team": "BOS",
+  "position": "D",
+  "status": "Suspension",
+  "type": "Suspension",
+  "returnDate": "2026-10-13",
+  "comment": "McAvoy logged an even-strength goal on three shots and four PIM in a game-high 28:35 of ice time during Sunday's 3-2 shootout win over the Capitals in preseason play.",
+  "date": "2026-09-21T05:14Z",
+  "espn_id": "593387",
+  "fetched_at": "2026-10-10T18:02:27Z"
+ },
+ {
   "playerId": 8479312,
   "name": "Alex Lyon",
   "team": "BUF",
@@ -141,6 +154,19 @@
   "date": "2026-09-28T21:15Z",
   "espn_id": "594122",
   "fetched_at": "2026-10-10T15:02:22Z"
+ },
+ {
+  "playerId": 8484180,
+  "name": "Samuel Honzek",
+  "team": "CGY",
+  "position": "LW",
+  "status": "Out",
+  "type": "Undisclosed",
+  "returnDate": "2026-10-13",
+  "comment": "out",
+  "date": "2026-10-10T17:37Z",
+  "espn_id": "595340",
+  "fetched_at": "2026-10-10T18:02:27Z"
  },
  {
   "playerId": 8478233,
@@ -702,32 +728,6 @@
   "fetched_at": "2026-10-05T17:25:00Z"
  },
  {
-  "playerId": 8480192,
-  "name": "Johnathan Kovacevic",
-  "team": "NJD",
-  "position": "D",
-  "status": "Injured Reserve",
-  "type": "Knee",
-  "returnDate": "2026-10-24",
-  "comment": "Kovacevic (knee) will begin the 2026-27 regular season on the injured non-roster list, per Mike Morreale of NHL.com.",
-  "date": "2026-09-28T23:58Z",
-  "espn_id": "594153",
-  "fetched_at": "2026-10-10T15:02:22Z"
- },
- {
-  "playerId": 8478399,
-  "name": "Jonas Siegenthaler",
-  "team": "NJD",
-  "position": "D",
-  "status": "Day-To-Day",
-  "type": "Undisclosed",
-  "returnDate": "2026-10-10",
-  "comment": "Siegenthaler (undisclosed) is improving and hasn't been ruled out against Vancouver on Saturday, Kristy Flannery of The Hockey News reports.",
-  "date": "2026-10-08T17:40Z",
-  "espn_id": "595096",
-  "fetched_at": "2026-10-08T18:02:52Z"
- },
- {
   "playerId": 8475760,
   "name": "Nick Bjugstad",
   "team": "NJD",
@@ -839,10 +839,10 @@
   "status": "Out",
   "type": "Lower Body",
   "returnDate": "2027-09-15",
-  "comment": "out",
-  "date": "2026-10-10T16:54Z",
-  "espn_id": "595327",
-  "fetched_at": "2026-10-10T17:02:52Z"
+  "comment": "Shesterkin (lower body) will be out for the remainder of the 2026-27 season, according to Tom Gulitti of NHL.com on Saturday.",
+  "date": "2026-10-10T17:01Z",
+  "espn_id": "595328",
+  "fetched_at": "2026-10-10T18:02:27Z"
  },
  {
   "playerId": null,
@@ -851,11 +851,11 @@
   "position": "C",
   "status": "Injured Reserve",
   "type": "Lower Body",
-  "returnDate": "2026-10-13",
-  "comment": "ir",
-  "date": "2026-10-06T16:25Z",
-  "espn_id": "594887",
-  "fetched_at": "2026-10-06T17:02:40Z"
+  "returnDate": "2027-01-03",
+  "comment": "Veleno (lower body) was placed on long-term injured reserve Saturday, Vince Z. Mercogliano of The Athletic reports.",
+  "date": "2026-10-10T17:18Z",
+  "espn_id": "595332",
+  "fetched_at": "2026-10-10T18:02:27Z"
  },
  {
   "playerId": 8476914,
@@ -864,24 +864,11 @@
   "position": "G",
   "status": "Injured Reserve",
   "type": "Lower Body",
-  "returnDate": "2026-10-19",
-  "comment": "ir",
-  "date": "2026-10-01T17:24Z",
-  "espn_id": "594345",
-  "fetched_at": "2026-10-09T15:03:19Z"
- },
- {
-  "playerId": null,
-  "name": "Spencer Martin",
-  "team": "NYR",
-  "position": "G",
-  "status": "Out",
-  "type": "Lower Body",
-  "returnDate": "2026-10-17",
-  "comment": "out",
-  "date": "2026-10-10T01:01Z",
-  "espn_id": "595249",
-  "fetched_at": "2026-10-10T01:34:15Z"
+  "returnDate": "2026-11-09",
+  "comment": "Korpisalo (lower body) will miss at least four more weeks, per Elliotte Friedman of Sportsnet on Saturday.",
+  "date": "2026-10-10T17:11Z",
+  "espn_id": "595329",
+  "fetched_at": "2026-10-10T18:02:27Z"
  },
  {
   "playerId": 8482245,
@@ -969,36 +956,36 @@
   "status": "Injured Reserve",
   "type": "Back",
   "returnDate": "2027-02-13",
-  "comment": "ir",
-  "date": "2026-10-05T16:05Z",
-  "espn_id": "594815",
-  "fetched_at": "2026-10-10T17:02:52Z"
+  "comment": "Grebenkin (back) underwent successful surgery and is expected to miss at least four months.",
+  "date": "2026-10-10T16:58Z",
+  "espn_id": "595327",
+  "fetched_at": "2026-10-10T18:02:27Z"
  },
  {
   "playerId": 8477499,
   "name": "Rasmus Ristolainen",
   "team": "PHI",
   "position": "D",
-  "status": "Day-To-Day",
+  "status": "Injured Reserve",
   "type": "Upper Body",
   "returnDate": "2026-10-11",
-  "comment": "day-to-day",
-  "date": "2026-10-09T13:04Z",
-  "espn_id": "595182",
-  "fetched_at": "2026-10-10T17:02:52Z"
+  "comment": "ir",
+  "date": "2026-10-10T16:51Z",
+  "espn_id": "595326",
+  "fetched_at": "2026-10-10T18:02:27Z"
  },
  {
   "playerId": 8478439,
   "name": "Travis Konecny",
   "team": "PHI",
   "position": "RW",
-  "status": "Day-To-Day",
+  "status": "Out",
   "type": "Lower Body",
   "returnDate": "2026-10-11",
-  "comment": "day-to-day",
-  "date": "2026-10-10T16:40Z",
-  "espn_id": "595325",
-  "fetched_at": "2026-10-10T17:02:52Z"
+  "comment": "out",
+  "date": "2026-10-10T17:06Z",
+  "espn_id": "595329",
+  "fetched_at": "2026-10-10T18:02:27Z"
  },
  {
   "playerId": 8483808,
