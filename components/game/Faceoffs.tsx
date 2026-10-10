@@ -2,9 +2,11 @@
 
 import * as React from 'react';
 import { Crest } from '@/components/ui/crest';
+import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { DRAW_WINDOW, draws, FO_SPOTS, periodLabel, type Draw } from '@/lib/game/analytics';
 import { other, type Side } from '@/lib/game/types';
+import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
 import { useHoverTip } from './HoverTip';
 import { JerseyNumber } from './Jersey';
@@ -15,16 +17,15 @@ import { RinkMarkings } from './Rink';
  * draw is a bead on a ring around its dot, clockwise from twelve o'clock in game
  * order, in the winner's colour; a spark leaves a bead whose win became a shot
  * attempt within DRAW_WINDOW seconds. The takers sit at the ends their team
- * attacks; picking one threads him to every dot he took a draw on and on to
- * the men he took them against.
+ * attacks; picking one lights only his draws and his record against each
+ * opponent, and hovering an opponent then lights just the draws between them.
  */
 
-const WIDE = '(min-width: 1024px)';
-const onWide = (cb: () => void) => {
-    const q = window.matchMedia(WIDE);
-    q.addEventListener('change', cb);
-    return () => q.removeEventListener('change', cb);
-};
+type Strength = 'all' | '5v5' | 'ev' | 'awayPP' | 'homePP';
+/** Whose power play a draw was taken on (the winner's view: his PP, or the other side's when he is shorthanded). */
+const ppSide = (d: Draw): Side | null => (d.e.strength === 'pp' ? d.e.side : d.e.strength === 'sh' ? other(d.e.side) : null);
+const strengthMatch = (d: Draw, f: Strength) =>
+    f === 'all' || (f === '5v5' ? d.e.fiveOnFive : f === 'ev' ? ppSide(d) == null : ppSide(d) === (f === 'awayPP' ? 'away' : 'home'));
 
 /** Rink frame in feet, a little past the boards. */
 const VB = { x: -101, y: -44, w: 202, h: 88 };
@@ -131,7 +132,9 @@ function SparkIcon() {
 
 export function Faceoffs() {
     const { m, colors, byId, label } = useGame();
-    const list = React.useMemo(() => draws(m), [m]);
+    const all = React.useMemo(() => draws(m), [m]);
+    const [strength, setStrength] = React.useState<Strength>('all');
+    const list = React.useMemo(() => all.filter(d => strengthMatch(d, strength)), [all, strength]);
     const takers = React.useMemo(() => takersOf(list, byId), [list, byId]);
     const [pinned, setPinned] = React.useState<number | null>(null);
     // A taker is picked by click (tap) only; with none picked the board shows both teams.
@@ -156,6 +159,9 @@ export function Faceoffs() {
 
     const byDot = React.useMemo(() => FO_SPOTS.map((_, k) => list.filter(d => d.dot === k)), [list]);
     const involved = (d: Draw) => active == null || d.winner === active || d.loser === active;
+    // With a taker picked, hovering an opponent's row lights only the draws between the two of them.
+    const [pair, setPair] = React.useState<number | null>(null);
+    const vsPair = (d: Draw) => pair != null && (d.winner === pair || d.loser === pair) && (d.winner === active || d.loser === active);
     // Head to head against the picked taker: wins and losses of each opponent against him.
     const h2h = React.useMemo(() => {
         const out = new Map<number, [number, number]>();
@@ -167,11 +173,8 @@ export function Faceoffs() {
         return out;
     }, [active, list]);
 
-    // Threads (wide screens): the picked taker's row to each dot he drew on, and on to each opponent there.
+    // Rink width, for the dot tallies' size.
     const boardRef = React.useRef<HTMLDivElement>(null);
-    const rinkRef = React.useRef<SVGSVGElement>(null);
-    const rowRefs = React.useRef(new Map<number, HTMLElement>());
-    const [threads, setThreads] = React.useState<{ d: string; color: string; w: number }[]>([]);
     const [boardW, setBoardW] = React.useState(0);
     React.useLayoutEffect(() => {
         const el = boardRef.current;
@@ -180,56 +183,6 @@ export function Faceoffs() {
         ro.observe(el);
         return () => ro.disconnect();
     }, []);
-    // Threads only where the rails sit beside the rink.
-    const wide = React.useSyncExternalStore(onWide, () => window.matchMedia(WIDE).matches, () => false);
-    React.useLayoutEffect(() => {
-        const board = boardRef.current;
-        const rink = rinkRef.current;
-        if (!wide || active == null || activeSide == null || !board || !rink) {
-            setThreads([]);
-            return;
-        }
-        const B = board.getBoundingClientRect();
-        const R = rink.getBoundingClientRect();
-        const toPx = (x: number, y: number) => [R.left - B.left + ((x - VB.x) / VB.w) * R.width, R.top - B.top + ((y - VB.y) / VB.h) * R.height] as const;
-        const anchor = (id: number, side: Side) => {
-            const r = rowRefs.current.get(id)?.getBoundingClientRect();
-            if (!r) return null;
-            return [side === 'away' ? r.right - B.left : r.left - B.left, r.top - B.top + r.height / 2] as const;
-        };
-        const curve = (a: readonly [number, number], b: readonly [number, number]) => {
-            const dx = (b[0] - a[0]) * 0.5;
-            return `M${a[0].toFixed(1)},${a[1].toFixed(1)} C${(a[0] + dx).toFixed(1)},${a[1].toFixed(1)} ${(b[0] - dx).toFixed(1)},${b[1].toFixed(1)} ${b[0].toFixed(1)},${b[1].toFixed(1)}`;
-        };
-        const me = anchor(active, activeSide);
-        if (!me) {
-            setThreads([]);
-            return;
-        }
-        const out: { d: string; color: string; w: number }[] = [];
-        const opp = other(activeSide);
-        // Toward the taker's own rail on one side of the ring, toward the opponents' on the other.
-        const edge = (k: number, toward: Side) => {
-            const [x, y] = FO_SPOTS[k];
-            const r = ringOf(k) + STEP;
-            return toPx(x + (toward === 'away' ? -r : r), y);
-        };
-        byDot.forEach((ds, k) => {
-            const mine = ds.filter(d => d.winner === active || d.loser === active);
-            if (!mine.length) return;
-            out.push({ d: curve(me, edge(k, activeSide)), color: colors[activeSide], w: 1 + mine.length * 0.9 });
-            const vs = new Map<number, number>();
-            for (const d of mine) {
-                const o = d.winner === active ? d.loser : d.winner;
-                if (o != null) vs.set(o, (vs.get(o) ?? 0) + 1);
-            }
-            for (const [o, n] of vs) {
-                const a = anchor(o, opp);
-                if (a) out.push({ d: curve(edge(k, opp), a), color: colors[opp], w: 1 + n * 0.9 });
-            }
-        });
-        setThreads(out);
-    }, [wide, active, activeSide, byDot, colors, boardW]);
 
     // Dot tallies stay at least ~11.5px on a small rink (feet per pixel grow as it shrinks).
     const tallyFs = Math.max(6.2, 11.5 / ((boardW || 800) / VB.w));
@@ -268,7 +221,7 @@ export function Faceoffs() {
                 </div>
                 <ol className="flex flex-col gap-1 text-caption">
                     {ds.map(d => (
-                        <li key={d.e.id} className="grid grid-cols-[3.75rem_1fr_auto] items-baseline gap-2">
+                        <li key={d.e.id} className="grid grid-cols-[3.75rem_minmax(0,1fr)_auto] items-baseline gap-2">
                             <span className="text-micro tabular-nums text-fg-3">
                                 {periodLabel(d.e.period)} {d.e.clock}
                             </span>
@@ -279,7 +232,8 @@ export function Faceoffs() {
                                 <span className="text-fg-3"> over </span>
                                 <span className="text-fg-2">{label(d.loser)}</span>
                             </span>
-                            <span className="text-micro uppercase tracking-label text-fg-2">
+                            <span className="flex items-baseline gap-1.5 text-micro uppercase tracking-label text-fg-2">
+                                {ppSide(d) ? <span className="text-warn">{m.teams[ppSide(d)!].tri} PP</span> : null}
                                 {d.led ? (d.led.type === 'goal' ? `Goal ${Math.round(d.led.t - d.e.t)}s` : `Shot ${Math.round(d.led.t - d.e.t)}s`) : ''}
                             </span>
                         </li>
@@ -328,12 +282,13 @@ export function Faceoffs() {
                             <li key={t.id}>
                                 <button
                                     type="button"
-                                    ref={el => {
-                                        if (el) rowRefs.current.set(t.id, el);
-                                        else rowRefs.current.delete(t.id);
-                                    }}
                                     aria-pressed={pinned === t.id}
-                                    onClick={() => setPinned(cur => (cur === t.id ? null : t.id))}
+                                    onPointerEnter={e => e.pointerType === 'mouse' && rec && setPair(t.id)}
+                                    onPointerLeave={e => e.pointerType === 'mouse' && setPair(null)}
+                                    onClick={() => {
+                                        setPinned(cur => (cur === t.id ? null : t.id));
+                                        setPair(null);
+                                    }}
                                     className={cn(
                                         'grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 rounded-control border px-2 py-1.5 text-left transition-[opacity,background-color,border-color] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand',
                                         isActive ? 'border-brand/60 bg-surface-2' : 'border-transparent hover:bg-surface-2/60',
@@ -380,7 +335,7 @@ export function Faceoffs() {
         );
     };
 
-    if (!n)
+    if (!all.length)
         return (
             <GameSection id="faceoffs" title="Faceoffs">
                 <p className="panel p-card label">No faceoffs yet</p>
@@ -410,12 +365,36 @@ export function Faceoffs() {
                 )
             }
         >
-            <div className="panel overflow-hidden">
-                <div ref={boardRef} className="relative grid gap-5 p-card sm:grid-cols-2 lg:grid-cols-[13.5rem_minmax(0,1fr)_13.5rem] lg:items-start">
+            <div ref={boardRef} className="panel overflow-hidden">
+                <ControlRow label="Faceoff controls">
+                    <Segmented
+                        label="Strength"
+                        size="sm"
+                        value={strength}
+                        onChange={v => {
+                            setStrength(v);
+                            setPair(null);
+                        }}
+                        optionClassName="px-2"
+                        options={[
+                            { value: 'all', label: 'All' },
+                            { value: '5v5', label: '5v5' },
+                            { value: 'ev', label: 'EV' },
+                            { value: 'awayPP', label: `${m.teams.away.tri} PP` },
+                            { value: 'homePP', label: `${m.teams.home.tri} PP` },
+                        ]}
+                    />
+                    {strength === 'awayPP' || strength === 'homePP' ? (
+                        <span className="text-micro uppercase tracking-label text-fg-3">
+                            {m.teams[strength === 'awayPP' ? 'home' : 'away'].tri} on the kill
+                        </span>
+                    ) : null}
+                </ControlRow>
+                {!n ? <p className="p-card label">No faceoffs at this strength</p> : null}
+                <div className={cn('relative grid gap-5 p-card sm:grid-cols-2 lg:grid-cols-[13.5rem_minmax(0,1fr)_13.5rem] lg:items-start', !n && 'hidden')}>
                     <div className="order-2 lg:order-1">{rail('away')}</div>
                     <div className="order-1 flex min-w-0 flex-col gap-2 sm:col-span-2 lg:order-2 lg:col-span-1">
                         <svg
-                            ref={rinkRef}
                             viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
                             className="block h-auto w-full"
                             role="img"
@@ -435,9 +414,10 @@ export function Faceoffs() {
                                         {ds.map((d, i) => {
                                             const s = spots[i];
                                             const on = involved(d);
+                                            const hit = vsPair(d);
                                             return (
-                                                <g key={d.e.id} style={{ opacity: on ? 1 : 0.12, transition: 'opacity 140ms' }}>
-                                                    <circle cx={s.x} cy={s.y} r={BEAD} fill={colors[d.win]} stroke="var(--bg)" strokeWidth={0.45} />
+                                                <g key={d.e.id} style={{ opacity: !on ? 0.12 : pair != null && !hit ? 0.3 : 1, transition: 'opacity 140ms' }}>
+                                                    <circle cx={s.x} cy={s.y} r={BEAD} fill={colors[d.win]} stroke={hit ? 'var(--brand)' : 'var(--bg)'} strokeWidth={hit ? 0.8 : 0.45} />
                                                     {d.led ? <Spark x={s.x} y={s.y} a={s.a} goal={d.led.type === 'goal'} /> : null}
                                                 </g>
                                             );
@@ -476,13 +456,6 @@ export function Faceoffs() {
                         </div>
                     </div>
                     <div className="order-3">{rail('home')}</div>
-                    {threads.length ? (
-                        <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
-                            {threads.map((t, i) => (
-                                <path key={i} d={t.d} fill="none" stroke={t.color} strokeWidth={t.w} strokeOpacity={0.5} strokeLinecap="round" />
-                            ))}
-                        </svg>
-                    ) : null}
                 </div>
                 <p className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line px-card py-2 text-micro uppercase tracking-label text-fg-3">
                     <span className="flex items-center gap-1.5">
@@ -494,7 +467,7 @@ export function Faceoffs() {
                     <span className="flex items-center gap-1.5">
                         <SparkIcon /> Shot attempt within {DRAW_WINDOW}s
                     </span>
-                    <span>Click a taker to thread his draws</span>
+                    <span>Click a taker to focus · hover an opponent for their draws</span>
                 </p>
                 {tip}
             </div>

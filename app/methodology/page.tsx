@@ -532,7 +532,9 @@ export default function MethodologyPage() {
                                 winner&apos;s colour, clockwise from the top of the ring in game order. A spark marks a win that the winners turned
                                 into a shot attempt (on goal, missed or blocked) within {DRAW_WINDOW} seconds and before the next faceoff. The
                                 left end holds the home net (the away team attacks it); zones beside each taker are from his own team&apos;s view.
-                                Picking a taker threads him to every dot he took a draw on and on to each opponent he faced there.
+                                Picking a taker lights only his draws and shows his record against each opponent; hovering an opponent then
+                                lights the draws between the two. The strength filter splits out even strength and each team&apos;s power play
+                                (the draw&apos;s own situation, so a draw right after a penalty expires counts as even).
                             </p>
                         </Section>
 
