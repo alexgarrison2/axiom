@@ -112,7 +112,8 @@ export function Units() {
     }, [m, side, kind]);
     const team = React.useMemo(() => teamOnIce(m, side, kind === 'PP' ? 'pp' : kind === 'PK' ? 'sh' : '5v5', per), [m, side, kind, per]);
     const all = React.useMemo(() => units(m, side, kind, per), [m, side, kind, per]);
-    const rows = React.useMemo(() => all.filter(u => u.toi >= MIN_TOI || regularKeys.has(u.ids.join('-'))), [all, regularKeys]);
+    // A group on for a goal (either way) is listed however briefly it was together.
+    const rows = React.useMemo(() => all.filter(u => u.toi >= MIN_TOI || u.gf || u.ga || regularKeys.has(u.ids.join('-'))), [all, regularKeys]);
     // Whatever the listed groups do not cover - groups together under MIN_TOI and time no one group was out for -
     // so the table adds up to the team row (a power play's goals often come off a quick change).
     const rest = React.useMemo(() => {
@@ -249,7 +250,7 @@ export function Units() {
                                 {rest ? (
                                     <tr>
                                         <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]', PIN_FIRST)}>
-                                            <span className="text-micro uppercase tracking-label text-fg-3" title={`Groups together under ${MIN_TOI} seconds, and time no single group was out for`}>
+                                            <span className="text-micro uppercase tracking-label text-fg-3" title={`Groups together under ${MIN_TOI} seconds with no goal, and time no single group was out for`}>
                                                 {rest.n ? `Other ${rest.n} brief ${rest.n === 1 ? 'group' : 'groups'}` : 'Other time'}
                                             </span>
                                         </th>
