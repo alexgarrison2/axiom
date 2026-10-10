@@ -552,6 +552,8 @@ export function Faceoffs() {
                                                       const won = pool.filter(d => d.win === view);
                                                       if (!won.length) return null;
                                                       const f = won.filter(d => d.led).length / won.length;
+                                                      // No wins into a shot: nothing to spark.
+                                                      if (!f) return null;
                                                       const share = won.length / nn;
                                                       const mid = -Math.PI / 2 + (view === 'away' ? share / 2 : aw / nn + share / 2) * 2 * Math.PI;
                                                       const c = Math.cos(mid);
