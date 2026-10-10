@@ -13,6 +13,8 @@ import { Faceoffs } from './Faceoffs';
 import { Matchups } from './Matchups';
 import { Pulse } from './Pulse';
 import { CompactScore, ScoreBand } from './ScoreBand';
+import { Scoreboard } from './Scoreboard';
+import type { SlateGame } from '@/lib/game/fetch';
 import { Shots } from './Shots';
 import { Skaters } from './Skaters';
 import { TeamStats } from './TeamStats';
@@ -151,7 +153,7 @@ function useScrolledPast<T extends HTMLElement>(): [React.RefObject<T | null>, b
     return [ref, past];
 }
 
-export function GameView({ m }: { m: GameModel }) {
+export function GameView({ m, slate = [] }: { m: GameModel; slate?: SlateGame[] }) {
     const active = useActiveSection();
     const started = m.state !== 'pre';
     const [bandRef, bandGone] = useScrolledPast<HTMLDivElement>();
@@ -159,6 +161,7 @@ export function GameView({ m }: { m: GameModel }) {
         <GameProvider m={m}>
             <LiveRefresh live={m.state === 'live'} />
             <div className="flex flex-col gap-5">
+                <Scoreboard games={slate} current={m.id} />
                 <div ref={bandRef}>
                     <ScoreBand />
                 </div>

@@ -284,6 +284,73 @@ function seasonOutlook(m: { startUtc: string; date: string; teams: Record<Side, 
 }
 
 /** The game, or null when the NHL has no such game. */
+/** One game of the night, for the game page's scoreboard bar. */
+export interface SlateGame {
+    id: number;
+    away: { tri: string; score: number | null };
+    home: { tri: string; score: number | null };
+    state: 'pre' | 'live' | 'final';
+    period: number | null;
+    clock: string | null;
+    intermission: boolean;
+    /** OT / SO once a final went past regulation. */
+    ended: string | null;
+    startUtc: string;
+    /** Power play or empty net now: which side has the extra man and how ("PP", "EN"), with time left. */
+    edge: { tri: string; what: string; left: string | null } | null;
+}
+
+interface RawScoreGame {
+    id?: number;
+    gameState?: string;
+    startTimeUTC?: string;
+    periodDescriptor?: { number?: number };
+    clock?: { timeRemaining?: string; inIntermission?: boolean };
+    gameOutcome?: { lastPeriodType?: string };
+    awayTeam?: { abbrev?: string; score?: number };
+    homeTeam?: { abbrev?: string; score?: number };
+    situation?: {
+        awayTeam?: { abbrev?: string; situationDescriptions?: string[] };
+        homeTeam?: { abbrev?: string; situationDescriptions?: string[] };
+        timeRemaining?: string;
+    };
+}
+
+/** The night's games from the NHL score feed (cached 20s), in feed order (by start). */
+export async function getSlate(date: string): Promise<SlateGame[]> {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+    const body = (await getJson(`https://api-web.nhle.com/v1/score/${date}`, 20)) as { games?: RawScoreGame[] } | null;
+    // The score feed stalls now and then; the schedule feed has the same games with scores and periods (no clock).
+    let games = body?.games;
+    if (!games) {
+        const week = (await getJson(`https://api-web.nhle.com/v1/schedule/${date}`, 20)) as { gameWeek?: { date?: string; games?: RawScoreGame[] }[] } | null;
+        games = week?.gameWeek?.find(d => d.date === date)?.games;
+    }
+    return (games ?? []).flatMap(g => {
+        if (!g.id || !g.awayTeam?.abbrev || !g.homeTeam?.abbrev) return [];
+        const st = g.gameState ?? 'FUT';
+        const state: SlateGame['state'] = st === 'LIVE' || st === 'CRIT' ? 'live' : st === 'FINAL' || st === 'OFF' ? 'final' : 'pre';
+        const sit = g.situation;
+        const tag = (t?: { abbrev?: string; situationDescriptions?: string[] }) => (t?.situationDescriptions?.length ? { tri: t.abbrev ?? '', what: t.situationDescriptions.join(' ') } : null);
+        const e = state === 'live' ? (tag(sit?.awayTeam) ?? tag(sit?.homeTeam)) : null;
+        const ended = g.gameOutcome?.lastPeriodType;
+        return [
+            {
+                id: g.id,
+                away: { tri: g.awayTeam.abbrev, score: state === 'pre' ? null : (g.awayTeam.score ?? 0) },
+                home: { tri: g.homeTeam.abbrev, score: state === 'pre' ? null : (g.homeTeam.score ?? 0) },
+                state,
+                period: state === 'pre' ? null : (g.periodDescriptor?.number ?? null),
+                clock: state === 'live' ? (g.clock?.timeRemaining ?? null) : null,
+                intermission: !!g.clock?.inIntermission,
+                ended: state === 'final' && ended && ended !== 'REG' ? ended : null,
+                startUtc: g.startTimeUTC ?? '',
+                edge: e ? { ...e, left: sit?.timeRemaining ?? null } : null,
+            },
+        ];
+    });
+}
+
 export async function getGame(idStr: string): Promise<GameModel | null> {
     if (!validGameId(idStr)) return null;
     const id = Number(idStr);

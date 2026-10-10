@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import GameView from '@/components/game/GameView';
-import { getGame, validGameId } from '@/lib/game/fetch';
+import { getGame, getSlate, validGameId } from '@/lib/game/fetch';
 
 // The NHL feeds are cached per request type in lib/game/fetch (30s live, a day final).
 export const revalidate = 30;
@@ -26,9 +26,11 @@ export default async function GamePage({ params }: Params) {
     const { id } = await params;
     const m = await getGame(id);
     if (!m) notFound();
+    // The night's other games for the scoreboard bar (cached 20s; empty if the feed is down).
+    const slate = await getSlate(m.date);
     return (
         <main className="page pb-tabbar pt-3 md:pb-12 md:pt-5">
-            <GameView m={m} />
+            <GameView m={m} slate={slate} />
         </main>
     );
 }
