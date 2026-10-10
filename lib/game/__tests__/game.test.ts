@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, groupMatchups, hardMatches, lineGroups, matchups, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
+import { clockOf, deservedSeries, gameScores, GS_PARTS, draws, FO_SPOTS, goalSwings, groupMatchups, hardMatches, lineGroups, matchups, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
 import { mergeSeason } from '../season';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
 import PONY from '@/public/data/pony_score.json';
@@ -149,6 +149,18 @@ describe('game model', () => {
         // Always on together is exactly what chance gives: no hard match.
         expect(lift[0][0]).toBe(1);
         expect(hardMatches(cells, lift).size).toBe(0);
+    });
+
+    it('puts each draw on its dot and keeps the wins that became shots', () => {
+        const fo = (id: number, time: string, x: number, y: number, win: number, lose: number, owner: number) =>
+            play(id, 1, time, 'faceoff', { xCoord: x, yCoord: y, winningPlayerId: win, losingPlayerId: lose, eventOwnerTeamId: owner, zoneCode: 'O' });
+        const g = buildGame({ pbp: { ...pbp, plays: [fo(11, '00:30', -20, -22, 11, 21, 1), fo(10, '04:55', 68, 21, 21, 11, 2), ...pbp.plays] }, shifts }, xg, null);
+        const [early, late] = draws(g).sort((a, b) => a.e.t - b.e.t);
+        expect(FO_SPOTS[late.dot!]).toEqual([69, 22]);
+        expect(late.win).toBe('home');
+        expect(late.led?.type).toBe('goal');
+        expect(FO_SPOTS[early.dot!]).toEqual([-20, -22]);
+        expect(early.led).toBeNull();
     });
 
     it('builds the deserved line from shot xG and names any overtime', () => {

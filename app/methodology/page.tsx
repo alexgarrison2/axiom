@@ -14,7 +14,7 @@ import { ScrollRegion } from '@/components/ui/scroll-region';
 import { parseReport, type MarketBacktest, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 import { MATINEE_HOUR, RETURN_HOME_REST, RIBBON_GAMES, ROAD_MI, STRETCH_GAMES } from '@/lib/schedule/metrics';
 import { OT_SHARE } from '@/lib/schedule/record';
-import { HARD_LIFT, HARD_MIN } from '@/lib/game/analytics';
+import { DRAW_WINDOW, HARD_LIFT, HARD_MIN } from '@/lib/game/analytics';
 
 export const revalidate = 3600;
 
@@ -526,6 +526,13 @@ export default function MethodologyPage() {
                                 line&apos;s share of 5v5 time multiplied), over at least {HARD_MIN / 60} minutes; for each line we mark only the
                                 opponent it saw most beyond chance. The home coach has the last change, so hard matches mostly read as the home
                                 bench&apos;s choices. The replay slider cuts the whole grid at any moment of the game.
+                            </p>
+                            <p>
+                                The <strong>faceoffs</strong> board draws every faceoff on the dot it was taken at: one bead per draw in the
+                                winner&apos;s colour, clockwise from the top of the ring in game order. A spark marks a win that the winners turned
+                                into a shot attempt (on goal, missed or blocked) within {DRAW_WINDOW} seconds and before the next faceoff. The
+                                left end holds the home net (the away team attacks it); zones beside each taker are from his own team&apos;s view.
+                                Picking a taker threads him to every dot he took a draw on and on to each opponent he faced there.
                             </p>
                         </Section>
 

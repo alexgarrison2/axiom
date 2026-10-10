@@ -9,6 +9,7 @@ import { GameScore } from './GameScore';
 import { Goalies } from './Goalies';
 import { Goals } from './Goals';
 import { Lines } from './Lines';
+import { Faceoffs } from './Faceoffs';
 import { Matchups } from './Matchups';
 import { Pulse } from './Pulse';
 import { ScoreBand } from './ScoreBand';
@@ -32,6 +33,7 @@ const SECTIONS = [
     { id: 'goalies', label: 'Goalies' },
     { id: 'lines', label: 'Lines' },
     { id: 'matchups', label: 'Matchups' },
+    { id: 'faceoffs', label: 'Faceoffs' },
     { id: 'zones', label: 'Zones' },
 ] as const;
 
@@ -161,6 +163,7 @@ export function GameView({ m }: { m: GameModel }) {
                                 <Goalies />
                                 <Lines />
                                 <Matchups />
+                                <Faceoffs />
                                 <Zones />
                             </>
                         ) : null}

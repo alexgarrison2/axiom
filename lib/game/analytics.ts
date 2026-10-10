@@ -897,6 +897,70 @@ export function hardMatches(cells: Matchup[][], lift: (number | null)[][]): Set<
     return out;
 }
 
+/* ── Faceoffs ──────────────────────────────────────────────────────────── */
+
+/**
+ * The nine faceoff dots in the game frame (home attacks right): left end, left neutral, centre, right neutral,
+ * right end; y −22 / +22. The left end is the away team's attacking zone.
+ */
+export const FO_SPOTS: readonly (readonly [number, number])[] = [
+    [-69, -22],
+    [-69, 22],
+    [-20, -22],
+    [-20, 22],
+    [0, 0],
+    [20, -22],
+    [20, 22],
+    [69, -22],
+    [69, 22],
+];
+/** A won draw "leads" when the winners attempt a shot this many seconds after it, before the next faceoff. */
+export const DRAW_WINDOW = 10;
+
+export interface Draw {
+    e: GameEvent;
+    /** Index into FO_SPOTS; null when the feed has no usable location. */
+    dot: number | null;
+    /** Winner's side; winner and loser ids (e.player / e.other). */
+    win: Side;
+    winner: number | null;
+    loser: number | null;
+    /** The winners' first shot attempt within DRAW_WINDOW seconds, before any other faceoff. */
+    led: GameEvent | null;
+}
+
+const isAttemptEvent = (e: GameEvent) => isUnblocked(e) || e.type === 'block';
+
+/** Every faceoff, located on its dot, with what the winners did with it. */
+export function draws(m: GameModel): Draw[] {
+    const out: Draw[] = [];
+    m.events.forEach((e, i) => {
+        if (e.type !== 'faceoff') return;
+        let dot: number | null = null;
+        if (e.x != null && e.y != null) {
+            let best = 12 * 12;
+            FO_SPOTS.forEach(([x, y], k) => {
+                const d = (e.x! - x) ** 2 + (e.y! - y) ** 2;
+                if (d < best) {
+                    best = d;
+                    dot = k;
+                }
+            });
+        }
+        let led: GameEvent | null = null;
+        for (let j = i + 1; j < m.events.length; j++) {
+            const n = m.events[j];
+            if (n.type === 'faceoff' || n.t > e.t + DRAW_WINDOW) break;
+            if (isAttemptEvent(n) && n.side === e.side) {
+                led = n;
+                break;
+            }
+        }
+        out.push({ e, dot, win: e.side, winner: e.player, loser: e.other, led });
+    });
+    return out;
+}
+
 /* ── Zone starts ───────────────────────────────────────────────────────── */
 
 export interface ZoneStarts {
