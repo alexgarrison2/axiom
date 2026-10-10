@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { GameProvider } from '@/components/game/GameContext';
+import { Faceoffs } from '@/components/game/Faceoffs';
 import { GameScore } from '@/components/game/GameScore';
 import { Goalies } from '@/components/game/Goalies';
 import { Lines } from '@/components/game/Lines';
@@ -253,6 +254,7 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
                     <Goalies />
                     <Lines />
                     <Zones />
+                    <Faceoffs />
                     <Shots />
                     <XgBreakdown />
                 </GameProvider>

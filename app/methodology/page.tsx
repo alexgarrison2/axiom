@@ -536,6 +536,9 @@ export default function MethodologyPage() {
                                 Picking a taker lights only his draws and shows his record against each opponent; hovering an opponent then
                                 lights the draws between the two. The strength filter splits out even strength and each team&apos;s power play
                                 (the draw&apos;s own situation, so a draw right after a penalty expires counts as even).
+                                On a team page&apos;s Breakdown the board covers the picked games: each dot becomes a ring of beads filled
+                                clockwise in the team&apos;s colour up to its win share there (a tick marks 50%), bead size follows how many draws
+                                were taken at the dot, and sparks show the share of wins that became a shot.
                             </p>
                         </Section>
 

@@ -122,9 +122,9 @@ function takersOf(list: Draw[], byId: Map<number, { side: Side }>): Taker[] {
 }
 
 /** A short tick leaving the bead: the win became a shot attempt (longer for a goal). */
-function Spark({ x, y, a, goal }: { x: number; y: number; a: number; goal: boolean }) {
-    const r0 = BEAD + 0.5;
-    const r1 = BEAD + (goal ? 4.2 : 3);
+function Spark({ x, y, a, goal, br = BEAD }: { x: number; y: number; a: number; goal: boolean; br?: number }) {
+    const r0 = br + 0.5;
+    const r1 = br + (goal ? 4.2 : 3);
     return (
         <line
             x1={(x + r0 * Math.cos(a)).toFixed(2)}
@@ -156,8 +156,13 @@ function SparkIcon() {
     );
 }
 
+/** A season's dot: a ring of beads filled clockwise in the winner's colours like a gauge (DIAL beads, fewer on the neutral dots). */
+const DIAL = { end: 20, neutral: 12 };
+
 export function Faceoffs() {
     const { m, colors, byId, label } = useGame();
+    // A merged season (team page): too many draws for a bead each, so each dot becomes a gauge.
+    const season = !!m.starts?.length;
     const all = React.useMemo(() => draws(m), [m]);
     const [strength, setStrength] = React.useState<Strength>('all');
     const list = React.useMemo(() => all.filter(d => strengthMatch(d, strength)), [all, strength]);
@@ -223,6 +228,37 @@ export function Faceoffs() {
 
     const zoneTip = (z: 0 | 1 | 2) => {
         const t = thirds[z];
+        if (season) {
+            const tot = t.away + t.home;
+            const top = takersOf(t.ds, byId)
+                .filter(x => x.side === 'away')
+                .slice(0, 6);
+            return (
+                <div className="flex w-64 flex-col gap-2">
+                    <div className="flex items-baseline justify-between gap-3">
+                        <span className="font-bold text-fg-1">{t.title}</span>
+                        <span className="text-caption font-bold tabular-nums">
+                            <span style={{ color: colors.away }}>{t.away}</span>
+                            <span className="px-1 font-normal text-fg-3">–</span>
+                            <span style={{ color: colors.home }}>{t.home}</span>
+                        </span>
+                    </div>
+                    <p className="text-micro uppercase tracking-label text-fg-3">
+                        {m.teams.away.tri} won <span className="text-fg-1">{tot ? Math.round((t.away / tot) * 100) : 0}%</span> of {tot}
+                    </p>
+                    <ol className="flex flex-col gap-1 border-t border-line pt-2 text-caption">
+                        {top.map(x => (
+                            <li key={x.id} className="flex items-baseline justify-between gap-2">
+                                <span className="truncate font-semibold text-fg-1">{label(x.id)}</span>
+                                <span className="tabular-nums text-fg-2">
+                                    {x.w}–{x.l} <span className="text-fg-3">{Math.round((x.w / Math.max(1, x.w + x.l)) * 100)}%</span>
+                                </span>
+                            </li>
+                        ))}
+                    </ol>
+                </div>
+            );
+        }
         return (
             <div className="flex w-72 flex-col gap-2">
                 <div className="flex items-baseline justify-between gap-3">
@@ -257,8 +293,21 @@ export function Faceoffs() {
         );
     };
 
+    // A zone record: W–L for a game, win % over a season (four-digit records do not fit a rail).
+    const zoneRec = (w: number, l: number) => (season ? `${w + l ? Math.round((w / (w + l)) * 100) : 0}%` : `${w}–${l}`);
+
     const rail = (side: Side) => {
-        const rows = takers.filter(t => t.side === side);
+        // A season lists the regular takers (10+ draws) and the opponents faced most, or those the picked taker faced.
+        const rows = !season
+            ? takers.filter(t => t.side === side)
+            : side === 'away'
+              ? takers.filter(t => t.side === 'away' && t.w + t.l >= 10).slice(0, 12)
+              : active != null && activeSide === 'away'
+                ? takers
+                      .filter(t => t.side === 'home' && h2h.has(t.id))
+                      .sort((a, b) => h2h.get(b.id)![0] + h2h.get(b.id)![1] - (h2h.get(a.id)![0] + h2h.get(a.id)![1]))
+                      .slice(0, 10)
+                : takers.filter(t => t.side === 'home').slice(0, 10);
         const w = total(side);
         const l = n - w;
         return (
@@ -276,8 +325,8 @@ export function Faceoffs() {
                         </div>
                         <span className={cn('flex items-center gap-2 text-micro tabular-nums text-fg-2', side === 'home' && 'lg:justify-end')}>
                             {teamZone(side).map(({ z, w: zw, l: zl }) => (
-                                <span key={z} title={z === 'O' ? 'Offensive zone' : z === 'D' ? 'Defensive zone' : 'Neutral zone'}>
-                                    {z} {zw}–{zl}
+                                <span key={z} title={`${z === 'O' ? 'Offensive' : z === 'D' ? 'Defensive' : 'Neutral'} zone ${zw}–${zl}`}>
+                                    {z} {zoneRec(zw, zl)}
                                 </span>
                             ))}
                         </span>
@@ -315,8 +364,8 @@ export function Faceoffs() {
                                         <span className="flex items-center gap-2 text-micro tabular-nums text-fg-3">
                                             {(['D', 'N', 'O'] as Zone[]).map(z =>
                                                 t.zone[z][0] + t.zone[z][1] ? (
-                                                    <span key={z}>
-                                                        {z} {t.zone[z][0]}–{t.zone[z][1]}
+                                                    <span key={z} className="whitespace-nowrap" title={`${t.zone[z][0]}–${t.zone[z][1]}`}>
+                                                        {z} {zoneRec(t.zone[z][0], t.zone[z][1])}
                                                     </span>
                                                 ) : null,
                                             )}
@@ -423,7 +472,51 @@ export function Faceoffs() {
                             {hot != null ? (
                                 <rect x={THIRDS[hot].x0} y={-42.5} width={THIRDS[hot].x1 - THIRDS[hot].x0} height={85} clipPath="url(#fo-rink)" fill="rgb(var(--brand-rgb) / 0.06)" />
                             ) : null}
-                            {FO_SPOTS.map(([cx, cy], k) => {
+                            {season
+                                ? (() => {
+                                      // Gauge per dot: the draws in view (picked taker, hovered opponent), win share as lit beads, volume as bead size.
+                                      const pools = byDot.map(ds => ds.filter(d => involved(d) && (pair == null || vsPair(d))));
+                                      const most = Math.max(1, ...pools.map(p => p.length));
+                                      return FO_SPOTS.map(([cx, cy], k) => {
+                                          const pool = pools[k];
+                                          const nn = pool.length;
+                                          const r = ringOf(k);
+                                          const K = isNeutral(k) ? DIAL.neutral : DIAL.end;
+                                          const aw = pool.filter(d => d.win === 'away').length;
+                                          const lit = nn ? Math.round((aw / nn) * K) : 0;
+                                          const share = (side: Side) => {
+                                              const won = pool.filter(d => d.win === side);
+                                              return won.length ? won.filter(d => d.led).length / won.length : 0;
+                                          };
+                                          const sparkA = Math.round(lit * share('away'));
+                                          const sparkH = Math.round((K - lit) * share('home'));
+                                          const br = nn ? BEAD * (0.55 + 0.55 * Math.sqrt(nn / most)) : BEAD * 0.5;
+                                          const x0 = boardX(cx);
+                                          const third = x0 < -25 ? 0 : x0 > 25 ? 2 : 1;
+                                          return (
+                                              <g key={k} transform={`translate(${x0},${-cy})`} style={{ opacity: hot != null && hot !== third ? 0.25 : 1, transition: 'opacity 140ms' }}>
+                                                  <title>{nn ? `${m.teams.away.tri} ${aw}–${nn - aw} (${Math.round((aw / nn) * 100)}%)` : 'No draws'}</title>
+                                                  {isNeutral(k) ? <circle r={r} fill="none" stroke="var(--line-strong)" strokeWidth={0.3} strokeDasharray="1 1.2" /> : null}
+                                                  {/* Even: a tick at six o'clock, where half the ring is lit. */}
+                                                  <line x1={0} x2={0} y1={r + br + 0.8} y2={r + br + 3.4} className="stroke-fg-3" strokeWidth={0.5} />
+                                                  {Array.from({ length: K }, (_, i) => {
+                                                      const a = -Math.PI / 2 + (i / K) * 2 * Math.PI;
+                                                      const x = Math.round(r * Math.cos(a) * 100) / 100;
+                                                      const y = Math.round(r * Math.sin(a) * 100) / 100;
+                                                      const mine = i < lit;
+                                                      const spark = mine ? i < sparkA : i - lit < sparkH;
+                                                      return (
+                                                          <g key={i} style={{ opacity: nn ? 1 : 0.2 }}>
+                                                              <circle cx={x} cy={y} r={br} fill={nn ? colors[mine ? 'away' : 'home'] : 'var(--mute)'} stroke="var(--bg)" strokeWidth={0.45} />
+                                                              {nn && spark ? <Spark x={x} y={y} a={Math.round(a * 100) / 100} goal={false} br={br} /> : null}
+                                                          </g>
+                                                      );
+                                                  })}
+                                              </g>
+                                          );
+                                      });
+                                  })()
+                                : FO_SPOTS.map(([cx, cy], k) => {
                                 const ds = byDot[k];
                                 const r = ringOf(k);
                                 const spots = beadSpots(ds.length, r);
@@ -505,13 +598,13 @@ export function Faceoffs() {
                     <span className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: colors.away }} />
                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: colors.home }} />
-                        Bead = draw, winner&apos;s colour
+                        {season ? 'Ring = win share, clockwise from the top' : 'Bead = draw, winner\u2019s colour'}
                     </span>
-                    <span>Clockwise from the top in game order</span>
+                    <span>{season ? 'Tick = 50% · bead size = draws at the dot' : 'Clockwise from the top in game order'}</span>
                     <span className="flex items-center gap-1.5">
-                        <SparkIcon /> Shot attempt within {DRAW_WINDOW}s
+                        <SparkIcon /> {season ? 'Share of wins into a shot' : `Shot attempt within ${DRAW_WINDOW}s`}
                     </span>
-                    <span>Hover a zone for its draws · click a taker to focus</span>
+                    <span>{season ? 'Hover a zone for its takers' : 'Hover a zone for its draws'} · click a taker to focus</span>
                 </p>
                 {tip}
             </div>
