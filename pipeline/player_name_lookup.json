@@ -33,7 +33,6 @@
     "ronan seeley": "8482187",
     "alexander nikishin": "8482100",
     "zachary aston-reese": "8479944",
-    "miles wood": "8477425",
     "mikael pyyhtia": "8482451",
     "isac lundestrom": "8480806",
     "damon severson": "8476923",
@@ -58,7 +57,6 @@
     "landon slaggert": "8482172",
     "dominic toninato": "8476952",
     "sacha boisvert": "8484793",
-    "sam lafferty": "8478043",
     "tristen nielsen": "8483039",
     "jason polin": "8484255",
     "zakhar bardakov": "8482947",
@@ -101,7 +99,6 @@
     "noah gregor": "8479393",
     "donovan sebrango": "8482131",
     "jacob moverare": "8479421",
-    "jared wright": "8483756",
     "angus booth": "8483699",
     "taylor ward": "8483406",
     "kenny connors": "8483675",
@@ -111,9 +108,10 @@
     "ben jones": "8480259",
     "hunter haight": "8483452",
     "robby fabbri": "8477952",
-    "matt kiersted": "8482641",
     "vladimir tarasenko": "8475765",
+    "tyler pitlick": "8475752",
     "jeff petry": "8473507",
+    "viking gustafsson nyberg": "8486166",
     "nicolas aube-kubel": "8477979",
     "david reinbacher": "8484220",
     "patrik laine": "8479339",
@@ -272,6 +270,7 @@
     "walker duehr": "8482652",
     "bogdan trineyev": "8482167",
     "sonny milano": "8477947",
+    "brett leason": "8481517",
     "rasmus sandin": "8480873",
     "david kampf": "8480144",
     "drew helleson": "8481563",
@@ -362,6 +361,7 @@
     "jackson blake": "8482809",
     "k'andre miller": "8480817",
     "conor garland": "8478856",
+    "miles wood": "8477425",
     "jake christiansen": "8481161",
     "adam fantilli": "8484166",
     "danton heinen": "8478046",
@@ -412,6 +412,7 @@
     "teuvo teravainen": "8476882",
     "ilya mikheyev": "8481624",
     "anton frondell": "8485391",
+    "sam lafferty": "8478043",
     "oliver moore": "8484197",
     "kevin korchinski": "8483466",
     "tyler bertuzzi": "8477479",
@@ -532,6 +533,7 @@
     "niko mikkola": "8478859",
     "alex turcotte": "8481532",
     "quinton byfield": "8482124",
+    "jared wright": "8483756",
     "drew doughty": "8474563",
     "kevin fiala": "8477942",
     "brian dumoulin": "8475208",
@@ -558,14 +560,13 @@
     "marcus foligno": "8475220",
     "yakov trenin": "8478508",
     "ryan hartman": "8477451",
+    "matt kiersted": "8482641",
     "nick foligno": "8473422",
     "nico sturm": "8481477",
     "jared spurgeon": "8474716",
-    "tyler pitlick": "8475752",
     "brock faber": "8482122",
     "jonas brodin": "8476463",
     "daemon hunt": "8482094",
-    "viking gustafsson nyberg": "8486166",
     "kirill kaprizov": "8478864",
     "quinn hughes": "8480800",
     "jake middleton": "8478136",
@@ -919,7 +920,6 @@
     "pierre-luc dubois": "8479400",
     "ryan leonard": "8484186",
     "connor mcmichael": "8481580",
-    "brett leason": "8481517",
     "ilya protas": "8484999",
     "cole hutson": "8484873",
     "declan chisholm": "8480990",
@@ -1187,18 +1187,6 @@
         "team": "CBJ"
       }
     ],
-    "wood": [
-      {
-        "pid": "8477425",
-        "full_name": "miles wood",
-        "team": "CBJ"
-      },
-      {
-        "pid": "8484241",
-        "full_name": "matthew wood",
-        "team": "NSH"
-      }
-    ],
     "pyyhtia": [
       {
         "pid": "8482451",
@@ -1384,13 +1372,6 @@
       {
         "pid": "8484793",
         "full_name": "sacha boisvert",
-        "team": "CHI"
-      }
-    ],
-    "lafferty": [
-      {
-        "pid": "8478043",
-        "full_name": "sam lafferty",
         "team": "CHI"
       }
     ],
@@ -1738,18 +1719,6 @@
         "team": "LAK"
       }
     ],
-    "wright": [
-      {
-        "pid": "8483756",
-        "full_name": "jared wright",
-        "team": "LAK"
-      },
-      {
-        "pid": "8483524",
-        "full_name": "shane wright",
-        "team": "SEA"
-      }
-    ],
     "booth": [
       {
         "pid": "8483699",
@@ -1833,13 +1802,6 @@
         "team": "MIN"
       }
     ],
-    "kiersted": [
-      {
-        "pid": "8482641",
-        "full_name": "matt kiersted",
-        "team": "MIN"
-      }
-    ],
     "tarasenko": [
       {
         "pid": "8475765",
@@ -1847,10 +1809,24 @@
         "team": "MIN"
       }
     ],
+    "pitlick": [
+      {
+        "pid": "8475752",
+        "full_name": "tyler pitlick",
+        "team": "MIN"
+      }
+    ],
     "petry": [
       {
         "pid": "8473507",
         "full_name": "jeff petry",
+        "team": "MIN"
+      }
+    ],
+    "nyberg": [
+      {
+        "pid": "8486166",
+        "full_name": "viking gustafsson nyberg",
         "team": "MIN"
       }
     ],
@@ -2998,6 +2974,13 @@
         "team": "WSH"
       }
     ],
+    "leason": [
+      {
+        "pid": "8481517",
+        "full_name": "brett leason",
+        "team": "WSH"
+      }
+    ],
     "sandin": [
       {
         "pid": "8480873",
@@ -3640,6 +3623,18 @@
         "team": "CBJ"
       }
     ],
+    "wood": [
+      {
+        "pid": "8477425",
+        "full_name": "miles wood",
+        "team": "TOR"
+      },
+      {
+        "pid": "8484241",
+        "full_name": "matthew wood",
+        "team": "NSH"
+      }
+    ],
     "christiansen": [
       {
         "pid": "8481161",
@@ -3986,6 +3981,13 @@
         "pid": "8485391",
         "full_name": "anton frondell",
         "team": "CHI"
+      }
+    ],
+    "lafferty": [
+      {
+        "pid": "8478043",
+        "full_name": "sam lafferty",
+        "team": "FLA"
       }
     ],
     "korchinski": [
@@ -4769,6 +4771,18 @@
         "team": "LAK"
       }
     ],
+    "wright": [
+      {
+        "pid": "8483756",
+        "full_name": "jared wright",
+        "team": "LAK"
+      },
+      {
+        "pid": "8483524",
+        "full_name": "shane wright",
+        "team": "SEA"
+      }
+    ],
     "doughty": [
       {
         "pid": "8474563",
@@ -4945,6 +4959,13 @@
         "team": "MIN"
       }
     ],
+    "kiersted": [
+      {
+        "pid": "8482641",
+        "full_name": "matt kiersted",
+        "team": "MIN"
+      }
+    ],
     "sturm": [
       {
         "pid": "8481477",
@@ -4959,13 +4980,6 @@
         "team": "MIN"
       }
     ],
-    "pitlick": [
-      {
-        "pid": "8475752",
-        "full_name": "tyler pitlick",
-        "team": "MIN"
-      }
-    ],
     "faber": [
       {
         "pid": "8482122",
@@ -4977,13 +4991,6 @@
       {
         "pid": "8476463",
         "full_name": "jonas brodin",
-        "team": "MIN"
-      }
-    ],
-    "nyberg": [
-      {
-        "pid": "8486166",
-        "full_name": "viking gustafsson nyberg",
         "team": "MIN"
       }
     ],
@@ -7280,13 +7287,6 @@
         "pid": "8481580",
         "full_name": "connor mcmichael",
         "team": "STL"
-      }
-    ],
-    "leason": [
-      {
-        "pid": "8481517",
-        "full_name": "brett leason",
-        "team": "SJS"
       }
     ],
     "protas": [
