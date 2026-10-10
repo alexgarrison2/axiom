@@ -138,15 +138,19 @@ function Rail({ active, score, edge }: { active: string; score: boolean; edge: S
     );
 }
 
-/** True once the element has scrolled up past the app bar (it is above the viewport's top band). */
+/**
+ * True once the score band's score row (crests and scores, its first block - not the odds below it) has
+ * scrolled up under the app bar.
+ */
 function useScrolledPast<T extends HTMLElement>(): [React.RefObject<T | null>, boolean] {
     const ref = React.useRef<T>(null);
     const [past, setPast] = React.useState(false);
     React.useEffect(() => {
-        const el = ref.current;
+        const el = ref.current?.querySelector('header > div') ?? ref.current;
         if (!el || typeof IntersectionObserver === 'undefined') return;
         const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--appbar-h')) || 56;
-        const io = new IntersectionObserver(([e]) => setPast(!e.isIntersecting && e.boundingClientRect.top < 0), { rootMargin: `-${Math.round(bar + 48)}px 0px 0px 0px` });
+        // Gone once its lower half is under the app bar: the scores are no longer readable there.
+        const io = new IntersectionObserver(([e]) => setPast(e.intersectionRatio < 0.5 && e.boundingClientRect.top < bar), { rootMargin: `-${Math.round(bar)}px 0px 0px 0px`, threshold: [0, 0.5, 1] });
         io.observe(el);
         return () => io.disconnect();
     }, []);

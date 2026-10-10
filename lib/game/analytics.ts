@@ -1413,13 +1413,18 @@ export function iceAt(m: GameModel, t: number): IceSnapshot | null {
     const probe = Math.max(0, Math.min(t, m.end) - 0.5);
     let seg = segAt(segs, probe);
     let asOf: number | null = null;
-    // A gap in the shifts (live reports trail the play by a shift or so): the last line-up before t, in the same
-    // game and within three minutes, flagged with the time it is from.
-    if (!seg) {
+    // A gap in the shifts, or a stretch only partly reported (live reports list a shift once it ends, so the
+    // latest stretch can hold a skater or two): the last full line-up before t - three skaters a side or more -
+    // in the same game and within three minutes, flagged with the time it is from.
+    // (A live stretch with no goalie is taken as unreported too: the goalies come from the play-by-play, which
+    // the skater reports can run past.)
+    const full = (s: Segment) => s.skaters.away.length >= 3 && s.skaters.home.length >= 3 && (m.state !== 'live' || (s.goalie.away != null && s.goalie.home != null));
+    if (!seg || (!full(seg) && m.state === 'live')) {
         let i = segs.length - 1;
         while (i >= 0 && segs[i].a > probe) i--;
+        while (i >= 0 && !full(segs[i])) i--;
         const prev = i >= 0 ? segs[i] : null;
-        if (prev && probe - prev.b <= 180 && gameIndexAt(m, prev.a) === gameIndexAt(m, probe)) {
+        if (prev && prev !== seg && probe - prev.b <= 180 && gameIndexAt(m, prev.a) === gameIndexAt(m, probe)) {
             seg = prev;
             asOf = prev.b;
         }
