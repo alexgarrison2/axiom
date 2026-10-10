@@ -4,12 +4,15 @@ import * as React from 'react';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
-import { inPeriod, isUnblocked, matchTeamStrength, periodLabel, shortName, type TeamStrength } from '@/lib/game/analytics';
+import { gameIndexAt, inPeriod, isUnblocked, matchTeamStrength, periodLabel, shortName, type TeamStrength } from '@/lib/game/analytics';
 import { SIDES, type GameEvent, type Side } from '@/lib/game/types';
 import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
-import { useWidth } from './Pulse';
 import { RinkMarkings } from './Rink';
+import { Rink3D } from '@/components/rink/Rink3D';
+import { ShotDetail, ShotMapFrame, ShotSummary, geometry, useShotPick, type ShotInfo } from '@/components/rink/ShotDetail';
+import { OPP_GOALIE } from '@/lib/game/season';
+import type { ShotRow } from '@/lib/shots';
 
 type Kind = 'goal' | 'shot' | 'miss' | 'block';
 const KINDS: { kind: Kind; label: string }[] = [
@@ -19,24 +22,16 @@ const KINDS: { kind: Kind; label: string }[] = [
     { kind: 'block', label: 'Blocked' },
 ];
 
-const radius = (e: GameEvent) => 1.4 + Math.sqrt(e.xg ?? 0.02) * 5.2;
-
-function Mark({ e, color, lit }: { e: GameEvent; color: string; lit: boolean }) {
-    const x = e.x!;
-    const y = -e.y!;
-    const r = radius(e);
-    return (
-        <g>
-            {e.type === 'block' ? (
-                <path d={`M${x - 1.3},${y - 1.3}l2.6,2.6m0,-2.6l-2.6,2.6`} stroke={color} strokeOpacity={0.7} strokeWidth={0.5} />
-            ) : e.type === 'miss' ? (
-                <circle cx={x} cy={y} r={r} fill="none" stroke={color} strokeOpacity={0.85} strokeWidth={0.45} />
-            ) : (
-                <circle cx={x} cy={y} r={r} fill={color} fillOpacity={e.type === 'goal' ? 1 : 0.5} stroke={e.type === 'goal' ? 'var(--ink)' : 'none'} strokeWidth={0.7} />
-            )}
-            {lit ? <circle cx={x} cy={y} r={r + 2} fill="none" className="stroke-brand" strokeWidth={0.8} /> : null}
-        </g>
-    );
+/**
+ * A shot as a row for the tilted rink, turned toward the net it attacked (at +89 ft), keeping the
+ * flat map's left and right: home attacks +x, away -x.
+ */
+function toRow(e: GameEvent): ShotRow {
+    const home = e.side === 'home';
+    const v = home ? e.x! : -e.x!;
+    const u = home ? -e.y! : e.y!;
+    const goal = e.type === 'goal' ? 1 : 0;
+    return [0, v, u, e.xg ?? 0.02, goal, goal || e.type === 'shot' ? 1 : 0, 0, 0, 0];
 }
 
 /** Shot density over one offensive zone: a 2ft grid, Gaussian kernel, six alpha steps of the team colour. */
@@ -86,70 +81,6 @@ function Heat({ side, events, color }: { side: Side; events: GameEvent[]; color:
     );
 }
 
-const RESULT: Record<string, string> = { goal: 'Goal', shot: 'Saved', miss: 'Missed', block: 'Blocked' };
-
-/** Hover card: anchored to the mark, flipped toward the centre so it never leaves the rink. `inline`: in the flow under the rink (phones). */
-function ShotCard({ e, inline = false }: { e: GameEvent; inline?: boolean }) {
-    const { m, colors, byId, label } = useGame();
-    const left = ((e.x! + 101) / 202) * 100;
-    const top = ((-e.y! + 43.5) / 87) * 100;
-    const x = Math.abs(e.x!);
-    const yy = e.y!;
-    const dist = Math.hypot(89 - x, yy);
-    const angle = (Math.atan2(Math.abs(yy), Math.abs(89 - x)) * 180) / Math.PI;
-    const shooter = e.player != null ? byId.get(e.player) : undefined;
-    const goalie = e.type !== 'block' && e.other != null ? byId.get(e.other) : undefined;
-    const own = e.side === 'away' ? e.situation.away : e.situation.home;
-    const opp = e.side === 'away' ? e.situation.home : e.situation.away;
-    return (
-        <div
-            role="status"
-            className={cn(
-                'rounded-control border border-line-strong bg-surface-1/95 p-2.5 text-caption',
-                inline ? 'mt-2' : 'pointer-events-none absolute z-10 w-56 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.8)] backdrop-blur',
-            )}
-            style={
-                inline
-                    ? undefined
-                    : {
-                          left: `${left}%`,
-                          top: `${top}%`,
-                          transform: `translate(${left > 50 ? 'calc(-100% - 12px)' : '12px'}, ${top > 50 ? 'calc(-100% - 8px)' : '8px'})`,
-                      }
-            }
-        >
-            <p className="flex items-center justify-between gap-2">
-                <span className="truncate font-bold" style={{ color: colors[e.side] }}>
-                    {shooter ? `${shooter.first} ${shooter.last}` : m.teams[e.side].tri}
-                </span>
-                <span className={cn('text-micro font-bold uppercase', e.type === 'goal' ? 'text-pos' : 'text-fg-3')}>{RESULT[e.type]}</span>
-            </p>
-            <p className="mt-0.5 text-micro uppercase tracking-label text-fg-3">
-                {periodLabel(e.period)} {e.clock} · {own}v{opp}
-                {e.emptyNet ? ' · EN' : ''}
-            </p>
-            <dl className="mt-2 grid grid-cols-3 gap-x-2 gap-y-1 tabular-nums">
-                <div>
-                    <dt className="label">xG</dt>
-                    <dd className="font-bold text-model">{e.xg != null ? e.xg.toFixed(2) : '—'}</dd>
-                </div>
-                <div>
-                    <dt className="label">Dist</dt>
-                    <dd className="font-bold text-fg-1">{Math.round(dist)} ft</dd>
-                </div>
-                <div>
-                    <dt className="label">Angle</dt>
-                    <dd className="font-bold text-fg-1">{Math.round(angle)}°</dd>
-                </div>
-            </dl>
-            <p className="mt-1.5 flex justify-between gap-2 text-micro text-fg-2">
-                <span className="capitalize">{e.shotType ?? (e.type === 'block' ? 'Blocked' : '—')}</span>
-                {goalie ? <span className="truncate text-goalie">vs {label(goalie.id)}</span> : e.type === 'block' && e.other != null ? <span className="truncate">by {label(e.other)}</span> : null}
-            </p>
-        </div>
-    );
-}
-
 export function Shots() {
     const { m, colors, byId } = useGame();
     const [strength, setStrength] = React.useState<TeamStrength>('all');
@@ -158,14 +89,24 @@ export function Shots() {
     const [player, setPlayer] = React.useState<string>('all');
     // A merged season (thousands of shots) opens on density; a game on the map.
     const [view, setView] = React.useState<'map' | 'heat'>(m.starts?.length ? 'heat' : 'map');
+    // The map shows one team's shots at a time, at the full width of the panel.
+    const [side, setSide] = React.useState<Side>('away');
 
     const per = period === 'all' ? 'all' : Number(period);
-    const base = m.events.filter(e => (e.type === 'goal' || e.type === 'shot' || e.type === 'miss' || e.type === 'block') && e.x != null && matchTeamStrength(e, strength) && inPeriod(e, per));
-    const shown = base.filter(e => kinds.has(e.type as Kind) && (player === 'all' || String(e.player) === player));
-    const shooters = [...new Set(base.map(e => e.player).filter((p): p is number => p != null))]
+    const base = React.useMemo(
+        () => m.events.filter(e => (e.type === 'goal' || e.type === 'shot' || e.type === 'miss' || e.type === 'block') && e.x != null && matchTeamStrength(e, strength) && inPeriod(e, per)),
+        [m.events, strength, per],
+    );
+    // Blocks are plotted where the defender stopped them, not where the shot came from, so the map leaves them out.
+    const shown = React.useMemo(
+        () => base.filter(e => e.side === side && e.type !== 'block' && kinds.has(e.type as Kind) && (player === 'all' || String(e.player) === player)),
+        [base, side, kinds, player],
+    );
+    const rows = React.useMemo(() => shown.map(toRow), [shown]);
+    const shooters = [...new Set(base.filter(e => e.side === side).map(e => e.player).filter((p): p is number => p != null))]
         .map(id => byId.get(id))
         .filter(Boolean)
-        .sort((a, b) => (a!.side === b!.side ? a!.last.localeCompare(b!.last) : a!.side === 'away' ? -1 : 1));
+        .sort((a, b) => a!.last.localeCompare(b!.last));
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
     const toggle = (k: Kind) => setKinds(s => {
         const n = new Set(s);
@@ -173,30 +114,33 @@ export function Shots() {
         else n.add(k);
         return n;
     });
-    // Hover previews a shot; a click pins it until the same mark (or open ice) is clicked again.
-    const [hoverId, setHoverId] = React.useState<number | null>(null);
-    const [pinId, setPinId] = React.useState<number | null>(null);
-    const card = shown.find(e => e.id === (hoverId ?? pinId)) ?? null;
-    // Phones: a tapped shot's card sits under the rink (a floating one would cover half of it).
-    const [rinkRef, rinkW] = useWidth<HTMLDivElement>();
-    const inline = rinkW > 0 && rinkW < 640 && hoverId == null;
-    // Touch: the marks are a few pixels wide, so a tap takes the nearest shot within a fingertip.
-    const lastType = React.useRef('mouse');
-    const tapNearest = (ev: React.MouseEvent<SVGSVGElement>) => {
-        const r = ev.currentTarget.getBoundingClientRect();
-        const ft = r.width / 202;
-        const fx = (ev.clientX - r.left) / ft - 101;
-        const fy = (ev.clientY - r.top) / ft - 43.5;
-        let best: GameEvent | null = null;
-        let bd = 22 / ft;
-        for (const e of shown) {
-            const dd = Math.hypot(e.x! - fx, -e.y! - fy);
-            if (dd < bd) {
-                bd = dd;
-                best = e;
-            }
-        }
-        setPinId(p => (best && p !== best.id ? best.id : null));
+    const pick = useShotPick(shown);
+    const pickSide = (s: Side) => {
+        setSide(s);
+        setPlayer('all');
+    };
+    const shortDay = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    const info = (e: GameEvent): ShotInfo => {
+        const r = toRow(e);
+        const own = e.side === 'away' ? e.situation.away : e.situation.home;
+        const opp = e.side === 'away' ? e.situation.home : e.situation.away;
+        const shooter = e.player != null ? byId.get(e.player) : undefined;
+        const goalie = e.other != null ? byId.get(e.other) : undefined;
+        // A merged season names the game a shot came from; a game page is already that game.
+        const gi = m.games ? m.games[gameIndexAt(m, e.t)] : null;
+        return {
+            result: e.type === 'goal' ? 'goal' : e.type === 'shot' ? 'saved' : 'missed',
+            xg: e.xg ?? 0,
+            x: r[1],
+            y: r[2],
+            type: e.shotType ?? null,
+            situation: `${own}v${opp}${e.emptyNet ? ' · empty net' : ''}`,
+            period: e.period,
+            clock: e.clock,
+            game: gi ? { label: `#${m.games!.indexOf(gi) + 1} · ${shortDay(gi.date)} · ${gi.home ? 'vs' : '@'} ${gi.opp}`, href: `/games/${gi.id}` } : null,
+            shooter: shooter ? { name: `${shooter.first} ${shooter.last}`, href: shooter.id > 1 ? `/players/${shooter.id}` : null } : null,
+            goalie: goalie ? { name: goalie.id === OPP_GOALIE ? 'Opponent goalie' : `${goalie.first} ${goalie.last}`, href: goalie.id === OPP_GOALIE ? null : `/players/${goalie.id}` } : null,
+        };
     };
 
     return (
@@ -207,6 +151,9 @@ export function Shots() {
         >
             <div className="panel overflow-hidden">
                 <ControlRow label="Shot map controls">
+                    {view === 'map' ? (
+                        <Segmented label="Team" size="sm" value={side} onChange={pickSide} optionClassName="px-2.5" options={SIDES.map(sd => ({ value: sd, label: m.teams[sd].tri }))} />
+                    ) : null}
                     <Segmented
                         label="Strength"
                         size="sm"
@@ -231,7 +178,7 @@ export function Shots() {
                     {view === 'map' ? (
                         <>
                             <div role="group" aria-label="Shot results" className="flex flex-wrap gap-1.5">
-                                {KINDS.map(k => (
+                                {KINDS.filter(k => k.kind !== 'block').map(k => (
                                     <FilterChip key={k.kind} selected={kinds.has(k.kind)} onSelectedChange={() => toggle(k.kind)} className="min-h-8">
                                         {k.label}
                                     </FilterChip>
@@ -249,7 +196,7 @@ export function Shots() {
                                 <option value="all">All shooters</option>
                                 {shooters.map(p => (
                                     <option key={p!.id} value={p!.id}>
-                                        {m.teams[p!.side].tri} {shortName(p)}
+                                        {shortName(p)}
                                     </option>
                                 ))}
                             </select>
@@ -259,51 +206,38 @@ export function Shots() {
 
                 {view === 'map' ? (
                     <div className="p-card">
-                        <div ref={rinkRef} className="relative">
-                        <svg
-                            viewBox="-101 -43.5 202 87"
-                            className="block w-full"
-                            onPointerDown={ev => {
-                                lastType.current = ev.pointerType;
-                            }}
-                            onClick={ev => (lastType.current === 'mouse' ? setPinId(null) : tapNearest(ev))}
-                            role="img"
-                            aria-label={`${shown.length} shot attempts. ${m.teams.away.tri} shoot left, ${m.teams.home.tri} shoot right.`}
-                        >
-                            <RinkMarkings />
-                            {/* End labels: a few pixels tall on a phone, where the totals underneath already name each end. */}
-                            <text x={-96} y={2} className="fill-fg-3 max-sm:hidden" fontSize={4} fontWeight={700} textAnchor="start" opacity={0.6}>
-                                {m.teams.away.tri}
-                            </text>
-                            <text x={96} y={2} className="fill-fg-3 max-sm:hidden" fontSize={4} fontWeight={700} textAnchor="end" opacity={0.6}>
-                                {m.teams.home.tri}
-                            </text>
-                            {/* Goals drawn last so they sit on top. */}
-                            {[...shown]
-                                .sort((a, b) => Number(a.type === 'goal') - Number(b.type === 'goal'))
-                                .map(e => (
-                                    <g
-                                        key={e.id}
-                                        onPointerEnter={ev => {
-                                            if (ev.pointerType === 'mouse') setHoverId(e.id);
-                                        }}
-                                        onPointerLeave={() => setHoverId(h => (h === e.id ? null : h))}
-                                        onClick={ev => {
-                                            if (lastType.current !== 'mouse') return;
-                                            ev.stopPropagation();
-                                            setPinId(p => (p === e.id ? null : e.id));
-                                        }}
-                                        className="cursor-crosshair"
-                                    >
-                                        {/* A generous invisible hit area so small marks are easy to hover. */}
-                                        <circle cx={e.x!} cy={-e.y!} r={Math.max(3, radius(e) + 1)} fill="transparent" />
-                                        <Mark e={e} color={colors[e.side]} lit={pinId === e.id || hoverId === e.id} />
-                                    </g>
-                                ))}
-                        </svg>
-                        {card && !inline ? <ShotCard e={card} /> : null}
-                        </div>
-                        {card && inline ? <ShotCard e={card} inline /> : null}
+                        <ShotMapFrame
+                            map={
+                                <Rink3D
+                                    shots={rows}
+                                    mode="shots"
+                                    tone="pos"
+                                    goalColor={colors[side]}
+                                    maxWidth={1100}
+                                    label={`${m.teams[side].tri} shot attempts: ${shown.filter(e => e.type === 'goal').length} goals, ${shown.filter(e => e.type === 'shot').length} saved, ${shown.filter(e => e.type === 'miss').length} missed.`}
+                                    lit={pick.lit}
+                                    onHover={pick.onHover}
+                                    onTap={pick.onTap}
+                                />
+                            }
+                            detail={
+                                <ShotDetail
+                                    info={pick.picked ? info(pick.picked) : null}
+                                    accent={colors[side]}
+                                    summary={
+                                        <ShotSummary
+                                            rows={[
+                                                ['Attempts', shown.length],
+                                                ['Goals', shown.filter(e => e.type === 'goal').length],
+                                                ['On target', `${shown.filter(e => e.type === 'goal' || e.type === 'shot').length} of ${shown.length}`],
+                                                ['xG', <span key="xg" className="text-model">{shown.reduce((a2, e) => a2 + (e.xg ?? 0), 0).toFixed(2)}</span>],
+                                                ['Avg distance', shown.length ? `${Math.round(shown.reduce((a2, e) => { const r = toRow(e); return a2 + geometry(r[1], r[2]).dist; }, 0) / shown.length)} ft` : '—'],
+                                            ]}
+                                        />
+                                    }
+                                />
+                            }
+                        />
                         <div className="mt-2 grid grid-cols-2 gap-4 text-caption tabular-nums">
                             {SIDES.map(side => {
                                 const evs = base.filter(e => e.side === side);
@@ -325,28 +259,16 @@ export function Shots() {
                         </div>
                         <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-micro uppercase tracking-label text-fg-3">
                             <span className="flex items-center gap-1.5">
-                                <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" aria-hidden="true">
-                                    <circle cx={5} cy={5} r={4} className="fill-fg-2" stroke="var(--ink)" strokeWidth={1.2} />
-                                </svg>
-                                Goal
+                                <span aria-hidden="true" className="h-3 w-0.5 rounded-full" style={{ background: colors[side] }} />
+                                Goal, taller = higher xG
                             </span>
                             <span className="flex items-center gap-1.5">
-                                <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" aria-hidden="true">
-                                    <circle cx={5} cy={5} r={4} className="fill-fg-2" opacity={0.5} />
-                                </svg>
+                                <span aria-hidden="true" className="h-2 w-3 rounded-full border border-fg-2/40 bg-fg-2/15" />
                                 Saved
                             </span>
                             <span className="flex items-center gap-1.5">
-                                <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" aria-hidden="true">
-                                    <circle cx={5} cy={5} r={4} fill="none" className="stroke-fg-2" />
-                                </svg>
+                                <span aria-hidden="true" className="h-2 w-3 rounded-full border border-fg-2/40" />
                                 Missed
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                                <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" aria-hidden="true">
-                                    <path d="M2 2 8 8M8 2 2 8" className="stroke-fg-2" strokeWidth={1.2} />
-                                </svg>
-                                Blocked
                             </span>
                             <span>Size = xG</span>
                         </p>

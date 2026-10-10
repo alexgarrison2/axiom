@@ -3,19 +3,28 @@
  *   /data/goalie_shots/<seasonId>/<goalieId>.json  shots a goalie faced
  *   /data/goalie_shots/<seasonId>/league.json      save % baselines per danger bin and shot type
  *   /data/skater_shots/<seasonId>/<playerId>.json  shots a skater took
- * Each shot row: [gameIdx, x, y, xG, goal, onGoal, type, rebound, strength], with x, y
- * turned toward the net at x = +89. Strength is the goalie's side for goalie files
+ * Each shot row: [gameIdx, x, y, xG, goal, onGoal, type, rebound, strength, period, clock, other],
+ * with x, y turned toward the net at x = +89. Strength is the goalie's side for goalie files
  * (0 even, 1 shorthanded, 2 power play) and the shooter's for skater files
- * (0 even, 1 power play, 2 shorthanded, 3 empty net).
+ * (0 even, 1 power play, 2 shorthanded, 3 empty net). period and clock (seconds into the
+ * period) place it in its game; other is the shooter on a goalie's file and the goalie in
+ * net on a skater's. Files written before 2026-10-10 stop at strength.
  */
 
-export type ShotRow = [number, number, number, number, 0 | 1, 0 | 1, number, 0 | 1, number];
+export type ShotRow = [number, number, number, number, 0 | 1, 0 | 1, number, 0 | 1, number, number?, number?, (number | null)?];
 
 export interface ShotFile {
     id: number;
     games: number[];
+    /** Per game: date, the opponent's tricode, 1 when the player's team was at home. */
+    meta?: [string | null, string | null, 0 | 1 | null][];
+    /** Short names of the players `other` points at. */
+    names?: Record<string, string>;
     shots: ShotRow[];
 }
+
+/** Shot types by the row's type index (pipeline/goalie_shots.py TYPES). */
+export const SHOT_TYPES = ['wrist', 'snap', 'slap', 'backhand', 'tip-in', 'deflected', 'wrap-around', 'other'];
 
 export interface ShotLeague {
     bins: { lo: number; hi: number; sog: number; goals: number; svPct: number | null }[];
@@ -24,7 +33,7 @@ export interface ShotLeague {
     svPct: number | null;
 }
 
-export const S = { game: 0, x: 1, y: 2, xg: 3, goal: 4, onGoal: 5, type: 6, rebound: 7, strength: 8 } as const;
+export const S = { game: 0, x: 1, y: 2, xg: 3, goal: 4, onGoal: 5, type: 6, rebound: 7, strength: 8, period: 9, clock: 10, other: 11 } as const;
 
 export const goalieShotsUrl = (season: string, id: number) => `/data/goalie_shots/${season}/${id}.json`;
 export const skaterShotsUrl = (season: string, id: number) => `/data/skater_shots/${season}/${id}.json`;

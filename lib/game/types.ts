@@ -169,6 +169,8 @@ export interface GameModel {
     official: { pp: Record<Side, string> } | null;
     /** A merged season (lib/game/season.ts): each game's start on the shared clock, so periods stay per game. */
     starts?: number[];
+    /** A merged season: each game (same order as starts), for naming the game a moment belongs to. */
+    games?: { id: number; date: string; opp: string; home: boolean }[];
     /** IMPACT ratings (EV xG/60 added and prevented) of the players in this game, for the Pony Score's usage term. */
     ratings: Record<number, { evOff: number; evDef: number }>;
     /** Shots that should carry pony xG but do not yet (live games, last night before the nightly run). */

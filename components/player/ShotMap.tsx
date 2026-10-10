@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Rink3D } from '@/components/rink/Rink3D';
+import { ShotDetail, ShotMapFrame, ShotSummary, fileShotInfo, geometry, useShotPick } from '@/components/rink/ShotDetail';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { S, fetchShots, skaterShotsUrl, type ShotFile } from '@/lib/shots';
@@ -29,6 +30,7 @@ export function ShotMap({ season, id }: { season: string; id: number }) {
         () => (file?.shots ?? []).filter(s => s[S.strength] !== 3 && s[S.x] >= 25 && (sit === 'all' || String(s[S.strength]) === sit)),
         [file, sit],
     );
+    const pick = useShotPick(set);
     if (file === null || (file && !file.shots.length)) return <p className="panel p-card text-caption text-fg-3">No shots this season yet.</p>;
     const goals = set.filter(s => s[S.goal]).length;
     const saved = set.filter(s => s[S.onGoal] && !s[S.goal]).length;
@@ -51,7 +53,41 @@ export function ShotMap({ season, id }: { season: string; id: number }) {
                     <Segmented label="Situation" size="sm" value={sit} onChange={setSit} options={[{ value: 'all', label: 'All' }, { value: '0', label: 'Even' }, { value: '1', label: 'PP' }]} />
                 </div>
             </div>
-            {file ? <Rink3D shots={set} mode={mode} tone="pos" label={`Shots: ${goals} goals, ${saved} saved, ${missed} missed`} /> : <div className="aspect-[16/9] w-full" />}
+            <ShotMapFrame
+                map={
+                    file ? (
+                        <Rink3D
+                            shots={set}
+                            mode={mode}
+                            tone="pos"
+                            label={`Shots: ${goals} goals, ${saved} saved, ${missed} missed`}
+                            maxWidth={1100}
+                            lit={mode === 'shots' ? pick.lit : null}
+                            onHover={mode === 'shots' ? pick.onHover : undefined}
+                            onTap={mode === 'shots' ? pick.onTap : undefined}
+                        />
+                    ) : (
+                        <div className="aspect-[16/9] w-full" />
+                    )
+                }
+                detail={
+                    <ShotDetail
+                        info={file && pick.picked ? fileShotInfo(file, pick.picked, 'skater') : null}
+                        accent="var(--pos)"
+                        summary={
+                            <ShotSummary
+                                rows={[
+                                    ['Attempts', set.length],
+                                    ['Goals', goals],
+                                    ['On target', `${goals + saved} of ${set.length}`],
+                                    ['xG', <span key="xg" className="text-model">{xg.toFixed(1)}</span>],
+                                    ['Avg distance', set.length ? `${Math.round(set.reduce((a, s) => a + geometry(s[S.x], s[S.y]).dist, 0) / set.length)} ft` : '—'],
+                                ]}
+                            />
+                        }
+                    />
+                }
+            />
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-micro text-fg-3">
                 {mode === 'shots' ? (
                     <>

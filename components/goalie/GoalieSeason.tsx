@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Rink3D } from '@/components/rink/Rink3D';
+import { ShotDetail, ShotMapFrame, ShotSummary, fileShotInfo, useShotPick } from '@/components/rink/ShotDetail';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { S, fetchShots, goalieShotsUrl, shotLeagueUrl, wilson, type ShotFile, type ShotLeague, type ShotRow } from '@/lib/shots';
@@ -103,8 +104,8 @@ export function GoalieSeason({ nights, season, id, name }: { nights: GoalieNight
                     {ready && league ? <Ladder shots={shots} league={league} /> : <Pending ready={ready} />}
                 </Panel>
             </div>
-            <div className="grid gap-4 xl:grid-cols-[7fr_5fr]">
-                <SaveMap shots={shots} ready={ready} />
+            <SaveMap file={file ?? null} ready={ready} />
+            <div className="grid gap-4 xl:grid-cols-[5fr_7fr] xl:items-start">
                 <Panel
                     title="Shot types"
                     legend={
@@ -125,8 +126,8 @@ export function GoalieSeason({ nights, season, id, name }: { nights: GoalieNight
                         <Pending ready={ready} />
                     )}
                 </Panel>
+                <Workload nights={nights} />
             </div>
-            <Workload nights={nights} />
         </div>
     );
 }
@@ -305,12 +306,19 @@ function Ladder({ shots, league }: { shots: ShotRow[]; league: ShotLeague }) {
 
 /* ── Save map ────────────────────────────────────────────────────────── */
 
-function SaveMap({ shots, ready }: { shots: ShotRow[]; ready: boolean }) {
+const NO_SHOTS: ShotRow[] = [];
+
+function SaveMap({ file, ready }: { file: ShotFile | null; ready: boolean }) {
+    const shots = file?.shots ?? NO_SHOTS;
     const [mode, setMode] = React.useState<'shots' | 'zones'>('shots');
     const [sit, setSit] = React.useState<'all' | '0' | '1'>('all');
     const set = React.useMemo(() => shots.filter(s => s[S.x] >= 25 && (sit === 'all' || String(s[S.strength]) === sit)), [shots, sit]);
+    // The map leaves misses out (a goalie's record is the shots on goal), so the pick works on what is drawn.
+    const drawn = React.useMemo(() => set.filter(s => s[S.onGoal]), [set]);
+    const pick = useShotPick(drawn);
     const saves = set.filter(s => s[S.onGoal] && !s[S.goal]).length;
     const goals = set.filter(s => s[S.goal]).length;
+    const xga = drawn.reduce((a, s) => a + s[S.xg], 0);
     return (
         <Panel
             title="Save map"
@@ -337,7 +345,38 @@ function SaveMap({ shots, ready }: { shots: ShotRow[]; ready: boolean }) {
         >
             {ready ? (
                 shots.length ? (
-                    <Rink3D shots={set} mode={mode} tone="neg" showMisses={false} label={`Shots faced: ${saves} saves, ${goals} goals against`} />
+                    <ShotMapFrame
+                        map={
+                            <Rink3D
+                                shots={drawn}
+                                mode={mode}
+                                tone="neg"
+                                showMisses={false}
+                                maxWidth={1100}
+                                label={`Shots faced: ${saves} saves, ${goals} goals against`}
+                                lit={mode === 'shots' ? pick.lit : null}
+                                onHover={mode === 'shots' ? pick.onHover : undefined}
+                                onTap={mode === 'shots' ? pick.onTap : undefined}
+                            />
+                        }
+                        detail={
+                            <ShotDetail
+                                info={file && pick.picked ? fileShotInfo(file, pick.picked, 'goalie') : null}
+                                accent="var(--neg)"
+                                summary={
+                                    <ShotSummary
+                                        rows={[
+                                            ['Shots faced', drawn.length],
+                                            ['Saves', saves],
+                                            ['Goals against', goals],
+                                            ['Save %', drawn.length ? (saves / drawn.length).toFixed(3).replace(/^0/, '') : '—'],
+                                            ['xG against', <span key="xga" className="text-model">{xga.toFixed(1)}</span>],
+                                        ]}
+                                    />
+                                }
+                            />
+                        }
+                    />
                 ) : (
                     <Pending ready />
                 )

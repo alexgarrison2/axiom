@@ -10,12 +10,16 @@ on ice ran out and the reliever after. Regular season only; empty-net shots
 are left out.
 
     public/data/goalie_shots/<seasonId>/<goalieId>.json
-        { "id", "cols": [...], "games": [gameId, ...],
-          "shots": [[gameIdx, x, y, xG, goal, onGoal, type, rebound, strength], ...] }
+        { "id", "cols": [...], "games": [gameId, ...], "meta": [[date, opponent, home], ...],
+          "names": {playerId: "F. Last"},
+          "shots": [[gameIdx, x, y, xG, goal, onGoal, type, rebound, strength, period, clock, other], ...] }
     public/data/goalie_shots/<seasonId>/league.json
         { "bins": [{"lo", "hi", "sog", "goals", "svPct"}...], "types": {...}, ... }
 
-x, y are turned so the net is at x = +89 (_normalise). strength is the goalie's side:
+x, y are turned so the net is at x = +89 (_normalise). period and clock (seconds into the
+period) place the shot in its game; other is the shooter on a goalie's file and the goalie
+in net on a skater's (null when unknown), named in "names". meta[i] is games[i]'s date,
+the opponent's tricode and 1 when the player's team was at home. strength is the goalie's side:
 0 even, 1 shorthanded (his team killing a penalty), 2 his team on the power
 play. Run after the xG rescore (refresh_pipeline full mode) and once with
 --prev to write the previous season.
@@ -32,7 +36,7 @@ from io_utils import atomic_write_json, keep_if_unchanged, read_json
 from paths import pipeline_path, public_path
 from season import PREV_START_YEAR, START_YEAR, season_file
 
-COLS = ["game", "x", "y", "xg", "goal", "on_goal", "type", "rebound", "strength"]
+COLS = ["game", "x", "y", "xg", "goal", "on_goal", "type", "rebound", "strength", "period", "clock", "other"]
 TYPES = ["wrist", "snap", "slap", "backhand", "tip-in", "deflected", "wrap-around", "other"]
 # Danger by the shot's xG; HIGH matches the game page's high-danger chance (xG >= 0.20).
 BINS = [(0.0, 0.06), (0.06, 0.20), (0.20, 1.01)]
@@ -103,7 +107,41 @@ def _goalie_lookup(start_year: int):
     return find
 
 
-def build(start_year: int) -> tuple[dict, dict] | None:
+def _short(players: dict, pid) -> str | None:
+    p = players.get(str(int(pid))) if pid is not None and pd.notna(pid) else None
+    return f"{p[0][:1]}. {p[1]}" if p else None
+
+
+def _file(pid: int, part: pd.DataFrame, own_team: dict, games: dict, players: dict, other_col: str) -> dict:
+    """One player's shot file: rows by game index, each game's date / opponent / home, and the names of the
+    other players the rows point at."""
+    gl = sorted(int(g) for g in part["game_id"].unique())
+    gi = {g: i for i, g in enumerate(gl)}
+    meta = []
+    for g in gl:
+        info = games.get(str(g))
+        tri = own_team.get(g)
+        if info and tri:
+            home = info[2] == tri
+            meta.append([info[0], info[1] if home else info[2], int(home)])
+        else:
+            meta.append([None, None, None])
+    rows, names = [], {}
+    for r in part.itertuples(index=False):
+        other = getattr(r, other_col)
+        other = int(other) if other is not None and pd.notna(other) else None
+        if other is not None and str(other) not in names:
+            n = _short(players, other)
+            if n:
+                names[str(other)] = n
+        rows.append([
+            gi[int(r.game_id)], int(r.x), int(r.y), round(float(r.xG), 3), int(r.goal), int(r.on_goal), int(r.type),
+            int(r.is_rebound or 0), int(r.strength), int(r.period), int(r.time_seconds), other,
+        ])
+    return {"id": int(pid), "cols": COLS, "games": gl, "meta": meta, "names": names, "shots": rows}
+
+
+def build(start_year: int) -> tuple[dict, dict, dict] | None:
     path = pipeline_path(season_file("shots", start_year))
     if not os.path.exists(path):
         return None
@@ -129,7 +167,8 @@ def build(start_year: int) -> tuple[dict, dict] | None:
         if not g or not shooter or not find:
             return None
         defending = g[2] if g[1] == shooter else g[1]
-        return find(int(r.game_id), defending, int(r.time_seconds))
+        # time_seconds is the clock within its period; the goalie logs count game seconds.
+        return find(int(r.game_id), defending, (int(r.period) - 1) * 1200 + int(r.time_seconds))
 
     shots["gid"] = [goalie(r) for r in shots.itertuples(index=False)]
     df = shots.dropna(subset=["gid"]).copy()
@@ -141,15 +180,17 @@ def build(start_year: int) -> tuple[dict, dict] | None:
     # The shots file's is_rebound is never set; a rebound is a shot within 3 s of a shot on goal.
     df["is_rebound"] = ((df["last_event_type"] == "shot-on-goal") & (df["time_since_last_event"] <= 3)).astype(int)
 
+    players = pony.get("players", {})
     out: dict[int, dict] = {}
     for gid, part in df.groupby("gid"):
-        gl = sorted(int(g) for g in part["game_id"].unique())
-        gi = {g: i for i, g in enumerate(gl)}
-        rows = [
-            [gi[int(r.game_id)], int(r.x), int(r.y), round(float(r.xG), 3), int(r.goal), int(r.on_goal), int(r.type), int(r.is_rebound or 0), int(r.strength)]
-            for r in part.itertuples(index=False)
-        ]
-        out[int(gid)] = {"id": int(gid), "cols": COLS, "games": gl, "shots": rows}
+        # The goalie's team is the side the shooter was not on.
+        own = {}
+        for g, tid in zip(part["game_id"], part["team_id"]):
+            info = games.get(str(int(g)))
+            shooter = teams.get(int(tid))
+            if info and shooter:
+                own[int(g)] = info[2] if info[1] == shooter else info[1]
+        out[int(gid)] = _file(int(gid), part, own, games, players, "player_id")
 
     sog = df[df["on_goal"] == 1]
     bins = []
@@ -174,10 +215,12 @@ def build(start_year: int) -> tuple[dict, dict] | None:
         "shots": int(len(df)),
         "unmatched": int(len(shots) - len(df)),
     }
-    return out, league
+    # (game, event) -> goalie in net, so the skater files can name him on older rows too.
+    goalie_of = {(int(g), int(e)): int(k) for g, e, k in zip(df["game_id"], df["event_id"], df["gid"])}
+    return out, league, goalie_of
 
 
-def build_skaters(start_year: int) -> dict[int, dict] | None:
+def build_skaters(start_year: int, goalie_of: dict | None = None) -> dict[int, dict] | None:
     """Every unblocked shot each skater took (regular season, empty nets included).
 
     strength here is the shooter's side: 0 even, 1 his team on the power play,
@@ -196,15 +239,21 @@ def build_skaters(start_year: int) -> dict[int, dict] | None:
     goalie_side = df["strength_state"].map(_strength)
     df["strength"] = goalie_side.map({0: 0, 1: 1, 2: 2})
     df.loc[df["strength_state"] == "EmptyNet", "strength"] = 3
+    # The goalie in net: the recorded one, else from the goalie shot files' matching (same rows, keyed by event).
+    if "goalie_id" not in df.columns:
+        df["goalie_id"] = pd.NA
+    if goalie_of:
+        df["goalie_id"] = [
+            r.goalie_id if pd.notna(r.goalie_id) else goalie_of.get((int(r.game_id), int(r.event_id)))
+            for r in df.itertuples(index=False)
+        ]
+    teams = _team_ids()
+    pony = read_json(public_path("pony", f"{start_year}{start_year + 1}.json")) or {}
+    games, players = pony.get("games", {}), pony.get("players", {})
     out: dict[int, dict] = {}
     for pid, part in df.groupby("player_id"):
-        gl = sorted(int(g) for g in part["game_id"].unique())
-        gi = {g: i for i, g in enumerate(gl)}
-        rows = [
-            [gi[int(r.game_id)], int(r.x), int(r.y), round(float(r.xG), 3), int(r.goal), int(r.on_goal), int(r.type), int(r.is_rebound), int(r.strength)]
-            for r in part.itertuples(index=False)
-        ]
-        out[int(pid)] = {"id": int(pid), "cols": COLS, "games": gl, "shots": rows}
+        own = {int(g): teams.get(int(t)) for g, t in zip(part["game_id"], part["team_id"])}
+        out[int(pid)] = _file(int(pid), part, own, games, players, "goalie_id")
     return out
 
 
@@ -217,7 +266,7 @@ def main(argv=None):
         if not built:
             print(f"  goalie shots {y}: no shots yet")
             continue
-        goalies, league = built
+        goalies, league, goalie_of = built
         d = out_dir(y)
         os.makedirs(d, exist_ok=True)
         for gid, data in goalies.items():
@@ -227,7 +276,7 @@ def main(argv=None):
                 written += 1
         atomic_write_json(os.path.join(d, "league.json"), league, indent=None, separators=(",", ":"), label=f"goalie_shots_{y}_league")
         print(f"  goalie shots {y}-{(y + 1) % 100:02d}: {len(goalies)} goalies, {league['shots']} shots ({league['unmatched']} unmatched)")
-        skaters = build_skaters(y) or {}
+        skaters = build_skaters(y, goalie_of) or {}
         sd = public_path("skater_shots", f"{y}{y + 1}")
         os.makedirs(sd, exist_ok=True)
         for pid, data in skaters.items():

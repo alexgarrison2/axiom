@@ -163,6 +163,10 @@ export function Rink3D({
     showMisses = true,
     label,
     maxWidth = 760,
+    goalColor,
+    lit = null,
+    onHover,
+    onTap,
 }: {
     shots: ShotRow[];
     mode: 'shots' | 'zones';
@@ -171,15 +175,25 @@ export function Rink3D({
     showMisses?: boolean;
     label: string;
     maxWidth?: number;
+    /** Goal posts in this colour instead of the tone's (a team's own shots on a game map). */
+    goalColor?: string;
+    /** Index of the shot to ring in cyan. */
+    lit?: number | null;
+    /** Mouse over the map: the nearest shot within reach, or null. */
+    onHover?: (i: number | null) => void;
+    /** Click or tap on the map: the nearest shot within a fingertip, or null for open ice. */
+    onTap?: (i: number | null) => void;
 }) {
     const [ref, w] = useWidth<HTMLDivElement>();
     const id = React.useId().replace(/:/g, '');
     const f = rinkFrame(Math.min(w, maxWidth));
     const { W, H, scale, T, poly } = f;
-    const goal = tone === 'pos' ? 'var(--pos)' : 'var(--neg)';
+    const goal = goalColor ?? (tone === 'pos' ? 'var(--pos)' : 'var(--neg)');
 
-    const content = React.useMemo(() => {
-        if (!W) return null;
+    const { content, at } = React.useMemo(() => {
+        // Where each drawn shot sits on screen (a goal at the top of its post), for hover, taps and the card.
+        const at: ([number, number] | null)[] = shots.map(() => null);
+        if (!W) return { content: null, at };
         const marks: { z: number; el: React.ReactNode }[] = [];
         if (mode === 'zones') {
             const hx = HEX_R * Math.sqrt(3);
@@ -226,6 +240,7 @@ export function Rink3D({
                     // Capped so a penalty shot (xG near 1) does not tower over the rest.
                     const h = 2 + Math.min(s[S.xg], 0.4) * 30;
                     const top = T(s[S.y], s[S.x], h);
+                    at[i] = [top[0], top[1]];
                     const rr = (1 + Math.sqrt(s[S.xg]) * 2.2) * k;
                     marks.push({
                         z: zc - 0.01,
@@ -241,6 +256,7 @@ export function Rink3D({
                     });
                 } else if (s[S.onGoal] || showMisses) {
                     const rr = (0.35 + Math.sqrt(s[S.xg]) * 1.9) * k;
+                    at[i] = [x, y];
                     marks.push({
                         z: zc,
                         el: s[S.onGoal] ? (
@@ -255,14 +271,45 @@ export function Rink3D({
         // The net sits among the marks by depth.
         marks.push({ z: T(0, 89)[2], el: <RinkNet key="net" f={f} /> });
         marks.sort((a, b) => b.z - a.z);
-        return marks.map(m => m.el);
+        return { content: marks.map(m => m.el), at };
         // eslint-disable-next-line react-hooks/exhaustive-deps -- T / poly depend only on W
-    }, [shots, mode, tone, showMisses, W, id]);
+    }, [shots, mode, tone, showMisses, W, id, goal]);
+
+    const pointer = !!(onHover || onTap);
+    const nearest = (ev: React.PointerEvent | React.MouseEvent, reach: number) => {
+        const r = (ev.currentTarget as SVGSVGElement).getBoundingClientRect();
+        const px = ev.clientX - r.left;
+        const py = ev.clientY - r.top;
+        let best: number | null = null;
+        let bd = reach;
+        at.forEach((p, i) => {
+            if (!p) return;
+            const d = Math.hypot(p[0] - px, p[1] - py);
+            if (d < bd) {
+                bd = d;
+                best = i;
+            }
+        });
+        return best;
+    };
+    const kind = React.useRef('mouse');
+    const litAt = lit != null ? at[lit] : null;
 
     return (
         <div ref={ref} className="flex w-full justify-center">
             {W ? (
-                <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} className="block overflow-visible">
+                <svg
+                    width={W}
+                    height={H}
+                    viewBox={`0 0 ${W} ${H}`}
+                    role="img"
+                    aria-label={label}
+                    className={pointer ? 'block cursor-crosshair overflow-visible' : 'block overflow-visible'}
+                    onPointerDown={pointer ? ev => (kind.current = ev.pointerType) : undefined}
+                    onPointerMove={onHover ? ev => ev.pointerType === 'mouse' && onHover(nearest(ev, 14)) : undefined}
+                    onPointerLeave={onHover ? () => onHover(null) : undefined}
+                    onClick={onTap ? ev => onTap(nearest(ev, kind.current === 'mouse' ? 14 : 24)) : undefined}
+                >
                     <defs>
                         <radialGradient id={`rg${id}`}>
                             <stop offset="0" stopColor={goal} stopOpacity={0.55} />
@@ -272,6 +319,7 @@ export function Rink3D({
                     <RinkIce f={f} id={id} />
                     <RinkMarks f={f} />
                     {content}
+                    {litAt ? <circle cx={litAt[0]} cy={litAt[1]} r={7} fill="none" stroke="var(--brand)" strokeWidth={1.75} pointerEvents="none" /> : null}
                 </svg>
             ) : (
                 <div className="aspect-[16/9] w-full max-w-[760px]" />

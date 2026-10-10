@@ -635,7 +635,13 @@ function periodOf(t: number): number {
 /** Time into its own game: a merged season (m.starts) runs every game on one clock. */
 export function localT(m: GameModel, t: number): number {
     const st = m.starts;
-    if (!st?.length) return t;
+    return st?.length ? t - st[gameIndexAt(m, t)] : t;
+}
+
+/** Which of a merged season's games time t falls in (0 for a single game). */
+export function gameIndexAt(m: GameModel, t: number): number {
+    const st = m.starts;
+    if (!st?.length) return 0;
     let lo = 0;
     let hi = st.length - 1;
     while (lo < hi) {
@@ -643,7 +649,7 @@ export function localT(m: GameModel, t: number): number {
         if (st[mid] <= t) lo = mid;
         else hi = mid - 1;
     }
-    return t - st[lo];
+    return lo;
 }
 const periodOfM = (m: GameModel, t: number) => periodOf(localT(m, t));
 
