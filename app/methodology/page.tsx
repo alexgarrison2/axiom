@@ -539,7 +539,7 @@ export default function MethodologyPage() {
                                 (the draw&apos;s own situation, so a draw right after a penalty expires counts as even).
                                 On a team page&apos;s Breakdown the board covers the picked games. A bead is always one draw: while every dot&apos;s
                                 draws fit one ring (18 at the end and centre dots, 11 at the neutral ones) the board keeps them; past that each dot
-                                becomes a solid ring filled clockwise in the team&apos;s colour up to its win share there (a tick marks 50%), thicker
+                                becomes a solid ring filled clockwise in the team&apos;s colour up to its win share there (a pointer marks 50%), thicker
                                 where more draws were taken.
                             </p>
                         </Section>
