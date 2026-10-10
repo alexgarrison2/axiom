@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getPredictions } from '@/utils/data';
 import { buildGame, type RawFeeds } from './build';
+import { goalieShiftRows, reportCode, reportShiftRows } from './toi-report';
 import { loadArtifacts, publishedXg, type XgArtifacts } from './xg';
 import { parseRatings, type EvRatings } from './ratings';
 import type { GameModel, GameOdds, Pregame, SeasonOdds, Side } from './types';
@@ -24,6 +25,40 @@ async function getJson(url: string, revalidate: number): Promise<unknown | null>
     } catch {
         return null;
     }
+}
+
+async function getText(url: string, revalidate: number): Promise<string | null> {
+    try {
+        // nhl.com serves the HTML reports to browsers; a script UA is turned away.
+        const res = await fetch(url, { next: { revalidate }, signal: AbortSignal.timeout(6000), headers: { 'User-Agent': 'Mozilla/5.0 (pony-xg game page)' } });
+        return res.ok ? await res.text() : null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Shift rows when the shift-chart API has none yet (it fills in well after a game): the home and
+ * visitor time-on-ice reports, which update as the game is played, matched to player ids by
+ * sweater number, plus each team's goalie in net from the play-by-play.
+ */
+async function reportShifts(pbp: RawFeeds['pbp'], final: boolean, ttl: number): Promise<{ data: unknown[] } | null> {
+    const code = reportCode(Number(pbp.id));
+    const [home, away] = await Promise.all([
+        getText(`https://www.nhl.com/scores/htmlreports/${pbp.season}/TH${code}.HTM`, ttl),
+        getText(`https://www.nhl.com/scores/htmlreports/${pbp.season}/TV${code}.HTM`, ttl),
+    ]);
+    if (!home && !away) return null;
+    const roster = (teamId: number) =>
+        new Map<number, number>(
+            ((pbp.rosterSpots ?? []) as { teamId: number; playerId: number; sweaterNumber: number }[]).filter(r => r.teamId === teamId).map(r => [r.sweaterNumber, r.playerId]),
+        );
+    const rows = [
+        ...(home ? reportShiftRows(home, roster(pbp.homeTeam.id)) : []),
+        ...(away ? reportShiftRows(away, roster(pbp.awayTeam.id)) : []),
+        ...goalieShiftRows(pbp.plays ?? [], { away: pbp.awayTeam.id, home: pbp.homeTeam.id }, { otLength: Number(pbp.gameType) === 3 ? 1200 : 300, final }),
+    ];
+    return rows.length ? { data: rows } : null;
 }
 
 /** NHL regular season / playoff game ids: 2026020037. */
@@ -257,13 +292,17 @@ export async function getGame(idStr: string): Promise<GameModel | null> {
     if (!pbp || !pbp.id) return null;
     const final = pbp.gameState === 'OFF' || pbp.gameState === 'FINAL';
     const ttl = final ? 86_400 : 30;
-    const [landing, box, shifts, rightRail, pregame] = await Promise.all([
+    const [landing, box, chart, rightRail, pregame] = await Promise.all([
         getJson(`https://api-web.nhle.com/v1/gamecenter/${id}/landing`, ttl),
         getJson(`https://api-web.nhle.com/v1/gamecenter/${id}/boxscore`, ttl),
         getJson(`https://api.nhle.com/stats/rest/en/shiftcharts?cayenneExp=gameId=${id}`, ttl),
         getJson(`https://api-web.nhle.com/v1/gamecenter/${id}/right-rail`, ttl),
         pregameFor(id),
     ]);
+    // A game under way (or just over) has no shift chart yet: read the live time-on-ice reports.
+    const started = pbp.gameState !== 'FUT' && pbp.gameState !== 'PRE';
+    const chartRows = (chart as { data?: unknown[] } | null)?.data?.length ?? 0;
+    const shifts = chartRows || !started ? chart : ((await reportShifts(pbp, final, final ? 600 : 30)) ?? chart);
     const odds = closingOdds(id);
     const outlook = seasonOutlook({
         startUtc: pbp.startTimeUTC,
