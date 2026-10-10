@@ -311,7 +311,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         ) : null}
                     </div>
                     {goalie && gp && cur ? (
-                        <GoalieSeason nights={nights} season={cur.s} id={pid} name={last || first} />
+                        <GoalieSeason nights={nights} season={cur.s} id={pid} name={last || first} self={{ name: `${first.charAt(0)}. ${last}`, href: null, headshot: profile?.headshot ?? ponyPlayer?.headshot ?? null, team }} />
                     ) : gp ? (
                         <PonyGames
                             trend={trend}
@@ -357,7 +357,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                         <h2 id="shots-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
                             Shot map
                         </h2>
-                        <ShotMap season={cur.s} id={pid} />
+                        <ShotMap season={cur.s} id={pid} self={{ name: `${first.charAt(0)}. ${last}`, href: null, headshot: profile?.headshot ?? ponyPlayer?.headshot ?? null, team }} />
                     </section>
                 ) : null}
 

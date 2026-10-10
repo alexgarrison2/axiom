@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Rink3D } from '@/components/rink/Rink3D';
-import { ShotDetail, ShotMapFrame, ShotSummary, fileShotInfo, useShotPick } from '@/components/rink/ShotDetail';
+import { ShotDetail, ShotMapFrame, ShotSummary, fileShotInfo, useShotPick, type ShotPerson } from '@/components/rink/ShotDetail';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { S, fetchShots, goalieShotsUrl, shotLeagueUrl, wilson, type ShotFile, type ShotLeague, type ShotRow } from '@/lib/shots';
@@ -70,7 +70,7 @@ function Panel({ title, actions, children, legend, className }: { title: string;
 
 const Swatch = ({ className, style }: { className?: string; style?: React.CSSProperties }) => <span aria-hidden="true" className={cn('inline-block shrink-0', className)} style={style} />;
 
-export function GoalieSeason({ nights, season, id, name }: { nights: GoalieNight[]; season: string; id: number; name: string }) {
+export function GoalieSeason({ nights, season, id, name, self }: { nights: GoalieNight[]; season: string; id: number; name: string; self: ShotPerson }) {
     const [file, setFile] = React.useState<ShotFile | null | undefined>(undefined);
     const [league, setLeague] = React.useState<ShotLeague | null>(null);
     React.useEffect(() => {
@@ -104,7 +104,7 @@ export function GoalieSeason({ nights, season, id, name }: { nights: GoalieNight
                     {ready && league ? <Ladder shots={shots} league={league} /> : <Pending ready={ready} />}
                 </Panel>
             </div>
-            <SaveMap file={file ?? null} ready={ready} />
+            <SaveMap file={file ?? null} ready={ready} self={self} />
             <div className="grid gap-4 xl:grid-cols-[5fr_7fr] xl:items-start">
                 <Panel
                     title="Shot types"
@@ -308,7 +308,7 @@ function Ladder({ shots, league }: { shots: ShotRow[]; league: ShotLeague }) {
 
 const NO_SHOTS: ShotRow[] = [];
 
-function SaveMap({ file, ready }: { file: ShotFile | null; ready: boolean }) {
+function SaveMap({ file, ready, self }: { file: ShotFile | null; ready: boolean; self: ShotPerson }) {
     const shots = file?.shots ?? NO_SHOTS;
     const [mode, setMode] = React.useState<'shots' | 'zones'>('shots');
     const [sit, setSit] = React.useState<'all' | '0' | '1'>('all');
@@ -361,7 +361,7 @@ function SaveMap({ file, ready }: { file: ShotFile | null; ready: boolean }) {
                         }
                         detail={
                             <ShotDetail
-                                info={file && pick.picked ? fileShotInfo(file, pick.picked, 'goalie') : null}
+                                info={file && pick.picked ? fileShotInfo(file, pick.picked, 'goalie', self) : null}
                                 accent="var(--neg)"
                                 summary={
                                     <ShotSummary

@@ -28,7 +28,7 @@ export function mergeSeason(games: GameModel[], tri: string): GameModel | null {
     const box: GameModel['box'] = {};
     const ratings: GameModel['ratings'] = {};
     const starts: number[] = [];
-    const list: { id: number; date: string; opp: string; home: boolean }[] = [];
+    const list: NonNullable<GameModel['games']> = [];
     let offset = 0;
     let goalsFor = 0;
     let goalsAgainst = 0;
@@ -42,7 +42,15 @@ export function mergeSeason(games: GameModel[], tri: string): GameModel | null {
         const oppGoalies = new Set(g.players.filter(p => p.pos === 'G' && side(p.side) === 'home').map(p => p.id));
         const pid = (id: number | null) => (id != null && oppGoalies.has(id) ? OPP_GOALIE : id);
         starts.push(offset);
-        list.push({ id: g.id, date: g.date, opp: flip ? g.teams.away.tri : g.teams.home.tri, home: flip });
+        list.push({
+            id: g.id,
+            date: g.date,
+            opp: flip ? g.teams.away.tri : g.teams.home.tri,
+            home: flip,
+            gf: flip ? g.teams.home.score : g.teams.away.score,
+            ga: flip ? g.teams.away.score : g.teams.home.score,
+            outcome: g.outcome,
+        });
         for (const p of g.players) {
             if (oppGoalies.has(p.id)) continue;
             players.set(p.id, { ...p, side: side(p.side) });

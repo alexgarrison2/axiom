@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Rink3D } from '@/components/rink/Rink3D';
-import { ShotDetail, ShotMapFrame, ShotSummary, fileShotInfo, geometry, useShotPick } from '@/components/rink/ShotDetail';
+import { ShotDetail, ShotMapFrame, ShotSummary, fileShotInfo, geometry, useShotPick, type ShotPerson } from '@/components/rink/ShotDetail';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { S, fetchShots, skaterShotsUrl, type ShotFile } from '@/lib/shots';
@@ -13,7 +13,7 @@ import { S, fetchShots, skaterShotsUrl, type ShotFile } from '@/lib/shots';
  * ZONES shows where he scores above or below his expected goals. Empty-net
  * shots are left off (they say nothing about finishing).
  */
-export function ShotMap({ season, id }: { season: string; id: number }) {
+export function ShotMap({ season, id, self }: { season: string; id: number; self: ShotPerson }) {
     const [file, setFile] = React.useState<ShotFile | null | undefined>(undefined);
     const [mode, setMode] = React.useState<'shots' | 'zones'>('shots');
     const [sit, setSit] = React.useState<'all' | '0' | '1'>('all');
@@ -72,7 +72,7 @@ export function ShotMap({ season, id }: { season: string; id: number }) {
                 }
                 detail={
                     <ShotDetail
-                        info={file && pick.picked ? fileShotInfo(file, pick.picked, 'skater') : null}
+                        info={file && pick.picked ? fileShotInfo(file, pick.picked, 'skater', self) : null}
                         accent="var(--pos)"
                         summary={
                             <ShotSummary

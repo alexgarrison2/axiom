@@ -10,16 +10,19 @@ on ice ran out and the reliever after. Regular season only; empty-net shots
 are left out.
 
     public/data/goalie_shots/<seasonId>/<goalieId>.json
-        { "id", "cols": [...], "games": [gameId, ...], "meta": [[date, opponent, home], ...],
-          "names": {playerId: "F. Last"},
-          "shots": [[gameIdx, x, y, xG, goal, onGoal, type, rebound, strength, period, clock, other], ...] }
+        { "id", "cols": [...], "games": [gameId, ...], "meta": [[date, opponent, home, gf, ga, outcome], ...],
+          "names": {playerId: ["F. Last", headshot, team]},
+          "shots": [[gameIdx, x, y, xG, goal, onGoal, type, rebound, strength, period, clock, other,
+                     score, since, last], ...] }
     public/data/goalie_shots/<seasonId>/league.json
         { "bins": [{"lo", "hi", "sog", "goals", "svPct"}...], "types": {...}, ... }
 
 x, y are turned so the net is at x = +89 (_normalise). period and clock (seconds into the
 period) place the shot in its game; other is the shooter on a goalie's file and the goalie
 in net on a skater's (null when unknown), named in "names". meta[i] is games[i]'s date,
-the opponent's tricode and 1 when the player's team was at home. strength is the goalie's side:
+the opponent's tricode, 1 when the player's team was at home, that team's goals for and against
+and how it ended (REG / OT / SO). score is the shooting team's lead before the shot; since is the
+seconds since the event before it, last that event's index in LAST. strength is the goalie's side:
 0 even, 1 shorthanded (his team killing a penalty), 2 his team on the power
 play. Run after the xG rescore (refresh_pipeline full mode) and once with
 --prev to write the previous season.
@@ -36,7 +39,9 @@ from io_utils import atomic_write_json, keep_if_unchanged, read_json
 from paths import pipeline_path, public_path
 from season import PREV_START_YEAR, START_YEAR, season_file
 
-COLS = ["game", "x", "y", "xg", "goal", "on_goal", "type", "rebound", "strength", "period", "clock", "other"]
+COLS = ["game", "x", "y", "xg", "goal", "on_goal", "type", "rebound", "strength", "period", "clock", "other", "score", "since", "last"]
+# The event before a shot (shots file last_event_type), by index.
+LAST = ["faceoff", "hit", "shot-on-goal", "giveaway", "blocked-shot", "missed-shot", "takeaway", "delayed-penalty", "stoppage", "penalty", "goal"]
 TYPES = ["wrist", "snap", "slap", "backhand", "tip-in", "deflected", "wrap-around", "other"]
 # Danger by the shot's xG; HIGH matches the game page's high-danger chance (xG >= 0.20).
 BINS = [(0.0, 0.06), (0.06, 0.20), (0.20, 1.01)]
@@ -107,9 +112,10 @@ def _goalie_lookup(start_year: int):
     return find
 
 
-def _short(players: dict, pid) -> str | None:
+def _person(players: dict, pid) -> list | None:
+    """[short name, headshot, team] for a player id."""
     p = players.get(str(int(pid))) if pid is not None and pd.notna(pid) else None
-    return f"{p[0][:1]}. {p[1]}" if p else None
+    return [f"{p[0][:1]}. {p[1]}", p[4] if len(p) > 4 else None, p[5] if len(p) > 5 else None] if p else None
 
 
 def _file(pid: int, part: pd.DataFrame, own_team: dict, games: dict, players: dict, other_col: str) -> dict:
@@ -123,20 +129,25 @@ def _file(pid: int, part: pd.DataFrame, own_team: dict, games: dict, players: di
         tri = own_team.get(g)
         if info and tri:
             home = info[2] == tri
-            meta.append([info[0], info[1] if home else info[2], int(home)])
+            gf, ga = (info[4], info[3]) if home else (info[3], info[4])
+            meta.append([info[0], info[1] if home else info[2], int(home), int(gf), int(ga), info[5] if len(info) > 5 else None])
         else:
-            meta.append([None, None, None])
+            meta.append([None, None, None, None, None, None])
     rows, names = [], {}
     for r in part.itertuples(index=False):
         other = getattr(r, other_col)
         other = int(other) if other is not None and pd.notna(other) else None
         if other is not None and str(other) not in names:
-            n = _short(players, other)
+            n = _person(players, other)
             if n:
                 names[str(other)] = n
+        last = str(r.last_event_type) if pd.notna(r.last_event_type) else ""
         rows.append([
             gi[int(r.game_id)], int(r.x), int(r.y), round(float(r.xG), 3), int(r.goal), int(r.on_goal), int(r.type),
             int(r.is_rebound or 0), int(r.strength), int(r.period), int(r.time_seconds), other,
+            int(r.score_differential) if pd.notna(r.score_differential) else None,
+            int(r.time_since_last_event) if pd.notna(r.time_since_last_event) else None,
+            LAST.index(last) if last in LAST else None,
         ])
     return {"id": int(pid), "cols": COLS, "games": gl, "meta": meta, "names": names, "shots": rows}
 

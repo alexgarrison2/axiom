@@ -10,7 +10,7 @@ import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
 import { RinkMarkings } from './Rink';
 import { Rink3D } from '@/components/rink/Rink3D';
-import { ShotDetail, ShotMapFrame, ShotSummary, geometry, useShotPick, type ShotInfo } from '@/components/rink/ShotDetail';
+import { ShotDetail, ShotMapFrame, ShotSummary, geometry, useShotPick, type ShotInfo, type ShotPerson } from '@/components/rink/ShotDetail';
 import { OPP_GOALIE } from '@/lib/game/season';
 import type { ShotRow } from '@/lib/shots';
 
@@ -81,6 +81,17 @@ function Heat({ side, events, color }: { side: Side; events: GameEvent[]; color:
     );
 }
 
+/** A play as the lead-up to a shot ("off a giveaway"). */
+const PREV_WORD: Partial<Record<GameEvent['type'], string>> = {
+    faceoff: 'faceoff',
+    hit: 'hit',
+    shot: 'shot on goal',
+    miss: 'missed shot',
+    block: 'blocked shot',
+    goal: 'goal',
+    penalty: 'penalty',
+};
+
 export function Shots() {
     const { m, colors, byId } = useGame();
     const [strength, setStrength] = React.useState<TeamStrength>('all');
@@ -119,27 +130,45 @@ export function Shots() {
         setSide(s);
         setPlayer('all');
     };
-    const shortDay = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    // Each shot's event before it on the clock (the play that led to it).
+    const prevOf = React.useMemo(() => {
+        const out = new Map<number, GameEvent>();
+        const evs = [...m.events].sort((x, y) => x.t - y.t);
+        evs.forEach((e, i) => {
+            if (i > 0) out.set(e.id, evs[i - 1]);
+        });
+        return out;
+    }, [m.events]);
     const info = (e: GameEvent): ShotInfo => {
         const r = toRow(e);
         const own = e.side === 'away' ? e.situation.away : e.situation.home;
         const opp = e.side === 'away' ? e.situation.home : e.situation.away;
-        const shooter = e.player != null ? byId.get(e.player) : undefined;
-        const goalie = e.other != null ? byId.get(e.other) : undefined;
-        // A merged season names the game a shot came from; a game page is already that game.
+        const other: Side = e.side === 'away' ? 'home' : 'away';
+        // A merged season names the game a shot came from (its opponent stands in for "OPP"); a game page is that game.
         const gi = m.games ? m.games[gameIndexAt(m, e.t)] : null;
+        const tri = (sd: Side) => (gi && m.teams[sd].tri === 'OPP' ? gi.opp : m.teams[sd].tri);
+        const person = (id: number | null, sd: Side): ShotPerson | null => {
+            const p = id != null ? byId.get(id) : undefined;
+            if (!p) return null;
+            const pooled = p.id === OPP_GOALIE;
+            return { name: pooled ? 'Opponent goalie' : `${p.first.charAt(0)}. ${p.last}`, href: pooled ? null : `/players/${p.id}`, headshot: p.headshot, team: tri(sd) };
+        };
+        const prev = prevOf.get(e.id);
+        const sameGame = prev && (!gi || gameIndexAt(m, prev.t) === gameIndexAt(m, e.t)) && prev.period === e.period;
         return {
             result: e.type === 'goal' ? 'goal' : e.type === 'shot' ? 'saved' : 'missed',
             xg: e.xg ?? 0,
             x: r[1],
             y: r[2],
             type: e.shotType ?? null,
-            situation: `${own}v${opp}${e.emptyNet ? ' · empty net' : ''}`,
+            strength: `${own}v${opp}${e.emptyNet ? ' · empty net' : own > opp ? ' PP' : own < opp ? ' SH' : ''}`,
             period: e.period,
             clock: e.clock,
-            game: gi ? { label: `#${m.games!.indexOf(gi) + 1} · ${shortDay(gi.date)} · ${gi.home ? 'vs' : '@'} ${gi.opp}`, href: `/games/${gi.id}` } : null,
-            shooter: shooter ? { name: `${shooter.first} ${shooter.last}`, href: shooter.id > 1 ? `/players/${shooter.id}` : null } : null,
-            goalie: goalie ? { name: goalie.id === OPP_GOALIE ? 'Opponent goalie' : `${goalie.first} ${goalie.last}`, href: goalie.id === OPP_GOALIE ? null : `/players/${goalie.id}` } : null,
+            lead: e.score[e.side] - e.score[other],
+            before: sameGame ? { what: PREV_WORD[prev!.type] ?? prev!.type, secs: Math.max(0, Math.round(e.t - prev!.t)) } : null,
+            game: gi ? { href: `/games/${gi.id}`, date: gi.date, opp: gi.opp, home: gi.home, gf: gi.gf, ga: gi.ga, outcome: gi.outcome } : null,
+            shooter: person(e.player, e.side),
+            goalie: person(e.other, other),
         };
     };
 
