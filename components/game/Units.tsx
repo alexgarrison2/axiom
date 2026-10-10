@@ -127,6 +127,15 @@ export function Units() {
     // Forwards left to right C, L, R like a lineup card; D by number.
     const order = { C: 1, L: 0, R: 2, D: 3, G: 4 } as const;
     const kindLabel = KINDS.find(k => k.value === kind)!;
+    // Name whose units are missing and why: a team with no power play (or penalty kill) yet, or none in the period.
+    const tri = m.teams[side].tri;
+    const when = period === 'all' ? (m.state === 'live' ? ' yet' : ' this game') : ' this period';
+    const emptyText =
+        kind === 'PP'
+            ? `${tri} has not had a power play${when}`
+            : kind === 'PK'
+              ? `${tri} has not killed a penalty${when}`
+              : `No ${tri} ${kind === 'F' ? 'forward lines' : 'pairs'}${period === 'all' ? (m.state === 'live' ? ' yet' : '') : ' this period'}`;
 
     return (
         <GameSection id="units" title="Units">
@@ -274,7 +283,7 @@ export function Units() {
                             </tfoot>
                     </PinnedTable>
                 ) : (
-                    <p className="px-card py-6 text-center text-caption text-fg-3">No {kindLabel.label.toLowerCase()} {period === 'all' ? 'in this game' : 'in this period'}</p>
+                    <p className="px-card py-6 text-center text-caption text-fg-3">{emptyText}</p>
                 )}
             </div>
         </GameSection>
