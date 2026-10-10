@@ -247,6 +247,7 @@ export function CompactScore({ edge = null }: { edge?: Edge }) {
             <span className={cn('flex items-center gap-1.5', sd === 'home' && 'flex-row-reverse')}>
                 <Crest tri={t.tri} size={24} className="h-6 w-6 drop-shadow-none" />
                 <span className="text-micro font-bold uppercase tracking-label text-fg-2">{t.tri}</span>
+                {edge && edge.tri === t.tri ? <EdgeChip edge={edge} team={false} className="text-[11px] leading-tight" /> : null}
                 <span className={cn('min-w-[1.25rem] text-center font-display text-title font-bold leading-none tabular-nums', lost ? 'text-fg-3' : 'text-fg-1')}>
                     {t.score}
                 </span>
@@ -266,7 +267,6 @@ export function CompactScore({ edge = null }: { edge?: Edge }) {
                 {m.live?.intermission ? `End ${m.live.period <= 3 ? `P${m.live.period}` : 'OT'}` : m.live ? `${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : statusOf(m)}
             </span>
             {side('home')}
-            <EdgeChip edge={edge} className="text-[11px] leading-tight" />
         </span>
     );
 }

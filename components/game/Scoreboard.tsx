@@ -28,11 +28,24 @@ function Status({ g }: { g: SlateGame }) {
     );
 }
 
-function Side({ tri, score, lead, dim }: { tri: string; score: number | null; lead: boolean; dim: boolean }) {
+/** A power play or empty net in progress, beside the team that has it, with its time left as a hairline. */
+function EdgeTag({ edge }: { edge: NonNullable<SlateGame['edge']> }) {
+    const left = clockSeconds(edge.left);
+    return (
+        <span className="relative overflow-hidden whitespace-nowrap rounded-chip bg-warn/15 px-1 text-[11px] font-semibold uppercase leading-tight tracking-label text-warn">
+            {edge.what}
+            {edge.left ? ` ${edge.left.replace(/^0(?=\d)/, '')}` : ''}
+            {edge.what.includes('PP') && left != null ? <TimeBar left={left} total={ppLength(left)} /> : null}
+        </span>
+    );
+}
+
+function Side({ tri, score, lead, dim, edge }: { tri: string; score: number | null; lead: boolean; dim: boolean; edge: SlateGame['edge'] }) {
     return (
         <span className="flex items-center gap-1.5">
             <Crest tri={tri} size={18} className="h-[18px] w-[18px] drop-shadow-none" />
             <span className={cn('w-8 text-micro font-bold uppercase tracking-label', dim ? 'text-fg-3' : 'text-fg-2')}>{tri}</span>
+            {edge && edge.tri === tri ? <EdgeTag edge={edge} /> : null}
             {score != null ? <span className={cn('ml-auto font-bold tabular-nums', lead ? 'text-fg-1' : 'text-fg-3')}>{score}</span> : null}
         </span>
     );
@@ -62,17 +75,11 @@ export function Scoreboard({ games, current }: { games: SlateGame[]; current: nu
                                     tight(g) ? 'border-warn/60' : 'border-line',
                                 )}
                             >
-                                <Side tri={g.away.tri} score={g.away.score} lead={!done || a >= h} dim={done && a < h} />
-                                <Side tri={g.home.tri} score={g.home.score} lead={!done || h >= a} dim={done && h < a} />
+                                <Side tri={g.away.tri} score={g.away.score} lead={!done || a >= h} dim={done && a < h} edge={g.edge} />
+                                <Side tri={g.home.tri} score={g.home.score} lead={!done || h >= a} dim={done && h < a} edge={g.edge} />
                                 <span className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-label">
                                     <Status g={g} />
-                                    {g.edge ? (
-                                        <span className="relative overflow-hidden rounded-chip bg-warn/15 px-1 text-warn">
-                                            {g.edge.tri} {g.edge.what}
-                                            {g.edge.left ? ` ${g.edge.left.replace(/^0(?=\d)/, '')}` : ''}
-                                            {g.edge.what.includes('PP') && clockSeconds(g.edge.left) != null ? <TimeBar left={clockSeconds(g.edge.left)} total={ppLength(clockSeconds(g.edge.left)!)} /> : null}
-                                        </span>
-                                    ) : tight(g) ? (
+                                    {tight(g) ? (
                                         <span className="text-warn">Close</span>
                                     ) : null}
                                 </span>
