@@ -33,8 +33,15 @@ type Focus = { r: number | null; c: number | null } | null;
 /** Edge bars: 10px off the grid, up to 42px long. */
 const EDGE = 56;
 const BAR = 42;
+/** Screen height the grid leaves to the app bar, section rail, controls, legend and padding. */
+const CHROME = 242;
 /** Replay: the whole game in this many milliseconds. */
 const REPLAY_MS = 10000;
+
+const onResize = (cb: () => void) => {
+    window.addEventListener('resize', cb);
+    return () => window.removeEventListener('resize', cb);
+};
 
 const cutsOf = (items: { at: number; kind: Kind }[]): Cut[] => items.slice(1).map((g, k) => ({ at: g.at, strong: g.kind !== items[k].kind }));
 
@@ -244,6 +251,7 @@ export function Matchups() {
     const { bind, tip } = useHoverTip();
     const [boxRef, boxW] = useWidth<HTMLDivElement>();
     const box = boxW || 600;
+    const vh = React.useSyncExternalStore(onResize, () => window.innerHeight, () => 0);
     const narrow = boxW > 0 && boxW < 640;
     const players = view === 'players';
 
@@ -254,13 +262,16 @@ export function Matchups() {
     const colCuts = players ? cols.cuts : cutsOf(lines.home.map((g, k) => ({ at: k, kind: g.kind }))).filter(c => c.strong);
     const gutter = players ? 120 : 136;
     const GAP = narrow ? 4 : 6;
-    const [lo, hi] = players ? [22, 44] : [64, 96];
-    // Fill the panel: cells grow with the width between a floor (the grid scrolls sideways on phones) and a ceiling.
-    const CELL = Math.max(lo, Math.min(hi, Math.floor((box - gutter - EDGE - 8 - GAP * colCuts.length) / Math.max(1, nC))));
     // Players: slanted names (96px, phones trim to the longest) over an 18px band of line tags. Lines: tag and names stacked.
     const longest = Math.max(0, ...cols.players.map(p => label(p.id).length));
     const slant = narrow ? Math.min(96, Math.ceil(longest * 6.4 * 0.87) + 14) : 96;
     const top = players ? slant + 18 : 62;
+    const [lo, hi] = players ? [20, 44] : [52, 80];
+    // Cells grow with the panel's width and shrink to keep the whole grid in one screen (less the app bar, section rail,
+    // controls and legend), between a floor (the grid scrolls on phones) and a ceiling.
+    const fitW = Math.floor((box - gutter - EDGE - 8 - GAP * colCuts.length) / Math.max(1, nC));
+    const fitH = vh ? Math.floor((vh - CHROME - top - EDGE - GAP * rowCuts.length) / Math.max(1, nR)) : hi;
+    const CELL = Math.max(lo, Math.min(hi, fitW, fitH));
     const X = (j: number) => gutter + offsetOf(j, CELL, GAP, colCuts);
     const Y = (i: number) => top + offsetOf(i, CELL, GAP, rowCuts);
     const right = X(nC);
@@ -509,7 +520,16 @@ export function Matchups() {
                                                 {g.tag}
                                             </text>
                                             {g.ids.map((id, k) => (
-                                                <text key={id} x={X(j) + CELL / 2} y={12 + 13 * (k + 1)} textAnchor="middle" className="text-micro" fill={colors.home}>
+                                                <text
+                                                    key={id}
+                                                    x={X(j) + CELL / 2}
+                                                    y={12 + 13 * (k + 1)}
+                                                    textAnchor="middle"
+                                                    className="text-micro"
+                                                    fill={colors.home}
+                                                    // A name wider than its column squeezes to fit rather than run into the next one.
+                                                    {...(label(id).length * 5.8 > CELL - 6 ? { textLength: CELL - 6, lengthAdjust: 'spacingAndGlyphs' } : {})}
+                                                >
                                                     {label(id)}
                                                 </text>
                                             ))}
