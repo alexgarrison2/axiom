@@ -39968,5 +39968,73 @@
         "market_p": 0.5
       }
     }
+  },
+  {
+    "gameId": 2026020069,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-09",
+    "homeTeam": "Jets",
+    "awayTeam": "Ducks",
+    "homeScore": 1,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.17,
+    "awayXg": 3.0,
+    "homeWinProb": 52.8,
+    "predictedWinner": "Jets",
+    "actualWinner": "Ducks",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.2788,
+    "logLoss": 0.7508,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-09T23:03:00Z",
+    "startUtc": "2026-10-10T00:00:00Z",
+    "marketHomeProb": 53.5,
+    "modelHomeProb": 52.6,
+    "homeOdds": -125.0,
+    "awayOdds": 105.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 52.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.364,
+        "ll": 1.0106,
+        "naive_ll": 0.9393,
+        "market_p": 0.3715
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.699,
+        "ll": 0.3581,
+        "naive_ll": 0.3404,
+        "market_p": 0.6973
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.546,
+        "ll": 0.6051,
+        "naive_ll": 0.6056,
+        "market_p": 0.5186
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.319,
+        "ll": 1.1426,
+        "naive_ll": 1.1016,
+        "market_p": 0.3315
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.476,
+        "ll": 0.7423,
+        "naive_ll": 0.7358,
+        "market_p": 0.4776
+      }
+    }
   }
 ]
