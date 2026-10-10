@@ -547,22 +547,20 @@ export function Faceoffs() {
                                                             return <line key={i} x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} stroke="var(--bg)" strokeWidth={0.9} />;
                                                         })
                                                       : null}
-                                                  {/* One spark out from the middle of the team's (or picked taker's) arc, the number of its wins turned into a shot at its tip. */}
-                                                  {(() => {
-                                                      const won = pool.filter(d => d.win === view);
-                                                      if (!won.length) return null;
+                                                  {/* One spark out from the middle of each side's stretch of the ring, the number of its wins turned into a shot at its tip (none when zero). */}
+                                                  {(['away', 'home'] as Side[]).map(sd => {
+                                                      const won = pool.filter(d => d.win === sd);
                                                       const led = won.filter(d => d.led).length;
-                                                      // No wins into a shot: nothing to spark.
                                                       if (!led) return null;
                                                       const share = won.length / nn;
-                                                      const mid = -Math.PI / 2 + (view === 'away' ? share / 2 : aw / nn + share / 2) * 2 * Math.PI;
+                                                      const mid = -Math.PI / 2 + (sd === 'away' ? share / 2 : aw / nn + share / 2) * 2 * Math.PI;
                                                       const c = Math.cos(mid);
                                                       const sn = Math.sin(mid);
-                                                      const r0 = r + sw / 2 + 0.5;
+                                                      const r0 = r + (sd === 'away' ? sw / 2 : Math.max(0.3, sw * 0.2)) + 0.5;
                                                       const r1 = r0 + 3.4;
                                                       const rl = r1 + labelFs * 0.9;
                                                       return (
-                                                          <g>
+                                                          <g key={sd}>
                                                               <line x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} className="stroke-fg-1" strokeWidth={0.7} strokeLinecap="round" />
                                                               <text
                                                                   x={(rl * c).toFixed(2)}
@@ -570,7 +568,8 @@ export function Faceoffs() {
                                                                   textAnchor={Math.abs(c) < 0.35 ? 'middle' : c > 0 ? 'start' : 'end'}
                                                                   fontSize={labelFs.toFixed(2)}
                                                                   fontWeight={600}
-                                                                  className="fill-fg-1 tabular-nums"
+                                                                  fill={sd === 'away' ? 'var(--text-1)' : 'var(--text-2)'}
+                                                                  className="tabular-nums"
                                                                   paintOrder="stroke"
                                                                   stroke="var(--surface-2)"
                                                                   strokeWidth={labelFs * 0.25}
@@ -579,7 +578,7 @@ export function Faceoffs() {
                                                               </text>
                                                           </g>
                                                       );
-                                                  })()}
+                                                  })}
                                                   {/* Even: an index pointer outside the ring at six o'clock, lit in the team's colour once the share passes it. */}
                                                   <path
                                                       d={`M0,${(r + sw / 2 + 0.7).toFixed(2)} l1.5,2.6 h-3 Z`}
