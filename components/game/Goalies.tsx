@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { clockOf, goalieRows, playerName } from '@/lib/game/analytics';
 import { SIDES } from '@/lib/game/types';
 import { GameSection, useGame } from './GameContext';
+import { fmtInt } from '@/components/views/format';
 
 const svp = (sa: number, ga: number) => {
     if (!sa) return '—';
@@ -45,7 +46,7 @@ export function Goalies() {
                                         </header>
                                         <dl className="grid grid-cols-4 gap-2 text-center tabular-nums">
                                             {[
-                                                ['Saves', `${g.sa - g.ga}/${g.sa}`, 'text-fg-1'],
+                                                ['Saves', `${fmtInt(g.sa - g.ga)}/${fmtInt(g.sa)}`, 'text-fg-1'],
                                                 ['SV%', svp(g.sa, g.ga), 'text-fg-1'],
                                                 ['xGA', g.xga.toFixed(2), 'text-model'],
                                                 ['GSAx', sgn(gsax), tone(gsax)],
@@ -89,7 +90,7 @@ export function Goalies() {
                                                             {k}
                                                         </th>
                                                         <td className="py-1.5 text-right text-fg-1">
-                                                            {s.sa - s.ga}/{s.sa}
+                                                            {fmtInt(s.sa - s.ga)}/{fmtInt(s.sa)}
                                                         </td>
                                                         <td className="py-1.5 text-right text-fg-1">{svp(s.sa, s.ga)}</td>
                                                         <td className="py-1.5 text-right text-model">{s.xga.toFixed(2)}</td>
@@ -101,7 +102,7 @@ export function Goalies() {
                                                         High danger
                                                     </th>
                                                     <td className="py-1.5 text-right text-fg-1">
-                                                        {g.hdSa - g.hdGa}/{g.hdSa}
+                                                        {fmtInt(g.hdSa - g.hdGa)}/{fmtInt(g.hdSa)}
                                                     </td>
                                                     <td className="py-1.5 text-right text-fg-1">{svp(g.hdSa, g.hdGa)}</td>
                                                     <td className="py-1.5 text-right text-model">{g.hdXga.toFixed(2)}</td>

@@ -7,6 +7,7 @@ import { periodLabel, powerPlays, teamTotals, type TeamStrength, type TeamTotals
 import { SIDES, type Side } from '@/lib/game/types';
 import { ControlRow } from './ControlRow';
 import { GameSection, useGame } from './GameContext';
+import { fmtInt, fmtNum } from '@/components/views/format';
 
 interface RowDef {
     key: keyof TeamTotals | 'pp' | 'fo';
@@ -74,13 +75,13 @@ export function TeamStats() {
         if (r.key === 'fo') {
             const tot = t.away.faceoffs + t.home.faceoffs;
             const n = t[side].faceoffs;
-            return { n, text: metric === 'shares' && tot ? `${Math.round((n / tot) * 100)}%` : String(n) };
+            return { n, text: metric === 'shares' && tot ? `${Math.round((n / tot) * 100)}%` : fmtInt(n) };
         }
         const n = t[side][r.key as keyof TeamTotals];
         const tot = t.away[r.key as keyof TeamTotals] + t.home[r.key as keyof TeamTotals];
         if (metric === 'shares') return { n, text: tot ? `${((n / tot) * 100).toFixed(1)}%` : '—' };
         const adj = adjusted === 'adj' && r.adjustable;
-        return { n, text: r.xg || adj ? n.toFixed(r.xg ? 2 : 1) : String(Math.round(n)) };
+        return { n, text: r.xg || adj ? fmtNum(n, r.xg ? 2 : 1) : fmtInt(n) };
     };
 
     return (

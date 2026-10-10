@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import type { ReliabilityBin, RollingPoint, Tier } from './report';
+import { fmtInt } from '@/components/views/format';
 
 /* Neon on the dark grid: cyan = the model, white dashed = the market,
    magenta diamond = what the model expected. Text is 11px mono. */
@@ -209,7 +210,7 @@ export function ReliabilityChart({ bins }: { bins: ReliabilityBin[] }) {
                 </svg>
                 {hover ? (
                     <Tip className="left-10 top-1">
-                        {Math.round(hover.lo * 100)}–{Math.round(hover.hi * 100)} · pred {((hover.meanPred ?? 0) * 100).toFixed(1)} · won {((hover.actual ?? 0) * 100).toFixed(1)} · n={hover.n}
+                        {Math.round(hover.lo * 100)}–{Math.round(hover.hi * 100)} · pred {((hover.meanPred ?? 0) * 100).toFixed(1)} · won {((hover.actual ?? 0) * 100).toFixed(1)} · n={fmtInt(hover.n)}
                     </Tip>
                 ) : null}
             </div>
@@ -233,7 +234,7 @@ export function ReliabilityChart({ bins }: { bins: ReliabilityBin[] }) {
                             <td>
                                 {Math.round(p.lo * 100)}–{Math.round(p.hi * 100)}%
                             </td>
-                            <td>{p.n}</td>
+                            <td>{fmtInt(p.n)}</td>
                             <td>{((p.meanPred ?? 0) * 100).toFixed(1)}%</td>
                             <td>{((p.actual ?? 0) * 100).toFixed(1)}%</td>
                         </tr>
@@ -259,7 +260,7 @@ export function TierBars({ tiers }: { tiers: Tier[] }) {
                             {t.tier.endsWith('+') ? `${t.tier.slice(0, -1)}+` : t.tier.replace('-', '–')}
                             <span className="ml-1.5 font-normal text-fg-3">
                                 <span className="sr-only">games: </span>
-                                {t.n}
+                                {fmtInt(t.n)}
                             </span>
                         </span>
                         <span className="relative h-2 rounded-full bg-track" aria-hidden="true">
@@ -399,7 +400,7 @@ export function UnitsChart({ points, className }: { points: { date: string; unit
     return (
         <figure className={cn('flex flex-col gap-2', className)}>
             <div className="relative" ref={boxRef}>
-                <svg ref={svgRef} viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block touch-pan-y" role="img" aria-label={`Cumulative units over ${points.length} bets, ending at ${last.units >= 0 ? '+' : ''}${last.units.toFixed(2)} units`}>
+                <svg ref={svgRef} viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block touch-pan-y" role="img" aria-label={`Cumulative units over ${fmtInt(points.length)} bets, ending at ${last.units >= 0 ? '+' : ''}${last.units.toFixed(2)} units`}>
                     <Glow id={glow} blur={1.5} />
                     <defs>
                         <linearGradient id={grad} x1="0" x2="0" y1="0" y2="1">

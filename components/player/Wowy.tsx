@@ -6,6 +6,7 @@ import { useWidth } from '@/components/game/Pulse';
 import { TeamToggle } from '@/components/ui/team-toggle';
 import { cn } from '@/lib/utils';
 import { equalScale, minApart, placeLabels, rates, ticks, type Box, type LabelIn, type WowyMate, type WowyPlayer } from '@/lib/players/wowy';
+import { fmtInt } from '@/components/views/format';
 
 /**
  * With or without you, after HockeyViz: for each of his most-used 5v5
@@ -19,7 +20,7 @@ import { equalScale, minApart, placeLabels, rates, ticks, type Box, type LabelIn
  */
 
 const R = 4.5;
-const mins = (s: number) => Math.round(s / 60);
+const mins = (s: number) => fmtInt(s / 60);
 const f2 = (v: number) => v.toFixed(2);
 
 /** Text width in px for the chart's font (canvas), with a condensed-face estimate as fallback. */

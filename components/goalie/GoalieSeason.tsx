@@ -7,6 +7,7 @@ import { ShotDetail, ShotMapFrame, ShotSummary, fileShotInfo, useShotPick, type 
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
 import { S, fetchShots, goalieShotsUrl, shotLeagueUrl, wilson, type ShotFile, type ShotLeague, type ShotRow } from '@/lib/shots';
+import { fmtInt } from '@/components/views/format';
 
 /**
  * A goalie's season in pictures, between the hero and the game log:
@@ -279,10 +280,10 @@ function Ladder({ shots, league }: { shots: ShotRow[]; league: ShotLeague }) {
                 const up = r.sv >= r.exp;
                 const p = pos(r.sv);
                 return (
-                    <div key={r.name} className="grid grid-cols-[96px_1fr_72px] items-center gap-3" title={`${p3(r.sv)} on ${r.n} shots; league ${p3(r.exp)}`}>
+                    <div key={r.name} className="grid grid-cols-[96px_1fr_72px] items-center gap-3" title={`${p3(r.sv)} on ${fmtInt(r.n)} shots; league ${p3(r.exp)}`}>
                         <div>
                             <p className="text-caption font-bold uppercase tracking-[0.08em] text-fg-1">{r.name}</p>
-                            <p className="text-micro text-fg-3">{r.range} · {r.n}</p>
+                            <p className="text-micro text-fg-3">{r.range} · {fmtInt(r.n)}</p>
                         </div>
                         <div className="relative h-7 rounded-chip bg-surface-2">
                             {r.n ? (
@@ -331,8 +332,8 @@ function SaveMap({ file, ready, self }: { file: ShotFile | null; ready: boolean;
             legend={
                 mode === 'shots' ? (
                     <>
-                        <span className="inline-flex items-center gap-1.5"><Swatch className="h-2 w-3 rounded-full border border-fg-2/40 bg-fg-2/15" />save ({saves})</span>
-                        <span className="inline-flex items-center gap-1.5"><Swatch className="h-3 w-0.5 rounded-full bg-neg" />goal against ({goals}), taller = higher xG</span>
+                        <span className="inline-flex items-center gap-1.5"><Swatch className="h-2 w-3 rounded-full border border-fg-2/40 bg-fg-2/15" />save ({fmtInt(saves)})</span>
+                        <span className="inline-flex items-center gap-1.5"><Swatch className="h-3 w-0.5 rounded-full bg-neg" />goal against ({fmtInt(goals)}), taller = higher xG</span>
                     </>
                 ) : (
                     <>
@@ -353,7 +354,7 @@ function SaveMap({ file, ready, self }: { file: ShotFile | null; ready: boolean;
                                 tone="neg"
                                 showMisses={false}
                                 maxWidth={1100}
-                                label={`Shots faced: ${saves} saves, ${goals} goals against`}
+                                label={`Shots faced: ${fmtInt(saves)} saves, ${fmtInt(goals)} goals against`}
                                 lit={mode === 'shots' ? pick.lit : null}
                                 onHover={mode === 'shots' ? pick.onHover : undefined}
                                 onTap={mode === 'shots' ? pick.onTap : undefined}
@@ -366,8 +367,8 @@ function SaveMap({ file, ready, self }: { file: ShotFile | null; ready: boolean;
                                 summary={
                                     <ShotSummary
                                         rows={[
-                                            ['Shots faced', drawn.length],
-                                            ['Saves', saves],
+                                            ['Shots faced', fmtInt(drawn.length)],
+                                            ['Saves', fmtInt(saves)],
                                             ['Goals against', goals],
                                             ['Save %', drawn.length ? (saves / drawn.length).toFixed(3).replace(/^0/, '') : '—'],
                                             ['xG against', <span key="xga" className="text-model">{xga.toFixed(1)}</span>],
@@ -423,10 +424,10 @@ function ShotTypes({ shots, league }: { shots: ShotRow[]; league: ShotLeague }) 
                 const a = X(Math.min(r.sv, r.lg));
                 const b = X(Math.max(r.sv, r.lg));
                 return (
-                    <div key={r.name} className={cn(cols, 'h-9', r.sep && 'mt-1 border-t border-dashed border-line-strong pt-1')} title={`${r.n} shots · ${p3(r.sv)} vs league ${p3(r.lg)} · likely ${p3(r.ci[0])}–${p3(r.ci[1])}`}>
+                    <div key={r.name} className={cn(cols, 'h-9', r.sep && 'mt-1 border-t border-dashed border-line-strong pt-1')} title={`${fmtInt(r.n)} shots · ${p3(r.sv)} vs league ${p3(r.lg)} · likely ${p3(r.ci[0])}–${p3(r.ci[1])}`}>
                         <span className="grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-1">
                             <span className="text-caption font-medium capitalize text-fg-1">{r.name.replace('-', ' ')}</span>
-                            <span className="row-span-2 text-micro text-fg-3 tabular-nums">{r.n}</span>
+                            <span className="row-span-2 text-micro text-fg-3 tabular-nums">{fmtInt(r.n)}</span>
                             <span className="block h-1 overflow-hidden rounded-[2px] bg-line"><span className="block h-full bg-line-strong" style={{ width: `${(r.n / maxN) * 100}%` }} /></span>
                         </span>
                         <span className="relative h-9">

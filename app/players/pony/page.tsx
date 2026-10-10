@@ -8,6 +8,7 @@ import { PonyFilters } from '@/components/pony/PonyFilters';
 import { LeaderTable } from '@/components/pony/LeaderTable';
 import { PonyNights } from '@/components/pony/PonyNights';
 import { leaderboard, loadPonySeason, nightGames, parseFilters, ponySeasons } from '@/lib/pony/data';
+import { fmtInt } from '@/components/views/format';
 
 export const metadata: Metadata = {
     title: 'Pony Score leaders',
@@ -60,8 +61,8 @@ export default async function PonyLeadersPage({ searchParams }: { searchParams: 
                         <PonyFilters seasons={seasons} dates={dates} />
                     </Suspense>
                     <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-micro uppercase tracking-label text-fg-3">
-                        <span className="text-fg-2">{games ? `${games.total} games · ${f.pos === 'G' ? '30' : '10'}+ min` : `${rows.length} ${who}`}</span>
-                        <span>{data ? `${data.games.size} games · ${seasonLabel(f.season)}` : 'No games yet'}</span>
+                        <span className="text-fg-2">{games ? `${fmtInt(games.total)} games · ${f.pos === 'G' ? '30' : '10'}+ min` : `${fmtInt(rows.length)} ${who}`}</span>
+                        <span>{data ? `${fmtInt(data.games.size)} games · ${seasonLabel(f.season)}` : 'No games yet'}</span>
                         <span className="max-sm:order-1 max-sm:flex-1 max-sm:basis-48">Goals per game above an average player at his position</span>
                         <Link href="/methodology#pony-score" className="ml-auto underline-offset-4 max-sm:order-2 hover:text-fg-1 hover:underline coarse:py-3">
                             Method

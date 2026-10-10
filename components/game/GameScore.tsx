@@ -14,6 +14,7 @@ import { JerseyNumber } from './Jersey';
 import { useWidth } from './Pulse';
 import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
 import { TeamToggle } from '@/components/ui/team-toggle';
+import { fmtInt } from '@/components/views/format';
 
 /*
  * Pony Score breakdown: every skater's one-game score in goals (lib/game/analytics.ts gameScores, constants measured by pipeline/tools/pony_score_calibrate.py) as a signed stack of
@@ -43,7 +44,7 @@ function rawLine(r: GameScoreRow, k: GsPart): string {
             if (x.pdUnits) bits.push(`${x.pdUnits} drawn`);
             const fw = x.foEndW + x.foNeuW;
             const fl = x.foEndL + x.foNeuL;
-            if (fw + fl) bits.push(`FO ${fw}–${fl}`);
+            if (fw + fl) bits.push(`FO ${fmtInt(fw)}–${fmtInt(fl)}`);
             return bits.join(' · ');
         }
         case 'oDrive':
@@ -140,8 +141,8 @@ function GoalieCard({ g }: { g: GoalieScoreRow }) {
             </div>
             <div className="grid grid-cols-4 gap-2 text-center tabular-nums">
                 {[
-                    ['SA', String(g.sa), 'text-fg-1'],
-                    ['GA', String(g.ga), 'text-fg-1'],
+                    ['SA', fmtInt(g.sa), 'text-fg-1'],
+                    ['GA', fmtInt(g.ga), 'text-fg-1'],
                     ['SV%', sv, 'text-fg-1'],
                     ['xGA', g.xga.toFixed(2), 'text-model'],
                 ].map(([k, v, c]) => (

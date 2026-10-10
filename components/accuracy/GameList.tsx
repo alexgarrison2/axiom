@@ -14,6 +14,7 @@ import { isCorrect, isNoLean, isWrong, pickOf, pickProb, type ExcludedGame, type
 import type { GameTypeKey } from './report';
 import { groupByDay, summarize, vsMarket, type DayGroup, type DayShape, type SpanSummary } from './summary';
 import { useDataEpoch } from '@/lib/fresh';
+import { fmtInt } from '@/components/views/format';
 
 /** Days listed before More (about a month of slates). */
 const PAGE = 30;
@@ -362,7 +363,7 @@ function KpiStrip({ s }: { s: SpanSummary }) {
     const vsMkt = s.marketN >= 5 && s.modelLogLossSame != null && s.marketLogLoss != null ? s.modelLogLossSame - s.marketLogLoss : null;
     return (
         <div role="group" aria-label="Summary of the games shown" className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-            <Kpi label="Picks right" value={pct(s.accuracy)} sub={`${s.hits}-${s.picks - s.hits} · ${s.n} graded`} />
+            <Kpi label="Picks right" value={pct(s.accuracy)} sub={`${fmtInt(s.hits)}-${fmtInt(s.picks - s.hits)} · ${fmtInt(s.n)} graded`} />
             <Kpi label="Avg confidence" value={s.avgConfidence == null ? '—' : `${s.avgConfidence.toFixed(1)}%`} sub={s.accuracy != null && s.avgConfidence != null ? `hit rate ${(s.accuracy * 100 - s.avgConfidence >= 0 ? '+' : '−')}${Math.abs(s.accuracy * 100 - s.avgConfidence).toFixed(1)} pts vs confidence` : undefined} />
             <Kpi
                 label="Log loss"
@@ -371,7 +372,7 @@ function KpiStrip({ s }: { s: SpanSummary }) {
                 sub={vsMkt == null ? 'coin 0.693' : `${vsMkt <= 0 ? '▼' : '▲'} ${Math.abs(vsMkt).toFixed(3)} vs market`}
                 tone={vsMkt == null ? undefined : vsMkt <= 0 ? 'pos' : 'neg'}
             />
-            <Kpi label="Goals error" value={s.totalGoalsMae == null ? '—' : s.totalGoalsMae.toFixed(2)} sub={s.scoreN ? `avg miss on total goals · ${s.scoreN} games` : 'no projected scores'} />
+            <Kpi label="Goals error" value={s.totalGoalsMae == null ? '—' : s.totalGoalsMae.toFixed(2)} sub={s.scoreN ? `avg miss on total goals · ${fmtInt(s.scoreN)} games` : 'no projected scores'} />
         </div>
     );
 }

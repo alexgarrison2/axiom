@@ -13,6 +13,7 @@ import { ControlRow } from './ControlRow';
 import { GameSection, sideTeams, useGame } from './GameContext';
 import { PIN_COL, PinnedTable } from './PinnedTable';
 import { TeamToggle } from '@/components/ui/team-toggle';
+import { fmtNum } from '@/components/views/format';
 
 /** Where the header is a pinned copy (phones, short screens), body cells carry the header's min widths so the columns match. */
 const PIN_FIRST = 'max-lg:min-w-[8.5rem] md:max-lg:min-w-[11rem] [@media(max-height:500px)]:min-w-[8.5rem] md:[@media(max-height:500px)]:min-w-[11rem]';
@@ -145,7 +146,7 @@ function PairTable({ rows, title }: { rows: PairRow[]; title: string }) {
                                         key={c.key}
                                         className={cn(CELL_BG, 'h-7 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]', PIN_COL, v == null || v === 0 ? 'text-fg-3' : c.model ? 'text-model' : 'text-fg-1')}
                                     >
-                                        {v == null ? '—' : c.fmt ? c.fmt(v) : v}
+                                        {v == null ? '—' : c.fmt ? c.fmt(v) : fmtNum(v)}
                                     </td>
                                 );
                             })}
@@ -322,7 +323,7 @@ export function Skaters() {
                                                     v == null || v === 0 ? 'text-fg-3' : c.signed ? (v > 0 ? 'text-pos' : 'text-neg') : c.model ? 'text-model' : 'text-fg-1',
                                                 )}
                                             >
-                                                {v == null ? '—' : c.fmt ? c.fmt(v) : v}
+                                                {v == null ? '—' : c.fmt ? c.fmt(v) : fmtNum(v)}
                                             </td>
                                         );
                                     })}
@@ -349,7 +350,7 @@ export function Skaters() {
                                                 v == null ? 'text-fg-3' : c.signed ? (v > 0.0049 ? 'text-pos' : v < -0.0049 ? 'text-neg' : 'text-fg-2') : c.model ? 'text-model' : 'text-fg-1',
                                             )}
                                         >
-                                            {v == null ? '' : c.fmt ? c.fmt(v) : Number.isInteger(v) ? v : v.toFixed(2)}
+                                            {v == null ? '' : c.fmt ? c.fmt(v) : fmtNum(v)}
                                         </td>
                                     );
                                 })}

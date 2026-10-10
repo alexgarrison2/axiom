@@ -7,6 +7,7 @@ import { GameSection, sideTeams, useGame } from './GameContext';
 import { TipFace, TipRow, useHoverTip } from './HoverTip';
 import { useWidth } from './Pulse';
 import { TeamToggle } from '@/components/ui/team-toggle';
+import { fmtInt } from '@/components/views/format';
 
 /*
  * Player usage, per team (after hockeyviz's usage chart, in Neon Arcade):
@@ -298,7 +299,7 @@ function MinutesTip({ r, color, rank }: { r: SkaterRow; color: string; rank: str
                 </TipRow>
             ))}
             <TipRow k="Shifts" className="border-t border-line pt-1.5">
-                {r.shifts} <span className="text-fg-3">· avg {clockOf(r.toi / Math.max(1, r.shifts))}</span>
+                {fmtInt(r.shifts)} <span className="text-fg-3">· avg {clockOf(r.toi / Math.max(1, r.shifts))}</span>
             </TipRow>
         </div>
     );

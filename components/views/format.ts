@@ -10,6 +10,12 @@ export function fmtInt(n: number): string {
     return Math.round(n).toLocaleString('en-US');
 }
 
+/** A table value: whole numbers grouped, fractions to `digits` places, also grouped ("4,987.3"). */
+export function fmtNum(v: number, digits = 2): string {
+    if (Number.isInteger(v)) return v.toLocaleString('en-US');
+    return v.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
 /**
  * A simulation percentage (0–100) for display. Never prints a hard 0% or
  * 100%: a Monte Carlo run of N seasons can't prove certainty, so the tails

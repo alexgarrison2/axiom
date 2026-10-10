@@ -15,6 +15,7 @@ import { parseReport, type MarketBacktest, type MetricRow, type SeasonSummary, t
 import { MATINEE_HOUR, RETURN_HOME_REST, RIBBON_GAMES, ROAD_MI, STRETCH_GAMES } from '@/lib/schedule/metrics';
 import { OT_SHARE } from '@/lib/schedule/record';
 import { DRAW_WINDOW, HARD_LIFT, HARD_MIN } from '@/lib/game/analytics';
+import { fmtInt } from '@/components/views/format';
 
 export const revalidate = 3600;
 
@@ -101,7 +102,7 @@ function MetricsTable({ summary }: { summary: SeasonSummary }) {
                                 <th scope="row" className={`text-left font-semibold ${r.isModel ? 'text-brand' : 'text-fg-1'}`}>
                                     {r.label}
                                 </th>
-                                <td className="text-right text-fg-2">{r.n?.toLocaleString() ?? '—'}</td>
+                                <td className="text-right text-fg-2">{r.n != null ? fmtInt(r.n) : '—'}</td>
                                 <td className="text-right text-fg-1">{fmt(r.accuracy, 1, true)}</td>
                                 <td className="text-right text-fg-1">{fmt(r.brier, 4)}</td>
                                 <td className="text-right text-fg-1">
@@ -172,7 +173,7 @@ function WalkForwardTable({ rows: wf, market }: { rows: WalkForwardRow[]; market
                                     r.label
                                 )}
                             </th>
-                            <td className="text-right text-fg-2">{r.n?.toLocaleString() ?? '—'}</td>
+                            <td className="text-right text-fg-2">{r.n != null ? fmtInt(r.n) : '—'}</td>
                             <td className="text-right text-fg-1">{fmt(r.accuracy, 1, true)}</td>
                             <td className="text-right font-bold text-brand">{fmt(r.logLoss, 4)}</td>
                             {hasLegacy ? <td className="text-right text-fg-2">{fmt(r.legacyLogLoss, 4)}</td> : null}
@@ -455,7 +456,7 @@ export default function MethodologyPage() {
                                 <p>
                                     <strong>{current}:</strong>{' '}
                                     {tally.n
-                                        ? `through ${tally.n} ${tally.n === 1 ? 'game' : 'games'}: ${tally.correct}-${tally.picks - tally.correct}${tally.n > tally.picks ? `, ${tally.n - tally.picks} no lean` : ''}${tally.legacyN ? ` (${tally.legacyN === tally.n ? 'all' : tally.legacyN} from the previous site model)` : ''}. The full report updates after the nightly refresh.`
+                                        ? `through ${fmtInt(tally.n)} ${tally.n === 1 ? 'game' : 'games'}: ${fmtInt(tally.correct)}-${fmtInt(tally.picks - tally.correct)}${tally.n > tally.picks ? `, ${fmtInt(tally.n - tally.picks)} no lean` : ''}${tally.legacyN ? ` (${tally.legacyN === tally.n ? 'all' : fmtInt(tally.legacyN)} from the previous site model)` : ''}. The full report updates after the nightly refresh.`
                                         : 'no games graded yet. The first results post after the first games go final.'}
                                     {tally.excluded.length ? ` ${tally.excluded.length} ${tally.excluded.length === 1 ? 'game was' : 'games were'} not graded (no pregame snapshot before puck drop).` : ''}{' '}
                                     See the <Link href="/accuracy" className="font-semibold text-brand underline underline-offset-4">Accuracy page</Link>.

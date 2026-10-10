@@ -13,6 +13,7 @@ import { GameSection, sideTeams, useGame } from './GameContext';
 import { JerseyNumber } from './Jersey';
 import { PIN_COL, PinnedTable } from './PinnedTable';
 import { TeamToggle } from '@/components/ui/team-toggle';
+import { fmtNum } from '@/components/views/format';
 
 interface Col {
     key: string;
@@ -229,7 +230,7 @@ export function Units() {
                                                             v == null || v === 0 ? 'text-fg-3' : c.signed ? (v > 0 ? 'text-pos' : 'text-neg') : c.model ? 'text-model' : 'text-fg-1',
                                                         )}
                                                     >
-                                                        <span className={cn(spot && 'opacity-50 transition-opacity group-hover:opacity-100')}>{v == null ? '—' : c.fmt ? c.fmt(v) : v}</span>
+                                                        <span className={cn(spot && 'opacity-50 transition-opacity group-hover:opacity-100')}>{v == null ? '—' : c.fmt ? c.fmt(v) : fmtNum(v)}</span>
                                                     </td>
                                                 );
                                             })}
@@ -261,7 +262,7 @@ export function Units() {
                                                     v == null ? 'text-fg-3' : c.signed ? (v > 0.0049 ? 'text-pos' : v < -0.0049 ? 'text-neg' : 'text-fg-2') : c.model ? 'text-model' : 'text-fg-1',
                                                 )}
                                             >
-                                                {v == null ? '' : c.fmt ? c.fmt(v) : v}
+                                                {v == null ? '' : c.fmt ? c.fmt(v) : fmtNum(v)}
                                             </td>
                                         );
                                     })}

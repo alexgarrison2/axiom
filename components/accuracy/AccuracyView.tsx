@@ -16,6 +16,7 @@ import { Ledger } from './Ledger';
 import { blockVerdict, CI_MIN_N, compareLogLoss, deltaText, modelLabelOf, SIGNAL_N, type Verdict, type VerdictWord } from './verdict';
 import type { BetFinal, LedgerData, SeasonTally } from './types';
 import type { DayShape } from './summary';
+import { fmtInt } from '@/components/views/format';
 
 export interface AccuracyViewProps {
     report: AccuracyReport;
@@ -192,7 +193,7 @@ function EmptyState({ season, currentSeason, type, prior, onPrior }: { season: s
 
 /** The report file lags the graded list: show the running record from the graded rows. */
 function ThroughSummary({ tally: t }: { tally: SeasonTally }) {
-    const record = `${t.correct}-${t.picks - t.correct}`;
+    const record = `${fmtInt(t.correct)}-${fmtInt(t.picks - t.correct)}`;
     const verdict: Verdict =
         t.n >= SIGNAL_N && t.marketN >= SIGNAL_N && t.modelLogLossSame != null && t.marketLogLoss != null
             ? { tooEarly: false, vsMarket: { word: compareLogLoss(t.modelLogLossSame, t.marketLogLoss), model: t.modelLogLossSame, other: t.marketLogLoss, n: t.marketN }, vsHome: null }
@@ -217,10 +218,10 @@ function ThroughSummary({ tally: t }: { tally: SeasonTally }) {
                 <BigNum
                     label="Graded"
                     value={t.n.toLocaleString('en-US')}
-                    sub={[t.marketN ? `${t.marketN} MKT` : null, t.excluded.length ? `${t.excluded.length} no pick` : null].filter(Boolean).join(' · ') || undefined}
+                    sub={[t.marketN ? `${fmtInt(t.marketN)} MKT` : null, t.excluded.length ? `${fmtInt(t.excluded.length)} no pick` : null].filter(Boolean).join(' · ') || undefined}
                 />
             </div>
-            {t.legacyN ? <p className="label">{t.legacyN === t.n ? 'All' : t.legacyN} from legacy model · not in bet gate</p> : null}
+            {t.legacyN ? <p className="label">{t.legacyN === t.n ? 'All' : fmtInt(t.legacyN)} from legacy model · not in bet gate</p> : null}
         </div>
     );
 }
@@ -271,7 +272,7 @@ function ReportCard({ block: b, seasonWord, modelLabel: fallbackLabel }: { block
     const sameLL = m.modelLogLossSame ?? (m.n === b.n ? b.logLoss : null);
     const sameAcc = m.modelAccuracySame ?? (m.n === b.n ? b.accuracy : null);
     const sameBrier = m.modelBrierSame ?? (m.n === b.n ? b.brier : null);
-    const record = `${b.correct}-${b.nPicks - b.correct}`;
+    const record = `${fmtInt(b.correct)}-${fmtInt(b.nPicks - b.correct)}`;
     const modelLabel = modelLabelOf(b, fallbackLabel);
     return (
         <div className="flex flex-col gap-3">

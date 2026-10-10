@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { groupBySeason, seasonAge } from '@/lib/players/career';
 import type { SeasonLine } from '@/lib/players/landing';
 import { leagueLogo, teamLogo, type TeamLogo } from '@/lib/players/logos';
+import { fmtInt } from '@/components/views/format';
 
 /*
  * Career by season on the player page: the NHL table and the other-leagues
@@ -64,26 +65,28 @@ export function CareerTable({
     bare?: boolean;
     showLeague?: boolean;
 }) {
+    // Career totals run past 999 (games, shots): grouped.
+    const n = (v: number | null | undefined) => (v == null ? '—' : fmtInt(v));
     const cols: [string, (s: SeasonLine) => React.ReactNode][] = goalie
         ? [
-              ['GP', s => s.gp],
-              ['W', s => s.w ?? '—'],
-              ['L', s => s.l ?? '—'],
-              ['OTL', s => s.otl ?? '—'],
+              ['GP', s => n(s.gp)],
+              ['W', s => n(s.w)],
+              ['L', s => n(s.l)],
+              ['OTL', s => n(s.otl)],
               ['GAA', s => (s.gaa != null ? s.gaa.toFixed(2) : '—')],
               ['SV%', s => (s.svPct != null ? s.svPct.toFixed(3).replace(/^0/, '') : '—')],
-              ['SO', s => s.so ?? '—'],
+              ['SO', s => n(s.so)],
           ]
         : [
-              ['GP', s => s.gp],
-              ['G', s => s.g ?? '—'],
-              ['A', s => s.a ?? '—'],
-              ['Pts', s => s.p ?? '—'],
+              ['GP', s => n(s.gp)],
+              ['G', s => n(s.g)],
+              ['A', s => n(s.a)],
+              ['Pts', s => n(s.p)],
               ['Pts/G', s => (s.p != null && s.gp ? (s.p / s.gp).toFixed(2) : '—')],
               ['+/−', s => (s.pm != null ? (s.pm > 0 ? `+${s.pm}` : s.pm) : '—')],
-              ['PIM', s => s.pim ?? '—'],
-              ['PPG', s => s.ppg ?? '—'],
-              ['SOG', s => s.shots ?? '—'],
+              ['PIM', s => n(s.pim)],
+              ['PPG', s => n(s.ppg)],
+              ['SOG', s => n(s.shots)],
               // The feed gives S% as a fraction (NHL, best-on-best) or a percent (junior and most leagues).
               ['S%', s => (s.shPct != null ? (s.shPct > 1 ? s.shPct : s.shPct * 100).toFixed(1) : '—')],
               ['TOI', s => s.toi ?? '—'],

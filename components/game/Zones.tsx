@@ -7,6 +7,7 @@ import { GameSection, sideTeams, useGame } from './GameContext';
 import { TipFace, useHoverTip } from './HoverTip';
 import type { Player } from '@/lib/game/types';
 import { TeamToggle } from '@/components/ui/team-toggle';
+import { fmtInt } from '@/components/views/format';
 
 const sum = (a: [number, number, number]) => a[0] + a[1] + a[2];
 const SHADES = [0.4, 0.68, 1];
@@ -57,7 +58,7 @@ function ZoneTip({ p, z, color }: { p: Player; z: ZoneStarts; color: string }) {
                         {p.first} {p.last}
                     </span>
                     <span className="text-micro text-fg-3">
-                        #{p.num ?? '–'} · {p.pos} · {sum(z.D) + sum(z.N) + sum(z.fly) + sum(z.O)} shifts
+                        #{p.num ?? '–'} · {p.pos} · {fmtInt(sum(z.D) + sum(z.N) + sum(z.fly) + sum(z.O))} shifts
                     </span>
                 </span>
             </div>
@@ -79,10 +80,10 @@ function ZoneTip({ p, z, color }: { p: Player; z: ZoneStarts; color: string }) {
                             </th>
                             {v.map((n, i) => (
                                 <td key={i} className={`py-0.5 text-right ${n ? 'text-fg-1' : 'text-fg-3'}`}>
-                                    {n}
+                                    {fmtInt(n)}
                                 </td>
                             ))}
-                            <td className="py-0.5 text-right font-bold text-fg-1">{sum(v)}</td>
+                            <td className="py-0.5 text-right font-bold text-fg-1">{fmtInt(sum(v))}</td>
                         </tr>
                     ))}
                 </tbody>

@@ -332,8 +332,8 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
 
             <div ref={tableTop} className="flex scroll-mt-[calc(var(--appbar-h)+120px)] flex-wrap items-center gap-x-3 gap-y-1 text-micro font-medium uppercase tracking-label text-fg-3">
                 <p aria-live="polite">
-                    <span className="text-fg-1">{total}</span> {total === 1 ? 'skater' : 'skaters'}
-                    {total > PAGE ? ` · ${current * PAGE + 1}–${Math.min(total, current * PAGE + PAGE)}` : ''}
+                    <span className="text-fg-1">{thousands(total)}</span> {total === 1 ? 'skater' : 'skaters'}
+                    {total > PAGE ? ` · ${thousands(current * PAGE + 1)}–${thousands(Math.min(total, current * PAGE + PAGE))}` : ''}
                 </p>
                 <p className="md:hidden">
                     {phoneUnit}

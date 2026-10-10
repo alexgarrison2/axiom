@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { signed } from '@/lib/pony/parts';
 import type { GoalieGame, PonyGame, SkaterGame } from '@/lib/pony/data';
 import { bigSaves, goalieFoot, mmss, notable, scoreLine, share, shutout, skaterFoot, svPct, takesDraws, type GoalieFoot, type SkaterFoot } from '@/lib/players/gamelog';
+import { fmtInt } from '@/components/views/format';
 
 /*
  * The player page's game log: one row a game, newest first, in column groups
@@ -40,7 +41,7 @@ interface Col<R, F> {
 function count(v: number | null | undefined, opts: { strong?: boolean; hi?: boolean } = {}): Cell {
     if (v == null) return null;
     if (!v) return { v: 0, cls: 'text-fg-3' };
-    return { v: opts.hi ? <Hi>{v}</Hi> : v, cls: opts.strong ? 'text-fg-1' : 'text-fg-2' };
+    return { v: opts.hi ? <Hi>{fmtInt(v)}</Hi> : fmtInt(v), cls: opts.strong ? 'text-fg-1' : 'text-fg-2' };
 }
 function Hi({ children }: { children: React.ReactNode }) {
     return <span className="-mx-1 rounded-chip bg-brand/15 px-1 font-semibold text-fg-1">{children}</span>;
@@ -118,7 +119,7 @@ function skaterCols(games: Map<number, PonyGame>, draws: boolean): Col<SkaterGam
             name: 'Faceoffs won–lost',
             group: 'Play',
             cell: r => (r.box ? (r.box.foW + r.box.foL ? { v: `${r.box.foW}–${r.box.foL}`, cls: 'text-fg-2' } : { v: '0–0', cls: 'text-fg-3' }) : null),
-            total: f => ({ v: `${f.sum.foW}–${f.sum.foL}`, cls: 'text-fg-2' }),
+            total: f => ({ v: `${fmtInt(f.sum.foW)}–${fmtInt(f.sum.foL)}`, cls: 'text-fg-2' }),
             per: f => (f.foPct == null ? null : { v: `${f.foPct.toFixed(1)}%`, cls: 'text-fg-2' }),
         });
     }

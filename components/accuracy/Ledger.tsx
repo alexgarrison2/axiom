@@ -14,6 +14,10 @@ import { teamTriFromName } from './names';
 import type { GateInfo } from './report';
 import type { BetFinal, LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
 import { useDataEpoch } from '@/lib/fresh';
+import { fmtInt } from '@/components/views/format';
+
+/** A W-L(-P) record string grouped for display only (the raw string is parsed elsewhere). */
+const groupRecord = (r: string) => r.split('-').map(x => (/^\d+$/.test(x) ? fmtInt(Number(x)) : x)).join('-');
 
 const PAGE = 25;
 /** Below this many graded bets ROI, its CI and the bucket tables are noise: record and units only. */
@@ -180,7 +184,7 @@ export function Ledger({
             ) : (
                 <>
                     <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-                        <KpiTile label="Record" value={summary.record} sub={`n=${summary.nGraded}${summary.nPending ? ` · ${summary.nPending} pending` : ''}`} />
+                        <KpiTile label="Record" value={groupRecord(summary.record)} sub={`n=${fmtInt(summary.nGraded)}${summary.nPending ? ` · ${fmtInt(summary.nPending)} pending` : ''}`} />
                         <KpiTile
                             label="Profit"
                             value={<span className={tone(summary.unitsProfit)}>{units(summary.unitsProfit)}</span>}
@@ -324,7 +328,7 @@ export function Ledger({
                             </ScrollRegion>
                             <div className="flex items-center justify-between gap-3">
                                 <p className="label">
-                                    {Math.min(shown, filtered.length)} / {filtered.length}
+                                    {fmtInt(Math.min(shown, filtered.length))} / {fmtInt(filtered.length)}
                                 </p>
                                 {filtered.length > shown ? (
                                     <button
@@ -387,8 +391,8 @@ function BucketTable({ title, buckets, tone }: { title: string; buckets: LedgerB
                             <th scope="row" className="text-left font-semibold text-fg-1">
                                 {b.bucket}
                             </th>
-                            <td className="text-right text-fg-2">{b.n}</td>
-                            <td className="text-right text-fg-2">{b.record}</td>
+                            <td className="text-right text-fg-2">{fmtInt(b.n)}</td>
+                            <td className="text-right text-fg-2">{groupRecord(b.record)}</td>
                             <td className={cn('text-right font-bold', tone(b.unitsProfit))}>{units(b.unitsProfit)}</td>
                             <td className="text-right text-fg-1">{pctSigned(b.roi)}</td>
                         </tr>

@@ -15,6 +15,7 @@ import { ShotDetail, ShotMapFrame, ShotSummary, geometry, useShotPick, type Shot
 import { OPP_GOALIE } from '@/lib/game/season';
 import type { ShotRow } from '@/lib/shots';
 import { TeamToggle } from '@/components/ui/team-toggle';
+import { fmtInt } from '@/components/views/format';
 
 type Kind = 'goal' | 'shot' | 'miss' | 'block';
 const KINDS: { kind: Kind; label: string }[] = [
@@ -77,7 +78,7 @@ function Heat({ side, events, color }: { side: Side; events: GameEvent[]; color:
                 </g>
             </svg>
             <figcaption className="mt-1 text-center text-micro uppercase tracking-label text-fg-3 tabular-nums">
-                <span className="text-model">{xg.toFixed(2)} xG</span> · {n} unblocked · {blocked} blocked
+                <span className="text-model">{xg.toFixed(2)} xG</span> · {fmtInt(n)} unblocked · {fmtInt(blocked)} blocked
             </figcaption>
         </figure>
     );
@@ -253,7 +254,7 @@ export function Shots() {
                                             <Crest tri={m.teams[side].tri} size={72} className="h-10 w-10 drop-shadow-[0_6px_16px_rgba(0,0,0,.6)] sm:h-[72px] sm:w-[72px]" />
                                         )
                                     }
-                                    label={`${m.teams[side].tri} shot attempts: ${shown.filter(e => e.type === 'goal').length} goals, ${shown.filter(e => e.type === 'shot').length} saved, ${shown.filter(e => e.type === 'miss').length} missed.`}
+                                    label={`${m.teams[side].tri} shot attempts: ${fmtInt(shown.filter(e => e.type === 'goal').length)} goals, ${fmtInt(shown.filter(e => e.type === 'shot').length)} saved, ${fmtInt(shown.filter(e => e.type === 'miss').length)} missed.`}
                                     lit={pick.lit}
                                     onHover={pick.onHover}
                                     onTap={pick.onTap}
@@ -266,9 +267,9 @@ export function Shots() {
                                     summary={
                                         <ShotSummary
                                             rows={[
-                                                ['Attempts', shown.length],
-                                                ['Goals', shown.filter(e => e.type === 'goal').length],
-                                                ['On target', `${shown.filter(e => e.type === 'goal' || e.type === 'shot').length} of ${shown.length}`],
+                                                ['Attempts', fmtInt(shown.length)],
+                                                ['Goals', fmtInt(shown.filter(e => e.type === 'goal').length)],
+                                                ['On target', `${fmtInt(shown.filter(e => e.type === 'goal' || e.type === 'shot').length)} of ${fmtInt(shown.length)}`],
                                                 ['xG', <span key="xg" className="text-model">{shown.reduce((a2, e) => a2 + (e.xg ?? 0), 0).toFixed(2)}</span>],
                                                 ['Avg distance', shown.length ? `${Math.round(shown.reduce((a2, e) => { const r = toRow(e); return a2 + geometry(r[1], r[2]).dist; }, 0) / shown.length)} ft` : '—'],
                                             ]}
@@ -288,9 +289,9 @@ export function Shots() {
                                         </span>
                                         <span className="text-model">{unb.reduce((a, e) => a + (e.xg ?? 0), 0).toFixed(2)} xG</span>
                                         {/* Phones wrap before the dot, never inside a count. */}
-                                        <span className="text-fg-2 sm:hidden">{`${unb.length}\u00a0unblocked ·\u00a0${evs.filter(e => e.type === 'block').length}\u00a0blocked`}</span>
+                                        <span className="text-fg-2 sm:hidden">{`${fmtInt(unb.length)}\u00a0unblocked ·\u00a0${fmtInt(evs.filter(e => e.type === 'block').length)}\u00a0blocked`}</span>
                                         <span className="hidden text-fg-2 sm:inline">
-                                            {unb.length} unblocked · {evs.filter(e => e.type === 'block').length} blocked
+                                            {fmtInt(unb.length)} unblocked · {fmtInt(evs.filter(e => e.type === 'block').length)} blocked
                                         </span>
                                     </p>
                                 );
