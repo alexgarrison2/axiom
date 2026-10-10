@@ -14,6 +14,7 @@ import { ScrollRegion } from '@/components/ui/scroll-region';
 import { parseReport, type MarketBacktest, type MetricRow, type SeasonSummary, type WalkForwardRow } from './report';
 import { MATINEE_HOUR, RETURN_HOME_REST, RIBBON_GAMES, ROAD_MI, STRETCH_GAMES } from '@/lib/schedule/metrics';
 import { OT_SHARE } from '@/lib/schedule/record';
+import { HARD_LIFT, HARD_MIN } from '@/lib/game/analytics';
 
 export const revalidate = 3600;
 
@@ -515,6 +516,16 @@ export default function MethodologyPage() {
                                 amber ticks mark penalty calls. Dots at the edges of the bar lane are chances worth at least 0.20 xG that did not go
                                 in. The
                                 Share view replaces the bars with a rolling five-minute xG share.
+                            </p>
+                            <p>
+                                The <strong>matchups</strong> grid sets every away skater against every home skater at 5v5: square size is time on
+                                the ice together, the split is the xG share over that time and white pips are goals. Rows and columns follow the
+                                lines, L1-L4 then D1-D3: the most used forward trios and pairs that share no player. The bars at the edges are each
+                                skater&apos;s own 5v5 time and xG share, and the Lines view rolls the same numbers up to whole lines. A{' '}
+                                <strong>hard match</strong> is two lines out together at least {HARD_LIFT}× as often as chance gives (each
+                                line&apos;s share of 5v5 time multiplied), over at least {HARD_MIN / 60} minutes; for each line we mark only the
+                                opponent it saw most beyond chance. The home coach has the last change, so hard matches mostly read as the home
+                                bench&apos;s choices. The replay slider cuts the whole grid at any moment of the game.
                             </p>
                         </Section>
 

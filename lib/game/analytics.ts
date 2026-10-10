@@ -764,32 +764,136 @@ export interface Matchup {
     g: Record<Side, number>;
 }
 
-/** away skater id -> home skater id -> 5v5 time together and xG each way. */
-export function matchups(m: GameModel): Map<number, Map<number, Matchup>> {
-    const out = new Map<number, Map<number, Matchup>>();
-    const cell = (a: number, h: number) => {
-        let row = out.get(a);
-        if (!row) out.set(a, (row = new Map()));
-        let c = row.get(h);
-        if (!c) row.set(h, (c = { toi: 0, xg: { away: 0, home: 0 }, att: { away: 0, home: 0 }, g: { away: 0, home: 0 } }));
-        return c;
-    };
+const emptyMatchup = (): Matchup => ({ toi: 0, xg: { away: 0, home: 0 }, att: { away: 0, home: 0 }, g: { away: 0, home: 0 } });
+
+/** Each 5v5 stretch up to `upTo` (cut there) and each 5v5 attempt before it, with who was on. */
+function fiveOnFive(m: GameModel, upTo: number, stretch: (s: Segment, dt: number) => void, attempt: (e: GameEvent, ice: Segment) => void) {
     for (const s of segments(m)) {
-        if (!segFive(s)) continue;
-        for (const a of s.skaters.away) for (const h of s.skaters.home) cell(a, h).toi += s.b - s.a;
+        const b = Math.min(s.b, upTo);
+        if (b > s.a && segFive(s)) stretch(s, b - s.a);
     }
     for (const e of m.events) {
-        if (!(isUnblocked(e) || e.type === 'block') || !e.fiveOnFive) continue;
+        if (e.t > upTo || !(isUnblocked(e) || e.type === 'block') || !e.fiveOnFive) continue;
         const ice = onIce(m, e);
-        if (!ice || !segFive(ice)) continue;
-        for (const a of ice.skaters.away)
-            for (const h of ice.skaters.home) {
-                const c = cell(a, h);
-                c.att[e.side] += 1;
-                if (e.xg != null && isUnblocked(e)) c.xg[e.side] += e.xg;
-                if (e.type === 'goal') c.g[e.side] += 1;
-            }
+        if (ice && segFive(ice)) attempt(e, ice);
     }
+}
+
+const credit = (c: Matchup, e: GameEvent) => {
+    c.att[e.side] += 1;
+    if (e.xg != null && isUnblocked(e)) c.xg[e.side] += e.xg;
+    if (e.type === 'goal') c.g[e.side] += 1;
+};
+
+/**
+ * 5v5 head to head up to `upTo` (the whole game by default): away skater id -> home skater id -> time
+ * together and results each way, plus each skater's own 5v5 totals over the same time.
+ */
+export function matchups(m: GameModel, upTo = Infinity): { cells: Map<number, Map<number, Matchup>>; ice: Map<number, Matchup> } {
+    const cells = new Map<number, Map<number, Matchup>>();
+    const ice = new Map<number, Matchup>();
+    const cell = (a: number, h: number) => {
+        let row = cells.get(a);
+        if (!row) cells.set(a, (row = new Map()));
+        let c = row.get(h);
+        if (!c) row.set(h, (c = emptyMatchup()));
+        return c;
+    };
+    const own = (id: number) => {
+        let c = ice.get(id);
+        if (!c) ice.set(id, (c = emptyMatchup()));
+        return c;
+    };
+    fiveOnFive(
+        m,
+        upTo,
+        (s, dt) => {
+            for (const a of s.skaters.away) for (const h of s.skaters.home) cell(a, h).toi += dt;
+            for (const id of [...s.skaters.away, ...s.skaters.home]) own(id).toi += dt;
+        },
+        (e, s) => {
+            for (const a of s.skaters.away) for (const h of s.skaters.home) credit(cell(a, h), e);
+            for (const id of [...s.skaters.away, ...s.skaters.home]) credit(own(id), e);
+        },
+    );
+    return { cells, ice };
+}
+
+/** A team's real 5v5 lines: L1-L4 forward trios and D1-D3 pairs, most used first, sharing no player. */
+export interface LineGroup {
+    kind: 'F' | 'D';
+    tag: string;
+    ids: number[];
+}
+
+export function lineGroups(m: GameModel, side: Side): LineGroup[] {
+    const out: LineGroup[] = [];
+    for (const [kind, most] of [['F', 4], ['D', 3]] as const) {
+        const used = new Set<number>();
+        for (const u of units(m, side, kind)) {
+            // Under 30 seconds together is a change in passing, not a line.
+            if (u.toi < 30 || out.filter(g => g.kind === kind).length >= most) break;
+            if (u.ids.some(id => used.has(id))) continue;
+            u.ids.forEach(id => used.add(id));
+            out.push({ kind, tag: `${kind === 'F' ? 'L' : 'D'}${out.filter(g => g.kind === kind).length + 1}`, ids: u.ids });
+        }
+    }
+    return out;
+}
+
+/** Lift at or above this, over at least HARD_MIN seconds together, is a hard match. */
+export const HARD_LIFT = 1.75;
+export const HARD_MIN = 180;
+
+/**
+ * Line against line at 5v5 up to `upTo`: time and results while every player of an away group and every
+ * player of a home group were on together. `lift` is that time against what chance gives
+ * (away group's time × home group's time ÷ all 5v5 time): above 1, the coaches put them out together.
+ */
+export function groupMatchups(
+    m: GameModel,
+    away: number[][],
+    home: number[][],
+    upTo = Infinity,
+): { cells: Matchup[][]; lift: (number | null)[][]; own: Record<Side, Matchup[]> } {
+    const cells = away.map(() => home.map(emptyMatchup));
+    // Each group's own 5v5 time and results, whoever it faced.
+    const own = { away: away.map(emptyMatchup), home: home.map(emptyMatchup) };
+    let total = 0;
+    const inGroups = (gs: number[][], on: number[]) => gs.flatMap((g, i) => (g.every(id => on.includes(id)) ? [i] : []));
+    fiveOnFive(
+        m,
+        upTo,
+        (s, dt) => {
+            total += dt;
+            const ai = inGroups(away, s.skaters.away);
+            const hi = inGroups(home, s.skaters.home);
+            for (const i of ai) own.away[i].toi += dt;
+            for (const j of hi) own.home[j].toi += dt;
+            for (const i of ai) for (const j of hi) cells[i][j].toi += dt;
+        },
+        (e, s) => {
+            const ai = inGroups(away, s.skaters.away);
+            const hi = inGroups(home, s.skaters.home);
+            for (const i of ai) credit(own.away[i], e);
+            for (const j of hi) credit(own.home[j], e);
+            for (const i of ai) for (const j of hi) credit(cells[i][j], e);
+        },
+    );
+    const lift = cells.map((row, i) => row.map((c, j) => (own.away[i].toi && own.home[j].toi ? (c.toi * total) / (own.away[i].toi * own.home[j].toi) : null)));
+    return { cells, lift, own };
+}
+
+/** Hard matches: for each group on either side, the opponent group it saw most beyond chance, when that clears the bar. */
+export function hardMatches(cells: Matchup[][], lift: (number | null)[][]): Set<string> {
+    const out = new Set<string>();
+    const ok = (i: number, j: number) => (lift[i][j] ?? 0) >= HARD_LIFT && cells[i][j].toi >= HARD_MIN;
+    const best = (pairs: [number, number][]) => {
+        const hit = pairs.filter(([i, j]) => ok(i, j)).sort(([i, j], [k, l]) => (lift[k][l] ?? 0) - (lift[i][j] ?? 0))[0];
+        if (hit) out.add(`${hit[0]}-${hit[1]}`);
+    };
+    for (let i = 0; i < cells.length; i++) best(cells[i].map((_, j) => [i, j]));
+    for (let j = 0; j < (cells[0]?.length ?? 0); j++) best(cells.map((_, i) => [i, j]));
     return out;
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
+import { clockOf, deservedSeries, gameScores, GS_PARTS, goalSwings, groupMatchups, hardMatches, lineGroups, matchups, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
 import { mergeSeason } from '../season';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
 import PONY from '@/public/data/pony_score.json';
@@ -133,6 +133,22 @@ describe('game model', () => {
         expect(line.gf).toBe(1);
         expect(line.stints).toBe(3);
         expect(units(m, 'home', 'F', 2)[0].gf).toBe(0);
+    });
+
+    it('cuts head to head at a moment and reads line against line', () => {
+        const full = matchups(m);
+        const half = matchups(m, 1800);
+        expect(full.cells.get(11)!.get(21)!.toi).toBe(3600);
+        expect(half.cells.get(11)!.get(21)!.toi).toBe(1800);
+        expect(half.ice.get(21)!.toi).toBe(1800);
+        const groups = { away: lineGroups(m, 'away'), home: lineGroups(m, 'home') };
+        expect(groups.home.map(g => g.tag)).toEqual(['L1', 'D1']);
+        const { cells, lift } = groupMatchups(m, groups.away.map(g => g.ids), groups.home.map(g => g.ids));
+        expect(cells[0][0].toi).toBe(3600);
+        expect(cells[0][0].g.home).toBe(full.cells.get(11)!.get(21)!.g.home);
+        // Always on together is exactly what chance gives: no hard match.
+        expect(lift[0][0]).toBe(1);
+        expect(hardMatches(cells, lift).size).toBe(0);
     });
 
     it('builds the deserved line from shot xG and names any overtime', () => {
