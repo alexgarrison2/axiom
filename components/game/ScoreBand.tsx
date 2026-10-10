@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { lineScore, marketResults, shortName, type Hit } from '@/lib/game/analytics';
 import { other, SIDES, type Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
+import type { SlateGame } from '@/lib/game/fetch';
 
 const pct = (p: number) => `${Math.round(p * 100)}%`;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -213,7 +214,20 @@ function statusOf(m: ReturnType<typeof useGame>['m']): string {
  * The score band in one line, for the sticky section bar once the band has scrolled away:
  * crest, tricode and score each side of the state chip (live clock while it runs).
  */
-export function CompactScore() {
+type Edge = SlateGame['edge'];
+
+/** A power play or empty net in progress (from the live score feed): who has the extra man and the time left. */
+function EdgeChip({ edge, className }: { edge: Edge; className?: string }) {
+    if (!edge) return null;
+    return (
+        <span className={cn('whitespace-nowrap rounded-chip bg-warn/15 px-1.5 py-0.5 font-bold uppercase tracking-label text-warn', className)}>
+            {edge.tri} {edge.what}
+            {edge.left ? ` ${edge.left.replace(/^0(?=\d)/, '')}` : ''}
+        </span>
+    );
+}
+
+export function CompactScore({ edge = null }: { edge?: Edge }) {
     const { m } = useGame();
     const live = m.state === 'live';
     const side = (sd: Side) => {
@@ -241,11 +255,12 @@ export function CompactScore() {
                 {m.live?.intermission ? `End ${m.live.period <= 3 ? `P${m.live.period}` : 'OT'}` : m.live ? `${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : statusOf(m)}
             </span>
             {side('home')}
+            <EdgeChip edge={edge} className="text-[11px] leading-tight" />
         </span>
     );
 }
 
-export function ScoreBand() {
+export function ScoreBand({ edge = null }: { edge?: Edge }) {
     const { m, byId } = useGame();
     const lines = lineScore(m);
     const status = statusOf(m);
@@ -284,6 +299,7 @@ export function ScoreBand() {
                             </>
                         ) : null}
                     </span>
+                    {m.state === 'live' ? <EdgeChip edge={edge} className="text-micro" /> : null}
                     <span className="text-micro uppercase tracking-label text-fg-3">
                         {m.state === 'pre' ? (
                             <LocalTime iso={m.startUtc} />

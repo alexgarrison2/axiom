@@ -85,7 +85,7 @@ function LiveRefresh({ live }: { live: boolean }) {
 }
 
 /** Section chips in a sticky bar under the app bar, at every width (the page keeps its full width for the charts). */
-function Rail({ active, score }: { active: string; score: boolean }) {
+function Rail({ active, score, edge }: { active: string; score: boolean; edge: SlateGame['edge'] }) {
     // Where the chips overflow (phones), keep the current one in view as the page scrolls.
     const list = React.useRef<HTMLOListElement>(null);
     // Its height, for headers that pin under it (PinnedTable); only while it is showing.
@@ -115,7 +115,7 @@ function Rail({ active, score }: { active: string; score: boolean }) {
             {/* The score rides along once the score band has scrolled away: its own row on phones, left of the chips wider. */}
             {score ? (
                 <div className="flex justify-center motion-safe:animate-in motion-safe:fade-in md:justify-start md:border-r md:border-line md:pr-4">
-                    <CompactScore />
+                    <CompactScore edge={edge} />
                 </div>
             ) : null}
             <ol ref={list} className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto scrollbar-hide">
@@ -157,21 +157,23 @@ export function GameView({ m, slate = [] }: { m: GameModel; slate?: SlateGame[] 
     const active = useActiveSection();
     const started = m.state !== 'pre';
     const [bandRef, bandGone] = useScrolledPast<HTMLDivElement>();
+    // This game's power play / empty net right now, from the same score feed as the scoreboard bar.
+    const edge = m.state === 'live' ? (slate.find(g => g.id === m.id)?.edge ?? null) : null;
     return (
         <GameProvider m={m}>
             <LiveRefresh live={m.state === 'live'} />
             <div className="flex flex-col gap-5">
                 <Scoreboard games={slate} current={m.id} />
                 <div ref={bandRef}>
-                    <ScoreBand />
+                    <ScoreBand edge={edge} />
                 </div>
                 <div className="flex flex-col gap-6">
                     {/* Before puck drop the story is the only section: no chips to dead anchors on phones and tablets. */}
                     {started ? (
-                        <Rail active={active} score={bandGone} />
+                        <Rail active={active} score={bandGone} edge={edge} />
                     ) : (
                         <div className="hidden lg:block">
-                            <Rail active={active} score={bandGone} />
+                            <Rail active={active} score={bandGone} edge={edge} />
                         </div>
                     )}
                     <div className="flex min-w-0 flex-col gap-10">
