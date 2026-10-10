@@ -111,7 +111,15 @@ export function Units() {
         return new Set(core.map(u => u.ids.join('-')));
     }, [m, side, kind]);
     const team = React.useMemo(() => teamOnIce(m, side, kind === 'PP' ? 'pp' : kind === 'PK' ? 'sh' : '5v5', per), [m, side, kind, per]);
-    const rows = React.useMemo(() => units(m, side, kind, per).filter(u => u.toi >= MIN_TOI || regularKeys.has(u.ids.join('-'))), [m, side, kind, per, regularKeys]);
+    const all = React.useMemo(() => units(m, side, kind, per), [m, side, kind, per]);
+    const rows = React.useMemo(() => all.filter(u => u.toi >= MIN_TOI || regularKeys.has(u.ids.join('-'))), [all, regularKeys]);
+    // Whatever the listed groups do not cover - groups together under MIN_TOI and time no one group was out for -
+    // so the table adds up to the team row (a power play's goals often come off a quick change).
+    const rest = React.useMemo(() => {
+        const sum = (k: 'toi' | 'cf' | 'ca' | 'sf' | 'sa' | 'gf' | 'ga' | 'xgf' | 'xga') => Math.max(0, team[k] - rows.reduce((a, u) => a + u[k], 0));
+        const r: TeamOnIce = { toi: sum('toi'), toiEv: 0, toiPp: 0, toiSh: 0, cf: sum('cf'), ca: sum('ca'), sf: sum('sf'), sa: sum('sa'), gf: sum('gf'), ga: sum('ga'), xgf: sum('xgf'), xga: sum('xga') };
+        return r.toi >= 1 || r.cf || r.ca || r.gf || r.ga ? { r, n: all.length - rows.length } : null;
+    }, [team, rows, all]);
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
     const col = COLS.find(c => c.key === sort.key) ?? COLS[0];
     const byToi = [...rows].sort((a, b) => b.toi - a.toi);
@@ -156,7 +164,7 @@ export function Units() {
                     />
                     <span className="ml-auto text-micro uppercase tracking-label text-fg-3">{kindLabel.strength}</span>
                 </ControlRow>
-                {sorted.length ? (
+                {sorted.length || rest ? (
                     <PinnedTable
                         label={`${m.teams[side].name} ${kindLabel.label.toLowerCase()}`}
                         head={
@@ -238,6 +246,31 @@ export function Units() {
                                         </React.Fragment>
                                     );
                                 })}
+                                {rest ? (
+                                    <tr>
+                                        <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 px-2 text-left font-normal shadow-[inset_0_-1px_0_var(--line)]', PIN_FIRST)}>
+                                            <span className="text-micro uppercase tracking-label text-fg-3" title={`Groups together under ${MIN_TOI} seconds, and time no single group was out for`}>
+                                                {rest.n ? `Other ${rest.n} brief ${rest.n === 1 ? 'group' : 'groups'}` : 'Other time'}
+                                            </span>
+                                        </th>
+                                        {COLS.map(c => {
+                                            const v = c.total ? c.total(rest.r) : null;
+                                            return (
+                                                <td
+                                                    key={c.key}
+                                                    className={cn(
+                                                        CELL_BG,
+                                                        'h-9 px-1.5 text-center shadow-[inset_0_-1px_0_var(--line)]',
+                                                        PIN_COL,
+                                                        v == null || v === 0 ? 'text-fg-3' : c.signed ? (v > 0 ? 'text-pos' : 'text-neg') : c.model ? 'text-model' : 'text-fg-2',
+                                                    )}
+                                                >
+                                                    {v == null ? '' : c.fmt ? c.fmt(v) : fmtNum(v)}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ) : null}
                             </tbody>
                             {/* Team row: the team's own numbers at this table's strength. */}
                             <tfoot>
