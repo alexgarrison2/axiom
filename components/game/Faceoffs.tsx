@@ -57,7 +57,9 @@ function beadSpots(n: number, r: number): { x: number; y: number; a: number }[] 
             used = 0;
         }
         const a = -Math.PI / 2 + (used * STEP) / ring;
-        out.push({ x: ring * Math.cos(a), y: ring * Math.sin(a), a });
+        // Rounded so the server and browser trig agree to the digit (hydration).
+        const r2 = (v: number) => Math.round(v * 100) / 100;
+        out.push({ x: r2(ring * Math.cos(a)), y: r2(ring * Math.sin(a)), a: r2(a) });
         used += 1;
     }
     return out;
@@ -98,14 +100,23 @@ function Spark({ x, y, a, goal }: { x: number; y: number; a: number; goal: boole
     const r1 = BEAD + (goal ? 4.2 : 3);
     return (
         <line
-            x1={x + r0 * Math.cos(a)}
-            y1={y + r0 * Math.sin(a)}
-            x2={x + r1 * Math.cos(a)}
-            y2={y + r1 * Math.sin(a)}
+            x1={(x + r0 * Math.cos(a)).toFixed(2)}
+            y1={(y + r0 * Math.sin(a)).toFixed(2)}
+            x2={(x + r1 * Math.cos(a)).toFixed(2)}
+            y2={(y + r1 * Math.sin(a)).toFixed(2)}
             className="stroke-fg-1"
             strokeWidth={goal ? 0.9 : 0.6}
             strokeLinecap="round"
         />
+    );
+}
+
+/** Which way a team attacks, under its end of the rink. */
+function Arrow({ dir }: { dir: -1 | 1 }) {
+    return (
+        <svg viewBox="0 0 16 10" className="h-2.5 w-4" aria-hidden="true">
+            <path d={dir < 0 ? 'M15 5H2M6 1L2 5l4 4' : 'M1 5h13M10 1l4 4-4 4'} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
     );
 }
 
@@ -123,18 +134,24 @@ export function Faceoffs() {
     const list = React.useMemo(() => draws(m), [m]);
     const takers = React.useMemo(() => takersOf(list, byId), [list, byId]);
     const [pinned, setPinned] = React.useState<number | null>(null);
-    const [hover, setHover] = React.useState<number | null>(null);
-    const active = hover ?? pinned;
+    // A taker is picked by click (tap) only; with none picked the board shows both teams.
+    const active = pinned;
     const activeSide = active != null ? (byId.get(active)?.side ?? null) : null;
+    React.useEffect(() => {
+        if (pinned == null) return;
+        const esc = (e: KeyboardEvent) => e.key === 'Escape' && setPinned(null);
+        window.addEventListener('keydown', esc);
+        return () => window.removeEventListener('keydown', esc);
+    }, [pinned]);
     const { bind, tip } = useHoverTip();
 
-    // Ends are named for whose net they hold: the left net is the home team's (the away team attacks left).
+    // Ends are named for who attacks them: the away team attacks the left net, the home team the right.
     const endName = (k: number) => {
         const [x, y] = FO_SPOTS[k];
         const half = y < 0 ? 'top' : 'bottom';
         if (x === 0) return 'Centre ice';
-        const owner = x < 0 ? m.teams.home.tri : m.teams.away.tri;
-        return isNeutral(k) ? `Neutral, ${owner} side · ${half}` : `${owner} zone · ${half}`;
+        const attacker = x < 0 ? m.teams.away.tri : m.teams.home.tri;
+        return isNeutral(k) ? `Neutral ice, ${attacker} half · ${half}` : `${attacker} attacking zone · ${half}`;
     };
 
     const byDot = React.useMemo(() => FO_SPOTS.map((_, k) => list.filter(d => d.dot === k)), [list]);
@@ -224,11 +241,18 @@ export function Faceoffs() {
         const ds = list.filter(d => d.dot != null && FO_SPOTS[d.dot][0] >= lo && FO_SPOTS[d.dot][0] <= hi);
         return { away: ds.filter(d => d.win === 'away').length, home: ds.filter(d => d.win === 'home').length };
     };
-    const thirds = [
-        { name: `${m.teams.home.tri} zone`, ...zoneTally(-100, -25) },
-        { name: 'Neutral', ...zoneTally(-24, 24) },
-        { name: `${m.teams.away.tri} zone`, ...zoneTally(25, 100) },
+    const thirds: { name: string; dir: -1 | 0 | 1; away: number; home: number }[] = [
+        { name: `${m.teams.away.tri} attacks`, dir: -1, ...zoneTally(-100, -25) },
+        { name: 'Neutral', dir: 0, ...zoneTally(-24, 24) },
+        { name: `${m.teams.home.tri} attacks`, dir: 1, ...zoneTally(25, 100) },
     ];
+    // The team's own record by zone (its offensive zone is where it attacks).
+    const teamZone = (side: Side) =>
+        (['D', 'N', 'O'] as Zone[]).map(z => ({
+            z,
+            w: list.filter(d => d.win === side && d.e.zone === z).length,
+            l: list.filter(d => d.win !== side && d.e.zone != null && flip(d.e.zone) === z).length,
+        }));
 
     const dotTip = (k: number) => {
         const ds = byDot[k];
@@ -282,6 +306,13 @@ export function Faceoffs() {
                                 {n ? Math.round((w / n) * 100) : 0}%
                             </span>
                         </div>
+                        <span className={cn('flex items-center gap-2 text-micro tabular-nums text-fg-2', side === 'home' && 'lg:justify-end')}>
+                            {teamZone(side).map(({ z, w: zw, l: zl }) => (
+                                <span key={z} title={z === 'O' ? 'Offensive zone' : z === 'D' ? 'Defensive zone' : 'Neutral zone'}>
+                                    {z} {zw}–{zl}
+                                </span>
+                            ))}
+                        </span>
                         <span className={cn('flex items-center gap-1 text-micro uppercase tracking-label text-fg-3', side === 'home' && 'lg:justify-end')}>
                             <SparkIcon /> {ledBy(side)} won into a shot
                         </span>
@@ -302,8 +333,6 @@ export function Faceoffs() {
                                         else rowRefs.current.delete(t.id);
                                     }}
                                     aria-pressed={pinned === t.id}
-                                    onPointerEnter={e => e.pointerType === 'mouse' && setHover(t.id)}
-                                    onPointerLeave={e => e.pointerType === 'mouse' && setHover(null)}
                                     onClick={() => setPinned(cur => (cur === t.id ? null : t.id))}
                                     className={cn(
                                         'grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 rounded-control border px-2 py-1.5 text-left transition-[opacity,background-color,border-color] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand',
@@ -358,8 +387,29 @@ export function Faceoffs() {
             </GameSection>
         );
 
+    const picked = active != null ? byId.get(active) : null;
     return (
-        <GameSection id="faceoffs" title="Faceoffs">
+        <GameSection
+            id="faceoffs"
+            title="Faceoffs"
+            aside={
+                picked ? (
+                    <button
+                        type="button"
+                        onClick={() => setPinned(null)}
+                        className="flex h-8 items-center gap-2 rounded-full border border-brand/60 px-3 text-micro uppercase tracking-label text-brand hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand coarse:h-11"
+                    >
+                        {label(picked.id)}
+                        <span className="text-fg-3">· Show both teams</span>
+                        <svg viewBox="0 0 12 12" className="h-3 w-3" aria-hidden="true">
+                            <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
+                        </svg>
+                    </button>
+                ) : (
+                    <span className="text-micro uppercase tracking-label text-fg-3">Both teams · pick a taker to focus</span>
+                )
+            }
+        >
             <div className="panel overflow-hidden">
                 <div ref={boardRef} className="relative grid gap-5 p-card sm:grid-cols-2 lg:grid-cols-[13.5rem_minmax(0,1fr)_13.5rem] lg:items-start">
                     <div className="order-2 lg:order-1">{rail('away')}</div>
@@ -370,7 +420,6 @@ export function Faceoffs() {
                             className="block h-auto w-full"
                             role="img"
                             aria-label={`${n} faceoffs: ${m.teams.away.tri} won ${total('away')}, ${m.teams.home.tri} won ${total('home')}`}
-                            onPointerLeave={() => setHover(null)}
                         >
                             <RinkMarkings />
                             {FO_SPOTS.map(([cx, cy], k) => {
@@ -411,7 +460,12 @@ export function Faceoffs() {
                         <div className="grid grid-cols-[75fr_50fr_75fr] text-center text-micro uppercase tracking-label text-fg-3">
                             {thirds.map(z => (
                                 <span key={z.name} className="flex flex-col items-center gap-0.5">
-                                    <span>{z.name}</span>
+                                    <span className="flex items-center gap-1.5">
+                                        {z.dir < 0 ? <Arrow dir={-1} /> : null}
+                                        {z.dir ? <Crest tri={z.dir < 0 ? m.teams.away.tri : m.teams.home.tri} size={16} className="h-4 w-4" /> : null}
+                                        {z.name}
+                                        {z.dir > 0 ? <Arrow dir={1} /> : null}
+                                    </span>
                                     <span className="text-caption font-bold normal-case tracking-normal tabular-nums">
                                         <span style={{ color: colors.away }}>{z.away}</span>
                                         <span className="px-1 font-normal text-fg-3">·</span>
@@ -440,7 +494,7 @@ export function Faceoffs() {
                     <span className="flex items-center gap-1.5">
                         <SparkIcon /> Shot attempt within {DRAW_WINDOW}s
                     </span>
-                    <span>Pick a taker to thread his draws</span>
+                    <span>Click a taker to thread his draws</span>
                 </p>
                 {tip}
             </div>
