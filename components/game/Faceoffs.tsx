@@ -61,6 +61,8 @@ const STEP = 2 * BEAD + 0.9;
 /** Painted circles (ends, centre) are 15 ft; the neutral dots get a smaller ring of their own. */
 const isNeutral = (k: number) => k === 2 || k === 3 || k === 5 || k === 6;
 const ringOf = (k: number) => (isNeutral(k) ? 9 : 15);
+/** Beads one ring of radius r holds (18 on a 15 ft circle, 11 on the neutral rings); more spill to a ring outside. */
+const capOf = (r: number) => Math.floor((2 * Math.PI * r) / STEP);
 
 type Zone = 'O' | 'N' | 'D';
 interface Taker {
@@ -80,7 +82,7 @@ function beadSpots(n: number, r: number): { x: number; y: number; a: number }[] 
     let ring = r;
     let used = 0;
     for (let i = 0; i < n; i++) {
-        if (used * STEP > 2 * Math.PI * ring - STEP) {
+        if (used >= capOf(ring)) {
             ring += STEP;
             used = 0;
         }
@@ -168,9 +170,6 @@ function Pct({ w, l, className }: { w: number; l: number; className?: string }) 
     );
 }
 
-/** Most draws a dot shows as beads over several games (one ring); more and the dot becomes a solid ring. */
-const DIAL = { end: 20, neutral: 12 };
-
 export function Faceoffs() {
     const { m, colors, byId, label } = useGame();
     // A merged season (team page): too many draws for a bead each, so each dot becomes a gauge.
@@ -210,7 +209,7 @@ export function Faceoffs() {
     // The draws in view at each dot (picked taker, hovered opponent). Beads are one per draw, so several games keep them
     // only while every dot's draws fit its ring; past that the dots switch to solid rings (beads would read as draws).
     const pools = byDot.map(ds => ds.filter(d => involved(d) && (pair == null || vsPair(d))));
-    const beads = !season || pools.every((p, k) => p.length <= (isNeutral(k) ? DIAL.neutral : DIAL.end));
+    const beads = !season || pools.every((p, k) => p.length <= capOf(ringOf(k)));
 
     // A zone under the pointer (on the ice or its bar below): its beads stay bright and its draws are listed.
     const [hot, setHot] = React.useState<0 | 1 | 2 | null>(null);
