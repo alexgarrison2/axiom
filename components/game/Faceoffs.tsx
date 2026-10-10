@@ -547,13 +547,13 @@ export function Faceoffs() {
                                                             return <line key={i} x1={(r0 * c).toFixed(2)} y1={(r0 * sn).toFixed(2)} x2={(r1 * c).toFixed(2)} y2={(r1 * sn).toFixed(2)} stroke="var(--bg)" strokeWidth={0.9} />;
                                                         })
                                                       : null}
-                                                  {/* One spark out from the middle of the team's (or picked taker's) arc, the share of its wins turned into a shot at its tip. */}
+                                                  {/* One spark out from the middle of the team's (or picked taker's) arc, the number of its wins turned into a shot at its tip. */}
                                                   {(() => {
                                                       const won = pool.filter(d => d.win === view);
                                                       if (!won.length) return null;
-                                                      const f = won.filter(d => d.led).length / won.length;
+                                                      const led = won.filter(d => d.led).length;
                                                       // No wins into a shot: nothing to spark.
-                                                      if (!f) return null;
+                                                      if (!led) return null;
                                                       const share = won.length / nn;
                                                       const mid = -Math.PI / 2 + (view === 'away' ? share / 2 : aw / nn + share / 2) * 2 * Math.PI;
                                                       const c = Math.cos(mid);
@@ -575,7 +575,7 @@ export function Faceoffs() {
                                                                   stroke="var(--surface-2)"
                                                                   strokeWidth={labelFs * 0.25}
                                                               >
-                                                                  {Math.round(f * 100)}%
+                                                                  {fmtInt(led)}
                                                               </text>
                                                           </g>
                                                       );
@@ -682,7 +682,7 @@ export function Faceoffs() {
                     </span>
                     <span>{beads ? 'Clockwise from the top in game order' : 'Pointer = 50% · thicker = more draws'}</span>
                     <span className="flex items-center gap-1.5">
-                        <SparkIcon /> {beads ? `Shot attempt within ${DRAW_WINDOW}s` : `% = wins into a shot within ${DRAW_WINDOW}s`}
+                        <SparkIcon /> {beads ? `Shot attempt within ${DRAW_WINDOW}s` : `Wins into a shot within ${DRAW_WINDOW}s`}
                     </span>
                     <span>{season ? 'Hover a zone for its takers' : 'Hover a zone for its draws'} · click a taker to focus</span>
                 </p>
