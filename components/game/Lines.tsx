@@ -1,13 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { clockOf, goalMarkers, goalieRows, lineup, pairKey, pairTimes, skaterRows, units, type MarkerKind, type SkaterRow } from '@/lib/game/analytics';
+import { clockOf, deployment, goalMarkers, goalieRows, lineup, pairKey, pairTimes, skaterRows, units, type MarkerKind, type SkaterRow } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { GameSection, sideTeams, useGame } from './GameContext';
 import { TipFace, TipRow, useHoverTip } from './HoverTip';
 import { useWidth } from './Pulse';
 import { TeamToggle } from '@/components/ui/team-toggle';
 import { fmtInt } from '@/components/views/format';
+import { ScrollRegion } from '@/components/ui/scroll-region';
 
 /*
  * Player usage, per team (after hockeyviz's usage chart, in Neon Arcade):
@@ -305,14 +306,14 @@ function MinutesTip({ r, color, rank }: { r: SkaterRow; color: string; rank: str
     );
 }
 
-function Minutes({ side, focus, setFocus }: FocusProps) {
+function Minutes({ side, focus, setFocus, wide = false }: FocusProps & { wide?: boolean }) {
     const { m, label, colors } = useGame();
     const { bind, tip } = useHoverTip();
     const rows = skaterRows(m, side, 'all');
     const max = Math.max(1, ...rows.map(r => r.toi));
     const groups = [rows.filter(r => r.player.pos === 'D'), rows.filter(r => r.player.pos !== 'D')];
     return (
-        <div className="flex flex-col gap-4">
+        <div className={wide ? 'grid gap-x-8 gap-y-4 md:grid-cols-2' : 'flex flex-col gap-4'}>
             {groups.map((list, gi) => (
                 <ol key={gi} className="flex flex-col gap-1.5" aria-label={gi === 0 ? 'Defence minutes' : 'Forward minutes'}>
                     {list.map((r, i) => {
@@ -372,10 +373,182 @@ function Legend() {
     );
 }
 
+/** Shade of the team colour per line: the top line full, lower lines fainter. */
+const TIER: Record<string, number> = { L1: 1, L2: 0.68, L3: 0.44, L4: 0.26, D1: 1, D2: 0.6, D3: 0.32 };
+const RANK = ['L1', 'L2', 'L3', 'L4', 'D1', 'D2', 'D3', 'X'];
+
+/**
+ * A season's deployment calendar: one row per skater, one column per game,
+ * each cell shaded by the line or pair he played on that night (an outline
+ * when he dressed but was on none of the top four lines or three pairs,
+ * empty when he did not play). Rows run forwards then defence, each by his
+ * usual line. Hover a cell for the game and his linemates.
+ */
+function DeploymentCalendar() {
+    const { m, colors, label } = useGame();
+    const dep = React.useMemo(() => deployment(m, 'away'), [m]);
+    const [boxRef, boxW] = useWidth<HTMLDivElement>();
+    const [hover, setHover] = React.useState<{ r: number; g: number } | null>(null);
+    const color = colors.away;
+
+    // Each skater's usual tag (most games), then rows: forwards, then defence, by usual line and games played.
+    const rows = React.useMemo(() => {
+        const out = [...dep.tags.entries()].map(([id, t]) => {
+            const count = new Map<string, number>();
+            for (const x of t) if (x) count.set(x, (count.get(x) ?? 0) + 1);
+            const usual = [...count.entries()].filter(([k]) => k !== 'X').sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'X';
+            const gp = t.filter(Boolean).length;
+            const p = m.players.find(q => q.id === id);
+            return { id, t, usual, gp, d: p?.pos === 'D' };
+        });
+        const rank = (x: string) => RANK.indexOf(x);
+        return out.filter(r => r.gp).sort((a, b) => Number(a.d) - Number(b.d) || rank(a.usual) - rank(b.usual) || b.gp - a.gp);
+    }, [dep, m.players]);
+
+    const n = dep.n;
+    const nameW = 112;
+    const tailW = 72;
+    const cw = Math.max(5, Math.min(14, Math.floor(((boxW || 900) - nameW - tailW) / Math.max(1, n))));
+    const gap = cw >= 8 ? 1.5 : 1;
+    const ch = 13;
+    const rowH = ch + 3;
+    const top = 18;
+    const split = rows.findIndex(r => r.d);
+    const sep = split > 0 ? 10 : 0;
+    const Y = (i: number) => top + i * rowH + (split > 0 && i >= split ? sep : 0);
+    const W = nameW + n * cw + tailW;
+    const H = Y(rows.length) + 4;
+
+    // Month labels where the month turns.
+    const months: { g: number; text: string }[] = [];
+    (m.games ?? []).forEach((g, i) => {
+        const mo = g.date.slice(0, 7);
+        if (i === 0 || mo !== m.games![i - 1].date.slice(0, 7)) months.push({ g: i, text: new Date(`${g.date}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }) });
+    });
+
+    const at = (e: React.MouseEvent<SVGSVGElement>) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width) * W;
+        const y = ((e.clientY - r.top) / r.height) * H;
+        const g = Math.floor((x - nameW) / cw);
+        const ri = rows.findIndex((_, i) => y >= Y(i) && y < Y(i) + rowH);
+        return g >= 0 && g < n && ri >= 0 ? { r: ri, g } : null;
+    };
+
+    const tipFor = (h: { r: number; g: number }) => {
+        const row = rows[h.r];
+        const tag = row.t[h.g];
+        const g = m.games?.[h.g];
+        const group = dep.games[h.g].find(x => x.tag === tag);
+        const mates = group ? group.ids.filter(id => id !== row.id).map(id => label(id)) : [];
+        const res = g ? (g.gf > g.ga ? 'W' : g.outcome === 'OT' || g.outcome === 'SO' ? 'OTL' : 'L') : '';
+        return (
+            <>
+                <span className="font-bold text-fg-1">{label(row.id)}</span>
+                {g ? (
+                    <span className="text-micro uppercase tracking-label text-fg-3">
+                        G{h.g + 1} · {g.date.slice(5).replace('-', '/')} {g.home ? 'vs' : '@'} {g.opp} · {res} {g.gf}–{g.ga}
+                    </span>
+                ) : null}
+                <span className="text-fg-2">
+                    {tag == null ? 'Did not play' : tag === 'X' ? 'Dressed, off the top lines' : `${tag}${mates.length ? ` with ${mates.join(', ')}` : ''}`}
+                </span>
+            </>
+        );
+    };
+
+    return (
+        <div ref={boxRef} className="flex min-w-0 flex-col gap-2">
+            {/* The hovered game, on a line of its own so it never covers the grid. */}
+            <p className="flex min-h-6 flex-wrap items-baseline gap-x-3 text-caption" aria-live="polite">
+                {hover ? tipFor(hover) : <span className="text-micro uppercase tracking-label text-fg-3">Hover a game for his line and linemates that night</span>}
+            </p>
+            <ScrollRegion label="Line deployment by game">
+                <svg
+                    viewBox={`0 0 ${W} ${H}`}
+                    width={W}
+                    height={H}
+                    role="img"
+                    aria-label={`${m.teams.away.name} line and pair deployment over ${n} games`}
+                    className="block font-mono"
+                    onPointerMove={e => setHover(at(e))}
+                    onPointerLeave={() => setHover(null)}
+                    onClick={e => setHover(at(e))}
+                >
+                    {months.map(mo => (
+                        <text key={mo.g} x={nameW + mo.g * cw} y={11} className="fill-fg-3 text-micro uppercase">
+                            {mo.text}
+                        </text>
+                    ))}
+                    {months.map(mo => (mo.g ? <line key={`l${mo.g}`} x1={nameW + mo.g * cw - gap / 2} x2={nameW + mo.g * cw - gap / 2} y1={top - 3} y2={H - 4} className="stroke-line" /> : null))}
+                    {split > 0 ? <line x1={0} x2={W} y1={Y(split) - sep / 2 - 1} y2={Y(split) - sep / 2 - 1} className="stroke-line-strong" /> : null}
+                    {rows.map((row, i) => {
+                        const y = Y(i);
+                        const lit = hover?.r === i;
+                        return (
+                            <g key={row.id} style={{ opacity: hover && !lit ? 0.55 : 1, transition: 'opacity 120ms' }}>
+                                <text x={nameW - 8} y={y + ch - 3} textAnchor="end" className={lit ? 'fill-fg-1 text-micro font-semibold' : 'fill-fg-2 text-micro'}>
+                                    {label(row.id)}
+                                </text>
+                                {row.t.map((tag, g) => {
+                                    const x = nameW + g * cw;
+                                    if (tag == null) return <rect key={g} x={x} y={y} width={cw - gap} height={ch} rx={1.5} className="fill-surface-2" opacity={0.6} />;
+                                    if (tag === 'X') return <rect key={g} x={x + 0.5} y={y + 0.5} width={cw - gap - 1} height={ch - 1} rx={1.5} fill="none" className="stroke-line-strong" />;
+                                    return <rect key={g} x={x} y={y} width={cw - gap} height={ch} rx={1.5} fill={color} opacity={TIER[tag] ?? 0.2} />;
+                                })}
+                                {hover?.r === i ? <rect x={nameW + hover.g * cw - 1} y={y - 1} width={cw - gap + 2} height={ch + 2} rx={2} fill="none" className="stroke-brand" strokeWidth={1.2} /> : null}
+                                <text x={nameW + n * cw + 8} y={y + ch - 3} className="fill-fg-3 text-micro tabular-nums">
+                                    {row.usual === 'X' ? '—' : row.usual} · {fmtInt(row.gp)}
+                                </text>
+                            </g>
+                        );
+                    })}
+                </svg>
+            </ScrollRegion>
+        </div>
+    );
+}
+
+function CalendarLegend({ color }: { color: string }) {
+    return (
+        <p className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-micro uppercase tracking-label text-fg-3">
+            {(['L1', 'L2', 'L3', 'L4'] as const).map(t => (
+                <span key={t} className="flex items-center gap-1.5">
+                    <span className="h-3 w-3 rounded-[2px]" style={{ background: color, opacity: TIER[t] }} />
+                    {t}
+                </span>
+            ))}
+            <span className="text-fg-3">· D1–D3 the same way</span>
+            <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-[2px] border border-line-strong" /> Dressed, off the top lines
+            </span>
+            <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-[2px] bg-surface-2" /> Did not play
+            </span>
+            <span>Right: usual line · games</span>
+        </p>
+    );
+}
+
 export function Lines() {
     const { m, colors } = useGame();
     const [side, setSide] = React.useState<Side>('away');
     const [focus, setFocus] = React.useState<number | null>(null);
+    // Several games (a team's Breakdown): a per-game timeline would smear 82 games into one box, so the
+    // section becomes the deployment calendar; the pooled opponents have no lines to show.
+    if (m.starts?.length)
+        return (
+            <GameSection id="lines" title="Lines">
+                <CalendarLegend color={colors.away} />
+                <div className="panel flex min-w-0 flex-col gap-6 p-card">
+                    <DeploymentCalendar />
+                    <div>
+                        <p className="label mb-2">Minutes</p>
+                        <Minutes side="away" focus={focus} setFocus={setFocus} wide />
+                    </div>
+                </div>
+            </GameSection>
+        );
     return (
         <GameSection
             id="lines"

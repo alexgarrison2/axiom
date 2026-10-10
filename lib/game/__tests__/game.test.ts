@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildGame, parseSituation, strengthFor } from '../build';
-import { clockOf, deservedSeries, gameScores, GS_PARTS, draws, FO_SPOTS, goalSwings, groupMatchups, hardMatches, lineGroups, matchups, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
+import { clockOf, deployment, deservedSeries, gameScores, GS_PARTS, draws, FO_SPOTS, goalSwings, groupMatchups, hardMatches, lineGroups, matchups, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
 import { mergeSeason } from '../season';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
 import PONY from '@/public/data/pony_score.json';
@@ -149,6 +149,15 @@ describe('game model', () => {
         // Always on together is exactly what chance gives: no hard match.
         expect(lift[0][0]).toBe(1);
         expect(hardMatches(cells, lift).size).toBe(0);
+    });
+
+    it('tags each skater with his line or pair game by game', () => {
+        const season = mergeSeason([m, { ...m, id: m.id + 1, date: '2026-10-12' }], 'AAA')!;
+        const dep = deployment(season, 'away');
+        expect(dep.n).toBe(2);
+        expect(dep.tags.get(11)).toEqual(['L1', 'L1']);
+        expect(dep.tags.get(14)).toEqual(['D1', 'D1']);
+        expect(dep.games[0].map(g => g.tag)).toEqual(['L1', 'D1']);
     });
 
     it('puts each draw on its dot and keeps the wins that became shots', () => {

@@ -841,6 +841,62 @@ export function lineGroups(m: GameModel, side: Side): LineGroup[] {
     return out;
 }
 
+/**
+ * Line deployment game by game (a merged season, or a single game as one): in each game the side's
+ * most used 5v5 forward trios (L1-L4) and pairs (D1-D3) that share no player, and every skater's tag
+ * that night - his line or pair, 'X' when he dressed but was on none of them, null when he did not play.
+ */
+export interface Deployment {
+    n: number;
+    /** Per game, its lines and pairs, most used first. */
+    games: LineGroup[][];
+    /** Per skater, his tag in each game. */
+    tags: Map<number, (string | null)[]>;
+}
+
+export function deployment(m: GameModel, side: Side): Deployment {
+    const n = m.starts?.length || 1;
+    const byId = new Map(m.players.map(p => [p.id, p]));
+    const acc = Array.from({ length: n }, () => ({ F: new Map<string, number>(), D: new Map<string, number>() }));
+    const dressed = Array.from({ length: n }, () => new Set<number>());
+    for (const s of segments(m)) {
+        const gi = gameIndexAt(m, s.a);
+        const sk = s.skaters[side];
+        for (const id of sk) dressed[gi].add(id);
+        if (!segFive(s)) continue;
+        const dt = s.b - s.a;
+        for (const kind of ['F', 'D'] as const) {
+            const ids = sk.filter(id => (byId.get(id)?.pos === 'D') === (kind === 'D')).sort((a, b) => a - b);
+            if (ids.length !== (kind === 'D' ? 2 : 3)) continue;
+            const k = ids.join('-');
+            acc[gi][kind].set(k, (acc[gi][kind].get(k) ?? 0) + dt);
+        }
+    }
+    const tags = new Map<number, (string | null)[]>();
+    const games: LineGroup[][] = [];
+    for (let gi = 0; gi < n; gi++) {
+        const groups: LineGroup[] = [];
+        for (const [kind, most] of [['F', 4], ['D', 3]] as const) {
+            const used = new Set<number>();
+            const ranked = [...acc[gi][kind].entries()].sort((a, b) => b[1] - a[1]);
+            for (const [k, toi] of ranked) {
+                // Under 30 seconds together is a change in passing, not a line.
+                if (toi < 30 || groups.filter(g => g.kind === kind).length >= most) break;
+                const ids = k.split('-').map(Number);
+                if (ids.some(id => used.has(id))) continue;
+                ids.forEach(id => used.add(id));
+                groups.push({ kind, tag: `${kind === 'F' ? 'L' : 'D'}${groups.filter(g => g.kind === kind).length + 1}`, ids });
+            }
+        }
+        games.push(groups);
+        for (const id of dressed[gi]) {
+            if (!tags.has(id)) tags.set(id, Array(n).fill(null));
+            tags.get(id)![gi] = groups.find(g => g.ids.includes(id))?.tag ?? 'X';
+        }
+    }
+    return { n, games, tags };
+}
+
 /** Lift at or above this, over at least HARD_MIN seconds together, is a hard match. */
 export const HARD_LIFT = 1.75;
 export const HARD_MIN = 180;
