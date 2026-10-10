@@ -63,6 +63,11 @@ const PIN_FIRST = 'max-md:w-[10.5rem] max-md:min-w-[10.5rem] md:max-lg:min-w-[18
 const MIN_TOI = 30;
 /** Most regular units a team can dress per kind; the cut is searched only up to here. */
 const MAX_CORE: Record<UnitKind, number> = { F: 8, D: 6, PP: 4, PK: 4 };
+/**
+ * Units a team always dresses, so they stay regular however little they play: four forward lines
+ * (a fourth line is a line, not a one-off) and three pairs.
+ */
+const MIN_CORE: Record<UnitKind, number> = { F: 4, D: 3, PP: 1, PK: 1 };
 /** The time drop between neighbours (by TOI) must be at least this ratio to count as the fall-off. */
 const DROP = 1.6;
 
@@ -91,7 +96,17 @@ export function Units() {
     // Regular vs occasional is a whole-game call, so a period view keeps the same lines up top.
     const regularKeys = React.useMemo(() => {
         const all = units(m, side, kind).filter(u => u.toi >= MIN_TOI);
-        return new Set(all.slice(0, regularCount(all.map(u => u.toi), MAX_CORE[kind])).map(u => u.ids.join('-')));
+        const core = all.slice(0, regularCount(all.map(u => u.toi), MAX_CORE[kind]));
+        // Short of the minimum, the next most used units that share no player with those already in
+        // (a real fourth line, not two lines' players mixed on a change).
+        const used = new Set(core.flatMap(u => u.ids));
+        for (const u of all) {
+            if (core.length >= MIN_CORE[kind]) break;
+            if (core.includes(u) || u.ids.some(id => used.has(id))) continue;
+            core.push(u);
+            u.ids.forEach(id => used.add(id));
+        }
+        return new Set(core.map(u => u.ids.join('-')));
     }, [m, side, kind]);
     const team = React.useMemo(() => teamOnIce(m, side, kind === 'PP' ? 'pp' : kind === 'PK' ? 'sh' : '5v5', per), [m, side, kind, per]);
     const rows = React.useMemo(() => units(m, side, kind, per).filter(u => u.toi >= MIN_TOI || regularKeys.has(u.ids.join('-'))), [m, side, kind, per, regularKeys]);
