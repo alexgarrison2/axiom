@@ -7,6 +7,7 @@ import { LocalTime } from '@/components/ui/local-time';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
 import type { SlateGame } from '@/lib/game/fetch';
+import { clockSeconds, periodLength, ppLength, TimeBar } from './TimeBar';
 
 const periodName = (p: number | null) => (p == null ? '' : p <= 3 ? `P${p}` : p === 4 ? 'OT' : `${p - 3}OT`);
 
@@ -57,7 +58,7 @@ export function Scoreboard({ games, current }: { games: SlateGame[]; current: nu
                             <Link
                                 href={`/games/${g.id}`}
                                 className={cn(
-                                    'flex w-[9.5rem] flex-col gap-1 rounded-control border bg-surface-1 px-2.5 py-1.5 text-caption transition-colors hover:border-line-strong hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand',
+                                    'relative flex w-[9.5rem] flex-col gap-1 overflow-hidden rounded-control border bg-surface-1 px-2.5 py-1.5 text-caption transition-colors hover:border-line-strong hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand',
                                     tight(g) ? 'border-warn/60' : 'border-line',
                                 )}
                             >
@@ -66,14 +67,19 @@ export function Scoreboard({ games, current }: { games: SlateGame[]; current: nu
                                 <span className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-label">
                                     <Status g={g} />
                                     {g.edge ? (
-                                        <span className="rounded-chip bg-warn/15 px-1 text-warn">
+                                        <span className="relative overflow-hidden rounded-chip bg-warn/15 px-1 text-warn">
                                             {g.edge.tri} {g.edge.what}
-                                            {g.edge.left ? ` ${g.edge.left.replace(/^0/, '')}` : ''}
+                                            {g.edge.left ? ` ${g.edge.left.replace(/^0(?=\d)/, '')}` : ''}
+                                            {g.edge.what.includes('PP') && clockSeconds(g.edge.left) != null ? <TimeBar left={clockSeconds(g.edge.left)} total={ppLength(clockSeconds(g.edge.left)!)} /> : null}
                                         </span>
                                     ) : tight(g) ? (
                                         <span className="text-warn">Close</span>
                                     ) : null}
                                 </span>
+                                {/* The period's time left along the card's bottom edge. */}
+                                {g.state === 'live' && !g.intermission ? (
+                                    <TimeBar left={clockSeconds(g.clock)} total={periodLength(g.period, String(g.id).slice(4, 6) === '03' ? 1200 : 300)} className="text-pos" />
+                                ) : null}
                             </Link>
                         </li>
                     );

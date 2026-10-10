@@ -9,6 +9,7 @@ import { lineScore, marketResults, shortName, type Hit } from '@/lib/game/analyt
 import { other, SIDES, type Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
 import type { SlateGame } from '@/lib/game/fetch';
+import { clockSeconds, periodLength, ppLength, TimeBar } from './TimeBar';
 
 const pct = (p: number) => `${Math.round(p * 100)}%`;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -19,8 +20,9 @@ const shortDate = (iso: string) => {
 };
 const american = (o: number | null) => (o == null ? null : o > 0 ? `+${o}` : String(o));
 
-function Team({ side }: { side: Side }) {
+function Team({ side, edge = null }: { side: Side; edge?: Edge }) {
     const { m, colors } = useGame();
+    const mine = edge && edge.tri === m.teams[side].tri ? edge : null;
     const t = m.teams[side];
     const won = m.state === 'final' && t.score > m.teams[other(side)].score;
     const away = side === 'away';
@@ -35,8 +37,12 @@ function Team({ side }: { side: Side }) {
                     <span className="md:hidden">{t.tri}</span>
                     <span className="hidden md:inline">{t.name}</span>
                 </span>
-                <span className={cn('font-display text-[44px] font-bold leading-none tabular-nums md:text-[72px]', won || m.state !== 'final' ? 'text-fg-1' : 'text-fg-3')}>
-                    {t.score}
+                {/* A power play or empty net in progress sits beside this team's score. */}
+                <span className={cn('flex items-center gap-2 md:gap-3', !away && 'flex-row-reverse')}>
+                    <span className={cn('font-display text-[44px] font-bold leading-none tabular-nums md:text-[72px]', won || m.state !== 'final' ? 'text-fg-1' : 'text-fg-3')}>
+                        {t.score}
+                    </span>
+                    {mine ? <EdgeChip edge={mine} team={false} className="text-micro md:text-caption" /> : null}
                 </span>
                 <span className="mt-1 h-1 w-10 rounded-full" style={{ background: colors[side], opacity: won || m.state !== 'final' ? 1 : 0.4 }} aria-hidden="true" />
             </div>
@@ -217,12 +223,16 @@ function statusOf(m: ReturnType<typeof useGame>['m']): string {
 type Edge = SlateGame['edge'];
 
 /** A power play or empty net in progress (from the live score feed): who has the extra man and the time left. */
-function EdgeChip({ edge, className }: { edge: Edge; className?: string }) {
+function EdgeChip({ edge, className, team = true }: { edge: Edge; className?: string; team?: boolean }) {
     if (!edge) return null;
+    const left = clockSeconds(edge.left);
     return (
-        <span className={cn('whitespace-nowrap rounded-chip bg-warn/15 px-1.5 py-0.5 font-bold uppercase tracking-label text-warn', className)}>
-            {edge.tri} {edge.what}
+        <span className={cn('relative overflow-hidden whitespace-nowrap rounded-chip bg-warn/15 px-1.5 py-0.5 font-bold uppercase tracking-label text-warn', className)}>
+            {team ? `${edge.tri} ` : ''}
+            {edge.what}
             {edge.left ? ` ${edge.left.replace(/^0(?=\d)/, '')}` : ''}
+            {/* Time left on it, shrinking as it runs down. */}
+            {left != null && edge.what.includes('PP') ? <TimeBar left={left} total={ppLength(left)} /> : null}
         </span>
     );
 }
@@ -248,10 +258,11 @@ export function CompactScore({ edge = null }: { edge?: Edge }) {
             {side('away')}
             <span
                 className={cn(
-                    'whitespace-nowrap rounded-chip px-1.5 py-0.5 text-[11px] font-bold uppercase leading-tight tracking-label',
+                    'relative overflow-hidden whitespace-nowrap rounded-chip px-1.5 py-0.5 text-[11px] font-bold uppercase leading-tight tracking-label',
                     live ? 'bg-pos/10 text-pos' : m.state === 'final' ? 'bg-surface-3 text-fg-1' : 'text-fg-3',
                 )}
             >
+                {m.live && !m.live.intermission ? <TimeBar left={clockSeconds(m.live.remaining)} total={periodLength(m.live.period, m.otLength)} /> : null}
                 {m.live?.intermission ? `End ${m.live.period <= 3 ? `P${m.live.period}` : 'OT'}` : m.live ? `${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : statusOf(m)}
             </span>
             {side('home')}
@@ -272,15 +283,16 @@ export function ScoreBand({ edge = null }: { edge?: Edge }) {
     return (
         <header className="panel overflow-hidden">
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 p-card max-[374px]:items-start md:gap-8 md:px-8 md:py-6">
-                <Team side="away" />
+                <Team side="away" edge={edge} />
                 {/* Narrow phones: the tricodes reach into the middle column, so the status starts just below their line. */}
                 <div className="flex flex-col items-center gap-2 text-center max-[374px]:pt-[1.375rem]">
                     <span
                         className={cn(
-                            'rounded-chip px-2 py-0.5 text-micro font-bold uppercase tracking-label',
+                            'relative overflow-hidden rounded-chip px-2 py-0.5 text-micro font-bold uppercase tracking-label',
                             m.state === 'live' ? 'bg-pos/10 text-pos shadow-glow' : m.state === 'final' ? 'bg-surface-3 text-fg-1' : 'text-fg-3',
                         )}
                     >
+                        {m.live && !m.live.intermission ? <TimeBar left={clockSeconds(m.live.remaining)} total={periodLength(m.live.period, m.otLength)} /> : null}
                         {/* Under 360 the live clock takes a second line and an intermission reads "End P2", so the chip stays between the scores. */}
                         {m.live?.intermission ? (
                             <>
@@ -299,7 +311,6 @@ export function ScoreBand({ edge = null }: { edge?: Edge }) {
                             </>
                         ) : null}
                     </span>
-                    {m.state === 'live' ? <EdgeChip edge={edge} className="text-micro" /> : null}
                     <span className="text-micro uppercase tracking-label text-fg-3">
                         {m.state === 'pre' ? (
                             <LocalTime iso={m.startUtc} />
@@ -345,7 +356,7 @@ export function ScoreBand({ edge = null }: { edge?: Edge }) {
                     </table>
                     {m.venue ? <span className="hidden text-micro uppercase tracking-label text-fg-3 md:block">{m.venue}</span> : null}
                 </div>
-                <Team side="home" />
+                <Team side="home" edge={edge} />
             </div>
 
             {pg || m.stars.length ? (
