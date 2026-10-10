@@ -168,7 +168,7 @@ function Pct({ w, l, className }: { w: number; l: number; className?: string }) 
     );
 }
 
-/** A season's dot: a ring of beads filled clockwise in the winner's colours like a gauge (DIAL beads, fewer on the neutral dots). */
+/** Most draws a dot shows as beads over several games (one ring); more and the dot becomes a solid ring. */
 const DIAL = { end: 20, neutral: 12 };
 
 export function Faceoffs() {
@@ -206,6 +206,11 @@ export function Faceoffs() {
         }
         return out;
     }, [active, list]);
+
+    // The draws in view at each dot (picked taker, hovered opponent). Beads are one per draw, so several games keep them
+    // only while every dot's draws fit its ring; past that the dots switch to solid rings (beads would read as draws).
+    const pools = byDot.map(ds => ds.filter(d => involved(d) && (pair == null || vsPair(d))));
+    const beads = !season || pools.every((p, k) => p.length <= (isNeutral(k) ? DIAL.neutral : DIAL.end));
 
     // A zone under the pointer (on the ice or its bar below): its beads stay bright and its draws are listed.
     const [hot, setHot] = React.useState<0 | 1 | 2 | null>(null);
@@ -486,52 +491,34 @@ export function Faceoffs() {
                             {hot != null ? (
                                 <rect x={THIRDS[hot].x0} y={-42.5} width={THIRDS[hot].x1 - THIRDS[hot].x0} height={85} clipPath="url(#fo-rink)" fill="rgb(var(--brand-rgb) / 0.06)" />
                             ) : null}
-                            {season
+                            {!beads
                                 ? (() => {
-                                      // Gauge per dot: the draws in view (picked taker, hovered opponent), win share as lit beads, volume as bead size.
-                                      const pools = byDot.map(ds => ds.filter(d => involved(d) && (pair == null || vsPair(d))));
+                                      // Too many draws for a bead each: each dot is a solid ring, the team's colour clockwise from the top up to its win share, thicker for more draws.
                                       const most = Math.max(1, ...pools.map(p => p.length));
                                       return FO_SPOTS.map(([cx, cy], k) => {
                                           const pool = pools[k];
                                           const nn = pool.length;
                                           const r = ringOf(k);
-                                          const K = isNeutral(k) ? DIAL.neutral : DIAL.end;
                                           const aw = pool.filter(d => d.win === 'away').length;
-                                          const lit = nn ? Math.round((aw / nn) * K) : 0;
-                                          const share = (side: Side) => {
-                                              const won = pool.filter(d => d.win === side);
-                                              return won.length ? won.filter(d => d.led).length / won.length : 0;
-                                          };
-                                          const sparkA = Math.round(lit * share('away'));
-                                          const sparkH = Math.round((K - lit) * share('home'));
-                                          const br = nn ? BEAD * (0.55 + 0.55 * Math.sqrt(nn / most)) : BEAD * 0.5;
+                                          const sw = nn ? 1.2 + 3.2 * Math.sqrt(nn / most) : 0.6;
                                           const x0 = boardX(cx);
                                           const third = x0 < -25 ? 0 : x0 > 25 ? 2 : 1;
                                           return (
                                               <g key={k} transform={`translate(${x0},${-cy})`} style={{ opacity: hot != null && hot !== third ? 0.25 : 1, transition: 'opacity 140ms' }}>
                                                   <title>{nn ? `${m.teams.away.tri} ${wl(aw, nn - aw)} (${pct(aw, nn - aw)})` : 'No draws'}</title>
-                                                  {isNeutral(k) ? <circle r={r} fill="none" stroke="var(--line-strong)" strokeWidth={0.3} strokeDasharray="1 1.2" /> : null}
-                                                  {/* Even: a tick at six o'clock, where half the ring is lit. */}
-                                                  <line x1={0} x2={0} y1={r + br + 0.8} y2={r + br + 3.4} className="stroke-fg-3" strokeWidth={0.5} />
-                                                  {Array.from({ length: K }, (_, i) => {
-                                                      const a = -Math.PI / 2 + (i / K) * 2 * Math.PI;
-                                                      const x = Math.round(r * Math.cos(a) * 100) / 100;
-                                                      const y = Math.round(r * Math.sin(a) * 100) / 100;
-                                                      const mine = i < lit;
-                                                      const spark = mine ? i < sparkA : i - lit < sparkH;
-                                                      return (
-                                                          <g key={i} style={{ opacity: nn ? 1 : 0.2 }}>
-                                                              <circle cx={x} cy={y} r={br} fill={nn ? colors[mine ? 'away' : 'home'] : 'var(--mute)'} stroke="var(--bg)" strokeWidth={0.45} />
-                                                              {nn && spark ? <Spark x={x} y={y} a={Math.round(a * 100) / 100} goal={false} br={br} /> : null}
-                                                          </g>
-                                                      );
-                                                  })}
+                                                  <circle r={r} fill="none" stroke={nn ? colors.home : 'var(--mute)'} strokeWidth={sw} opacity={nn ? 1 : 0.3} />
+                                                  {aw ? (
+                                                      <circle r={r} fill="none" stroke={colors.away} strokeWidth={sw} pathLength={100} strokeDasharray={`${((aw / nn) * 100).toFixed(2)} 100`} transform="rotate(-90)" />
+                                                  ) : null}
+                                                  {/* Even: a tick at six o'clock, where half the ring is filled. */}
+                                                  <line x1={0} x2={0} y1={r + sw / 2 + 0.8} y2={r + sw / 2 + 3.4} className="stroke-fg-3" strokeWidth={0.5} />
                                               </g>
                                           );
                                       });
                                   })()
                                 : FO_SPOTS.map(([cx, cy], k) => {
-                                const ds = byDot[k];
+                                // A game draws every draw (dimming the rest when a taker is picked); several games draw only the draws in view.
+                                const ds = season ? pools[k] : byDot[k];
                                 const r = ringOf(k);
                                 const spots = beadSpots(ds.length, r);
                                 return (
@@ -617,12 +604,14 @@ export function Faceoffs() {
                     <span className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: colors.away }} />
                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: colors.home }} />
-                        {season ? 'Ring = win share, clockwise from the top' : 'Bead = draw, winner\u2019s colour'}
+                        {beads ? 'Bead = draw, winner\u2019s colour' : 'Ring = win share, clockwise from the top'}
                     </span>
-                    <span>{season ? 'Tick = 50% · bead size = draws at the dot' : 'Clockwise from the top in game order'}</span>
-                    <span className="flex items-center gap-1.5">
-                        <SparkIcon /> {season ? 'Share of wins into a shot' : `Shot attempt within ${DRAW_WINDOW}s`}
-                    </span>
+                    <span>{beads ? 'Clockwise from the top in game order' : 'Tick = 50% · thicker = more draws'}</span>
+                    {beads ? (
+                        <span className="flex items-center gap-1.5">
+                            <SparkIcon /> Shot attempt within {DRAW_WINDOW}s
+                        </span>
+                    ) : null}
                     <span>{season ? 'Hover a zone for its takers' : 'Hover a zone for its draws'} · click a taker to focus</span>
                 </p>
                 {tip}
