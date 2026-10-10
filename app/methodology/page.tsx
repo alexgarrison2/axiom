@@ -531,7 +531,8 @@ export default function MethodologyPage() {
                                 The <strong>faceoffs</strong> board draws every faceoff on the dot it was taken at: one bead per draw in the
                                 winner&apos;s colour, clockwise from the top of the ring in game order. A spark marks a win that the winners turned
                                 into a shot attempt (on goal, missed or blocked) within {DRAW_WINDOW} seconds and before the next faceoff. The
-                                left end holds the home net (the away team attacks it); zones beside each taker are from his own team&apos;s view.
+                                board puts each team&apos;s own end on its side (the away team defends the left net) and tallies the draws by zone,
+                                labelled OZ, DZ and NZ for each team; zones beside each taker are from his own team&apos;s view.
                                 Picking a taker lights only his draws and shows his record against each opponent; hovering an opponent then
                                 lights the draws between the two. The strength filter splits out even strength and each team&apos;s power play
                                 (the draw&apos;s own situation, so a draw right after a penalty expires counts as even).

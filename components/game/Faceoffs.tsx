@@ -27,6 +27,32 @@ const ppSide = (d: Draw): Side | null => (d.e.strength === 'pp' ? d.e.side : d.e
 const strengthMatch = (d: Draw, f: Strength) =>
     f === 'all' || (f === '5v5' ? d.e.fiveOnFive : f === 'ev' ? ppSide(d) == null : ppSide(d) === (f === 'awayPP' ? 'away' : 'home'));
 
+/**
+ * The board is drawn with each team's own end on its own side: the away team (rail on the left) defends the left
+ * net. The game frame has the away team attacking left, so the board turns it half round (x → −x, y → −y: the
+ * same ice seen from the other side).
+ */
+const boardX = (x: number) => -x;
+/**
+ * Which third of the board a draw was in: 0 the away team's own end (left), 1 neutral ice, 2 the home team's own
+ * end (right). From the dot, else from the feed's zone (an O-zone win is in the winner's attacking end).
+ */
+const thirdOf = (d: Draw): 0 | 1 | 2 | null => {
+    if (d.dot != null) {
+        const x = boardX(FO_SPOTS[d.dot][0]);
+        return x < -25 ? 0 : x > 25 ? 2 : 1;
+    }
+    if (!d.e.zone) return null;
+    if (d.e.zone === 'N') return 1;
+    return (d.e.zone === 'O' ? d.win : other(d.win)) === 'away' ? 2 : 0;
+};
+const THIRDS = [
+    { x0: -100, x1: -25, dir: -1 as const },
+    { x0: -25, x1: 25, dir: 0 as const },
+    { x0: 25, x1: 100, dir: 1 as const },
+];
+const RINK_PATH = 'M-72,-42.5 H72 A28,28 0 0 1 100,-14.5 V14.5 A28,28 0 0 1 72,42.5 H-72 A28,28 0 0 1 -100,14.5 V-14.5 A28,28 0 0 1 -72,-42.5 Z';
+
 /** Rink frame in feet, a little past the boards. */
 const VB = { x: -101, y: -44, w: 202, h: 88 };
 const BEAD = 2.1;
@@ -112,15 +138,6 @@ function Spark({ x, y, a, goal }: { x: number; y: number; a: number; goal: boole
     );
 }
 
-/** Which way a team attacks, under its end of the rink. */
-function Arrow({ dir }: { dir: -1 | 1 }) {
-    return (
-        <svg viewBox="0 0 16 10" className="h-2.5 w-4" aria-hidden="true">
-            <path d={dir < 0 ? 'M15 5H2M6 1L2 5l4 4' : 'M1 5h13M10 1l4 4-4 4'} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    );
-}
-
 function SparkIcon() {
     return (
         <svg viewBox="0 0 12 12" className="h-3 w-3" aria-hidden="true">
@@ -148,15 +165,6 @@ export function Faceoffs() {
     }, [pinned]);
     const { bind, tip } = useHoverTip();
 
-    // Ends are named for who attacks them: the away team attacks the left net, the home team the right.
-    const endName = (k: number) => {
-        const [x, y] = FO_SPOTS[k];
-        const half = y < 0 ? 'top' : 'bottom';
-        if (x === 0) return 'Centre ice';
-        const attacker = x < 0 ? m.teams.away.tri : m.teams.home.tri;
-        return isNeutral(k) ? `Neutral ice, ${attacker} half · ${half}` : `${attacker} attacking zone · ${half}`;
-    };
-
     const byDot = React.useMemo(() => FO_SPOTS.map((_, k) => list.filter(d => d.dot === k)), [list]);
     const involved = (d: Draw) => active == null || d.winner === active || d.loser === active;
     // With a taker picked, hovering an opponent's row lights only the draws between the two of them.
@@ -173,32 +181,28 @@ export function Faceoffs() {
         return out;
     }, [active, list]);
 
-    // Rink width, for the dot tallies' size.
-    const boardRef = React.useRef<HTMLDivElement>(null);
-    const [boardW, setBoardW] = React.useState(0);
-    React.useLayoutEffect(() => {
-        const el = boardRef.current;
-        if (!el) return;
-        const ro = new ResizeObserver(([e]) => setBoardW(Math.round(e.contentRect.width)));
-        ro.observe(el);
-        return () => ro.disconnect();
-    }, []);
+    // A zone under the pointer (on the ice or its bar below): its beads stay bright and its draws are listed.
+    const [hot, setHot] = React.useState<0 | 1 | 2 | null>(null);
 
-    // Dot tallies stay at least ~11.5px on a small rink (feet per pixel grow as it shrinks).
-    const tallyFs = Math.max(6.2, 11.5 / ((boardW || 800) / VB.w));
     const total = (s: Side) => list.filter(d => d.win === s).length;
     const ledBy = (s: Side) => list.filter(d => d.win === s && d.led).length;
     const n = list.length;
 
-    const zoneTally = (lo: number, hi: number) => {
-        const ds = list.filter(d => d.dot != null && FO_SPOTS[d.dot][0] >= lo && FO_SPOTS[d.dot][0] <= hi);
-        return { away: ds.filter(d => d.win === 'away').length, home: ds.filter(d => d.win === 'home').length };
-    };
-    const thirds: { name: string; dir: -1 | 0 | 1; away: number; home: number }[] = [
-        { name: `${m.teams.away.tri} attacks`, dir: -1, ...zoneTally(-100, -25) },
-        { name: 'Neutral', dir: 0, ...zoneTally(-24, 24) },
-        { name: `${m.teams.home.tri} attacks`, dir: 1, ...zoneTally(25, 100) },
-    ];
+    // Each third's draws (only the picked taker's when one is picked); each end is named for the team that defends it.
+    const thirds = THIRDS.map((t, z) => {
+        const ds = list.filter(d => thirdOf(d) === z && involved(d));
+        const away = m.teams.away.tri;
+        const home = m.teams.home.tri;
+        return {
+            ...t,
+            ds,
+            name: z === 0 ? `${away} zone` : z === 2 ? `${home} zone` : 'Neutral',
+            title: z === 0 ? `${away} defensive zone` : z === 2 ? `${home} defensive zone` : 'Neutral ice',
+            caps: z === 0 ? [`${away} DZ`, `${home} OZ`] : z === 2 ? [`${away} OZ`, `${home} DZ`] : [`${away} NZ`, `${home} NZ`],
+            away: ds.filter(d => d.win === 'away').length,
+            home: ds.filter(d => d.win === 'home').length,
+        };
+    });
     // The team's own record by zone (its offensive zone is where it attacks).
     const teamZone = (side: Side) =>
         (['D', 'N', 'O'] as Zone[]).map(z => ({
@@ -207,20 +211,20 @@ export function Faceoffs() {
             l: list.filter(d => d.win !== side && d.e.zone != null && flip(d.e.zone) === z).length,
         }));
 
-    const dotTip = (k: number) => {
-        const ds = byDot[k];
+    const zoneTip = (z: 0 | 1 | 2) => {
+        const t = thirds[z];
         return (
             <div className="flex w-72 flex-col gap-2">
                 <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-bold text-fg-1">{endName(k)}</span>
-                    <span className="text-micro uppercase tracking-label text-fg-3">
-                        <span style={{ color: colors.away }}>{ds.filter(d => d.win === 'away').length}</span>
-                        {' – '}
-                        <span style={{ color: colors.home }}>{ds.filter(d => d.win === 'home').length}</span>
+                    <span className="font-bold text-fg-1">{t.title}</span>
+                    <span className="text-caption font-bold tabular-nums">
+                        <span style={{ color: colors.away }}>{t.away}</span>
+                        <span className="px-1 font-normal text-fg-3">–</span>
+                        <span style={{ color: colors.home }}>{t.home}</span>
                     </span>
                 </div>
-                <ol className="flex flex-col gap-1 text-caption">
-                    {ds.map(d => (
+                <ol className="flex max-h-80 flex-col gap-1 overflow-hidden text-caption">
+                    {t.ds.map(d => (
                         <li key={d.e.id} className="grid grid-cols-[3.75rem_minmax(0,1fr)_auto] items-baseline gap-2">
                             <span className="text-micro tabular-nums text-fg-3">
                                 {periodLabel(d.e.period)} {d.e.clock}
@@ -365,7 +369,7 @@ export function Faceoffs() {
                 )
             }
         >
-            <div ref={boardRef} className="panel overflow-hidden">
+            <div className="panel overflow-hidden">
                 <ControlRow label="Faceoff controls">
                     <Segmented
                         label="Strength"
@@ -400,59 +404,87 @@ export function Faceoffs() {
                             role="img"
                             aria-label={`${n} faceoffs: ${m.teams.away.tri} won ${total('away')}, ${m.teams.home.tri} won ${total('home')}`}
                         >
+                            <defs>
+                                <clipPath id="fo-rink">
+                                    <path d={RINK_PATH} />
+                                </clipPath>
+                            </defs>
                             <RinkMarkings />
+                            {hot != null ? (
+                                <rect x={THIRDS[hot].x0} y={-42.5} width={THIRDS[hot].x1 - THIRDS[hot].x0} height={85} clipPath="url(#fo-rink)" fill="rgb(var(--brand-rgb) / 0.06)" />
+                            ) : null}
                             {FO_SPOTS.map(([cx, cy], k) => {
                                 const ds = byDot[k];
                                 const r = ringOf(k);
                                 const spots = beadSpots(ds.length, r);
-                                const mine = active == null ? ds : ds.filter(involved);
-                                const aw = mine.filter(d => d.win === 'away').length;
-                                const hw = mine.filter(d => d.win === 'home').length;
                                 return (
-                                    <g key={k} transform={`translate(${cx},${cy})`}>
+                                    <g key={k} transform={`translate(${boardX(cx)},${-cy})`}>
                                         {isNeutral(k) ? <circle r={r} fill="none" stroke="var(--line-strong)" strokeWidth={0.3} strokeDasharray="1 1.2" /> : null}
                                         {ds.map((d, i) => {
                                             const s = spots[i];
                                             const on = involved(d);
                                             const hit = vsPair(d);
                                             return (
-                                                <g key={d.e.id} style={{ opacity: !on ? 0.12 : pair != null && !hit ? 0.3 : 1, transition: 'opacity 140ms' }}>
+                                                <g
+                                                    key={d.e.id}
+                                                    style={{ opacity: (!on ? 0.12 : pair != null && !hit ? 0.3 : 1) * (hot != null && thirdOf(d) !== hot ? 0.25 : 1), transition: 'opacity 140ms' }}
+                                                >
                                                     <circle cx={s.x} cy={s.y} r={BEAD} fill={colors[d.win]} stroke={hit ? 'var(--brand)' : 'var(--bg)'} strokeWidth={hit ? 0.8 : 0.45} />
                                                     {d.led ? <Spark x={s.x} y={s.y} a={s.a} goal={d.led.type === 'goal'} /> : null}
                                                 </g>
                                             );
                                         })}
-                                        {/* The dot's tally: away wins left, home wins right (only the picked taker's when one is picked). */}
-                                        {ds.length ? (
-                                            <text y={tallyFs / 3} textAnchor="middle" fontSize={tallyFs} fontWeight={700} className="tabular-nums" style={{ opacity: mine.length ? 1 : 0.25 }}>
-                                                <tspan fill={colors.away}>{aw}</tspan>
-                                                <tspan className="fill-fg-3" fontWeight={400}>
-                                                    {' · '}
-                                                </tspan>
-                                                <tspan fill={colors.home}>{hw}</tspan>
-                                            </text>
-                                        ) : null}
-                                        {ds.length ? <circle r={r + STEP + 1} fill="transparent" className="cursor-crosshair" {...bind(dotTip(k))} /> : null}
                                     </g>
                                 );
                             })}
-                        </svg>
-                        <div className="grid grid-cols-[75fr_50fr_75fr] text-center text-micro uppercase tracking-label text-fg-3">
-                            {thirds.map(z => (
-                                <span key={z.name} className="flex flex-col items-center gap-0.5">
-                                    <span className="flex items-center gap-1.5">
-                                        {z.dir < 0 ? <Arrow dir={-1} /> : null}
-                                        {z.dir ? <Crest tri={z.dir < 0 ? m.teams.away.tri : m.teams.home.tri} size={16} className="h-4 w-4" /> : null}
-                                        {z.name}
-                                        {z.dir > 0 ? <Arrow dir={1} /> : null}
-                                    </span>
-                                    <span className="text-caption font-bold normal-case tracking-normal tabular-nums">
-                                        <span style={{ color: colors.away }}>{z.away}</span>
-                                        <span className="px-1 font-normal text-fg-3">·</span>
-                                        <span style={{ color: colors.home }}>{z.home}</span>
-                                    </span>
-                                </span>
+                            {/* The thirds are the hover targets: the beads read by zone, not by dot. */}
+                            {thirds.map((t, z) => (
+                                <rect
+                                    key={z}
+                                    x={t.x0}
+                                    y={-42.5}
+                                    width={t.x1 - t.x0}
+                                    height={85}
+                                    fill="transparent"
+                                    className="cursor-crosshair"
+                                    {...bind(zoneTip(z as 0 | 1 | 2), { enter: () => setHot(z as 0 | 1 | 2), leave: () => setHot(null) })}
+                                />
                             ))}
+                        </svg>
+                        <div className="grid grid-cols-[75fr_50fr_75fr] gap-3 text-micro uppercase tracking-label text-fg-3">
+                            {thirds.map((t, z) => {
+                                const tot = t.away + t.home;
+                                return (
+                                    <div
+                                        key={z}
+                                        onPointerEnter={e => e.pointerType === 'mouse' && setHot(z as 0 | 1 | 2)}
+                                        onPointerLeave={e => e.pointerType === 'mouse' && setHot(null)}
+                                        className={cn('flex min-w-0 flex-col gap-1 rounded-control px-2 py-1.5 transition-colors', hot === z && 'bg-surface-2')}
+                                    >
+                                        <span className="flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                            {t.dir ? <Crest tri={t.dir < 0 ? m.teams.away.tri : m.teams.home.tri} size={16} className="h-4 w-4" /> : null}
+                                            {t.name}
+                                        </span>
+                                        {/* Tug of war: away wins from the left, home wins from the right. */}
+                                        <span className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-body font-bold normal-case tracking-normal tabular-nums">
+                                            <span style={{ color: colors.away }}>{t.away}</span>
+                                            <span className="flex h-1.5 overflow-hidden rounded-full bg-line" aria-hidden="true">
+                                                {tot ? (
+                                                    <>
+                                                        <span style={{ width: `${(t.away / tot) * 100}%`, background: colors.away }} />
+                                                        <span className="flex-1" style={{ background: colors.home }} />
+                                                    </>
+                                                ) : null}
+                                            </span>
+                                            <span style={{ color: colors.home }}>{t.home}</span>
+                                        </span>
+                                        <span className="flex justify-between gap-2 whitespace-nowrap">
+                                            <span>{t.caps[0]}</span>
+                                            <span>{t.caps[1]}</span>
+                                        </span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                     <div className="order-3">{rail('home')}</div>
@@ -467,7 +499,7 @@ export function Faceoffs() {
                     <span className="flex items-center gap-1.5">
                         <SparkIcon /> Shot attempt within {DRAW_WINDOW}s
                     </span>
-                    <span>Click a taker to focus · hover an opponent for their draws</span>
+                    <span>Hover a zone for its draws · click a taker to focus</span>
                 </p>
                 {tip}
             </div>
