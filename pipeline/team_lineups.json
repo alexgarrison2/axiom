@@ -1620,7 +1620,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -1652,7 +1652,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -1787,19 +1787,19 @@
         ],
         "g": [
             {
-                "name": "Igor Shesterkin",
-                "number": 31,
+                "name": "Dylan Garand",
+                "number": null,
                 "pos": "g1",
-                "id": 25267,
+                "id": 32794,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Dylan Garand",
+                "name": "Callum Tung",
                 "number": null,
                 "pos": "g2",
-                "id": 32794,
+                "id": 38436,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1807,10 +1807,10 @@
         ],
         "ir": [
             {
-                "name": "Joonas Korpisalo",
-                "number": 70,
+                "name": "Igor Shesterkin",
+                "number": 31,
                 "pos": "ir1",
-                "id": 2556,
+                "id": 25267,
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
@@ -1820,6 +1820,15 @@
                 "number": 90,
                 "pos": "ir2",
                 "id": 26350,
+                "ppUnit": null,
+                "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Joonas Korpisalo",
+                "number": 70,
+                "pos": "ir3",
+                "id": 2556,
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
@@ -1903,7 +1912,7 @@
         ],
         "lineup_source": "Vince Mercogliano",
         "updated_at": "2026-10-10T18:08:33.061Z",
-        "fetched_at": "2026-10-10T19:02:40Z"
+        "fetched_at": "2026-10-11T02:04:12Z"
     },
     "EDM": {
         "f1": [
@@ -2891,9 +2900,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "VGK PR",
-        "updated_at": "2026-10-09T01:46:12.884Z",
-        "fetched_at": "2026-10-09T02:03:54Z"
+        "lineup_source": "Hannah Kirkell",
+        "updated_at": "2026-10-11T01:33:26.092Z",
+        "fetched_at": "2026-10-11T02:04:12Z"
     },
     "CHI": {
         "f1": [
@@ -4560,7 +4569,7 @@
                 "number": 21,
                 "pos": "c",
                 "id": 2018,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4577,6 +4586,16 @@
             }
         ],
         "f4": [
+            {
+                "name": "Andre Lee",
+                "number": null,
+                "pos": "lw",
+                "id": 30215,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
             {
                 "name": "Samuel Helenius",
                 "number": null,
@@ -4757,7 +4776,7 @@
                 "number": 21,
                 "pos": "sk1",
                 "id": 2018,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -4789,9 +4808,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Alexander Legget",
-        "updated_at": "2026-10-09T19:44:40.989Z",
-        "fetched_at": "2026-10-10T20:04:13Z"
+        "lineup_source": "Zach Dooley",
+        "updated_at": "2026-10-11T01:38:00.435Z",
+        "fetched_at": "2026-10-11T02:04:12Z"
     },
     "DAL": {
         "f1": [
@@ -5491,14 +5510,14 @@
                 "movement": null
             },
             {
-                "name": "A.J. Greer",
-                "number": 18,
+                "name": "Frank Vatrano",
+                "number": 77,
                 "pos": "rw",
-                "id": 2706,
+                "id": 2545,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -5725,8 +5744,8 @@
             }
         ],
         "lineup_source": "@AnaheimDucks",
-        "updated_at": "2026-10-09T23:52:48.103Z",
-        "fetched_at": "2026-10-10T04:58:15Z"
+        "updated_at": "2026-10-11T01:56:24.973Z",
+        "fetched_at": "2026-10-11T02:04:12Z"
     },
     "NJD": {
         "f1": [
@@ -9631,21 +9650,21 @@
                 "movement": null
             },
             {
-                "name": "Ryan Strome",
-                "number": 16,
+                "name": "Martin Pospisil",
+                "number": 76,
                 "pos": "c",
-                "id": 1825,
-                "ppUnit": 2,
+                "id": 28414,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Maxim Tsyplakov",
-                "number": 72,
+                "name": "Ryan Strome",
+                "number": 16,
                 "pos": "rw",
-                "id": 38122,
-                "ppUnit": null,
+                "id": 1825,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9685,24 +9704,24 @@
         ],
         "f4": [
             {
-                "name": "Brennan Othmann",
-                "number": 78,
+                "name": "Maxim Tsyplakov",
+                "number": 72,
                 "pos": "lw",
-                "id": 30831,
+                "id": 38122,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Martin Pospisil",
-                "number": 76,
+                "name": "Jonathan Castagna",
+                "number": null,
                 "pos": "c",
-                "id": 28414,
+                "id": 35221,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Adam Klapka",
@@ -9897,9 +9916,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Danny Austin",
-        "updated_at": "2026-10-10T18:08:51.185Z",
-        "fetched_at": "2026-10-10T19:02:40Z"
+        "lineup_source": "Pat Steinberg",
+        "updated_at": "2026-10-11T01:40:39.154Z",
+        "fetched_at": "2026-10-11T02:04:12Z"
     },
     "NSH": {
         "f1": [
