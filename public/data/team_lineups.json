@@ -76,14 +76,14 @@
                 "movement": null
             },
             {
-                "name": "Jordan Staal",
-                "number": 11,
+                "name": "Mark Jankowski",
+                "number": 77,
                 "pos": "c",
-                "id": 1246,
-                "ppUnit": 2,
+                "id": 2711,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Jordan Martinook",
@@ -98,30 +98,30 @@
         ],
         "f4": [
             {
-                "name": "Eric Robinson",
-                "number": 50,
+                "name": "Nicolas Deslauriers",
+                "number": 44,
                 "pos": "lw",
-                "id": 4650,
+                "id": 1699,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Mark Jankowski",
-                "number": 77,
-                "pos": "c",
-                "id": 2711,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jesperi Kotkaniemi",
                 "number": 82,
-                "pos": "rw",
+                "pos": "c",
                 "id": 4788,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Eric Robinson",
+                "number": 50,
+                "pos": "rw",
+                "id": 4650,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -232,15 +232,24 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Jordan Staal",
+                "number": 11,
+                "pos": "ir3",
+                "id": 1246,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
             {
-                "name": "Jordan Staal",
-                "number": 11,
+                "name": "Sebastian Aho",
+                "number": 20,
                 "pos": "sk1",
-                "id": 1246,
-                "ppUnit": 2,
+                "id": 2677,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -274,11 +283,11 @@
         ],
         "pk2": [
             {
-                "name": "Sebastian Aho",
-                "number": 20,
+                "name": "Mark Jankowski",
+                "number": 77,
                 "pos": "sk1",
-                "id": 2677,
-                "ppUnit": 1,
+                "id": 2711,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -310,9 +319,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Walt Ruff",
-        "updated_at": "2026-10-10T22:47:22.145Z",
-        "fetched_at": "2026-10-11T03:04:10Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-11T22:52:29.475Z",
+        "fetched_at": "2026-10-11T23:02:26Z"
     },
     "FLA": {
         "f1": [
@@ -3231,14 +3240,14 @@
     "PHI": {
         "f1": [
             {
-                "name": "Trevor Zegras",
-                "number": 46,
+                "name": "Denver Barkey",
+                "number": 86,
                 "pos": "lw",
-                "id": 30202,
-                "ppUnit": 1,
+                "id": 35098,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Christian Dvorak",
@@ -3283,6 +3292,38 @@
                 "movement": null
             },
             {
+                "name": "Porter Martone",
+                "number": null,
+                "pos": "rw",
+                "id": 37366,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Michael Bunting",
+                "number": 58,
+                "pos": "lw",
+                "id": 3778,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Trevor Zegras",
+                "number": 46,
+                "pos": "c",
+                "id": 30202,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
                 "name": "Matvei Michkov",
                 "number": 39,
                 "pos": "rw",
@@ -3290,19 +3331,19 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
-        "f3": [
+        "f4": [
             {
-                "name": "Denver Barkey",
-                "number": 86,
+                "name": "Carl Grundstrom",
+                "number": 91,
                 "pos": "lw",
-                "id": 35098,
-                "ppUnit": 2,
+                "id": 2875,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Noah Cates",
@@ -3312,45 +3353,13 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Porter Martone",
-                "number": null,
-                "pos": "rw",
-                "id": 37366,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Michael Bunting",
-                "number": 58,
-                "pos": "lw",
-                "id": 3778,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Noel Acciari",
                 "number": 52,
-                "pos": "c",
-                "id": 2589,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Garrett Wilson",
-                "number": 10,
                 "pos": "rw",
-                "id": 1711,
+                "id": 2589,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -3369,14 +3378,14 @@
                 "movement": null
             },
             {
-                "name": "Jamie Drysdale",
-                "number": 9,
+                "name": "Oliver Bonk",
+                "number": 59,
                 "pos": "rd",
-                "id": 29756,
-                "ppUnit": 2,
+                "id": 35107,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d2": [
@@ -3391,6 +3400,28 @@
                 "movement": null
             },
             {
+                "name": "Jamie Drysdale",
+                "number": 9,
+                "pos": "rd",
+                "id": 29756,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Simon Benoit",
+                "number": 2,
+                "pos": "ld",
+                "id": 26550,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
                 "name": "David Jiricek",
                 "number": null,
                 "pos": "rd",
@@ -3398,29 +3429,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Helge Grans",
-                "number": 3,
-                "pos": "ld",
-                "id": 33041,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Simon Benoit",
-                "number": 2,
-                "pos": "rd",
-                "id": 26550,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -3539,10 +3548,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Helge Grans",
-                "number": 3,
+                "name": "Oliver Bonk",
+                "number": 59,
                 "pos": "sk3",
-                "id": 33041,
+                "id": 35107,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -3558,8 +3567,8 @@
             }
         ],
         "lineup_source": "Gabriela Carroll",
-        "updated_at": "2026-10-10T16:40:27.694Z",
-        "fetched_at": "2026-10-11T03:04:10Z"
+        "updated_at": "2026-10-11T22:46:23.026Z",
+        "fetched_at": "2026-10-11T23:02:26Z"
     },
     "PIT": {
         "f1": [
