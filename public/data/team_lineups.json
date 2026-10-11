@@ -5484,7 +5484,7 @@
                 "id": 33248,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -5517,7 +5517,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -5665,6 +5665,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Cutter Gauthier",
+                "number": 61,
+                "pos": "ir4",
+                "id": 33248,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -5744,8 +5753,8 @@
             }
         ],
         "lineup_source": "@AnaheimDucks",
-        "updated_at": "2026-10-11T01:56:24.973Z",
-        "fetched_at": "2026-10-11T02:04:12Z"
+        "updated_at": "2026-10-11T03:26:38.646Z",
+        "fetched_at": "2026-10-11T11:19:46Z"
     },
     "NJD": {
         "f1": [
