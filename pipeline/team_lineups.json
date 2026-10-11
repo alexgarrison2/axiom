@@ -729,23 +729,13 @@
                 "number": 29,
                 "pos": "rw",
                 "id": 28732,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             }
         ],
         "f4": [
-            {
-                "name": "Zack MacEwen",
-                "number": null,
-                "pos": "lw",
-                "id": 4489,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
             {
                 "name": "Teddy Blueger",
                 "number": 73,
@@ -807,17 +797,17 @@
                 "id": 1494,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Nick Blankenburg",
-                "number": 37,
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
                 "pos": "ld",
-                "id": 36299,
-                "ppUnit": null,
+                "id": 1172,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "new"
@@ -882,10 +872,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
+                "name": "Chris Tanev",
+                "number": 8,
                 "pos": "ir4",
-                "id": 1172,
+                "id": 1494,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -935,7 +925,7 @@
                 "id": 1494,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -977,8 +967,8 @@
             }
         ],
         "lineup_source": "Mark Masters",
-        "updated_at": "2026-10-10T21:13:42.934Z",
-        "fetched_at": "2026-10-10T22:02:37Z"
+        "updated_at": "2026-10-11T00:17:05.089Z",
+        "fetched_at": "2026-10-11T01:03:51Z"
     },
     "MTL": {
         "f1": [

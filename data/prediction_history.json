@@ -40240,5 +40240,73 @@
         "market_p": 0.5598
       }
     }
+  },
+  {
+    "gameId": 2026020073,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-10",
+    "homeTeam": "Panthers",
+    "awayTeam": "Wild",
+    "homeScore": 1,
+    "awayScore": 4,
+    "decision": "REG",
+    "homeXg": 3.06,
+    "awayXg": 3.04,
+    "homeWinProb": 50.3,
+    "predictedWinner": "Panthers",
+    "actualWinner": "Wild",
+    "isCorrect": false,
+    "isLean": false,
+    "brierScore": 0.253,
+    "logLoss": 0.6992,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-10T21:06:00Z",
+    "startUtc": "2026-10-10T22:00:00Z",
+    "marketHomeProb": 55.5,
+    "modelHomeProb": 49.0,
+    "homeOdds": -135.0,
+    "awayOdds": 114.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 49.0,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.383,
+        "ll": 0.9597,
+        "naive_ll": 0.8825,
+        "market_p": 0.354
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.712,
+        "ll": 0.3397,
+        "naive_ll": 0.3102,
+        "market_p": 0.6797
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.456,
+        "ll": 0.7853,
+        "naive_ll": 0.8026,
+        "market_p": 0.4722
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.323,
+        "ll": 1.1301,
+        "naive_ll": 1.0672,
+        "market_p": 0.3125
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.49,
+        "ll": 0.7133,
+        "naive_ll": 0.6976,
+        "market_p": 0.4663
+      }
+    }
   }
 ]
