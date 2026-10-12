@@ -4,7 +4,7 @@
         "gameDate": "2026-10-12",
         "startTimeUTC": "2026-10-12T17:00:00Z",
         "gameType": 2,
-        "gameState": "PRE",
+        "gameState": "LIVE",
         "homeTeam": "Sabres",
         "awayTeam": "Panthers",
         "homeTeamAbbrev": "BUF",
@@ -803,11 +803,11 @@
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": true,
         "homeGoalieAlt": "Lukas Dostal",
-        "awayGoalieConfirmed": "Dustin Wolf",
+        "awayGoalieConfirmed": "Devin Cooley",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Devin Cooley",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
