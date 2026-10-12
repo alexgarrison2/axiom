@@ -34,12 +34,12 @@
     },
     "dfo_goalies": {
       "pages": 2,
-      "fetched_at": "2026-10-12T02:04:17Z"
+      "fetched_at": "2026-10-12T03:02:12Z"
     },
     "espn_injuries": {
       "entries": 122,
       "matched": 113,
-      "fetched_at": "2026-10-12T02:04:19Z"
+      "fetched_at": "2026-10-12T03:02:14Z"
     },
     "odds": {
       "games": 3,
@@ -49,16 +49,16 @@
         "bovada": 3,
         "espn": 0
       },
-      "fetched_at": "2026-10-12T02:04:22Z"
+      "fetched_at": "2026-10-12T03:02:16Z"
     },
     "bu_bundle": {
       "built_at": "2026-10-11T21:00:22+00:00",
       "max_source_date": "2026-10-10",
       "n_games": 83,
       "season": "20262027",
-      "age_h": 5.1,
+      "age_h": 6.0,
       "flag": "on",
-      "fetched_at": "2026-10-12T02:04:24Z"
+      "fetched_at": "2026-10-12T03:02:19Z"
     },
     "player_ratings": {
       "as_of": "2026-10-10",
@@ -68,7 +68,7 @@
       "fetched_at": "2026-10-12T02:04:27Z"
     },
     "player_props": {
-      "fetched_at": "2026-10-12T02:04:23Z",
+      "fetched_at": "2026-10-12T03:02:17Z",
       "games": 3
     },
     "skater_games": {
@@ -78,8 +78,8 @@
   "schema_version": 1,
   "season_id": "20262027",
   "season_label": "2026-27",
-  "generated_at": "2026-10-12T02:05:09Z",
-  "mode": "full",
+  "generated_at": "2026-10-12T03:03:05Z",
+  "mode": "lite",
   "games_played_current_season": 86,
   "phase": {
     "in_season": true,
@@ -99,170 +99,17 @@
       "reason": "already rolled over to 20262027"
     },
     {
-      "stage": "scrape_games",
-      "status": "ok",
-      "rows_written": 2,
-      "seconds": 3.9,
-      "required": true
-    },
-    {
-      "stage": "special_teams",
-      "status": "ok",
-      "rows_written": 0,
-      "seconds": 2.2,
-      "required": false,
-      "reason": "2 recent team-games pending in the NHL report"
-    },
-    {
-      "stage": "rosters_bio_goalies",
-      "status": "ok",
-      "rows_written": 778,
-      "seconds": 7.7,
-      "required": false
-    },
-    {
-      "stage": "xg_rescore",
-      "status": "ok",
-      "rows_written": 78,
-      "seconds": 1.4,
-      "required": true,
-      "reason": "78 new shots scored"
-    },
-    {
-      "stage": "gamestats_update",
-      "status": "ok",
-      "rows_written": 172,
-      "seconds": 0.1,
-      "required": true
-    },
-    {
-      "stage": "game_xg",
-      "status": "ok",
-      "rows_written": 86,
-      "seconds": 0.1,
-      "required": false
-    },
-    {
-      "stage": "goalie_shots",
-      "status": "ok",
-      "rows_written": 713,
-      "seconds": 1.4,
-      "required": false
-    },
-    {
-      "stage": "sync_gamestats",
-      "status": "ok",
-      "rows_written": 2,
-      "seconds": 0.0,
-      "required": true
-    },
-    {
-      "stage": "team_ratings",
-      "status": "ok",
-      "rows_written": 32,
-      "seconds": 82.9,
-      "required": true
-    },
-    {
-      "stage": "shifts",
-      "status": "ok",
-      "rows_written": 1342,
-      "seconds": 1.5,
-      "required": false
-    },
-    {
-      "stage": "enrich_pbp",
-      "status": "ok",
-      "rows_written": 1,
-      "seconds": 0.4,
-      "required": false
-    },
-    {
-      "stage": "wowy",
-      "status": "ok",
-      "rows_written": 2901,
-      "seconds": 1.8,
-      "required": false
-    },
-    {
-      "stage": "raw_pbp",
-      "status": "ok",
-      "rows_written": 0,
-      "seconds": 9.3,
-      "required": false
-    },
-    {
-      "stage": "player_models",
-      "status": "ok",
-      "rows_written": 940,
-      "seconds": 0.6,
-      "required": false
-    },
-    {
-      "stage": "skater_games",
-      "status": "ok",
-      "rows_written": 3060,
-      "seconds": 0.8,
-      "required": false
-    },
-    {
-      "stage": "lineups_all",
-      "status": "ok",
-      "rows_written": 32,
-      "seconds": 6.0,
-      "required": false,
-      "reason": "32 teams stored"
-    },
-    {
-      "stage": "contracts",
-      "status": "skip",
-      "rows_written": 0,
-      "seconds": 0.0,
-      "required": false,
-      "reason": "fresh"
-    },
-    {
-      "stage": "schedule_detail",
-      "status": "ok",
-      "rows_written": 1344,
-      "seconds": 4.9,
-      "required": false
-    },
-    {
-      "stage": "player_news",
-      "status": "ok",
-      "rows_written": 0,
-      "seconds": 0.3,
-      "required": false
-    },
-    {
-      "stage": "playoff_news",
-      "status": "skip",
-      "rows_written": 0,
-      "seconds": 0.0,
-      "required": false,
-      "reason": "not in the playoffs"
-    },
-    {
-      "stage": "goalie_playoff_career",
-      "status": "skip",
-      "rows_written": 0,
-      "seconds": 0.0,
-      "required": false,
-      "reason": "not in the playoffs"
-    },
-    {
       "stage": "upcoming_games",
       "status": "ok",
       "rows_written": 6,
-      "seconds": 1.4,
+      "seconds": 2.6,
       "required": true
     },
     {
       "stage": "injuries",
       "status": "ok",
       "rows_written": 122,
-      "seconds": 0.9,
+      "seconds": 0.3,
       "required": false
     },
     {
@@ -276,28 +123,28 @@
       "stage": "player_boxscores",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 0.4,
+      "seconds": 0.0,
       "required": false
     },
     {
       "stage": "odds",
       "status": "ok",
       "rows_written": 3,
-      "seconds": 1.9,
+      "seconds": 1.5,
       "required": false
     },
     {
       "stage": "player_props",
       "status": "ok",
-      "rows_written": 173,
-      "seconds": 1.7,
+      "rows_written": 176,
+      "seconds": 1.2,
       "required": false
     },
     {
       "stage": "goalie_stats",
       "status": "ok",
       "rows_written": 101,
-      "seconds": 0.3,
+      "seconds": 0.2,
       "required": false
     },
     {
@@ -309,55 +156,35 @@
       "reason": "not in the playoffs"
     },
     {
+      "stage": "sync_gamestats",
+      "status": "skip",
+      "rows_written": 0,
+      "seconds": 0.0,
+      "required": false,
+      "reason": "already in sync"
+    },
+    {
+      "stage": "ratings_freshness",
+      "status": "ok",
+      "rows_written": 0,
+      "seconds": 0.0,
+      "required": true,
+      "reason": "1.0h old"
+    },
+    {
       "stage": "bu_bundle",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 0.1,
+      "seconds": 1.9,
       "required": false,
-      "reason": "built 5.1h ago, 83 games of 20262027, PONYXG_BU=on"
-    },
-    {
-      "stage": "player_ratings",
-      "status": "ok",
-      "rows_written": 1217,
-      "seconds": 3.6,
-      "required": false,
-      "reason": "705 roster skaters, as of 2026-10-10 (unchanged)"
+      "reason": "built 6.0h ago, 83 games of 20262027, PONYXG_BU=on"
     },
     {
       "stage": "predict",
       "status": "ok",
       "rows_written": 6,
-      "seconds": 20.6,
+      "seconds": 35.4,
       "required": true
-    },
-    {
-      "stage": "prediction_history",
-      "status": "ok",
-      "rows_written": 0,
-      "seconds": 1.6,
-      "required": true
-    },
-    {
-      "stage": "model_report",
-      "status": "ok",
-      "rows_written": 84,
-      "seconds": 0.3,
-      "required": true
-    },
-    {
-      "stage": "bet_ledger",
-      "status": "ok",
-      "rows_written": 266,
-      "seconds": 0.7,
-      "required": true
-    },
-    {
-      "stage": "season_simulator",
-      "status": "ok",
-      "rows_written": 32,
-      "seconds": 15.1,
-      "required": false
     },
     {
       "stage": "snapshot",
@@ -370,7 +197,7 @@
       "stage": "props_board",
       "status": "ok",
       "rows_written": 661,
-      "seconds": 3.0,
+      "seconds": 6.6,
       "required": false
     },
     {
@@ -382,6 +209,27 @@
       "reason": "min team GP 4 < 20"
     },
     {
+      "stage": "prediction_history",
+      "status": "ok",
+      "rows_written": 0,
+      "seconds": 2.5,
+      "required": true
+    },
+    {
+      "stage": "model_report",
+      "status": "ok",
+      "rows_written": 84,
+      "seconds": 0.4,
+      "required": true
+    },
+    {
+      "stage": "bet_ledger",
+      "status": "ok",
+      "rows_written": 266,
+      "seconds": 0.8,
+      "required": true
+    },
+    {
       "stage": "final_sync",
       "status": "ok",
       "rows_written": 0,
@@ -391,18 +239,18 @@
   ],
   "ok": true,
   "run": {
-    "started_at": "2026-10-12T02:02:12Z",
-    "finished_at": "2026-10-12T02:05:09Z",
-    "seconds": 176.9,
-    "github_run_id": "38194192233"
+    "started_at": "2026-10-12T03:02:12Z",
+    "finished_at": "2026-10-12T03:03:05Z",
+    "seconds": 53.7,
+    "github_run_id": "38198138586"
   },
   "last_full_attempt": "2026-10-12T02:05:09Z",
   "last_full_run": "2026-10-12T02:05:09Z",
   "stale": {
     "player_props": "Bovada event list unavailable"
   },
-  "last_lite_attempt": "2026-10-11T23:02:59Z",
-  "last_lite_run": "2026-10-11T23:02:59Z",
+  "last_lite_attempt": "2026-10-12T03:03:05Z",
+  "last_lite_run": "2026-10-12T03:03:05Z",
   "stale_since": {
     "player_props": "2026-10-05T04:45:04Z"
   }
