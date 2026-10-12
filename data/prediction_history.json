@@ -40960,5 +40960,66 @@
         "market_p": 0.3367
       }
     }
+  },
+  {
+    "gameId": 2026020084,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-11",
+    "homeTeam": "Capitals",
+    "awayTeam": "Kraken",
+    "homeScore": 3,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.54,
+    "awayXg": 2.62,
+    "homeWinProb": 65.0,
+    "predictedWinner": "Capitals",
+    "actualWinner": "Kraken",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.4225,
+    "logLoss": 1.0498,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-11T20:50:00Z",
+    "startUtc": "2026-10-11T21:00:00Z",
+    "marketHomeProb": 66.8,
+    "modelHomeProb": 64.6,
+    "homeOdds": -218.0,
+    "awayOdds": 180.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 64.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.255,
+        "ll": 1.3665,
+        "naive_ll": 1.2721,
+        "market_p": 0.2672
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.593,
+        "ll": 0.5226,
+        "naive_ll": 0.5087,
+        "market_p": 0.5674
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.45,
+        "ll": 0.7985,
+        "naive_ll": 0.7998,
+        "market_p": 0.4814
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.328,
+        "ll": 1.1147,
+        "naive_ll": 1.1976,
+        "market_p": null
+      }
+    }
   }
 ]

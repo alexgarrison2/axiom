@@ -5515,7 +5515,7 @@
                 "id": 2792,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -5683,6 +5683,15 @@
                 "ppUnit": 1,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Ryan Poehling",
+                "number": 25,
+                "pos": "ir5",
+                "id": 2792,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -5693,7 +5702,7 @@
                 "id": 2792,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Alex Killorn",
@@ -5763,7 +5772,7 @@
         ],
         "lineup_source": "@AnaheimDucks",
         "updated_at": "2026-10-11T03:26:38.646Z",
-        "fetched_at": "2026-10-11T11:19:46Z"
+        "fetched_at": "2026-10-12T00:04:14Z"
     },
     "NJD": {
         "f1": [
