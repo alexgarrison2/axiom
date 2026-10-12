@@ -4,7 +4,7 @@
         "gameDate": "2026-10-12",
         "startTimeUTC": "2026-10-12T17:00:00Z",
         "gameType": 2,
-        "gameState": "LIVE",
+        "gameState": "FINAL",
         "homeTeam": "Sabres",
         "awayTeam": "Panthers",
         "homeTeamAbbrev": "BUF",
@@ -853,8 +853,8 @@
         "awayGoalieConfirmed": "Devon Levi",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Tristan Jarry",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
