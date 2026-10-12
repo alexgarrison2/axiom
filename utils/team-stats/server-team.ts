@@ -11,7 +11,7 @@ import { leagueAverages } from './chart-metrics';
 import { goalieKey } from './filter';
 import { goalieStartsGsax, packGames } from './game-row';
 import { gameTypeOf, prevSeasonId, seasonLabel } from './season';
-import { leagueStandings, loadPredictionRows, loadProjections, ratingsSeason, readPublicJson } from './server';
+import { leagueStandings, loadPredictionRows, loadProjections, readPublicJson } from './server';
 import { teamMeta } from './teams';
 import { loadRatings } from '../../lib/players/server';
 import type { GameRow } from './types';
@@ -105,17 +105,6 @@ export function loadRoster(tri: string): Promise<{ players: RosterPlayer[]; sour
     })();
     rosterCache.set(tri, p);
     return p;
-}
-
-interface ImpactEntry {
-    name?: string;
-    team?: string;
-    team_prev?: string;
-    on_roster?: boolean;
-    position?: string;
-    is_forward?: boolean;
-    games_played?: number;
-    [k: string]: unknown;
 }
 
 function fallbackRoster(tri: string): RosterPlayer[] {
@@ -237,44 +226,53 @@ const pctile = (val: number, pool: number[], hiGood = true) => {
 };
 const r2 = (v: number) => Math.round(v * 100) / 100;
 
-/** On-ice rates (xGF/60, xGA/60, ...) from the player model's season, with percentiles. */
-function ratesBuilder() {
-    const impact = readPublicJson<Record<string, ImpactEntry>>('player_impact.json') ?? {};
-    const label = seasonLabel(ratingsSeason());
-    const all = Object.values(impact).filter(p => p.position !== 'G' && Number(p.games_played ?? 0) >= 5);
-    const num = (p: ImpactEntry, k: string) => Number(p[k] ?? 0);
-    const pools = (fwd: boolean) => {
-        const arr = all.filter(p => !!p.is_forward === fwd);
-        const col = (k: string) => arr.map(p => num(p, k));
-        return {
-            xgf60: col('ev_xgf_per60'), xga60: col('ev_xga_per60'), xgPct: col('onice_xgf_pct'), ixg60: col('ind_xg_per60'),
-            rel: col('relative_xgf_pct'), pen: col('penalty_diff_per60'),
-            pp: arr.filter(p => num(p, 'pp_toi_per_game') >= 60).map(p => num(p, 'pp_xgf_per60')),
-            pk: arr.filter(p => num(p, 'pk_toi_per_game') >= 60).map(p => num(p, 'pk_xga_per60')),
-        };
+interface RatesDoc {
+    season: string;
+    cols: string[];
+    rows: (number | string)[][];
+}
+
+/**
+ * One season's descriptive on-ice rates (public/data/skater_rates/<season>.json,
+ * pipeline/skater_rates.py) with percentiles among forwards or defencemen who
+ * have played min(5, half the most games anyone has) games.
+ */
+function ratesBuilder(season: string) {
+    const doc = readPublicJson<RatesDoc>(`skater_rates/${season}.json`);
+    const label = seasonLabel(season);
+    const at = Object.fromEntries((doc?.cols ?? []).map((c, i) => [c, i]));
+    const num = (r: (number | string)[], k: string) => Number(r[at[k]] ?? 0);
+    const rows = doc?.rows ?? [];
+    const byId = new Map(rows.map(r => [String(r[at.player]), r]));
+    const maxGp = rows.reduce((m, r) => Math.max(m, num(r, 'gp')), 0);
+    const pooled = rows.filter(r => num(r, 'gp') >= Math.min(5, Math.ceil(maxGp / 2)) && num(r, 'toi5') > 0);
+    const pools = (d: boolean) => {
+        const arr = pooled.filter(r => (r[at.pos] === 'D') === d);
+        const col = (k: string) => arr.map(r => num(r, k));
+        return { xgf60: col('xgf60'), xga60: col('xga60'), xgPct: col('xg_pct'), ixg60: col('ixg60'), rel: col('rel'), pen: col('pen60') };
     };
-    const F = pools(true);
-    const D = pools(false);
+    const F = pools(false);
+    const D = pools(true);
     return (id: string): SkaterRates | null => {
-        const p = impact[id];
-        if (!p || p.position === 'G' || Number(p.games_played ?? 0) < 5) return null;
-        const pool = p.is_forward ? F : D;
-        const pc = (k: string, poolArr: number[], hi = true): Pctl => ({ v: r2(num(p, k)), p: pctile(num(p, k), poolArr, hi) });
+        const r = byId.get(id);
+        if (!r) return null;
+        const pool = r[at.pos] === 'D' ? D : F;
+        const pc = (k: string, poolArr: number[], hi = true): Pctl => ({ v: num(r, k), p: pctile(num(r, k), poolArr, hi) });
+        // Under 10 minutes at 5v5 the on-ice rates are noise; keep only the TOI split.
+        const five = num(r, 'toi5') >= 600;
         return {
             season: label,
-            team: (p.team_prev as string) ?? p.team ?? null,
-            gp: Number(p.games_played ?? 0),
-            xgf60: pc('ev_xgf_per60', pool.xgf60),
-            xga60: pc('ev_xga_per60', pool.xga60, false),
-            xgPct: pc('onice_xgf_pct', pool.xgPct),
-            ixg60: pc('ind_xg_per60', pool.ixg60),
-            rel: pc('relative_xgf_pct', pool.rel),
-            pen: pc('penalty_diff_per60', pool.pen),
-            ppPct: num(p, 'pp_toi_per_game') >= 60 ? pctile(num(p, 'pp_xgf_per60'), pool.pp) : null,
-            pkPct: num(p, 'pk_toi_per_game') >= 60 ? pctile(num(p, 'pk_xga_per60'), pool.pk, false) : null,
-            evToi: Math.round(num(p, 'ev_toi_per_game')),
-            ppToi: Math.round(num(p, 'pp_toi_per_game')),
-            pkToi: Math.round(num(p, 'pk_toi_per_game')),
+            team: String(r[at.team]),
+            gp: num(r, 'gp'),
+            xgf60: five ? pc('xgf60', pool.xgf60) : null,
+            xga60: five ? pc('xga60', pool.xga60, false) : null,
+            xgPct: five ? pc('xg_pct', pool.xgPct) : null,
+            ixg60: five ? pc('ixg60', pool.ixg60) : null,
+            rel: five ? pc('rel', pool.rel) : null,
+            pen: pc('pen60', pool.pen),
+            evToi: num(r, 'ev_toi'),
+            ppToi: num(r, 'pp_toi'),
+            pkToi: num(r, 'pk_toi'),
         };
     };
 }
@@ -520,7 +518,8 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
         const i = injuries.find(x => (x.playerId != null && String(x.playerId) === id) || norm(x.name ?? '') === norm(name));
         return i ? { status: i.status ?? 'Injured', returnDate: i.returnDate ?? null } : null;
     };
-    const ratesOf = ratesBuilder();
+    const ratesCur = ratesBuilder(curSeason);
+    const ratesLast = ratesBuilder(lastSeason);
     const ratingOf = ratingBuilder();
 
     const skaters: SkaterCardData[] = roster
@@ -529,14 +528,14 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
             const isNew = addedIds.has(p.id) || (rc === null && lastRows.length > 0 && !lastSeasonTeamIds.has(p.id));
             const bio = bios[p.id] ?? {};
             const c = contracts[p.id];
-            const rates = ratesOf(p.id);
+            const last = ratesLast(p.id);
             return {
                 id: p.id,
                 name: p.name,
                 pos: p.pos as SkaterCardData['pos'],
                 number: p.number,
                 isNew,
-                from: addedFrom.get(p.id) ?? (isNew ? (rates?.team ?? null) : null),
+                from: addedFrom.get(p.id) ?? (isNew ? (last?.team ?? null) : null),
                 age: bio.age ?? null,
                 height: bio.height ?? null,
                 weight: bio.weight ?? null,
@@ -545,7 +544,8 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
                 expiry: c ? [c.status, c.year ?? c.expiry_year].filter(Boolean).join(' ') || null : null,
                 injury: injuryFor(p.id, p.name),
                 rating: ratingOf(p.id),
-                rates,
+                rates: ratesCur(p.id),
+                ratesLast: last,
                 current: seasonLine(p.id, curRows, curTeamGames, tri),
                 last: seasonLine(p.id, lastRows, lastTeamGames, tri),
             };
@@ -607,7 +607,6 @@ export async function buildTeamPayload(tri: string, season: string, opts: { boxs
         lineup: isCurrent ? matchLineup(tri, skaters) : null,
         goalies,
         rosterSource: source,
-        ratingsSeasonLabel: seasonLabel(ratingsSeason()),
         boxscores,
         generatedAt: new Date().toISOString(),
     };

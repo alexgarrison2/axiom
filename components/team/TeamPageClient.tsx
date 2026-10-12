@@ -307,7 +307,6 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
                     teamColor={initial.team.color}
                     currentLabel={seasonLabel(seasons[0])}
                     prevLabel={prev ? seasonLabel(prev) : ''}
-                    ratingsLabel={current.ratingsSeasonLabel}
                     currentSeasonGames={seasonGames(seasons[0])}
                     prevSeasonGames={prev ? seasonGames(prev) : 82}
                 />

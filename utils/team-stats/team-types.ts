@@ -36,19 +36,17 @@ export interface SkaterRating {
     evMin: number;
 }
 
-/** Descriptive on-ice rates from the player model's season (player_impact.json), with league percentiles. */
+/** One season's descriptive on-ice rates (skater_rates/<season>.json), with league percentiles; 5v5 rates null under 10 minutes. */
 export interface SkaterRates {
-    season: string; // season label of the rates, e.g. "2025-26"
-    team: string | null; // team the rates were earned with
+    season: string; // season label of the rates, e.g. "2026-27"
+    team: string | null; // his team in his latest game that season
     gp: number;
-    xgf60: Pctl;
-    xga60: Pctl;
-    xgPct: Pctl;
-    ixg60: Pctl;
-    rel: Pctl;
+    xgf60: Pctl | null;
+    xga60: Pctl | null;
+    xgPct: Pctl | null;
+    ixg60: Pctl | null;
+    rel: Pctl | null;
     pen: Pctl;
-    ppPct: number | null;
-    pkPct: number | null;
     evToi: number;
     ppToi: number;
     pkToi: number;
@@ -69,7 +67,9 @@ export interface SkaterCardData {
     expiry: string | null;
     injury: { status: string; returnDate: string | null } | null;
     rating: SkaterRating | null;
+    /** This season's rates, then last season's (they follow the season toggle). */
     rates: SkaterRates | null;
+    ratesLast: SkaterRates | null;
     current: SeasonLine | null;
     last: SeasonLine | null;
 }
@@ -157,7 +157,6 @@ export interface TeamPayload {
     lineup: Record<string, string[]> | null;
     goalies: GoalieLine[];
     rosterSource: 'nhl' | 'fallback';
-    ratingsSeasonLabel: string;
     /** Per-game player rows (API payload only; omitted from the page). */
     boxscores?: Boxscores;
     generatedAt: string;

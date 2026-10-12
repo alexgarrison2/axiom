@@ -2,11 +2,12 @@
 
 import * as React from 'react';
 import { Segmented } from '@/components/ui/segmented';
-import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
+import { PlayerLink } from '@/components/players/PlayerLink';
+import { shortSeasonTag } from '@/components/ui/stat-chip';
 import { cn } from '@/lib/utils';
 import { SEASON_ID } from '@/lib/season';
 import { injuryCode, mmss, shortDate } from '@/utils/team-stats/format';
-import type { Pctl, SeasonLine, SkaterCardData } from '@/utils/team-stats/team-types';
+import type { Pctl, SeasonLine, SkaterCardData, SkaterRates } from '@/utils/team-stats/team-types';
 
 interface SkaterGridProps {
     skaters: SkaterCardData[];
@@ -15,7 +16,6 @@ interface SkaterGridProps {
     teamColor: string;
     currentLabel: string;
     prevLabel: string;
-    ratingsLabel: string;
     currentSeasonGames: number;
     prevSeasonGames: number;
 }
@@ -40,13 +40,13 @@ const GRID = 'grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-
 const sgn = (v: number, d = 2) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(d)}`;
 
 /**
- * Current-roster skater cards. Counting stats come from one season's NHL
- * boxscores (season toggle); NET / OFF / DEF are the current RAPM ratings
- * (they follow the player, so a newcomer shows his own); the on-ice rates
- * come from the player model's season and carry its tag.
+ * Current-roster skater cards. Counting stats (NHL boxscores) and on-ice
+ * rates (skater_rates) follow the season toggle; NET / OFF / DEF are the
+ * current RAPM ratings (they follow the player, so a newcomer shows his own).
+ * The name links to the player's page; the whole card is its hit area.
  */
 export default function SkaterGrid(props: SkaterGridProps) {
-    const { skaters, lineup, currentLabel, prevLabel, ratingsLabel } = props;
+    const { skaters, lineup, currentLabel, prevLabel } = props;
     const anyCurrent = skaters.some(s => (s.current?.gp ?? 0) > 0);
     const [which, setWhich] = React.useState<Which>(anyCurrent ? 'current' : 'last');
     const [sortBy, setSortBy] = React.useState<SortBy>(lineup ? 'lineup' : 'net');
@@ -68,20 +68,15 @@ export default function SkaterGrid(props: SkaterGridProps) {
 
     const byId = new Map(skaters.map(s => [s.id, s]));
     const inLineup = new Set(lineup ? Object.values(lineup).flat() : []);
-    const ratingsTag = shortSeasonTag(ratingsLabel);
-    // On-ice rates are one season's model output; tag them whenever that
-    // season differs from the counting-stats season on screen.
-    const ratingsPrior = !!ratingsLabel && ratingsLabel !== label;
 
     const card = (s: SkaterCardData) => (
         <SkaterCard
             key={s.id}
             s={s}
             line={line(s)}
+            rates={which === 'current' ? s.rates : s.ratesLast}
             seasonLabel={label}
             prior={which === 'last'}
-            ratingsTag={ratingsPrior ? ratingsTag : undefined}
-            ratingsLabel={ratingsLabel}
             team={props.team}
             teamColor={props.teamColor}
             seasonGames={seasonGames}
@@ -130,11 +125,6 @@ export default function SkaterGrid(props: SkaterGridProps) {
                     <Swatch className="bg-fg-1/80" label="GP" />
                     <Swatch className="bg-warn/80" label="Out" />
                     <Swatch className="bg-brand/60" label="Other" />
-                    {ratingsPrior ? (
-                        <span className="inline-flex items-center gap-1">
-                            Rates <SeasonTag>{ratingsTag}</SeasonTag>
-                        </span>
-                    ) : null}
                 </span>
             </div>
 
@@ -178,19 +168,17 @@ function Swatch({ className, label }: { className: string; label: string }) {
 }
 
 function SkaterCard({
-    s, line, seasonLabel, prior, ratingsTag, ratingsLabel, team, teamColor, seasonGames,
+    s, line, rates: imp, seasonLabel, prior, team, teamColor, seasonGames,
 }: {
     s: SkaterCardData;
     line: SeasonLine | null;
+    rates: SkaterRates | null;
     seasonLabel: string;
     prior: boolean;
-    ratingsTag?: string;
-    ratingsLabel: string;
     team: string;
     teamColor: string;
     seasonGames: number;
 }) {
-    const imp = s.rates;
     const rt = s.rating;
     const [imgOk, setImgOk] = React.useState(true);
     const stats: [string, React.ReactNode][] = [
@@ -202,7 +190,7 @@ function SkaterCard({
         ['TOI', line && line.gp ? mmss(line.toi) : '—'],
     ];
     return (
-        <article aria-labelledby={`sk-${s.id}`} className="panel relative flex flex-col overflow-hidden">
+        <article aria-labelledby={`sk-${s.id}`} className="panel panel-hover group relative flex flex-col overflow-hidden has-[:focus-visible]:border-brand">
             <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, ${s.isNew ? 'rgb(var(--model-rgb))' : teamColor}, transparent 70%)` }} />
             <div className="flex items-stretch gap-2.5 px-3 pt-2.5">
                 <div className="relative -mb-px h-[52px] w-11 shrink-0 overflow-hidden">
@@ -223,7 +211,9 @@ function SkaterCard({
                 </div>
                 <div className="min-w-0 flex-1">
                     <h4 id={`sk-${s.id}`} className="truncate font-display text-[15px] font-semibold uppercase leading-5 text-fg-1">
-                        {s.name}
+                        <PlayerLink id={Number(s.id)} className="after:absolute after:inset-0 after:content-[''] group-hover:text-brand focus-visible:outline-none">
+                            {s.name}
+                        </PlayerLink>
                     </h4>
                     <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-micro uppercase tracking-wide text-fg-3">
                         <span className="font-bold text-fg-1">{POS_LABEL[s.pos] ?? s.pos}</span>
@@ -277,29 +267,26 @@ function SkaterCard({
             ) : null}
 
             {imp ? (
-                <div data-ratings-season={ratingsLabel} data-prior={ratingsTag ? '' : undefined}>
-                    <span className="sr-only">{ratingsLabel} on-ice rates</span>
+                <div data-rates-season={imp.season}>
+                    <span className="sr-only">{imp.season} on-ice rates</span>
                     <div className="grid grid-cols-3 gap-x-2 px-3 pt-1.5">
-                        <Metric label="xGF/60" m={imp.xgf60} faded={!!ratingsTag} />
-                        <Metric label="xGA/60" m={imp.xga60} faded={!!ratingsTag} />
-                        <Metric label="xG%" m={imp.xgPct} faded={!!ratingsTag} fmt={v => (v * 100).toFixed(1)} />
-                        <Metric label="ixG/60" m={imp.ixg60} faded={!!ratingsTag} />
-                        <Metric label="Rel xG" m={imp.rel} faded={!!ratingsTag} fmt={v => sgn(v * 100, 1)} />
-                        <Metric label="Pen/60" m={imp.pen} faded={!!ratingsTag} fmt={v => sgn(v)} />
+                        <Metric label="xGF/60" m={imp.xgf60} />
+                        <Metric label="xGA/60" m={imp.xga60} />
+                        <Metric label="xG%" m={imp.xgPct} fmt={v => (v * 100).toFixed(1)} />
+                        <Metric label="ixG/60" m={imp.ixg60} />
+                        <Metric label="Rel xG" m={imp.rel} fmt={v => sgn(v * 100, 1)} />
+                        <Metric label="Pen/60" m={imp.pen} fmt={v => sgn(v)} />
                     </div>
                     <p className="flex items-center gap-3 px-3 pt-1 text-micro uppercase tabular-nums text-fg-3">
                         <span>
-                            EV <span className={ratingsTag ? undefined : 'text-fg-2'}>{mmss(imp.evToi)}</span>
+                            EV <span className="text-fg-2">{mmss(imp.evToi)}</span>
                         </span>
                         <span>
-                            PP <span className={ratingsTag ? undefined : 'text-fg-2'}>{mmss(imp.ppToi)}</span>
+                            PP <span className="text-fg-2">{mmss(imp.ppToi)}</span>
                         </span>
                         <span>
-                            PK <span className={ratingsTag ? undefined : 'text-fg-2'}>{mmss(imp.pkToi)}</span>
+                            PK <span className="text-fg-2">{mmss(imp.pkToi)}</span>
                         </span>
-                        {ratingsTag ? (
-                            <SeasonTag className="ml-auto">{ratingsTag}</SeasonTag>
-                        ) : null}
                     </p>
                 </div>
             ) : null}
@@ -309,12 +296,12 @@ function SkaterCard({
     );
 }
 
-/** One on-ice rate, coloured by league percentile; prior-season values stay muted. */
-function Metric({ label, m, faded, fmt = v => v.toFixed(2) }: { label: string; m?: Pctl; faded?: boolean; fmt?: (v: number) => string }) {
+/** One on-ice rate, coloured by league percentile. */
+function Metric({ label, m, fmt = v => v.toFixed(2) }: { label: string; m: Pctl | null; fmt?: (v: number) => string }) {
     return (
         <div className="flex items-baseline justify-between gap-1 py-0.5">
             <span className="text-micro text-fg-3">{label}</span>
-            <span className={cn('text-caption font-bold tabular-nums', faded && 'font-medium text-fg-3')} style={m && !faded ? { color: pctColor(m.p) } : undefined}>
+            <span className="text-caption font-bold tabular-nums" style={m ? { color: pctColor(m.p) } : undefined}>
                 {m ? fmt(m.v) : <span className="text-fg-disabled">—</span>}
             </span>
         </div>

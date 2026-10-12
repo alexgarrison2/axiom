@@ -3,7 +3,8 @@ fetch_skater_games.py — one row per skater per game, for the props page.
 
 Source: NHL stats REST ``skater/summary`` with ``isGame=true``, joined with
 the ``skater/realtime`` (shot attempts, missed and blocked) and
-``skater/timeonice`` (even-strength and power-play minutes) reports for the
+``skater/timeonice`` (even-strength, power-play and shorthanded minutes) and
+``skater/penalties`` (penalties drawn and taken) reports for the
 same player-games. A query returns at most 10,000 rows (``limit=-1``; paging
 past that returns nothing), so seasons are fetched in weekly ``gameDate``
 windows (~2,000 rows each). Unlike the boxscore scrape it carries power-play
@@ -16,7 +17,8 @@ season (rewritten every full run) and, once, for the previous season (the
 props windows reach back into it early in a season).
 
 Columns: game_id, date, player_id, name, team, opp, home, pos, toi (minutes),
-goals, assists, points, shots, pp_goals, pp_points
+goals, assists, points, shots, pp_goals, pp_points, attempts, missed, blocked,
+ev_toi, pp_toi, sh_toi (minutes), pen_drawn, pen_taken
 """
 from __future__ import annotations
 
@@ -37,12 +39,13 @@ WINDOW_DAYS = 7
 OVERLAP_DAYS = 3        # re-fetch the last few stored days (late stat corrections)
 COLUMNS = ["game_id", "date", "player_id", "name", "team", "opp", "home", "pos", "toi",
            "goals", "assists", "points", "shots", "pp_goals", "pp_points",
-           "attempts", "missed", "blocked", "ev_toi", "pp_toi"]
+           "attempts", "missed", "blocked", "ev_toi", "pp_toi", "sh_toi", "pen_drawn", "pen_taken"]
 # Extra reports joined onto ``summary``: {report: {api field: (column, seconds -> minutes)}}.
 EXTRA = {
     "realtime": {"totalShotAttempts": ("attempts", False), "missedShots": ("missed", False),
                  "shotAttemptsBlocked": ("blocked", False)},
-    "timeonice": {"evTimeOnIce": ("ev_toi", True), "ppTimeOnIce": ("pp_toi", True)},
+    "timeonice": {"evTimeOnIce": ("ev_toi", True), "ppTimeOnIce": ("pp_toi", True), "shTimeOnIce": ("sh_toi", True)},
+    "penalties": {"penaltiesDrawn": ("pen_drawn", False), "penalties": ("pen_taken", False)},
 }
 
 

@@ -706,6 +706,7 @@ def run_full(r, phase, rescore_all=False):
     r.run("raw_pbp", stage_raw_pbp, title="Append raw PBP to data/historical_pbp")
     r.run("player_models", stage_player_models, state, phase["games_played"], title="Player impact")
     r.run("skater_games", _call, "fetch_skater_games", title="Per-game skater logs (props)")
+    r.run("skater_rates", _call, "skater_rates", "main", [], title="Season on-ice rates (team skater cards)")
     r.run("lineups_all", stage_lineups_all, title="DailyFaceoff lineups (all 32 teams)")
     r.run("contracts", stage_contracts, title="Contracts (weekly by stored fetched_at)")
     r.run("schedule_detail", _call, "fetch_schedule_detail", title="Season schedule with venues (team Schedule tab)")
