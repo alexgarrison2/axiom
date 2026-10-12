@@ -686,20 +686,20 @@
                 "number": 53,
                 "pos": "lw",
                 "id": 35106,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Nick Paul",
-                "number": 20,
+                "name": "John Tavares",
+                "number": 91,
                 "pos": "c",
-                "id": 2357,
-                "ppUnit": 2,
+                "id": 1016,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "William Nylander",
@@ -724,10 +724,42 @@
                 "movement": null
             },
             {
+                "name": "Nick Paul",
+                "number": 20,
+                "pos": "c",
+                "id": 2357,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
                 "name": "Colton Sissons",
                 "number": 10,
-                "pos": "c",
+                "pos": "rw",
                 "id": 2030,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            }
+        ],
+        "f4": [
+            {
+                "name": "Brandon Duhaime",
+                "number": 24,
+                "pos": "lw",
+                "id": 26984,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Teddy Blueger",
+                "number": 73,
+                "pos": "c",
+                "id": 3798,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -741,29 +773,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Teddy Blueger",
-                "number": 73,
-                "pos": "c",
-                "id": 3798,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Brandon Duhaime",
-                "number": 24,
-                "pos": "rw",
-                "id": 26984,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -800,14 +810,14 @@
                 "movement": null
             },
             {
-                "name": "Chris Tanev",
-                "number": 8,
+                "name": "Troy Stecher",
+                "number": 28,
                 "pos": "rd",
-                "id": 1494,
+                "id": 2702,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "up"
             }
         ],
         "d3": [
@@ -816,37 +826,37 @@
                 "number": 95,
                 "pos": "ld",
                 "id": 1172,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Troy Stecher",
-                "number": 28,
+                "name": "Nick Blankenburg",
+                "number": 37,
                 "pos": "rd",
-                "id": 2702,
+                "id": 36299,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
             {
-                "name": "Anthony Stolarz",
-                "number": 41,
+                "name": "Sergei Bobrovsky",
+                "number": 72,
                 "pos": "g1",
-                "id": 2432,
+                "id": 1117,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Sergei Bobrovsky",
-                "number": 72,
+                "name": "Anthony Stolarz",
+                "number": 41,
                 "pos": "g2",
-                "id": 1117,
+                "id": 2432,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -868,7 +878,7 @@
                 "pos": "ir2",
                 "id": 2131,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -877,7 +887,7 @@
                 "pos": "ir3",
                 "id": 25020,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -887,15 +897,6 @@
                 "id": 1494,
                 "ppUnit": null,
                 "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "John Tavares",
-                "number": 91,
-                "pos": "ir5",
-                "id": 1016,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -928,13 +929,13 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Chris Tanev",
-                "number": 8,
+                "name": "Troy Stecher",
+                "number": 28,
                 "pos": "sk4",
-                "id": 1494,
+                "id": 2702,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             }
         ],
         "pk2": [
@@ -975,9 +976,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Mark Masters",
-        "updated_at": "2026-10-11T00:17:05.089Z",
-        "fetched_at": "2026-10-12T19:03:04Z"
+        "lineup_source": "David Alter",
+        "updated_at": "2026-10-12T22:26:01.812Z",
+        "fetched_at": "2026-10-12T23:02:27Z"
     },
     "MTL": {
         "f1": [
@@ -1342,7 +1343,7 @@
                 "number": 93,
                 "pos": "c",
                 "id": 31575,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1428,20 +1429,20 @@
                 "number": 27,
                 "pos": "ld",
                 "id": 1947,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Will Borgen",
-                "number": 17,
+                "name": "Charlie McAvoy",
+                "number": 73,
                 "pos": "rd",
-                "id": 4680,
-                "ppUnit": null,
+                "id": 2645,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d2": [
@@ -1456,14 +1457,14 @@
                 "movement": null
             },
             {
-                "name": "Connor Clifton",
-                "number": 75,
+                "name": "Will Borgen",
+                "number": 17,
                 "pos": "rd",
-                "id": 4833,
+                "id": 4680,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d3": [
@@ -1472,7 +1473,7 @@
                 "number": 59,
                 "pos": "ld",
                 "id": 31316,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1508,17 +1509,6 @@
                 "gameTimeDecision": false
             }
         ],
-        "ir": [
-            {
-                "name": "Charlie McAvoy",
-                "number": 73,
-                "pos": "ir1",
-                "id": 2645,
-                "ppUnit": null,
-                "injuryStatus": "out",
-                "gameTimeDecision": false
-            }
-        ],
         "pk1": [
             {
                 "name": "Elias Lindholm",
@@ -1543,16 +1533,16 @@
                 "number": 27,
                 "pos": "sk3",
                 "id": 1947,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Will Borgen",
-                "number": 17,
+                "name": "Charlie McAvoy",
+                "number": 73,
                 "pos": "sk4",
-                "id": 4680,
-                "ppUnit": null,
+                "id": 2645,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -1563,7 +1553,7 @@
                 "number": 93,
                 "pos": "sk1",
                 "id": 31575,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -1586,18 +1576,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Connor Clifton",
-                "number": 75,
+                "name": "Will Borgen",
+                "number": 17,
                 "pos": "sk4",
-                "id": 4833,
+                "id": 4680,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jack Studley",
-        "updated_at": "2026-10-10T16:37:21.111Z",
-        "fetched_at": "2026-10-10T17:03:08Z"
+        "lineup_source": "Belle Fraser",
+        "updated_at": "2026-10-12T22:24:39.463Z",
+        "fetched_at": "2026-10-12T23:02:27Z"
     },
     "NYR": {
         "f1": [

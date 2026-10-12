@@ -62,7 +62,7 @@
         "gameDate": "2026-10-12",
         "startTimeUTC": "2026-10-12T23:00:00Z",
         "gameType": 2,
-        "gameState": "FUT",
+        "gameState": "PRE",
         "homeTeam": "Devils",
         "awayTeam": "Senators",
         "homeTeamAbbrev": "NJD",
@@ -756,11 +756,11 @@
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Anthony Stolarz",
+        "awayGoalieConfirmed": "Sergei Bobrovsky",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Sergei Bobrovsky",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
