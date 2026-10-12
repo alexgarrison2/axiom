@@ -41021,5 +41021,66 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020085,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-11",
+    "homeTeam": "Rangers",
+    "awayTeam": "Canucks",
+    "homeScore": 6,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 4.04,
+    "awayXg": 2.22,
+    "homeWinProb": 77.5,
+    "predictedWinner": "Rangers",
+    "actualWinner": "Rangers",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.0506,
+    "logLoss": 0.2549,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-11T20:50:00Z",
+    "startUtc": "2026-10-11T22:00:00Z",
+    "marketHomeProb": 71.9,
+    "modelHomeProb": 78.8,
+    "homeOdds": -278.0,
+    "awayOdds": 225.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 78.8,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.669,
+        "ll": 0.402,
+        "naive_ll": 0.3601,
+        "market_p": 0.5893
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.549,
+        "ll": 0.5997,
+        "naive_ll": 0.6176,
+        "market_p": 0.4884
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.464,
+        "ll": 0.7679,
+        "naive_ll": 0.7791,
+        "market_p": 0.4546
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.299,
+        "ll": 1.2073,
+        "naive_ll": 1.2544,
+        "market_p": 0.3258
+      }
+    }
   }
 ]
