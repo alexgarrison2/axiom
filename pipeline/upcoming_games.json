@@ -764,13 +764,18 @@
         "tvNetwork": "",
         "tvDisplay": [
             {
-                "network": "Utah16",
+                "network": "Mammoth+",
                 "market": "H",
                 "team": "UTA",
                 "country": "US"
             }
         ],
         "tvBroadcasts": [
+            {
+                "network": "Mammoth+",
+                "market": "H",
+                "countryCode": "US"
+            },
             {
                 "network": "TSN4",
                 "market": "A",
