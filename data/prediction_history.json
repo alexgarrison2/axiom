@@ -41211,5 +41211,66 @@
         "market_p": 0.5112
       }
     }
+  },
+  {
+    "gameId": 2026020088,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-12",
+    "homeTeam": "Devils",
+    "awayTeam": "Senators",
+    "homeScore": 1,
+    "awayScore": 4,
+    "decision": "REG",
+    "homeXg": 3.04,
+    "awayXg": 2.94,
+    "homeWinProb": 51.6,
+    "predictedWinner": "Devils",
+    "actualWinner": "Senators",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.2663,
+    "logLoss": 0.7257,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-12T22:03:00Z",
+    "startUtc": "2026-10-12T23:00:00Z",
+    "marketHomeProb": 52.8,
+    "modelHomeProb": 51.3,
+    "homeOdds": -122.0,
+    "awayOdds": 102.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 51.3,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.37,
+        "ll": 0.9943,
+        "naive_ll": 0.9147,
+        "market_p": 0.3795
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.711,
+        "ll": 0.3411,
+        "naive_ll": 0.3214,
+        "market_p": 0.6925
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.474,
+        "ll": 0.7465,
+        "naive_ll": 0.7595,
+        "market_p": 0.4546
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.339,
+        "ll": 1.0818,
+        "naive_ll": 1.1622,
+        "market_p": 0.3422
+      }
+    }
   }
 ]

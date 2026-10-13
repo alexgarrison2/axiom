@@ -99,6 +99,7 @@
     "noah gregor": "8479393",
     "donovan sebrango": "8482131",
     "jacob moverare": "8479421",
+    "jared wright": "8483756",
     "angus booth": "8483699",
     "taylor ward": "8483406",
     "kenny connors": "8483675",
@@ -109,7 +110,6 @@
     "hunter haight": "8483452",
     "robby fabbri": "8477952",
     "vladimir tarasenko": "8475765",
-    "tyler pitlick": "8475752",
     "jeff petry": "8473507",
     "viking gustafsson nyberg": "8486166",
     "nicolas aube-kubel": "8477979",
@@ -530,7 +530,6 @@
     "niko mikkola": "8478859",
     "alex turcotte": "8481532",
     "quinton byfield": "8482124",
-    "jared wright": "8483756",
     "drew doughty": "8474563",
     "kevin fiala": "8477942",
     "brian dumoulin": "8475208",
@@ -561,6 +560,7 @@
     "nick foligno": "8473422",
     "nico sturm": "8481477",
     "jared spurgeon": "8474716",
+    "tyler pitlick": "8475752",
     "brock faber": "8482122",
     "jonas brodin": "8476463",
     "daemon hunt": "8482094",
@@ -1719,6 +1719,18 @@
         "team": "LAK"
       }
     ],
+    "wright": [
+      {
+        "pid": "8483756",
+        "full_name": "jared wright",
+        "team": "LAK"
+      },
+      {
+        "pid": "8483524",
+        "full_name": "shane wright",
+        "team": "SEA"
+      }
+    ],
     "booth": [
       {
         "pid": "8483699",
@@ -1806,13 +1818,6 @@
       {
         "pid": "8475765",
         "full_name": "vladimir tarasenko",
-        "team": "MIN"
-      }
-    ],
-    "pitlick": [
-      {
-        "pid": "8475752",
-        "full_name": "tyler pitlick",
         "team": "MIN"
       }
     ],
@@ -4750,18 +4755,6 @@
         "team": "LAK"
       }
     ],
-    "wright": [
-      {
-        "pid": "8483756",
-        "full_name": "jared wright",
-        "team": "LAK"
-      },
-      {
-        "pid": "8483524",
-        "full_name": "shane wright",
-        "team": "SEA"
-      }
-    ],
     "doughty": [
       {
         "pid": "8474563",
@@ -4956,6 +4949,13 @@
       {
         "pid": "8474716",
         "full_name": "jared spurgeon",
+        "team": "MIN"
+      }
+    ],
+    "pitlick": [
+      {
+        "pid": "8475752",
+        "full_name": "tyler pitlick",
         "team": "MIN"
       }
     ],
