@@ -6202,7 +6202,7 @@
                 "id": 27037,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -6341,6 +6341,15 @@
                 "gameTimeDecision": false
             },
             {
+                "name": "Nico Sturm",
+                "number": 78,
+                "pos": "ir4",
+                "id": 27037,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
                 "name": "Marcus Foligno",
                 "number": 17,
                 "pos": "ir5",
@@ -6427,8 +6436,8 @@
             }
         ],
         "lineup_source": "Dylan Loucks",
-        "updated_at": "2026-10-12T16:20:20.011Z",
-        "fetched_at": "2026-10-12T17:02:55Z"
+        "updated_at": "2026-10-13T02:22:29.872Z",
+        "fetched_at": "2026-10-13T03:04:33Z"
     },
     "WSH": {
         "f1": [
