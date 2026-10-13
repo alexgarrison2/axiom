@@ -3335,6 +3335,16 @@
         ],
         "f4": [
             {
+                "name": "Jack Studnicka",
+                "number": 53,
+                "pos": "lw",
+                "id": 4606,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Noah Cates",
                 "number": 27,
                 "pos": "c",
@@ -3466,7 +3476,7 @@
                 "pos": "ir3",
                 "id": 2498,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -3555,9 +3565,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-11)",
-        "updated_at": "2026-10-13T11:13:45.678Z",
-        "fetched_at": "2026-10-13T13:03:22Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-13T13:43:25.482Z",
+        "fetched_at": "2026-10-13T14:03:30Z"
     },
     "PIT": {
         "f1": [
@@ -6950,19 +6960,19 @@
         ],
         "g": [
             {
-                "name": "Jet Greaves",
-                "number": null,
+                "name": "Cam Talbot",
+                "number": 33,
                 "pos": "g1",
-                "id": 29751,
+                "id": 1059,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Cam Talbot",
-                "number": 33,
+                "name": "Jet Greaves",
+                "number": null,
                 "pos": "g2",
-                "id": 1059,
+                "id": 29751,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -7075,7 +7085,7 @@
         ],
         "lineup_source": "Wes Minke",
         "updated_at": "2026-10-12T15:40:12.406Z",
-        "fetched_at": "2026-10-13T13:03:22Z"
+        "fetched_at": "2026-10-13T14:03:30Z"
     },
     "SJS": {
         "f1": [
@@ -8691,7 +8701,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Viggo Bj\u00f6rck",
@@ -8765,7 +8775,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Vladislav Namestnikov",
@@ -8835,7 +8845,7 @@
             },
             {
                 "name": "Tyrel Bauer",
-                "number": null,
+                "number": 77,
                 "pos": "rd",
                 "id": 29948,
                 "ppUnit": null,
@@ -8856,7 +8866,7 @@
             },
             {
                 "name": "Clay Stevenson",
-                "number": null,
+                "number": 33,
                 "pos": "g2",
                 "id": 36270,
                 "ppUnit": null,
@@ -8971,7 +8981,7 @@
         ],
         "lineup_source": "Mitchell Clinton",
         "updated_at": "2026-10-12T18:02:38.532Z",
-        "fetched_at": "2026-10-12T18:02:56Z"
+        "fetched_at": "2026-10-13T14:03:30Z"
     },
     "BUF": {
         "f1": [
@@ -9120,7 +9130,7 @@
                 "id": 4786,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -9215,6 +9225,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Rasmus Dahlin",
+                "number": 26,
+                "pos": "ir4",
+                "id": 4786,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -9281,7 +9300,7 @@
                 "id": 4786,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Louis Crevier",
@@ -9294,8 +9313,8 @@
             }
         ],
         "lineup_source": "Matthew Fairburn",
-        "updated_at": "2026-10-12T16:38:34.884Z",
-        "fetched_at": "2026-10-13T01:02:58Z"
+        "updated_at": "2026-10-13T13:43:55.681Z",
+        "fetched_at": "2026-10-13T14:03:30Z"
     },
     "STL": {
         "f1": [
