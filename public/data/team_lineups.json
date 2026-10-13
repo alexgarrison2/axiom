@@ -498,14 +498,14 @@
         ],
         "d3": [
             {
-                "name": "Radko Gudas",
-                "number": 6,
+                "name": "Uvis Balinskis",
+                "number": 26,
                 "pos": "ld",
-                "id": 1366,
+                "id": 37929,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Dmitry Kulikov",
@@ -529,10 +529,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Jacob Markstrom",
-                "number": 25,
+                "name": "Cooper Black",
+                "number": null,
                 "pos": "g2",
-                "id": 594,
+                "id": 33884,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -554,16 +554,25 @@
                 "pos": "ir2",
                 "id": 4612,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
                 "name": "Brad Marchand",
                 "number": 63,
-                "pos": "ir4",
+                "pos": "ir3",
                 "id": 124,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Jacob Markstrom",
+                "number": 25,
+                "pos": "ir4",
+                "id": 594,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -645,7 +654,7 @@
         ],
         "lineup_source": "Rob Darragh",
         "updated_at": "2026-10-12T16:37:10.835Z",
-        "fetched_at": "2026-10-13T01:02:58Z"
+        "fetched_at": "2026-10-13T20:03:27Z"
     },
     "TOR": {
         "f1": [
@@ -9092,7 +9101,7 @@
                 "number": 20,
                 "pos": "lw",
                 "id": 36381,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9102,7 +9111,7 @@
                 "number": 71,
                 "pos": "c",
                 "id": 4810,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9112,7 +9121,7 @@
                 "number": 94,
                 "pos": "rw",
                 "id": 38139,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9152,23 +9161,23 @@
         ],
         "d1": [
             {
+                "name": "Olen Zellweger",
+                "number": 8,
+                "pos": "ld",
+                "id": 34623,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
                 "name": "Mattias Samuelsson",
                 "number": 23,
-                "pos": "ld",
+                "pos": "rd",
                 "id": 28792,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Rasmus Dahlin",
-                "number": 26,
-                "pos": "rd",
-                "id": 4786,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -9178,7 +9187,7 @@
                 "number": 25,
                 "pos": "ld",
                 "id": 30051,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9196,14 +9205,14 @@
         ],
         "d3": [
             {
-                "name": "Olen Zellweger",
+                "name": "Dennis Gilbert",
                 "number": 8,
                 "pos": "ld",
-                "id": 34623,
-                "ppUnit": 2,
+                "id": 4712,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Louis Crevier",
@@ -9261,15 +9270,24 @@
                 "pos": "ir3",
                 "id": 2873,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Matt Grzelcyk",
+                "number": 24,
+                "pos": "ir4",
+                "id": 2723,
+                "ppUnit": null,
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
                 "name": "Rasmus Dahlin",
                 "number": 26,
-                "pos": "ir4",
+                "pos": "ir5",
                 "id": 4786,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -9280,7 +9298,7 @@
                 "number": 71,
                 "pos": "sk1",
                 "id": 4810,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -9298,7 +9316,7 @@
                 "number": 25,
                 "pos": "sk3",
                 "id": 30051,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -9332,13 +9350,13 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Rasmus Dahlin",
-                "number": 26,
+                "name": "Dennis Gilbert",
+                "number": 8,
                 "pos": "sk3",
-                "id": 4786,
-                "ppUnit": 1,
+                "id": 4712,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Louis Crevier",
@@ -9351,8 +9369,8 @@
             }
         ],
         "lineup_source": "Matthew Fairburn",
-        "updated_at": "2026-10-13T13:43:55.681Z",
-        "fetched_at": "2026-10-13T14:03:30Z"
+        "updated_at": "2026-10-13T19:28:54.940Z",
+        "fetched_at": "2026-10-13T20:03:27Z"
     },
     "STL": {
         "f1": [
