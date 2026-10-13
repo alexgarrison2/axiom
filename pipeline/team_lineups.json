@@ -5849,7 +5849,7 @@
                 "number": 28,
                 "pos": "lw",
                 "id": 2480,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5865,14 +5865,14 @@
                 "movement": null
             },
             {
-                "name": "Luke Evangelista",
-                "number": 77,
+                "name": "Dawson Mercer",
+                "number": 91,
                 "pos": "rw",
-                "id": 29787,
-                "ppUnit": 1,
+                "id": 29327,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
@@ -5897,14 +5897,14 @@
                 "movement": null
             },
             {
-                "name": "Dawson Mercer",
-                "number": 91,
+                "name": "Jesper Boqvist",
+                "number": 70,
                 "pos": "rw",
-                "id": 29327,
+                "id": 28107,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -5929,14 +5929,14 @@
                 "movement": null
             },
             {
-                "name": "Jesper Boqvist",
-                "number": 70,
+                "name": "Stefan Noesen",
+                "number": 11,
                 "pos": "rw",
-                "id": 28107,
-                "ppUnit": null,
+                "id": 1842,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -6047,10 +6047,19 @@
             {
                 "name": "Connor Brown",
                 "number": 16,
-                "pos": "ir4",
+                "pos": "ir3",
                 "id": 2181,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Luke Evangelista",
+                "number": 77,
+                "pos": "ir4",
+                "id": 29787,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -6130,9 +6139,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Mike Morreale",
-        "updated_at": "2026-10-12T15:41:37.334Z",
-        "fetched_at": "2026-10-13T12:02:54Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-13T20:20:59.742Z",
+        "fetched_at": "2026-10-13T21:02:53Z"
     },
     "MIN": {
         "f1": [
