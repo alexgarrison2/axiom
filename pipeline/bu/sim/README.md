@@ -616,9 +616,11 @@ in the puck lines and the regulation 3-way (pooled: home -1.5 -0.0011, SE 0.0005
 reg 3-way -0.0005); totals +0.0001 to +0.0002.  Margins move toward the actual (+-1: 0.429 -> 0.410,
 actual 0.385; +-3: 0.214 -> 0.227, actual 0.237; +-2 0.217 -> 0.220, actual 0.208, not fixed).  The curves alone do nothing (ASOF_PULL - BASE
 +0.0005, SE 0.0006; EN 0.275): the rate is what matters.  **Dev: rules (1) and (2) pass**; the
-holdout look is the owner's (`python -m bu.sim.pull_asof holdout --work $W`, question
-`sim_pull_asof`).  `python -m bu.sim.pull_asof params --season <S> --out <file>` writes candidate
-parameters (never the live file).
+holdout look was taken by the owner on 2026-10-14 (`out/look_log.jsonl`): 2025-26 derivative
+ASOF - BASE **+0.0017 (SE 0.00125)**, ML -0.00004 (SE 0.00022), so rule (3) (holdout derivative <=
++1 SE) fails and **ASOF is not promoted**; the live parameters keep the 2017-23 curves and rates.
+`python -m bu.sim.pull_asof params --season <S> --out <file>` writes candidate parameters (never the
+live file).
 
 ## Uncertain starting goalies (`prereg_goalie_mix.json`, `goalie_mix.py`)
 
@@ -663,8 +665,8 @@ both arms) ~100 s on 8 workers.
 * Empty-net goals are under-produced: 0.27 a game simulated vs 0.37 (dev) / 0.39 (2025-26)
   actual.  Diagnosed 2026-10-14 (`prereg_pull_asof.json`): mostly the empty-net rate (measured over
   all pulled time, delayed penalties included, ~17% too low for late pulls), partly pull timing
-  drift since 2021-22.  The candidate (as-of curves + late-pull rates) reaches 0.31 and passed dev;
-  holdout look pending.  The curve is still league-wide (no team / coach effect).
+  drift since 2021-22.  The candidate (as-of curves + late-pull rates) reaches 0.31 and passed dev
+  but failed its 2025-26 holdout look (derivative +0.0017, SE 0.00125): not promoted.  The curve is still league-wide (no team / coach effect).
 * Regulation ties are still under-produced in high-tie seasons (2025-26: 24.9% actual vs 21.2%),
   and OT is decided in 3v3 a bit less often than in 2023-25 (65.6% vs 70%): both structural tables
   are fixed at their 2017-23 values.

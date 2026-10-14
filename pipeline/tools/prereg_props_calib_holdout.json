@@ -1,0 +1,98 @@
+{
+ "question": "props_calib",
+ "candidate": "struct_cal",
+ "code": "a475f194e",
+ "H1": {
+  "n": 47230,
+  "n_dates": 167,
+  "M_arm": 0.418359,
+  "M_base": 0.418819,
+  "d": -0.000459,
+  "se": 0.000135,
+  "markets": {
+   "sog15": {
+    "ll_arm": 0.60674,
+    "ll_base": 0.60702,
+    "diff": -0.000284,
+    "se": 0.000128,
+    "ratio_arm": 1.0044,
+    "ratio_base": 1.0226,
+    "brier_arm": 0.20927,
+    "brier_base": 0.20942
+   },
+   "sog25": {
+    "ll_arm": 0.45264,
+    "ll_base": 0.45264,
+    "diff": 0.0,
+    "se": 0.000121,
+    "ratio_arm": 1.0043,
+    "ratio_base": 1.0257,
+    "brier_arm": 0.14538,
+    "brier_base": 0.1454
+   },
+   "sog35": {
+    "ll_arm": 0.2769,
+    "ll_base": 0.27696,
+    "diff": -5.5e-05,
+    "se": 8.8e-05,
+    "ratio_arm": 1.0131,
+    "ratio_base": 1.0369,
+    "brier_arm": 0.0804,
+    "brier_base": 0.08041
+   },
+   "atg": {
+    "ll_arm": 0.39273,
+    "ll_base": 0.39315,
+    "diff": -0.000422,
+    "se": 0.000208,
+    "ratio_arm": 1.0024,
+    "ratio_base": 1.0209,
+    "brier_arm": 0.12002,
+    "brier_base": 0.12015
+   },
+   "a1": {
+    "ll_arm": 0.51847,
+    "ll_base": 0.51908,
+    "diff": -0.000603,
+    "se": 0.000245,
+    "ratio_arm": 1.0023,
+    "ratio_base": 1.0191,
+    "brier_arm": 0.1701,
+    "brier_base": 0.17035
+   },
+   "p1": {
+    "ll_arm": 0.59327,
+    "ll_base": 0.59393,
+    "diff": -0.000659,
+    "se": 0.00029,
+    "ratio_arm": 1.0037,
+    "ratio_base": 1.02,
+    "brier_arm": 0.20303,
+    "brier_base": 0.20334
+   },
+   "p2": {
+    "ll_arm": 0.26473,
+    "ll_base": 0.26484,
+    "diff": -0.000114,
+    "se": 0.000179,
+    "ratio_arm": 0.9977,
+    "ratio_base": 0.9912,
+    "brier_arm": 0.07465,
+    "brier_base": 0.07467
+   },
+   "ppp1": {
+    "ll_arm": 0.24139,
+    "ll_base": 0.24293,
+    "diff": -0.001538,
+    "se": 0.000352,
+    "ratio_arm": 1.0016,
+    "ratio_base": 1.0225,
+    "brier_arm": 0.07114,
+    "brier_base": 0.07127
+   }
+  }
+ },
+ "H2": null,
+ "pass": true,
+ "rule": "H1 d < 0 and no market's H1 diff > +2 SE"
+}

@@ -247,4 +247,4 @@ def test_calibrated_board_leaves_graded_rows_and_needs_a_full_window():
                           "points": [0, 1, 1, np.nan], "pp_points": [0, 0, 0, np.nan]})
     fair = pd.DataFrame({k: [0.4] * 4 for k, _, _ in pm.PROPS})
     pd.testing.assert_frame_equal(prop_board._calibrated(feats, fair, "2025-10-02"), fair)   # < CAL_MIN_ROWS
-    assert prop_board.ARM == pm.DEFAULT_ARM == "base"
+    assert prop_board.ARM == pm.DEFAULT_ARM == "struct_cal"   # promoted 2026-10-14
