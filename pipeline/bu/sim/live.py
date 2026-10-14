@@ -242,7 +242,14 @@ class SimServer:
             tid = self.team_ids.get(tri)
             for q in ("ev_off", "ev_def", "pp", "pk", "take", "draw", "fin"):
                 row[f"{side}_t_{q}"] = st.team_rel(tid, q) if tid is not None else float("nan")
-            row[f"{side}_g_gsv"] = st.goalie_rel(gk)[0] if gk else 1.0
+            if isinstance(gk, (list, tuple)):      # a starter mixture (goalie_mix.live_mixture, flag)
+                mix = [(float(w), st.goalie_rel(g)[0]) for g, w in gk if g and w > 0]
+                top = max(gk, key=lambda x: x[1])[0] if gk else None
+                row[f"{side}_g_gsv"] = st.goalie_rel(top)[0] if top else 1.0
+                if len(mix) > 1:
+                    row[f"{side}_g_mix"] = mix
+            else:
+                row[f"{side}_g_gsv"] = st.goalie_rel(gk)[0] if gk else 1.0
             row[f"{side}_rest"] = rest
         ok = bool(bf and bf.get("bu_ok") and bf.get("home") and bf.get("away"))
         row["bu_ok"] = ok
