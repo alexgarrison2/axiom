@@ -1,0 +1,52 @@
+{
+ "title": "Prop model over-prediction: walk-forward recalibration and a TOI-band prior (pre-declared arms, dev / holdout split and promotion rule)",
+ "declared_at": "2026-10-14T17:55:00Z",
+ "declared_before": "any scoring of the CAL, STRUCT or STRUCT_CAL arms on any period. The code that builds the arms and scores them (prop_model.toi_band_rates / logit-shift calibration, tools/backtest_props.py --arms) is written after this file is committed. Done before this file: descriptive diagnostics of BASE only (listed under prior_knowledge).",
+ "question": "props_calib: prop_model's fair probabilities exceed the observed hit rate in nearly every market. Should the published fair prices (public/data/props.json, prop_board.py) come from a walk-forward per-market recalibration of the current model (CAL), from the model with its regression target fixed (STRUCT: position prior by TOI band instead of one pooled position rate), or from both (STRUCT_CAL)?",
+ "prior_knowledge": {
+  "statement": "BASE (prop_model at commit f377e6278) is the only model scored anywhere. Its constants (HALF_LIFE 60, TOI_HALF_LIFE 6, TEAM_HALF_LIFE 30, K_MINUTES, K_PPP_GAMES 6, NB_SIZE 15, CONTEXT_POWER) were tuned on 2025-26 (tools/backtest_props.py record, 2026-10-03), so 2025-26 is in-sample for BASE. An audit and this declaration's diagnosis looked at BASE's calibration on all of 2025-26 and on 2026-27 through 2026-10-13, by market, month, games-played bucket, expected-TOI band and position. Nobody has priced 2023-24 or 2024-25 with prop_model; for those seasons only league totals per team-game were looked at (shots 31.24 / 30.28 / 28.27 / 27.83 / 26.92 and goals 3.14 / 3.08 / 3.01 / 3.08 / 3.09 per team-game for 2022-23 .. 2026-27).",
+  "diagnosis_base": {
+   "how": "pregame_features on the regular-season logs of seasons S-1 and S (S-1 = 2024-25 from nhl_historical_skater_games.csv, as prop_board has the previous season live); ratio = mean fair p / observed hit rate; lam ratio = mean expected count / mean observed count",
+   "2025-26 all player-games (47,230)": {"sog15": 1.023, "sog25": 1.026, "sog35": 1.037, "atg": 1.021, "a1": 1.019, "p1": 1.020, "p2": 0.991, "ppp1": 1.023, "lam_shots": 1.022, "lam_goals": 1.018, "lam_points": 1.013, "toi_exp / toi": 1.002},
+   "2025-26 legacy backtest subset (from Nov 15, >= 10 previous games, no 2024-25 history; 35,261)": {"sog15": 1.011, "sog25": 1.011, "sog35": 1.023, "atg": 1.014, "a1": 1.022, "p1": 1.022, "p2": 0.981, "ppp1": 1.031},
+   "2026-27 through 2026-10-13 (3,779)": {"sog15": 1.042, "sog25": 1.042, "sog35": 1.061, "atg": 1.062, "a1": 1.030, "p1": 1.050, "p2": 0.977, "ppp1": 1.000, "lam_shots": 1.042, "lam_goals": 1.038, "lam_points": 1.031},
+   "by expected TOI, 2025-26 (lam ratio goals / points / shots)": {"<12": [1.340, 1.250, 1.060], "12-15": [1.125, 1.085, 1.044], "15-18": [0.972, 0.995, 1.008], "18-21": [0.966, 0.976, 1.014], "21+": [0.931, 0.963, 1.016]},
+   "by previous games, 2025-26": "rows with < 40 previous games are 12% of rows and carry 40-80% of the goals / assists / points / PPP excess (ATG ratio 1.30 at < 10, 1.11 at 10-19, 1.26 at 20-39, 1.06 at 40-81, 0.99 at 82+); SOG excess is spread over all buckets (82+: 1.01-1.02)",
+   "by month, 2025-26": "no trend: ATG 1.02 / 1.05 / 1.03 / 1.00 / 1.02 / 1.01 / 1.02 for Oct .. Apr; SOG o2.5 1.04 / 1.05 / 1.01 / 1.02 / 1.00 / 1.02 / 1.04",
+   "dispersion": "Poisson fits goals / assists / points given lambda (mean squared residual / mean lambda 0.98-1.00); shots 1.07-1.09 (NB_SIZE 15 implies ~1.10)",
+   "reading": "(1) the expected-TOI assumption is unbiased; (2) the rate is shrunk toward one pooled per-minute position rate, which is TOI-weighted, so depth players (low TOI, thin history) are pulled up and top-line players down: the model is too flat (lambda quintiles of points 0.30 vs 0.27 observed at the low end, 0.88 vs 0.90 at the top), which over-prices 1+ markets and under-prices 2+ points; (3) league shots per team-game keep falling (30.3 -> 28.3 -> 27.8 -> 26.9) and the 60-game decayed rate lags, a 1-2% SOG over-prediction even for established players; (4) the 2026-27 goal / point excess (3-6% on 210 team-games) is within the noise of the league scoring level."
+  }
+ },
+ "arms": {
+  "BASE": "prop_model at f377e6278, unchanged: pregame_features(prior='position'), fair_probs.",
+  "CAL": "BASE fair probabilities with a per-market logit shift fitted walk-forward. For each game date D and market m: window = the last CAL_WINDOW = 20,000 graded regular-season player-games dated before D (any season), each carrying the arm's own pre-game probability as it would have been published (the [S-1, S] frame of its own season); delta solves sum sigmoid(logit p_i + delta) = sum y_i (Newton, p clipped to [1e-4, 1 - 1e-4]); shrunk delta' = delta * V / (V + V0) with V = sum p_i (1 - p_i) over the window and V0 = CAL_V0 = 1,000 (a normal prior on delta with SD 0.032); delta' = 0 when the window has fewer than CAL_MIN_ROWS = 2,000 rows; every row dated D gets p' = sigmoid(logit p + delta'_m). Expected counts (proj) unchanged.",
+  "STRUCT": "BASE with the position prior replaced by a position x expected-TOI-band prior (prop_model.toi_band_rates): bands F [0, 12), [12, 15), [15, 18), [18, inf) and D [0, 17), [17, 20), [20, 23), [23, inf) minutes; each player-season is assigned the band of its mean TOI; band rate = sum events / sum TOI (pp_points per game) over the frame's player-games of that position group and band (the same whole-frame convention as position_rates); a row takes the band of its decayed mean previous TOI (HALF_LIFE weighting, the toi_m already in pregame_features), or of the default 15 (F) / 20 (D) minutes when it has no previous game; a band with no rows falls back to the position rate. Every other constant unchanged.",
+  "STRUCT_CAL": "STRUCT with the CAL procedure fitted on STRUCT's own predictions (same window, V0, minimum)."
+ },
+ "data": {
+  "frames": "for target season S, pregame_features on the regular-season logs of S-1 and S (the season file when it exists, else that season's rows of nhl_historical_skater_games.csv) - what prop_board has live (previous + current season). CAL windows at the start of S reach into S-1 rows priced from the [S-2, S-1] frame (2022-23 rows from a 2022-23-only frame).",
+  "lookahead": "league priors (position_rates, toi_band_rates) and the league goal / shot means of the context term use the whole frame, as the existing backtest does (the owner accepted it as negligible); identical for all arms. Production uses the frame through yesterday.",
+  "rows": "primary: every regular-season player-game with a result in the period, from opening night, whatever the number of previous games (production prices all of them). The legacy subset (from Nov 15, >= 10 previous games) is reported as a secondary.",
+  "markets": "the 8 prop_model.PROPS: sog15, sog25, sog35, atg, a1, p1, p2, ppp1; outcome y = 1 if the count >= threshold"
+ },
+ "split": {
+  "dev": "2023-24 and 2024-25 regular seasons (never priced by prop_model).",
+  "holdout": "H1 = 2025-26 regular season (the rule); H2 = 2026-27 regular-season games dated 2026-10-15 or later, through the day before the look (reported next to H1, not part of the rule: small n).",
+  "excluded": "2026-27 games through 2026-10-14 (BASE already looked at by the audit and this diagnosis). They are used only (a) as CAL window rows and (b) for the descriptive book comparison below.",
+  "caveat": "2025-26 is in-sample for BASE's tuning (favours BASE) and its BASE calibration ratios are public (they motivated the arms; favours the new arms). Both are disclosed; H2 is the clean but small part."
+ },
+ "metrics": {
+  "primary": "M = (1/8) sum over markets of mean per-row log loss (p clipped to [1e-4, 1 - 1e-4]); arm difference per row d_i = (1/8) sum_m (LL_arm,m,i - LL_BASE,m,i); reported mean d with a standard error clustered by game date (all rows of a date share CAL's shift and correlated outcomes); per season and pooled over the period. Negative favours the arm.",
+  "secondary": "per-market log loss difference with date-clustered SEs; per-market calibration ratio (mean p / observed hit rate); Brier; the legacy subset; ratios by previous-games bucket and expected-TOI band; the CAL shift path (delta' per market, first / median / last date).",
+  "book_descriptive": "games in pipeline/prop_lines/ (Bovada, archived since 2026-10-03; all in the excluded 2026-27 slice), matched to player_id by normalized name and team: per market, mean log loss of each arm and of the book. SOG lines (1.5 / 2.5 / 3.5) are two-way and de-vigged proportionally; atg, a1, p1, p2, ppp1 are one-way (no under price) and scored raw, vig included, labelled as such. Descriptive only, no rule; run with the dev results."
+ },
+ "selection_and_promotion": {
+  "selection": "on dev only: the arm among CAL, STRUCT, STRUCT_CAL with the lowest pooled dev mean d (vs BASE); it is the candidate only if its pooled dev d < 0 and |d| >= 1 date-clustered SE. Arms within 0.00005 of the lowest d: the simpler wins (CAL, then STRUCT, then STRUCT_CAL). No candidate -> BASE stays and no holdout look is needed.",
+  "pass": "the candidate X replaces BASE iff (1) H1 mean d(X - BASE) < 0 (strictly), AND (2) no market's H1 log loss difference X - BASE exceeds +2 of its date-clustered SEs. H2 and every secondary are reported whatever they are.",
+  "holdout_look": "one look, the owner's call, only after the dev results are written to pipeline/tools/prereg_props_calib_dev.json; logged in pipeline/tools/out/props_look_log.jsonl with question = 'props_calib' (a 'started' line before scoring); the code refuses a second look. Only BASE and the candidate are scored on the holdout.",
+  "if_pass": "prop_board reads PONYXG_PROP_ARM (default flipped to the candidate in prop_model.DEFAULT_ARM); repository variable PONYXG_PROP_ARM=base rolls back.",
+  "if_fail": "nothing changes in the published path; the arms stay available behind PONYXG_PROP_ARM."
+ },
+ "not_in_scope": "the scratched-player listing in prop_board.py (a correctness fix, committed separately; it changes who is priced, not any probability), K / HALF_LIFE / NB_SIZE re-tuning, history beyond S-1.",
+ "amendments": []
+}
