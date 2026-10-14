@@ -131,6 +131,7 @@ jobs:
       - name: Commit and push data
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_MODE: ${{ steps.mode.outputs.mode }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -211,11 +212,21 @@ jobs:
             echo "Timestamp-only heartbeat commit."
           fi
 
-          git commit -q -m "Auto-Update: Data Refresh [$(date -u +%Y-%m-%dT%H:%M:%SZ)] (${{ steps.mode.outputs.mode }})"
+          git commit -q -m "Auto-Update: Data Refresh [$(date -u +%Y-%m-%dT%H:%M:%SZ)] ($RUN_MODE)"
           auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
-          # odds_close.yml also pushes to main (disjoint files), so retry a rejected push.
+          # odds_close.yml and bu_refresh.yml also push to main, so retry a rejected push.
+          # bu_refresh.yml writes public/data/player_ratings.json too: when a file this run
+          # wrote changed on main meanwhile, the rebase keeps main's (newer) copy instead of
+          # aborting the step and losing the whole hour's commit.
           for attempt in 1 2 3 4; do
-            git -c "http.https://github.com/.extraheader=$auth" pull --rebase --autostash origin main
+            git -c "http.https://github.com/.extraheader=$auth" fetch -q origin main
+            if ! git rebase -q --autostash FETCH_HEAD; then
+              conflicted=$(git diff --name-only --diff-filter=U)
+              echo "::warning::rebase conflict, keeping main's copy of: $conflicted"
+              # During a rebase "--ours" is the branch being rebased onto (origin/main).
+              for f in $conflicted; do git checkout -q --ours -- "$f" && git add -- "$f"; done
+              GIT_EDITOR=true git rebase --continue || { git rebase --abort; echo "::error::rebase failed"; exit 1; }
+            fi
             if git -c "http.https://github.com/.extraheader=$auth" push origin HEAD:main; then break; fi
             [ "$attempt" = 4 ] && { echo "::error::push failed after 4 attempts"; exit 1; }
             sleep $((attempt * 5))
