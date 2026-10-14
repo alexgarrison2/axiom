@@ -1623,8 +1623,8 @@
             }
         ],
         "lineup_source": "Belle Fraser",
-        "updated_at": "2026-10-12T22:24:39.463Z",
-        "fetched_at": "2026-10-13T13:03:22Z"
+        "updated_at": "2026-10-14T02:46:32.158Z",
+        "fetched_at": "2026-10-14T03:03:52Z"
     },
     "NYR": {
         "f1": [
@@ -4568,11 +4568,11 @@
         ],
         "f2": [
             {
-                "name": "Trevor Moore",
-                "number": 12,
+                "name": "Alex Laferriere",
+                "number": 14,
                 "pos": "lw",
-                "id": 2878,
-                "ppUnit": 2,
+                "id": 32954,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4588,26 +4588,26 @@
                 "movement": null
             },
             {
-                "name": "Alex Laferriere",
-                "number": 14,
+                "name": "Corey Perry",
+                "number": 90,
                 "pos": "rw",
-                "id": 32954,
-                "ppUnit": 1,
+                "id": 36,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Joel Armia",
-                "number": 40,
+                "name": "Trevor Moore",
+                "number": 12,
                 "pos": "lw",
-                "id": 1952,
-                "ppUnit": null,
+                "id": 2878,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Scott Laughton",
@@ -4620,10 +4620,10 @@
                 "movement": null
             },
             {
-                "name": "Jared Wright",
-                "number": 25,
+                "name": "Joel Armia",
+                "number": 40,
                 "pos": "rw",
-                "id": 34797,
+                "id": 1952,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4650,41 +4650,9 @@
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
-            },
-            {
-                "name": "Corey Perry",
-                "number": 90,
-                "pos": "rw",
-                "id": 36,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
             }
         ],
         "d1": [
-            {
-                "name": "Joel Edmundson",
-                "number": 6,
-                "pos": "ld",
-                "id": 2532,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Brandt Clarke",
-                "number": 92,
-                "pos": "rd",
-                "id": 30833,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d2": [
             {
                 "name": "Brian Dumoulin",
                 "number": 2,
@@ -4693,7 +4661,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Drew Doughty",
@@ -4703,19 +4671,41 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d2": [
+            {
+                "name": "Erik Gustafsson",
+                "number": 64,
+                "pos": "ld",
+                "id": 2550,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
+                "name": "Brandt Clarke",
+                "number": 92,
+                "pos": "rd",
+                "id": 30833,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "d3": [
             {
-                "name": "Mikey Anderson",
-                "number": 44,
+                "name": "Joel Edmundson",
+                "number": 6,
                 "pos": "ld",
-                "id": 25509,
+                "id": 2532,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Cody Ceci",
@@ -4854,8 +4844,8 @@
             }
         ],
         "lineup_source": "Zach Dooley",
-        "updated_at": "2026-10-11T01:38:00.435Z",
-        "fetched_at": "2026-10-13T18:39:43Z"
+        "updated_at": "2026-10-14T02:11:16.966Z",
+        "fetched_at": "2026-10-14T03:03:52Z"
     },
     "DAL": {
         "f1": [
@@ -7176,38 +7166,6 @@
         ],
         "f2": [
             {
-                "name": "Ivar Stenberg",
-                "number": 41,
-                "pos": "lw",
-                "id": 38939,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Michael Misa",
-                "number": 77,
-                "pos": "c",
-                "id": 37508,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Kiefer Sherwood",
-                "number": 44,
-                "pos": "rw",
-                "id": 4675,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
                 "name": "Mason Marchment",
                 "number": 27,
                 "pos": "lw",
@@ -7215,7 +7173,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Alexander Wennberg",
@@ -7225,7 +7183,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Tyler Toffoli",
@@ -7235,7 +7193,39 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Ivar Stenberg",
+                "number": 41,
+                "pos": "lw",
+                "id": 38939,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Michael Misa",
+                "number": 77,
+                "pos": "c",
+                "id": 37508,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Kiefer Sherwood",
+                "number": 44,
+                "pos": "rw",
+                "id": 4675,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -7247,7 +7237,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Zack Ostapchuk",
@@ -7432,9 +7422,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Curtis Pashelka",
-        "updated_at": "2026-10-13T18:05:17.352Z",
-        "fetched_at": "2026-10-13T18:39:43Z"
+        "lineup_source": "Max Miller",
+        "updated_at": "2026-10-14T02:44:36.574Z",
+        "fetched_at": "2026-10-14T03:03:52Z"
     },
     "SEA": {
         "f1": [
