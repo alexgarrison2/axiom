@@ -132,7 +132,119 @@ def test_rest_days_count_from_each_teams_last_game():
     assert prop_board._rest(logs, "2026-10-05") == {"AAA": 1, "BBB": 3}
 
 
+def test_slate_prices_the_lineup_or_else_the_last_dressed_skaters():
+    logs = pd.DataFrame({
+        "game_id": [2026020001, 2026020001, 2026020001, 2026020005, 2026020005, 2025020900, 2026020002],
+        "team":    ["AAA", "AAA", "AAA", "AAA", "AAA", "AAA", "BBB"],
+        "player_id": [1, 2, 3, 1, 2, 4, 9],
+        "prev":    [0, 0, 0, 0, 0, 1, 0]})
+    lineups = {9: {"team": "BBB"}, 10: {"team": "BBB"}}
+    d = prop_board._dressing(lineups, logs)
+    # BBB posted a lineup: exactly it. AAA did not: who dressed in its latest game (3 was scratched,
+    # 4 only played last season), not everyone who has played for it.
+    assert d == {"BBB": {9, 10}, "AAA": {1, 2}}
+
+
 def test_goalie_carries_regressed_gsax_when_rated():
     g = prop_board._goalie("X Y", "Confirmed", {"X Y": {"gsax_per_game": 0.2149}})
     assert g == {"name": "X Y", "status": "Confirmed", "gsax": 0.21}
     assert prop_board._goalie(None, None, {}) is None
+
+
+# --- prereg_props_calib.json arms -------------------------------------------------------------
+
+def _two_tier_logs(n_games=30):
+    """A 22-minute forward who shoots a lot and a 10-minute forward who never does."""
+    rows = []
+    for i in range(n_games):
+        for pid, team, opp, toi, shots in ((1, "AAA", "BBB", 22.0, 4), (2, "BBB", "AAA", 10.0, 0)):
+            scored = int(i % 5 == 0 and pid == 1)
+            rows.append({"game_id": 2025020000 + i, "date": f"2025-10-{i + 1:02d}", "player_id": pid,
+                         "team": team, "opp": opp, "pos": "C", "toi": toi, "goals": scored,
+                         "assists": 0, "points": scored, "shots": shots, "pp_points": 0})
+    return pd.DataFrame(rows)
+
+
+def test_toi_bands_split_forwards_and_defence_at_their_own_edges():
+    assert list(pm.toi_band(["F", "F", "F", "F", "D", "D"], [11.9, 12.0, 17.9, 25.0, 19.9, 23.0])) == [0, 1, 2, 3, 1, 3]
+    rates = pm.toi_band_rates(_two_tier_logs())
+    assert rates[("F", 3)]["shots"] == pytest.approx(4 / 22) and rates[("F", 0)]["shots"] == 0.0
+
+
+def test_struct_prior_pulls_a_depth_player_toward_depth_rates():
+    logs = _two_tier_logs()
+    base = pm.pregame_features(logs)
+    assert pm.pregame_features(logs, prior="position")["lam_shots"].equals(base["lam_shots"])
+    struct = pm.pregame_features(logs, prior="toi_band")
+
+    def last(df):
+        return df[df.game_id == df.game_id.max()].set_index("player_id")
+    # The pooled prior lifts the 10-minute player and drags the 22-minute one; their own bands do not.
+    assert last(struct).at[2, "rate_shots"] < last(base).at[2, "rate_shots"]
+    assert last(struct).at[1, "rate_shots"] > last(base).at[1, "rate_shots"]
+    with pytest.raises(ValueError):
+        pm.pregame_features(logs, prior="nope")
+
+
+def test_logit_shift_matches_the_hit_rate_and_shrinks():
+    rng = np.random.default_rng(0)
+    p = np.full(20000, 0.30)
+    y = (rng.random(20000) < 0.25).astype(float)
+    raw = pm.fit_logit_shift(p, y, v0=0.0)
+    assert 1 / (1 + np.exp(-(np.log(0.3 / 0.7) + raw))) == pytest.approx(y.mean(), abs=1e-6)
+    v = 20000 * 0.3 * 0.7
+    assert pm.fit_logit_shift(p, y) == pytest.approx(raw * v / (v + pm.CAL_V0))
+    assert pm.fit_logit_shift(p[:100], y[:100]) == 0.0          # below CAL_MIN_ROWS
+    out = pm.apply_shifts(pd.DataFrame({"atg": [0.3, 0.5]}), {"atg": raw})
+    assert out["atg"].iloc[0] == pytest.approx(y.mean(), abs=1e-6) and out["atg"].iloc[1] < 0.5
+
+
+def test_calibration_shifts_use_only_rows_before_each_date():
+    n = 6000
+    dates = np.repeat([f"2025-11-{d:02d}" for d in range(1, 7)], n // 6)
+    fair = pd.DataFrame({k: np.full(n, 0.3) for k, _, _ in pm.PROPS})
+    y = pd.DataFrame({k: (np.arange(n) % 4 == 0).astype(float) for k, _, _ in pm.PROPS})
+    targets = ["2025-11-05", "2025-11-03"]
+    sh = pm.calibration_shifts(dates, fair, y, targets, window=3000, min_rows=1000)
+    y2 = y.copy()
+    y2.loc[dates >= "2025-11-05", :] = 1.0                  # outcomes on / after the target date
+    pd.testing.assert_frame_equal(sh, pm.calibration_shifts(dates, fair, y2, targets, window=3000, min_rows=1000))
+    assert (sh < 0).all().all()                              # 25% hit rate under a 30% price: shift down
+    assert pm.calibration_shifts(dates, fair, y, ["2025-11-01"])["atg"].iloc[0] == 0.0   # empty window
+
+
+def test_selection_rule_needs_one_se_and_prefers_the_simpler_arm():
+    import tools.backtest_props as bt
+
+    def r(d, se):
+        return {"pooled_dev": {"d": d, "se": se}}
+    assert bt.select({"cal": r(-0.0010, 0.0002), "struct": r(-0.0010, 0.0002), "struct_cal": r(-0.00104, 0.0002)}) == "cal"
+    assert bt.select({"cal": r(-0.0010, 0.0002), "struct_cal": r(-0.0020, 0.0002)}) == "struct_cal"
+    assert bt.select({"cal": r(-0.0001, 0.0002), "struct": r(0.001, 0.0001)}) is None
+
+
+def test_holdout_look_is_owner_only_and_single(tmp_path):
+    import tools.backtest_props as bt
+    log, dev, out = tmp_path / "out" / "look.jsonl", tmp_path / "dev.json", tmp_path / "ho.json"
+
+    def fake(cand):
+        return {"H1": {"n": 1, "d": -0.001, "se": 0.0005}, "pass": True}
+    kw = dict(log_path=str(log), dev_path=str(dev), out_path=str(out), scorer=fake)
+    with pytest.raises(SystemExit):
+        bt.holdout_look(False, **kw)                         # no --owner-look
+    with pytest.raises(SystemExit):
+        bt.holdout_look(True, **kw)                          # no dev result yet
+    dev.write_text('{"candidate": "cal"}')
+    assert bt.holdout_look(True, **kw)["pass"] is True
+    with pytest.raises(SystemExit):
+        bt.holdout_look(True, **kw)                          # second look refused
+    assert len(log.read_text().splitlines()) == 2            # 'started' + result
+
+
+def test_calibrated_board_leaves_graded_rows_and_needs_a_full_window():
+    feats = pd.DataFrame({"game_id": [2025020001] * 3 + [2025020099], "date": ["2025-10-01"] * 3 + ["2025-10-02"],
+                          "shots": [1, 3, 0, np.nan], "goals": [0, 1, 0, np.nan], "assists": [0, 0, 1, np.nan],
+                          "points": [0, 1, 1, np.nan], "pp_points": [0, 0, 0, np.nan]})
+    fair = pd.DataFrame({k: [0.4] * 4 for k, _, _ in pm.PROPS})
+    pd.testing.assert_frame_equal(prop_board._calibrated(feats, fair, "2025-10-02"), fair)   # < CAL_MIN_ROWS
+    assert prop_board.ARM == pm.DEFAULT_ARM == "base"

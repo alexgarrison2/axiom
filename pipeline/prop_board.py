@@ -54,6 +54,11 @@ OUT_FILE = public_path("props.json")
 PROJ = {"sog": "lam_shots", "g": "lam_goals", "a": "lam_assists", "pts": "lam_points", "ppp": "lam_pp_points"}
 DETAIL_FILE = public_path("props_detail.json")
 HIST_FILE = pipeline_path("nhl_historical_skater_games.csv")
+# Prop model arm (tools/prereg_props_calib.json); PONYXG_PROP_ARM=base rolls back.
+ARM = os.environ.get("PONYXG_PROP_ARM") or pm.DEFAULT_ARM
+if ARM not in pm.ARMS:
+    print(f"  props: unknown PONYXG_PROP_ARM={ARM!r}, using {pm.DEFAULT_ARM!r}")
+    ARM = pm.DEFAULT_ARM
 LOG_GAMES = 20
 VS_GAMES = 10
 UNITS = ["f1", "f2", "f3", "f4", "d1", "d2", "d3"]
@@ -204,6 +209,31 @@ def _hits(part: pd.DataFrame) -> dict:
     return {key: int((part[stat] >= k).sum()) for key, stat, k in pm.PROPS}
 
 
+def _dressing(lineups: dict, logs: pd.DataFrame) -> dict:
+    """{team: skater ids priced tonight}: its posted DailyFaceoff lineup, or, for a team without one,
+    the skaters who dressed in its latest game this season (not everyone who has played for it:
+    scratched, injured and reassigned players stay unpriced)."""
+    out = {}
+    for pid, lu in lineups.items():
+        out.setdefault(lu["team"], set()).add(pid)
+    cur = logs[logs["prev"] == 0]
+    last = cur.groupby("team")["game_id"].transform("max")
+    for team, part in cur[cur["game_id"] == last].groupby("team"):
+        out.setdefault(team, set(part["player_id"]))
+    return out
+
+
+def _calibrated(feats: pd.DataFrame, fair: pd.DataFrame, today: str) -> pd.DataFrame:
+    """CAL arms: shift tonight's fair probabilities by the per-market logit shift fitted on the
+    last pm.CAL_WINDOW graded regular-season player-games before today (prereg_props_calib.json)."""
+    graded = feats["shots"].notna() & ((feats["game_id"] // 10000) % 100 == 2)
+    y = pm.outcomes(feats[graded])
+    sh = pm.calibration_shifts(feats.loc[graded, "date"], fair[graded], y, [today]).iloc[0].to_dict()
+    out = fair.copy()
+    out.loc[~graded] = pm.apply_shifts(fair[~graded], sh)
+    return out
+
+
 def build(today=None) -> tuple[dict, dict]:
     today = str(today or today_local())
     logs = load_logs()
@@ -223,7 +253,7 @@ def build(today=None) -> tuple[dict, dict]:
     ids = sorted(set(lineups) | cur_ids)
     team_of = {pid: (lineups[pid]["team"] if pid in lineups else latest.at[pid, "team"]) for pid in ids if pid in latest.index}
 
-    lineup_teams = {lu["team"] for lu in lineups.values()}
+    dressing = _dressing(lineups, logs)
     # Tonight rows for slate skaters.
     tonight, game_rows = [], []
     for g in games:
@@ -239,8 +269,7 @@ def build(today=None) -> tuple[dict, dict]:
                                       "away": _goalie(g.get("awayGoalieConfirmed"), g.get("awayGoalieStatus"), ratings)},
                           "rest": {"home": rest.get(home), "away": rest.get(away)}})
         for pid, t in team_of.items():
-            # A team with a posted lineup dresses only its lineup; otherwise everyone on it is listed.
-            if t not in (home, away) or (t in lineup_teams and pid not in lineups):
+            if t not in (home, away) or pid not in dressing.get(t, ()):
                 continue
             last = latest.loc[pid]
             tonight.append({"game_id": gid, "date": today, "player_id": pid, "name": last["name"], "team": t,
@@ -252,8 +281,11 @@ def build(today=None) -> tuple[dict, dict]:
         for c in ["toi"] + pm.STATS:
             tn[c] = np.nan
         frame = pd.concat([frame, tn], ignore_index=True)
-    feats = pm.pregame_features(frame)
+    prior, shift = pm.ARMS[ARM]
+    feats = pm.pregame_features(frame, prior=prior)
     fair = pm.fair_probs(feats)
+    if shift:
+        fair = _calibrated(feats, fair, today)
     feats = pd.concat([feats, fair.add_prefix("fair_")], axis=1)
     tonight_feats = feats[feats["shots"].isna()].set_index("player_id") if tonight else pd.DataFrame()
 
