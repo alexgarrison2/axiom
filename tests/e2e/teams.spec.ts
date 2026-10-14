@@ -30,16 +30,23 @@ test.describe('/teams', () => {
         // No team can have more regular-season games than the schedule allows.
         // The last header row holds the column headers (the one above it is the column groups).
         const heads = (await page.locator('thead tr').last().locator('th').allTextContents()).map(t => t.trim().split(/\s|,/)[0]);
-        const gpCol = heads.indexOf('GP') + 1; // nth-child is 1-based and counts the team <th>
-        expect(gpCol).toBeGreaterThan(1);
-        const gp = await page.locator(`tbody tr > :nth-child(${gpCol})`).allInnerTexts();
-        expect(gp.length).toBeGreaterThan(0);
-        for (const v of gp) expect(Number(v) || 0).toBeLessThanOrEqual(84);
+        // The default (Overview) lens shows GP as one W–L–OT Record cell (48e99cc22); games played is its sum.
+        const recCol = heads.indexOf('Record') + 1; // nth-child is 1-based and counts the team <th>
+        expect(recCol).toBeGreaterThan(1);
+        const recs = await page.locator(`tbody tr > :nth-child(${recCol})`).allInnerTexts();
+        expect(recs.length).toBeGreaterThan(0);
+        for (const v of recs) {
+            const gp = (v.match(/\d+/g) ?? []).map(Number).reduce((a, b) => a + b, 0);
+            expect(gp).toBeLessThanOrEqual(84);
+        }
     });
 
     test('2025-26 matches the final NHL standings', async ({ page }) => {
-        await page.goto('/teams?season=20252026');
+        // The All lens keeps every raw standings column; the default Overview lens folds them into Record (48e99cc22).
+        await page.goto('/teams?season=20252026&tab=all');
         await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
+        // ?tab= is applied after hydration: wait for the All lens's columns before reading them.
+        await expect(page.locator('thead tr').last().locator('th').nth(1)).toHaveText(/^Rank/);
         const car = page.locator('tbody tr', { has: page.locator('a[href="/teams/CAR"]') });
         // Read cells by column header, so a column reorder (fix1-G5: PTS, P%, GP, Rank, W, L, OT) can't break this.
         const heads = (await page.locator('thead tr').last().locator('th').allTextContents()).map(t => t.trim().split(/\s|,/)[0]);
@@ -87,8 +94,9 @@ test.describe('/teams', () => {
     });
 
     test('column headers stay visible after scrolling', async ({ page }) => {
-        // A short window so the 32-row table (it fits a tall one) has something to scroll.
-        await page.setViewportSize({ width: 1280, height: 480 });
+        // A short window so the 32-row table (it fits a tall one) has something to scroll. Above 500px
+        // tall: on shorter screens the page scrolls the rows instead of the region (96221a67d).
+        await page.setViewportSize({ width: 1280, height: 600 });
         await page.goto('/teams?season=20252026');
         await expect(page.locator('caption').first()).toContainText('2025-26 regular season');
         // Streamed static HTML reveals the table on React's next reveal tick.
@@ -99,7 +107,8 @@ test.describe('/teams', () => {
             el.scrollTop = 600;
         });
         await expect.poll(() => region.evaluate(el => el.scrollTop)).toBeGreaterThan(100);
-        const head = page.getByRole('columnheader', { name: /^GP/ }).first();
+        // PTS is in the default (Overview) lens; GP moved to the Standings lens (48e99cc22).
+        const head = page.getByRole('columnheader', { name: /^PTS/ }).first();
         const top = (await region.boundingBox())!.y;
         await expect.poll(async () => ((await head.boundingBox())?.y ?? 9999) - top, { timeout: 5000 }).toBeLessThan(40);
         await expect.poll(async () => ((await head.boundingBox())?.y ?? -1) - top, { timeout: 5000 }).toBeGreaterThanOrEqual(-1);

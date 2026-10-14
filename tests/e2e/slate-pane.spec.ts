@@ -14,15 +14,19 @@ test.describe('slate rail + pane', () => {
         const items = await railItems(page);
         test.skip((await items.count()) < 2, 'needs two games on the slate');
         const pane = page.getByRole('region', { name: /game$/ });
-        await expect(pane.getByRole('radio', { name: 'Form' })).toBeVisible();
+        // Form, Matchup and Why are one Preview tab since 55b49b745.
+        await expect(pane.getByRole('radio', { name: 'Preview' })).toBeVisible();
 
         await items.nth(1).click();
         await expect(items.nth(1)).toHaveAttribute('aria-current', 'true');
         await expect(page).toHaveURL(/#[a-z]{3}-[a-z]{3}$/);
 
+        // Up then down, so a two-game slate (the skip threshold) exercises both keys.
         await items.nth(1).focus();
+        await page.keyboard.press('ArrowUp');
+        await expect(items.nth(0)).toHaveAttribute('aria-current', 'true');
         await page.keyboard.press('ArrowDown');
-        await expect(items.nth(2)).toHaveAttribute('aria-current', 'true');
+        await expect(items.nth(1)).toHaveAttribute('aria-current', 'true');
     });
 
     test('the pane keeps the chosen tab across games and never scrolls sideways', async ({ page }) => {

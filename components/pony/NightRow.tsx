@@ -67,7 +67,8 @@ export function NightRow({ r, rank, reach }: { r: NightEntry; rank: number; reac
                 {r.headshot ? <img src={r.headshot} alt="" width={36} height={36} loading="lazy" className="headshot h-full w-full" /> : null}
             </span>
             <span className="min-w-0 leading-tight">
-                {/* Touch: the whole row opens the player; the game line sits above it as its own target, a small gap under the name. */}
+                {/* Touch: the whole row opens the player; the game line sits above it as its own target, a small gap under the name.
+                    The gap keeps the two short links 24px apart, centre to centre (WCAG 2.5.8 target spacing). */}
                 <Link
                     href={`/players/${r.player}`}
                     className="block font-bold text-fg-1 underline-offset-4 hover:text-brand hover:underline coarse:after:absolute coarse:after:inset-0 coarse:after:content-['']"
@@ -76,7 +77,7 @@ export function NightRow({ r, rank, reach }: { r: NightEntry; rank: number; reac
                 </Link>
                 <Link
                     href={`/games/${r.game}`}
-                    className="flex min-w-0 items-center gap-1 whitespace-nowrap text-micro text-fg-3 hover:text-fg-1 coarse:relative coarse:z-10 coarse:mt-1 coarse:w-fit"
+                    className="flex min-w-0 items-center gap-1 whitespace-nowrap text-micro text-fg-3 hover:text-fg-1 mt-2 coarse:relative coarse:z-10 coarse:mt-1.5 coarse:w-fit"
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element -- team logo */}
                     <img src={`/logos/${r.team}.svg`} alt="" width={14} height={14} className="h-3.5 w-3.5 shrink-0" />

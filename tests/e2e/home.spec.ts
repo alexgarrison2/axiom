@@ -202,7 +202,8 @@ test.describe('home slate', () => {
         await page.goto(pregameSlate());
         const card = page.locator('article[id]').first();
         await card.locator('h2 button[aria-expanded]').click();
-        await card.getByRole('radio', { name: 'Why' }).click();
+        // Form, Matchup and Why merged into one Preview tab (55b49b745); the why-bars are its first section.
+        await card.getByRole('radio', { name: 'Preview' }).click();
         await expect(card.getByRole('heading', { name: /^Why: / })).toHaveCount(1);
         await expect(card.locator('[class*="whyFill"]').first()).toBeVisible();
         expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
@@ -212,7 +213,7 @@ test.describe('home slate', () => {
         await page.goto(pregameSlate());
         const card = page.locator('article[id]').first();
         await card.locator('h2 button[aria-expanded]').click();
-        await card.getByRole('radio', { name: 'Why' }).click();
+        await card.getByRole('radio', { name: 'Preview' }).click();
         const rows = card.locator('section[aria-labelledby^="why-"] li');
         await expect(rows.first()).toBeVisible();
         const labels = await rows.allInnerTexts();
@@ -305,7 +306,7 @@ test.describe('home slate', () => {
         }
         const card = page.locator('article[id]').first();
         await card.locator('h2 button[aria-expanded]').click();
-        await card.getByRole('radio', { name: 'Why' }).click();
+        await card.getByRole('radio', { name: 'Preview' }).click();
         // Anchors G3 is still adding (term-opener, term-wt, term-lean) are skipped here.
         const chip = card.locator('[role="region"] a[href^="/methodology#term-"]:not([href$="-opener"]):not([href$="-wt"]):not([href$="-lean"])').first();
         await expect(chip).toBeVisible();

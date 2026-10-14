@@ -226,6 +226,7 @@ export function StSplit({ pp, pk, avg, children }: { pp: number; pk: number; avg
     return (
         <span className="flex w-full items-center">
             <span
+                role="img"
                 className="flex min-w-0 flex-1 gap-2"
                 title={`Power play ${pp.toFixed(1)}% (league ${avg.pp.toFixed(1)}) · penalty kill ${pk.toFixed(1)}% (league ${avg.pk.toFixed(1)})`}
                 aria-label={`Power play ${pp.toFixed(1)}%, penalty kill ${pk.toFixed(1)}%`}
