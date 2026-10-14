@@ -41340,5 +41340,66 @@
         "market_p": 0.5
       }
     }
+  },
+  {
+    "gameId": 2026020090,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-13",
+    "homeTeam": "Red Wings",
+    "awayTeam": "Devils",
+    "homeScore": 4,
+    "awayScore": 5,
+    "decision": "OT",
+    "homeXg": 3.01,
+    "awayXg": 2.98,
+    "homeWinProb": 50.5,
+    "predictedWinner": "Red Wings",
+    "actualWinner": "Devils",
+    "isCorrect": false,
+    "isLean": false,
+    "brierScore": 0.255,
+    "logLoss": 0.7032,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-13T21:03:00Z",
+    "startUtc": "2026-10-13T22:00:00Z",
+    "marketHomeProb": 51.2,
+    "modelHomeProb": 50.4,
+    "homeOdds": -115.0,
+    "awayOdds": -105.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 50.4,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.229,
+        "ll": 1.474,
+        "naive_ll": 1.7807,
+        "market_p": 0.2194
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.725,
+        "ll": 0.3216,
+        "naive_ll": 0.3096,
+        "market_p": 0.7186
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.524,
+        "ll": 0.6463,
+        "naive_ll": 0.6278,
+        "market_p": 0.5547
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.333,
+        "ll": 1.0996,
+        "naive_ll": 1.1631,
+        "market_p": 0.3363
+      }
+    }
   }
 ]

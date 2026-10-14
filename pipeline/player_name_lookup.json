@@ -16,7 +16,6 @@
     "riley tufte": "8479362",
     "tanner pearson": "8476871",
     "trevor kuntar": "8482479",
-    "ryan johnson": "8481564",
     "mason geertsen": "8477419",
     "joshua dunne": "8482623",
     "jason zucker": "8475722",
@@ -41,7 +40,6 @@
     "brendan gaunce": "8476867",
     "dysin mayo": "8478062",
     "egor zamula": "8481178",
-    "justin kirkland": "8477993",
     "jake bean": "8479402",
     "dryden hunt": "8478211",
     "john beecher": "8481556",
@@ -55,8 +53,8 @@
     "brayden pachal": "8481167",
     "william stromgren": "8482766",
     "landon slaggert": "8482172",
-    "dominic toninato": "8476952",
     "sacha boisvert": "8484793",
+    "nick lardis": "8484185",
     "tristen nielsen": "8483039",
     "jason polin": "8484255",
     "zakhar bardakov": "8482947",
@@ -90,7 +88,6 @@
     "wilmer skoog": "8484380",
     "michael benning": "8482107",
     "nolan foote": "8481518",
-    "jack studnicka": "8480021",
     "cole reinhardt": "8481133",
     "jack devine": "8483433",
     "mikulas hovorka": "8484933",
@@ -116,7 +113,6 @@
     "david reinbacher": "8484220",
     "patrik laine": "8479339",
     "jared davidson": "8483728",
-    "owen beck": "8483424",
     "joshua roy": "8482749",
     "samuel blais": "8478104",
     "evgenii dadonov": "8474149",
@@ -162,7 +158,6 @@
     "olle lycksell": "8480245",
     "jorian donovan": "8483435",
     "xavier bourgault": "8482673",
-    "dennis gilbert": "8478502",
     "artem zub": "8482245",
     "arthur kaliyev": "8481560",
     "kurtis macdermid": "8477073",
@@ -332,6 +327,7 @@
     "logan stanley": "8479378",
     "rasmus dahlin": "8480839",
     "tage thompson": "8479420",
+    "ryan johnson": "8481564",
     "conor timmins": "8479982",
     "zach benson": "8484145",
     "mattias samuelsson": "8480807",
@@ -377,6 +373,7 @@
     "mason marchment": "8478975",
     "kent johnson": "8482660",
     "kirill marchenko": "8480893",
+    "justin kirkland": "8477993",
     "morgan frost": "8480028",
     "ryan lomberg": "8479066",
     "matt coronato": "8482679",
@@ -402,6 +399,7 @@
     "wyatt kaiser": "8482176",
     "matt grzelcyk": "8476891",
     "andre burakovsky": "8477444",
+    "dominic toninato": "8476952",
     "sam rinzel": "8483506",
     "alex vlasic": "8481568",
     "andrew mangiapane": "8478233",
@@ -417,7 +415,6 @@
     "artyom levshunov": "8484783",
     "connor bedard": "8484144",
     "ryan greene": "8483450",
-    "nick lardis": "8484185",
     "ryan donato": "8477987",
     "ethan del mastro": "8482807",
     "artturi lehkonen": "8477476",
@@ -518,6 +515,7 @@
     "carter verhaeghe": "8477409",
     "uvis balinskis": "8484304",
     "gustav forsling": "8478055",
+    "jack studnicka": "8480021",
     "mackie samoskevich": "8482713",
     "eetu luostarinen": "8480185",
     "jonah gadjovich": "8479981",
@@ -582,6 +580,7 @@
     "jake evans": "8478133",
     "arber xhekaj": "8482964",
     "jayden struble": "8481593",
+    "owen beck": "8483424",
     "ivan demidov": "8484984",
     "noah dobson": "8480865",
     "lane hutson": "8483457",
@@ -686,6 +685,7 @@
     "jake sanderson": "8482105",
     "drake batherson": "8480208",
     "cameron crotty": "8480075",
+    "dennis gilbert": "8478502",
     "carter yakemchuk": "8484759",
     "hayden hodgson": "8478173",
     "tim stutzle": "8482116",
@@ -1058,18 +1058,6 @@
         "team": "BUF"
       }
     ],
-    "johnson": [
-      {
-        "pid": "8481564",
-        "full_name": "ryan johnson",
-        "team": "BUF"
-      },
-      {
-        "pid": "8482660",
-        "full_name": "kent johnson",
-        "team": "CBJ"
-      }
-    ],
     "geertsen": [
       {
         "pid": "8477419",
@@ -1258,13 +1246,6 @@
         "team": "CBJ"
       }
     ],
-    "kirkland": [
-      {
-        "pid": "8477993",
-        "full_name": "justin kirkland",
-        "team": "CGY"
-      }
-    ],
     "bean": [
       {
         "pid": "8479402",
@@ -1361,17 +1342,17 @@
         "team": "CHI"
       }
     ],
-    "toninato": [
-      {
-        "pid": "8476952",
-        "full_name": "dominic toninato",
-        "team": "CHI"
-      }
-    ],
     "boisvert": [
       {
         "pid": "8484793",
         "full_name": "sacha boisvert",
+        "team": "CHI"
+      }
+    ],
+    "lardis": [
+      {
+        "pid": "8484185",
+        "full_name": "nick lardis",
         "team": "CHI"
       }
     ],
@@ -1656,13 +1637,6 @@
         "team": "FLA"
       }
     ],
-    "studnicka": [
-      {
-        "pid": "8480021",
-        "full_name": "jack studnicka",
-        "team": "FLA"
-      }
-    ],
     "reinhardt": [
       {
         "pid": "8481133",
@@ -1860,13 +1834,6 @@
       {
         "pid": "8483728",
         "full_name": "jared davidson",
-        "team": "MTL"
-      }
-    ],
-    "beck": [
-      {
-        "pid": "8483424",
-        "full_name": "owen beck",
         "team": "MTL"
       }
     ],
@@ -2212,13 +2179,6 @@
       {
         "pid": "8482673",
         "full_name": "xavier bourgault",
-        "team": "OTT"
-      }
-    ],
-    "gilbert": [
-      {
-        "pid": "8478502",
-        "full_name": "dennis gilbert",
         "team": "OTT"
       }
     ],
@@ -3441,6 +3401,18 @@
         "team": "BUF"
       }
     ],
+    "johnson": [
+      {
+        "pid": "8481564",
+        "full_name": "ryan johnson",
+        "team": "PIT"
+      },
+      {
+        "pid": "8482660",
+        "full_name": "kent johnson",
+        "team": "CBJ"
+      }
+    ],
     "timmins": [
       {
         "pid": "8479982",
@@ -3738,6 +3710,13 @@
         "team": "TOR"
       }
     ],
+    "kirkland": [
+      {
+        "pid": "8477993",
+        "full_name": "justin kirkland",
+        "team": "MIN"
+      }
+    ],
     "frost": [
       {
         "pid": "8480028",
@@ -3918,6 +3897,13 @@
         "team": "OTT"
       }
     ],
+    "toninato": [
+      {
+        "pid": "8476952",
+        "full_name": "dominic toninato",
+        "team": "CHI"
+      }
+    ],
     "rinzel": [
       {
         "pid": "8483506",
@@ -4013,13 +3999,6 @@
       {
         "pid": "8483450",
         "full_name": "ryan greene",
-        "team": "CHI"
-      }
-    ],
-    "lardis": [
-      {
-        "pid": "8484185",
-        "full_name": "nick lardis",
         "team": "CHI"
       }
     ],
@@ -4678,6 +4657,13 @@
         "team": "FLA"
       }
     ],
+    "studnicka": [
+      {
+        "pid": "8480021",
+        "full_name": "jack studnicka",
+        "team": "PHI"
+      }
+    ],
     "samoskevich": [
       {
         "pid": "8482713",
@@ -5065,6 +5051,13 @@
         "pid": "8481593",
         "full_name": "jayden struble",
         "team": "NSH"
+      }
+    ],
+    "beck": [
+      {
+        "pid": "8483424",
+        "full_name": "owen beck",
+        "team": "MTL"
       }
     ],
     "demidov": [
@@ -5738,6 +5731,13 @@
         "pid": "8480075",
         "full_name": "cameron crotty",
         "team": "OTT"
+      }
+    ],
+    "gilbert": [
+      {
+        "pid": "8478502",
+        "full_name": "dennis gilbert",
+        "team": "BUF"
       }
     ],
     "yakemchuk": [
