@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import https from 'node:https';
 import path from 'node:path';
 import Papa from 'papaparse';
+import { byImpact, injuryImpactScorer, injuryNote } from '../../lib/injury-impact';
 import { SEASON_ID } from '../../lib/season';
 import { leaguesSummary } from './league-summary';
 import { leagueAverages } from './chart-metrics';
@@ -343,6 +344,9 @@ interface Injury {
     status?: string;
     type?: string | null;
     returnDate?: string | null;
+    comment?: string | null;
+    /** When ESPN last updated the entry. */
+    date?: string | null;
 }
 
 function loadInjuries(tri: string): Injury[] {
@@ -436,13 +440,24 @@ export function buildTeamHero(tri: string): TeamHero {
                   sims: proj.simulations ?? null,
               }
             : null,
-        injuries: loadInjuries(tri).map(i => ({
-            name: i.name ?? '',
-            pos: i.position ?? '',
-            status: i.status ?? '',
-            type: i.type ?? null,
-            returnDate: i.returnDate ?? null,
-        })),
+        // Most immediate first: who dressed in the last two games, then by role (lib/injury-impact.ts).
+        injuries: (() => {
+            const impact = injuryImpactScorer();
+            return byImpact(loadInjuries(tri), i => impact(i.playerId, i.name ?? '', tri)).map(i => {
+                const k = impact(i.playerId, i.name ?? '', tri);
+                return {
+                    id: i.playerId ?? null,
+                    name: i.name ?? '',
+                    pos: i.position ?? '',
+                    status: i.status ?? '',
+                    type: i.type && !/undisclosed|not specified/i.test(i.type) ? i.type : null,
+                    returnDate: i.returnDate ?? null,
+                    note: injuryNote(i.comment),
+                    updated: i.date ?? null,
+                    recent: k.recent,
+                };
+            });
+        })(),
         rosterChanges: rc
             ? {
                   added: rc.added.map(p => ({ name: p.name, from: p.from ?? null })),

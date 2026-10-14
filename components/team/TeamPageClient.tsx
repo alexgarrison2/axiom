@@ -14,6 +14,7 @@ import { seasonGames, seasonLabel } from '@/utils/team-stats/season';
 import type { TeamPayload } from '@/utils/team-stats/team-types';
 import GamesLogTable from './GamesLogTable';
 import type { SeasonGame } from './TeamBreakdown';
+import type { LeagueRates } from '@/lib/game/league-ranks';
 import { signed } from '@/utils/team-stats/format';
 import { DEFAULT_GAME_FILTERS, applyGameFilters, countGameFilters, totals, type TeamGameFilters } from './game-log-model';
 
@@ -53,6 +54,8 @@ interface TeamPageClientProps {
     seasons: string[];
     /** Per season: the games the Breakdown tab can merge (those with a pony xG build). */
     breakdown: Record<string, SeasonGame[]>;
+    /** Per season: league per-game rates for the Breakdown's team-stat ranks. */
+    league: Record<string, LeagueRates>;
 }
 
 /**
@@ -60,7 +63,7 @@ interface TeamPageClientProps {
  * ?tab=), game-log filters in a sheet with quick chips, and the lazily
  * loaded Charts / Skaters tabs. The hero above it is server-rendered.
  */
-export default function TeamPageClient({ initial, seasons, breakdown }: TeamPageClientProps) {
+export default function TeamPageClient({ initial, seasons, breakdown, league }: TeamPageClientProps) {
     const tri = initial.team.tri;
     const [tab, setTab] = React.useState<Tab>('games');
     const [season, setSeason] = React.useState(initial.season);
@@ -313,7 +316,7 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
             </TabsContent>
 
             <TabsContent value="breakdown" className="mt-0">
-                {tab === 'breakdown' ? <TeamBreakdown key={`${tri}-${season}`} tri={tri} games={breakdown[season] ?? []} /> : null}
+                {tab === 'breakdown' ? <TeamBreakdown key={`${tri}-${season}`} tri={tri} games={breakdown[season] ?? []} league={league[season] ?? null} /> : null}
             </TabsContent>
 
             <TabsContent value="goalies" className="mt-0">

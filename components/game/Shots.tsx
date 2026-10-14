@@ -16,6 +16,7 @@ import { OPP_GOALIE } from '@/lib/game/season';
 import type { ShotRow } from '@/lib/shots';
 import { TeamToggle } from '@/components/ui/team-toggle';
 import { fmtInt } from '@/components/views/format';
+import { JerseyNumber } from './Jersey';
 
 type Kind = 'goal' | 'shot' | 'miss' | 'block';
 const KINDS: { kind: Kind; label: string }[] = [
@@ -101,6 +102,9 @@ export function Shots() {
     const [period, setPeriod] = React.useState<string>('all');
     const [kinds, setKinds] = React.useState<Set<Kind>>(new Set(['goal', 'shot', 'miss']));
     const [player, setPlayer] = React.useState<string>('all');
+    // The shooter rail: a hover previews a shooter's marks, a click pins him (as the faceoff rail does).
+    const [peek, setPeek] = React.useState<string | null>(null);
+    const who = peek ?? player;
     // A merged season (thousands of shots) opens on density; a game on the map.
     const [view, setView] = React.useState<'map' | 'heat'>(m.starts?.length ? 'heat' : 'map');
     // The map shows one team's shots at a time, at the full width of the panel.
@@ -113,14 +117,23 @@ export function Shots() {
     );
     // Blocks are plotted where the defender stopped them, not where the shot came from, so the map leaves them out.
     const shown = React.useMemo(
-        () => base.filter(e => e.side === side && e.type !== 'block' && kinds.has(e.type as Kind) && (player === 'all' || String(e.player) === player)),
-        [base, side, kinds, player],
+        () => base.filter(e => e.side === side && e.type !== 'block' && kinds.has(e.type as Kind) && (who === 'all' || String(e.player) === who)),
+        [base, side, kinds, who],
     );
+    // Every shooter on this side under the current filters, by xG: attempts, goals and xG on the map's terms.
+    const board = React.useMemo(() => {
+        const rows = new Map<number, { id: number; att: number; g: number; xg: number }>();
+        for (const e of base) {
+            if (e.side !== side || e.type === 'block' || !kinds.has(e.type as Kind) || e.player == null) continue;
+            const r = rows.get(e.player) ?? { id: e.player, att: 0, g: 0, xg: 0 };
+            r.att += 1;
+            r.g += e.type === 'goal' ? 1 : 0;
+            r.xg += e.xg ?? 0;
+            rows.set(e.player, r);
+        }
+        return [...rows.values()].sort((a, b) => b.xg - a.xg || b.g - a.g || b.att - a.att);
+    }, [base, side, kinds]);
     const rows = React.useMemo(() => shown.map(toRow), [shown]);
-    const shooters = [...new Set(base.filter(e => e.side === side).map(e => e.player).filter((p): p is number => p != null))]
-        .map(id => byId.get(id))
-        .filter(Boolean)
-        .sort((a, b) => a!.last.localeCompare(b!.last));
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
     const toggle = (k: Kind) => setKinds(s => {
         const n = new Set(s);
@@ -132,6 +145,7 @@ export function Shots() {
     const pickSide = (s: Side) => {
         setSide(s);
         setPlayer('all');
+        setPeek(null);
     };
     // Each shot's event before it on the clock (the play that led to it).
     const prevOf = React.useMemo(() => {
@@ -216,28 +230,33 @@ export function Shots() {
                                     </FilterChip>
                                 ))}
                             </div>
-                            <label className="sr-only" htmlFor="shot-player">
-                                Shooter
-                            </label>
-                            <select
-                                id="shot-player"
-                                value={player}
-                                onChange={e => setPlayer(e.target.value)}
-                                className="h-8 min-w-0 max-w-[12rem] rounded-control border border-line bg-surface-1 px-2 text-caption uppercase tracking-wide text-fg-1 hover:border-line-strong coarse:h-11 md:ml-auto"
-                            >
-                                <option value="all">All shooters</option>
-                                {shooters.map(p => (
-                                    <option key={p!.id} value={p!.id}>
-                                        {shortName(p)}
-                                    </option>
-                                ))}
-                            </select>
                         </>
                     ) : null}
                 </ControlRow>
 
                 {view === 'map' ? (
-                    <div className="p-card">
+                    <div className="grid min-w-0 gap-4 p-card lg:grid-cols-[15.5rem_minmax(0,1fr)]">
+                        <ShooterRail
+                            board={board}
+                            side={side}
+                            tri={m.teams[side].tri}
+                            color={colors[side]}
+                            pinned={player}
+                            peek={peek}
+                            onPeek={setPeek}
+                            onPin={id => {
+                                setPlayer(cur => (cur === id ? 'all' : id));
+                                setPeek(null);
+                            }}
+                            name={id => {
+                                const p = byId.get(id);
+                                return p ? shortName(p) : '—';
+                            }}
+                            num={id => byId.get(id)?.num ?? null}
+                            pooled={m.teams[side].tri === 'OPP'}
+                            totals={{ att: base.filter(e => e.side === side && e.type !== 'block' && kinds.has(e.type as Kind)).length, xg: board.reduce((a, r) => a + r.xg, 0), g: board.reduce((a, r) => a + r.g, 0) }}
+                        />
+                        <div className="min-w-0">
                         <ShotMapFrame
                             map={
                                 <Rink3D
@@ -312,6 +331,7 @@ export function Shots() {
                             </span>
                             <span>Size = xG</span>
                         </p>
+                        </div>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4 p-card sm:grid-cols-2">
@@ -327,5 +347,140 @@ export function Shots() {
                 )}
             </div>
         </GameSection>
+    );
+}
+
+interface BoardRow {
+    id: number;
+    att: number;
+    g: number;
+    xg: number;
+}
+
+/**
+ * The shot map's shooter rail: "All" with the side's totals, then every shooter by xG with his sweater badge,
+ * goals, attempts and an xG bar in the side colour against the side's top shooter. Hover (mouse) previews his
+ * marks on the rink, a click pins him and a second click lets go; the rest fade while one is chosen. Wide
+ * screens get a column beside the rink; narrower ones a sideways-scrolling strip above it.
+ */
+function ShooterRail({
+    board,
+    side,
+    tri,
+    color,
+    pinned,
+    peek,
+    onPeek,
+    onPin,
+    name,
+    num,
+    pooled,
+    totals,
+}: {
+    board: BoardRow[];
+    side: Side;
+    tri: string;
+    color: string;
+    pinned: string;
+    peek: string | null;
+    onPeek: (id: string | null) => void;
+    onPin: (id: string) => void;
+    name: (id: number) => string;
+    num: (id: number) => number | null;
+    pooled: boolean;
+    totals: { att: number; g: number; xg: number };
+}) {
+    const [all, setAll] = React.useState(false);
+    const top = Math.max(1e-9, ...board.map(r => r.xg));
+    const LIMIT = 14;
+    const rows = all ? board : board.slice(0, LIMIT);
+    const active = peek ?? pinned;
+    const item = (selected: boolean, faded: boolean) =>
+        cn(
+            'group/row grid w-full shrink-0 items-center gap-x-2 rounded-control border px-2 py-1 text-left transition-[opacity,background-color,border-color] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand max-lg:w-[11.5rem]',
+            selected ? 'border-brand/60 bg-surface-2' : 'border-transparent hover:bg-surface-2/60',
+            faded && 'opacity-40',
+        );
+    return (
+        <div className="flex min-w-0 flex-col gap-2" key={side}>
+            <div className="flex items-baseline justify-between gap-2">
+                <p className="label">Shooters</p>
+                <p className="text-micro tabular-nums text-fg-3">{fmtInt(board.length)}</p>
+            </div>
+            <ul className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 scrollbar-hide lg:max-h-[27rem] lg:flex-col lg:overflow-y-auto lg:overflow-x-visible lg:pb-0 lg:[scrollbar-width:thin]" aria-label={`${tri} shooters`}>
+                <li className="shrink-0">
+                    <button
+                        type="button"
+                        aria-pressed={pinned === 'all'}
+                        onClick={() => onPin('all')}
+                        className={cn(item(pinned === 'all' && peek == null, false), 'grid-cols-[1.5rem_minmax(0,1fr)_auto]')}
+                    >
+                        {pooled ? (
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full border text-micro font-bold leading-none" style={{ borderColor: color, color }} aria-hidden="true">
+                                O
+                            </span>
+                        ) : (
+                            <Crest tri={tri} size={24} className="h-6 w-6 drop-shadow-none" />
+                        )}
+                        <span className="min-w-0">
+                            <span className="block truncate text-caption font-semibold text-fg-1">All shooters</span>
+                            <span className="block text-micro tabular-nums text-fg-3">
+                                {fmtInt(totals.att)} att · {fmtInt(totals.g)} G
+                            </span>
+                        </span>
+                        <span className="text-caption font-bold tabular-nums text-model">{totals.xg.toFixed(2)}</span>
+                    </button>
+                </li>
+                {rows.map(r => {
+                    const id = String(r.id);
+                    const on = active === id;
+                    return (
+                        <li key={r.id} className="shrink-0">
+                            <button
+                                type="button"
+                                aria-pressed={pinned === id}
+                                onPointerEnter={e => e.pointerType === 'mouse' && onPeek(id)}
+                                onPointerLeave={e => e.pointerType === 'mouse' && onPeek(null)}
+                                onFocus={() => onPeek(id)}
+                                onBlur={() => onPeek(null)}
+                                onClick={() => onPin(id)}
+                                className={cn(item(on, active !== 'all' && !on), 'grid-cols-[1.5rem_minmax(0,1fr)_auto]')}
+                            >
+                                <JerseyNumber tri={tri === 'OPP' ? 'NHL' : tri} num={num(r.id)} ring={color} size={24} />
+                                <span className="flex min-w-0 flex-col gap-1">
+                                    <span className="flex items-baseline gap-1.5">
+                                        <span className={cn('truncate text-caption font-semibold', on ? 'text-brand' : 'text-fg-1')}>{name(r.id)}</span>
+                                        {r.g ? (
+                                            <span className="shrink-0 text-micro font-bold tabular-nums text-fg-1">
+                                                {r.g}
+                                                <span className="font-normal text-fg-3">G</span>
+                                            </span>
+                                        ) : null}
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="relative h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-track" aria-hidden="true">
+                                            <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${(r.xg / top) * 100}%`, background: color, opacity: on ? 1 : 0.7 }} />
+                                        </span>
+                                        <span className="shrink-0 text-micro tabular-nums text-fg-3">{fmtInt(r.att)}</span>
+                                    </span>
+                                </span>
+                                <span className="text-caption font-semibold tabular-nums text-model">{r.xg.toFixed(2)}</span>
+                            </button>
+                        </li>
+                    );
+                })}
+                {board.length > LIMIT ? (
+                    <li className="shrink-0 self-center lg:self-stretch">
+                        <button
+                            type="button"
+                            onClick={() => setAll(v => !v)}
+                            className="h-8 w-full whitespace-nowrap rounded-control px-2 text-left text-micro font-medium uppercase tracking-label text-fg-3 hover:text-fg-1 coarse:h-11"
+                        >
+                            {all ? 'Top 14' : `All ${board.length}`}
+                        </button>
+                    </li>
+                ) : null}
+            </ul>
+        </div>
     );
 }

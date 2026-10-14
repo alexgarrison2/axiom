@@ -15,6 +15,7 @@ import { Zones } from '@/components/game/Zones';
 import { cn } from '@/lib/utils';
 import { mergeSeason } from '@/lib/game/season';
 import type { GameModel } from '@/lib/game/types';
+import type { LeagueRates } from '@/lib/game/league-ranks';
 import { ALL_TEAMS, conferenceOf, DIVISIONS, divisionOf } from '@/lib/pony/teams';
 
 /**
@@ -34,6 +35,8 @@ export interface SeasonGame {
     gf: number;
     ga: number;
     result: 'W' | 'L' | 'OTL';
+    /** The team's goalie credited with the decision (OTL as 'O'). */
+    decision: { goalie: number; result: 'W' | 'L' | 'O' } | null;
 }
 
 const SELECT =
@@ -72,7 +75,7 @@ interface Filters {
     last: number;
 }
 
-export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[] }) {
+export function TeamBreakdown({ tri, games, league }: { tri: string; games: SeasonGame[]; league: LeagueRates | null }) {
     const n = games.length;
     const init: Filters = { from: '', to: '', lo: 1, hi: n, venue: 'all', result: 'all', vs: 'all', last: 0 };
     const [f, setF] = React.useState<Filters>(init);
@@ -122,7 +125,9 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
     const loading = models.size + failed < games.length;
     const merged = React.useMemo(() => {
         if (!ready.length || ready.length < picked.length - failed) return null;
-        return mergeSeason(ready.map(g => models.get(g.id)!), tri);
+        const m = mergeSeason(ready.map(g => models.get(g.id)!), tri);
+        const dec = new Map(ready.map(g => [g.id, g.decision]));
+        return m && { ...m, games: m.games?.map(g => ({ ...g, decision: dec.get(g.id) ?? null })) };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ready.length, picked, models.size, tri]);
 
@@ -132,12 +137,32 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
     const opps = [...new Set(games.map(g => g.opp))].sort();
     const dirty = JSON.stringify(f) !== JSON.stringify(init);
 
+    // Pinned under the app bar (lg+) the panel folds to its summary line, so it never hides the sections it
+    // filters; the Filters button opens it again. A sentinel above the panel says when it is stuck.
+    const sentinel = React.useRef<HTMLDivElement>(null);
+    const [stuck, setStuck] = React.useState(false);
+    const [open, setOpen] = React.useState(false);
+    React.useEffect(() => {
+        const el = sentinel.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return;
+        const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--appbar-h')) || 56;
+        const io = new IntersectionObserver(([e]) => {
+            const s = !e.isIntersecting && e.boundingClientRect.top < top + 8;
+            setStuck(s);
+            if (!s) setOpen(false);
+        }, { rootMargin: `-${top + 9}px 0px 0px 0px` });
+        io.observe(el);
+        return () => io.disconnect();
+    }, [n]);
+    const folded = stuck && !open;
+
     if (!n) return <p className="panel p-card text-caption text-fg-3">No games yet this season.</p>;
 
     return (
         <div className="flex flex-col gap-8">
-            <div className="panel z-20 flex flex-col gap-3 p-card lg:sticky lg:top-[calc(var(--appbar-h)+var(--vv-top,0px)+8px)] lg:shadow-[0_12px_32px_rgb(0_0_0/0.45)]">
-                <div className="grid grid-cols-6 gap-x-2 gap-y-2 sm:grid-cols-4 sm:gap-x-3 lg:grid-cols-8">
+            <div ref={sentinel} aria-hidden="true" className="-mb-8 h-0" />
+            <div className={cn('panel z-20 flex flex-col gap-3 p-card lg:sticky lg:top-[calc(var(--appbar-h)+var(--vv-top,0px)+8px)] lg:shadow-[0_12px_32px_rgb(0_0_0/0.45)]', folded && 'lg:py-2.5')}>
+                <div className={cn('grid grid-cols-6 gap-x-2 gap-y-2 sm:grid-cols-4 sm:gap-x-3 lg:grid-cols-8', folded && 'lg:hidden')}>
                     <Field label="Games" className="max-sm:col-span-4">
                         <span className="flex items-center gap-1.5">
                             <select className={cn(SELECT, 'w-full')} value={f.lo} onChange={e => set({ lo: Number(e.target.value), hi: Math.max(f.hi, Number(e.target.value)) })} aria-label="From game">
@@ -206,10 +231,10 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
                         </select>
                     </Field>
                     <Field label="From" className="max-sm:col-span-3">
-                        <input type="date" className={cn(SELECT, 'normal-case')} value={f.from} min={games[0]?.date} max={games[n - 1]?.date} onChange={e => set({ from: e.target.value })} />
+                        <input type="date" className={cn(SELECT, 'normal-case')} value={f.from || games[0]?.date || ''} min={games[0]?.date} max={games[n - 1]?.date} onChange={e => set({ from: e.target.value === games[0]?.date ? '' : e.target.value })} />
                     </Field>
                     <Field label="To" className="max-sm:col-span-3">
-                        <input type="date" className={cn(SELECT, 'normal-case')} value={f.to} min={games[0]?.date} max={games[n - 1]?.date} onChange={e => set({ to: e.target.value })} />
+                        <input type="date" className={cn(SELECT, 'normal-case')} value={f.to || games[n - 1]?.date || ''} min={games[0]?.date} max={games[n - 1]?.date} onChange={e => set({ to: e.target.value === games[n - 1]?.date ? '' : e.target.value })} />
                     </Field>
                     <div className="flex items-end max-sm:col-span-6 max-sm:empty:hidden">
                         {dirty ? (
@@ -234,8 +259,19 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
                             #{picked[0].num} {picked[0].date} → #{picked[picked.length - 1].num} {picked[picked.length - 1].date}
                         </span>
                     ) : null}
+                    {stuck ? (
+                        <button
+                            type="button"
+                            aria-expanded={open}
+                            onClick={() => setOpen(o => !o)}
+                            className="ml-auto hidden h-8 items-center gap-1.5 rounded-full border border-line px-3 text-micro font-medium uppercase tracking-chip text-fg-2 hover:border-line-strong hover:text-fg-1 lg:inline-flex"
+                        >
+                            {open ? 'Done' : 'Filters'}
+                            {!open && dirty ? <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" /> : null}
+                        </button>
+                    ) : null}
                     {loading ? (
-                        <span className="ml-auto flex items-center gap-2 text-micro uppercase tracking-label text-fg-3" aria-live="polite">
+                        <span className={cn('flex items-center gap-2 text-micro uppercase tracking-label text-fg-3', !stuck && 'ml-auto')} aria-live="polite">
                             <span className="h-1 w-24 overflow-hidden rounded-full bg-track">
                                 <span className="block h-full bg-brand transition-[width]" style={{ width: `${((models.size + failed) / n) * 100}%` }} />
                             </span>
@@ -247,7 +283,7 @@ export function TeamBreakdown({ tri, games }: { tri: string; games: SeasonGame[]
 
             {merged ? (
                 <GameProvider key={`${tri}-${picked.map(g => g.id).join(',')}`} m={merged}>
-                    <TeamStats />
+                    <TeamStats league={league} />
                     <Skaters />
                     <GameScore />
                     <Units />

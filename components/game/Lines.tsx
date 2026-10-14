@@ -1,11 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { clockOf, deployment, goalMarkers, goalieRows, lineup, pairKey, pairTimes, skaterRows, units, type MarkerKind, type SkaterRow } from '@/lib/game/analytics';
+import { clockOf, deployment, gamesPlayed, goalMarkers, goalieRows, lineup, pairKey, pairTimes, skaterRows, units, type MarkerKind, type SkaterRow } from '@/lib/game/analytics';
 import type { Side } from '@/lib/game/types';
 import { GameSection, sideTeams, useGame } from './GameContext';
 import { TipFace, TipRow, useHoverTip } from './HoverTip';
 import { useWidth } from './Pulse';
+import { Segmented } from '@/components/ui/segmented';
 import { TeamToggle } from '@/components/ui/team-toggle';
 import { fmtInt } from '@/components/views/format';
 import { ScrollRegion } from '@/components/ui/scroll-region';
@@ -261,7 +262,9 @@ function TeamUsage({ side, focus, setFocus }: FocusProps) {
 }
 
 /** Minutes card: the ES / PP / PK split with shares, then shift count and length. */
-function MinutesTip({ r, color, rank }: { r: SkaterRow; color: string; rank: string }) {
+function MinutesTip({ r, color, rank, gp }: { r: SkaterRow; color: string; rank: string; gp: number | null }) {
+    // Per GP (a season): every time is divided by his games played; shares and shift length stay as they are.
+    const d = gp ? gp : 1;
     const parts: [string, number, string][] = [
         ['Even', r.toiEv, 'rgb(var(--text-3-rgb) / 0.55)'],
         ['Power play', r.toiPp, 'var(--pp)'],
@@ -279,7 +282,7 @@ function MinutesTip({ r, color, rank }: { r: SkaterRow; color: string; rank: str
                         #{r.player.num ?? '–'} · {r.player.pos} · {rank}
                     </span>
                 </span>
-                <span className="ml-auto font-display text-title font-bold text-fg-1">{clockOf(r.toi)}</span>
+                <span className="ml-auto font-display text-title font-bold text-fg-1">{clockOf(r.toi / d)}</span>
             </div>
             <div className="flex h-2 overflow-hidden rounded-full" aria-hidden="true">
                 {parts.map(([k, v, c]) => (
@@ -296,28 +299,37 @@ function MinutesTip({ r, color, rank }: { r: SkaterRow; color: string; rank: str
                         </span>
                     }
                 >
-                    {clockOf(v)} <span className="text-fg-3">· {Math.round((v / Math.max(1, r.toi)) * 100)}%</span>
+                    {clockOf(v / d)} <span className="text-fg-3">· {Math.round((v / Math.max(1, r.toi)) * 100)}%</span>
                 </TipRow>
             ))}
-            <TipRow k="Shifts" className="border-t border-line pt-1.5">
-                {fmtInt(r.shifts)} <span className="text-fg-3">· avg {clockOf(r.toi / Math.max(1, r.shifts))}</span>
+            <TipRow k={gp ? 'Shifts/GP' : 'Shifts'} className="border-t border-line pt-1.5">
+                {gp ? (r.shifts / gp).toFixed(1) : fmtInt(r.shifts)} <span className="text-fg-3">· avg {clockOf(r.toi / Math.max(1, r.shifts))}</span>
             </TipRow>
+            {gp ? (
+                <TipRow k="GP">
+                    {fmtInt(gp)} <span className="text-fg-3">· {clockOf(r.toi)} total</span>
+                </TipRow>
+            ) : null}
         </div>
     );
 }
 
-function Minutes({ side, focus, setFocus, wide = false }: FocusProps & { wide?: boolean }) {
+function Minutes({ side, focus, setFocus, wide = false, perGp = false }: FocusProps & { wide?: boolean; perGp?: boolean }) {
     const { m, label, colors } = useGame();
     const { bind, tip } = useHoverTip();
-    const rows = skaterRows(m, side, 'all');
-    const max = Math.max(1, ...rows.map(r => r.toi));
-    const groups = [rows.filter(r => r.player.pos === 'D'), rows.filter(r => r.player.pos !== 'D')];
+    // Per GP: each skater's time over the games he played, so a call-up's one night sits beside the regulars' averages.
+    const gpOf = React.useMemo(() => new Map(m.players.map(p => [p.id, perGp ? Math.max(1, gamesPlayed(m, p.id)) : 1])), [m, perGp]);
+    const rows = skaterRows(m, side, 'all')
+        .map(r => ({ r, d: gpOf.get(r.player.id) ?? 1 }))
+        .sort((a, b) => b.r.toi / b.d - a.r.toi / a.d);
+    const max = Math.max(1, ...rows.map(({ r, d }) => r.toi / d));
+    const groups = [rows.filter(({ r }) => r.player.pos === 'D'), rows.filter(({ r }) => r.player.pos !== 'D')];
     return (
         <div className={wide ? 'grid gap-x-8 gap-y-4 md:grid-cols-2' : 'flex flex-col gap-4'}>
             {groups.map((list, gi) => (
                 <ol key={gi} className="flex flex-col gap-1.5" aria-label={gi === 0 ? 'Defence minutes' : 'Forward minutes'}>
-                    {list.map((r, i) => {
-                        const b = bind(<MinutesTip r={r} color={colors[side]} rank={`${i + 1}${['st', 'nd', 'rd'][i] ?? 'th'} ${gi === 0 ? 'D' : 'F'} in TOI`} />, {
+                    {list.map(({ r, d }, i) => {
+                        const b = bind(<MinutesTip r={r} gp={perGp ? d : null} color={colors[side]} rank={`${i + 1}${['st', 'nd', 'rd'][i] ?? 'th'} ${gi === 0 ? 'D' : 'F'} in TOI${perGp ? '/GP' : ''}`} />, {
                             enter: () => setFocus(r.player.id),
                             leave: () => setFocus(null),
                         });
@@ -328,12 +340,13 @@ function Minutes({ side, focus, setFocus, wide = false }: FocusProps & { wide?: 
                                 className={`-mx-1 grid grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-2 rounded-control px-1 text-caption tabular-nums hover:bg-surface-2 ${focus === r.player.id ? 'bg-surface-2' : ''}`}
                             >
                                 <span className="flex items-center gap-1.5">
-                                    <span className="flex h-5 overflow-hidden rounded-[3px]" style={{ width: `calc((100% - 2.75rem) * ${r.toi / max})` }}>
+                                    <span className="flex h-5 overflow-hidden rounded-[3px]" style={{ width: `calc((100% - ${perGp ? 5.25 : 2.75}rem) * ${r.toi / d / max})` }}>
                                         <span className="h-full" style={{ width: `${(r.toiEv / r.toi) * 100}%`, background: 'rgb(var(--text-3-rgb) / 0.55)' }} />
                                         <span className="h-full bg-[var(--pp)]" style={{ width: `${(r.toiPp / r.toi) * 100}%` }} />
                                         <span className="h-full bg-[var(--pk)]" style={{ width: `${(r.toiSh / r.toi) * 100}%` }} />
                                     </span>
-                                    <span className="text-micro font-semibold text-fg-1">{clockOf(r.toi)}</span>
+                                    <span className="text-micro font-semibold text-fg-1">{clockOf(r.toi / d)}</span>
+                                    {perGp ? <span className="whitespace-nowrap text-micro text-fg-3">{d} GP</span> : null}
                                 </span>
                                 <span className={`truncate ${focus === r.player.id ? 'font-semibold text-brand' : 'text-fg-1'}`}>{label(r.player.id)}</span>
                             </li>
@@ -534,6 +547,7 @@ export function Lines() {
     const { m, colors } = useGame();
     const [side, setSide] = React.useState<Side>('away');
     const [focus, setFocus] = React.useState<number | null>(null);
+    const [minutes, setMinutes] = React.useState<'raw' | 'gp'>('raw');
     // Several games (a team's Breakdown): a per-game timeline would smear 82 games into one box, so the
     // section becomes the deployment calendar; the pooled opponents have no lines to show.
     if (m.starts?.length)
@@ -543,8 +557,21 @@ export function Lines() {
                 <div className="panel flex min-w-0 flex-col gap-6 p-card">
                     <DeploymentCalendar />
                     <div>
-                        <p className="label mb-2">Minutes</p>
-                        <Minutes side="away" focus={focus} setFocus={setFocus} wide />
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                            <p className="label">Minutes</p>
+                            <Segmented
+                                label="Minutes"
+                                size="sm"
+                                value={minutes}
+                                onChange={setMinutes}
+                                optionClassName="px-2.5"
+                                options={[
+                                    { value: 'raw', label: 'Raw' },
+                                    { value: 'gp', label: 'Per GP' },
+                                ]}
+                            />
+                        </div>
+                        <Minutes side="away" focus={focus} setFocus={setFocus} wide perGp={minutes === 'gp'} />
                     </div>
                 </div>
             </GameSection>

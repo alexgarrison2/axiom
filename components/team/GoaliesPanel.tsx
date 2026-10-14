@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
+import { PlayerLink } from '@/components/players/PlayerLink';
 import { cn } from '@/lib/utils';
 import { injuryCode, shortDate, signed } from '@/utils/team-stats/format';
 import type { GoalieLine, GoalieSeason } from '@/utils/team-stats/team-types';
@@ -34,7 +35,7 @@ export default function GoaliesPanel({ goalies, currentLabel, prevLabel }: Goali
                         <header className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                                 <h3 id={`goalie-${g.id}`} className={cn('truncate font-display text-[20px] font-bold uppercase leading-6', nameTone)}>
-                                    {g.name}
+                                    <PlayerLink id={Number(g.id)}>{g.name}</PlayerLink>
                                 </h3>
                                 <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-micro uppercase tracking-wide text-fg-3">
                                     {g.number != null ? <span>#{g.number}</span> : null}

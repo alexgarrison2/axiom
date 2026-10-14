@@ -41,60 +41,172 @@ interface GamesLogTableProps {
 
 const TONE: Record<string, string> = {
     win: 'text-pos',
-    otl: 'text-warn',
+    otl: 'text-neg/70',
     loss: 'text-neg',
 };
+
+type Group = 'Result' | 'Goalies' | 'PP · PK' | 'Play' | 'Goaltending' | 'Game state';
 
 interface Col {
     key: string;
     label: string;
     title: string;
     width: number;
+    group: Group;
     value: (g: GameRow, p: PeriodFilter) => number;
-    render: (g: GameRow, p: PeriodFilter) => React.ReactNode;
+    render: (g: GameRow, p: PeriodFilter, ctx: CellCtx) => React.ReactNode;
+    /** The season-to-date cell over the shown games (per game where that reads better). */
+    avg?: (t: ReturnType<typeof totals>, games: GameRow[], p: PeriodFilter, ctx: CellCtx) => React.ReactNode;
     fullGame?: boolean;
     tone?: (g: GameRow, p: PeriodFilter) => string | undefined;
+    align?: 'left' | 'center';
 }
+
+/** What a paired cell needs beyond the game: the team colour and each pair's largest side over the shown games. */
+interface CellCtx {
+    color: string;
+    max: Record<PairKey, number>;
+}
+
+type PairKey = 'shots' | 'att' | 'hd' | 'xg';
+const PAIRS: Record<PairKey, { f: 'sf' | 'cf' | 'hdf' | 'xgf'; a: 'sa' | 'ca' | 'hda' | 'xga'; label: string; title: string; dp: number }> = {
+    shots: { f: 'sf', a: 'sa', label: 'Shots', title: 'Shots on goal for · against (sorts by the difference)', dp: 0 },
+    att: { f: 'cf', a: 'ca', label: 'Attempts', title: 'Shot attempts for · against (sorts by the difference)', dp: 0 },
+    hd: { f: 'hdf', a: 'hda', label: 'HD', title: 'High-danger chances for · against (sorts by the difference)', dp: 0 },
+    xg: { f: 'xgf', a: 'xga', label: 'xG', title: 'Expected goals for · against (sorts by the difference)', dp: 2 },
+};
 
 const diffTone = (v: number) => (v > 0 ? 'text-pos' : v < 0 ? 'text-neg' : 'text-fg-2');
 
+/**
+ * For and against in one cell: the numbers sit on their own side, and a mirrored bar grows out from the centre
+ * on each side (team colour for, dim for against), scaled to the largest value in the column, the leader at full
+ * strength. A whole column reads as a shape: which nights the team drove play, and by how much.
+ */
+function Pair({ f, a, dp, max, color, model }: { f: number; a: number; dp: number; max: number; color: string; model?: boolean }) {
+    const fmt = (v: number) => (dp ? v.toFixed(dp) : String(Math.round(v)));
+    const lead = f === a ? null : f > a ? 'f' : 'a';
+    const w = (v: number) => `${Math.min(100, (v / Math.max(max, 1e-9)) * 100)}%`;
+    return (
+        <span className="grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1.5">
+            <span className={cn('text-right', model ? 'text-model' : lead === 'f' ? 'font-bold text-fg-1' : 'text-fg-2')}>{fmt(f)}</span>
+            <span className="flex h-2.5 items-stretch gap-px" aria-hidden="true">
+                <span className="relative flex-1 overflow-hidden rounded-l-[2px] bg-track">
+                    <span className="absolute inset-y-0 right-0" style={{ width: w(f), background: color, opacity: lead === 'f' ? 0.9 : 0.4 }} />
+                </span>
+                <span className="relative flex-1 overflow-hidden rounded-r-[2px] bg-track">
+                    <span className="absolute inset-y-0 left-0 bg-fg-2" style={{ width: w(a), opacity: lead === 'a' ? 0.75 : 0.3 }} />
+                </span>
+            </span>
+            <span className={cn('text-left', model ? 'text-model/80' : lead === 'a' ? 'font-bold text-fg-1' : 'text-fg-2')}>{fmt(a)}</span>
+        </span>
+    );
+}
+
+const pairCol = (k: PairKey): Col => {
+    const p = PAIRS[k];
+    return {
+        key: k,
+        label: p.label,
+        title: p.title,
+        width: k === 'xg' ? 132 : 118,
+        group: 'Play',
+        value: (g, per) => stat(g, p.f, per) - stat(g, p.a, per),
+        render: (g, per, ctx) => <Pair f={stat(g, p.f, per)} a={stat(g, p.a, per)} dp={p.dp} max={ctx.max[k]} color={ctx.color} model={k === 'xg'} />,
+        avg: (t, games, per, ctx) => {
+            const n = Math.max(1, games.length);
+            const f = games.reduce((s, g) => s + stat(g, p.f, per), 0) / n;
+            const a = games.reduce((s, g) => s + stat(g, p.a, per), 0) / n;
+            return <Pair f={f} a={a} dp={p.dp ? 2 : 1} max={ctx.max[k]} color={ctx.color} model={k === 'xg'} />;
+        },
+        align: 'center',
+    };
+};
+
+const svOf = (g: GameRow, p: PeriodFilter) => {
+    const sa = stat(g, 'sa', p) - (p === 'All' ? g.enga : 0);
+    return sa > 0 ? (stat(g, 'sa', p) - stat(g, 'ga', p)) / sa : null;
+};
+
 const COLS: Col[] = [
-    { key: 'res', label: 'Res', title: 'Result', width: 56, value: g => (resultTone(g) === 'win' ? 2 : resultTone(g) === 'otl' ? 1 : 0), render: g => <ResultChip g={g} /> },
-    { key: 'score', label: 'Score', title: 'Goals for – against', width: 60, value: (g, p) => score(g, p)[0] - score(g, p)[1], render: (g, p) => <span className="font-bold">{score(g, p).join('–')}</span> },
-    { key: 'starter', label: 'G', title: 'Starting goalie', width: 96, value: () => 0, render: g => lastName(g.starter) },
-    { key: 'oppStarter', label: 'Opp G', title: "Opponent's starting goalie", width: 96, value: () => 0, render: g => lastName(g.oppStarter) },
-    { key: 'pp', label: 'PP', title: 'Power-play goals / opportunities', width: 52, fullGame: true, value: g => (g.ppo ? g.ppg / g.ppo : -1), render: g => `${g.ppg}/${g.ppo}` },
-    { key: 'pk', label: 'PK', title: 'Power-play goals allowed / times shorthanded', width: 52, fullGame: true, value: g => (g.pko ? 1 - g.ppga / g.pko : 2), render: g => `${g.ppga}/${g.pko}` },
-    { key: 'sf', label: 'SF', title: 'Shots for', width: 46, value: (g, p) => stat(g, 'sf', p), render: (g, p) => stat(g, 'sf', p) },
-    { key: 'sa', label: 'SA', title: 'Shots against', width: 46, value: (g, p) => stat(g, 'sa', p), render: (g, p) => stat(g, 'sa', p) },
-    { key: 'sd', label: 'SΔ', title: 'Shot differential', width: 50, value: (g, p) => stat(g, 'sf', p) - stat(g, 'sa', p), render: (g, p) => signed(stat(g, 'sf', p) - stat(g, 'sa', p)), tone: (g, p) => diffTone(stat(g, 'sf', p) - stat(g, 'sa', p)) },
-    { key: 'cf', label: 'CF', title: 'Shot attempts for', width: 46, value: (g, p) => stat(g, 'cf', p), render: (g, p) => stat(g, 'cf', p) },
-    { key: 'ca', label: 'CA', title: 'Shot attempts against', width: 46, value: (g, p) => stat(g, 'ca', p), render: (g, p) => stat(g, 'ca', p) },
-    { key: 'hdf', label: 'HDF', title: 'High-danger chances for', width: 50, value: (g, p) => stat(g, 'hdf', p), render: (g, p) => stat(g, 'hdf', p) },
-    { key: 'hda', label: 'HDA', title: 'High-danger chances against', width: 50, value: (g, p) => stat(g, 'hda', p), render: (g, p) => stat(g, 'hda', p) },
-    { key: 'xgf', label: 'xGF', title: 'Expected goals for', width: 52, value: (g, p) => stat(g, 'xgf', p), render: (g, p) => stat(g, 'xgf', p).toFixed(2) },
-    { key: 'xga', label: 'xGA', title: 'Expected goals against', width: 52, value: (g, p) => stat(g, 'xga', p), render: (g, p) => stat(g, 'xga', p).toFixed(2) },
-    { key: 'xgd', label: 'xGΔ', title: 'Expected-goal differential', width: 56, value: (g, p) => stat(g, 'xgf', p) - stat(g, 'xga', p), render: (g, p) => signed(stat(g, 'xgf', p) - stat(g, 'xga', p), 2), tone: (g, p) => diffTone(stat(g, 'xgf', p) - stat(g, 'xga', p)) },
     {
-        key: 'sv', label: 'Sv%', title: 'Save percentage', width: 56,
-        value: (g, p) => { const sa = stat(g, 'sa', p) - (p === 'All' ? g.enga : 0); return sa > 0 ? (stat(g, 'sa', p) - stat(g, 'ga', p)) / sa : 0; },
-        render: (g, p) => { const sa = stat(g, 'sa', p) - (p === 'All' ? g.enga : 0); return sa > 0 ? pct3((stat(g, 'sa', p) - stat(g, 'ga', p)) / sa) : '—'; },
+        key: 'res', label: 'Res', title: 'Result', width: 52, group: 'Result',
+        value: g => (resultTone(g) === 'win' ? 2 : resultTone(g) === 'otl' ? 1 : 0),
+        render: g => <ResultChip g={g} />,
+        avg: t => <span className="font-bold text-fg-1">{t.w}-{t.l}-{t.otl}</span>,
     },
     {
-        key: 'gsax', label: 'GSAx', title: 'Goals saved above expected', width: 58,
+        key: 'score', label: 'Score', title: 'Goals for – against', width: 60, group: 'Result',
+        value: (g, p) => score(g, p)[0] - score(g, p)[1],
+        render: (g, p) => <span className="font-bold">{score(g, p).join('–')}</span>,
+        avg: (t, games) => (games.length ? <span className="font-bold">{(t.gf / games.length).toFixed(1)}–{(t.ga / games.length).toFixed(1)}</span> : '—'),
+    },
+    {
+        key: 'starter', label: 'Ours · Opp', title: 'Starting goalies: ours, then the opponent\'s', width: 150, group: 'Goalies', value: () => 0, align: 'left',
+        render: g => (
+            <span className="block truncate">
+                <span className="text-fg-1">{lastName(g.starter)}</span> <span className="text-fg-3">· {lastName(g.oppStarter)}</span>
+            </span>
+        ),
+    },
+    {
+        key: 'pp', label: 'PP', title: 'Power-play goals / opportunities', width: 50, group: 'PP · PK', fullGame: true,
+        value: g => (g.ppo ? g.ppg / g.ppo : -1), render: g => <span className={g.ppg ? 'font-bold text-fg-1' : 'text-fg-2'}>{`${g.ppg}/${g.ppo}`}</span>,
+        avg: t => (t.ppo ? `${((t.ppg / t.ppo) * 100).toFixed(0)}%` : '—'),
+    },
+    {
+        key: 'pk', label: 'PK', title: 'Power-play goals allowed / times shorthanded', width: 50, group: 'PP · PK', fullGame: true,
+        value: g => (g.pko ? 1 - g.ppga / g.pko : 2), render: g => <span className={g.ppga ? 'text-fg-1' : 'text-fg-2'}>{`${g.ppga}/${g.pko}`}</span>,
+        avg: t => (t.pko ? `${(100 - (t.ppga / t.pko) * 100).toFixed(0)}%` : '—'),
+    },
+    pairCol('shots'),
+    pairCol('att'),
+    pairCol('hd'),
+    pairCol('xg'),
+    {
+        key: 'sv', label: 'Sv%', title: 'Save percentage (empty-net goals excluded)', width: 58, group: 'Goaltending',
+        value: (g, p) => svOf(g, p) ?? 0,
+        render: (g, p) => { const v = svOf(g, p); return v == null ? '—' : pct3(v); },
+        avg: (t, games, p) => {
+            const sa = games.reduce((s, g) => s + stat(g, 'sa', p) - (p === 'All' ? g.enga : 0), 0);
+            const ga = games.reduce((s, g) => s + stat(g, 'ga', p) - (p === 'All' ? g.enga : 0), 0);
+            return sa > 0 ? pct3((sa - ga) / sa) : '—';
+        },
+    },
+    {
+        key: 'gsax', label: 'GSAx', title: 'Goals saved above expected', width: 60, group: 'Goaltending',
         value: (g, p) => gameGsax(g, p),
         render: (g, p) => signed(gameGsax(g, p), 2),
         tone: (g, p) => diffTone(gameGsax(g, p)),
+        avg: t => <span className={diffTone(t.gsax)}>{signed(t.gsax, 1)}</span>,
     },
-    { key: 'tl', label: 'T↑', title: 'Time leading', width: 54, value: (g, p) => stat(g, 'tl', p), render: (g, p) => mmss(stat(g, 'tl', p)) },
-    { key: 'tt', label: 'T↓', title: 'Time trailing', width: 54, value: (g, p) => stat(g, 'tt', p), render: (g, p) => mmss(stat(g, 'tt', p)) },
-    { key: 'ctrl', label: 'Ctrl', title: 'Game-control score', width: 56, value: (g, p) => stat(g, 'ctrl', p), render: (g, p) => stat(g, 'ctrl', p).toFixed(3) },
-    { key: 'en', label: 'EN', title: 'Empty-net goals for / attempts', width: 48, fullGame: true, value: g => g.engf, render: g => (g.enatt ? `${g.engf}/${g.enatt}` : '—') },
-    { key: 'flags', label: 'Flags', title: 'CW comeback win · BL blown lead · 3P in the third · NTW never trailed · NLW never led', width: 96, value: () => 0, render: g => <Flags g={g} /> },
+    {
+        key: 'tl', label: 'Lead', title: 'Time leading', width: 54, group: 'Game state',
+        value: (g, p) => stat(g, 'tl', p), render: (g, p) => <TimeCell s={stat(g, 'tl', p)} />,
+        avg: (t, games, p) => (games.length ? mmss(games.reduce((s, g) => s + stat(g, 'tl', p), 0) / games.length) : '—'),
+    },
+    {
+        key: 'tt', label: 'Trail', title: 'Time trailing', width: 54, group: 'Game state',
+        value: (g, p) => stat(g, 'tt', p), render: (g, p) => <TimeCell s={stat(g, 'tt', p)} />,
+        avg: (t, games, p) => (games.length ? mmss(games.reduce((s, g) => s + stat(g, 'tt', p), 0) / games.length) : '—'),
+    },
+    {
+        key: 'ctrl', label: 'Ctrl', title: 'Game-control score', width: 56, group: 'Game state',
+        value: (g, p) => stat(g, 'ctrl', p), render: (g, p) => stat(g, 'ctrl', p).toFixed(3),
+        avg: (t, games, p) => (games.length ? (games.reduce((s, g) => s + stat(g, 'ctrl', p), 0) / games.length).toFixed(3) : '—'),
+    },
+    { key: 'en', label: 'EN', title: 'Empty-net goals for / attempts', width: 46, group: 'Game state', fullGame: true, value: g => g.engf, render: g => (g.enatt ? `${g.engf}/${g.enatt}` : <span className="text-fg-disabled">—</span>) },
+    { key: 'flags', label: 'Flags', title: 'CW comeback win · BL blown lead · 3P in the third · NTW never trailed · NLW never led', width: 78, group: 'Game state', value: () => 0, render: g => <Flags g={g} />, align: 'left' },
 ];
 
-const UNSORTABLE = new Set(['starter', 'oppStarter', 'flags']);
-const GAME_COL = 150;
+/** Zero time reads as a dim dash, so the nights a team never led or never trailed stand out. */
+function TimeCell({ s }: { s: number }) {
+    return s > 0 ? <>{mmss(s)}</> : <span className="text-fg-disabled">—</span>;
+}
+
+const UNSORTABLE = new Set(['starter', 'flags']);
+const GAME_COL = 136;
+
 
 function lastName(n: string) {
     return n ? n.split(' ').slice(-1)[0] : '—';
@@ -180,28 +292,80 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
             ))}
         </colgroup>
     );
+    // Each pair column scales its bars to the largest side over the shown games.
+    const ctx: CellCtx = React.useMemo(() => {
+        const max = {} as Record<PairKey, number>;
+        for (const k of Object.keys(PAIRS) as PairKey[]) max[k] = Math.max(0, ...games.flatMap(g => [stat(g, PAIRS[k].f, period), stat(g, PAIRS[k].a, period)]));
+        return { color: teamColor, max };
+    }, [games, period, teamColor]);
+    // Group spans in column order; a hairline opens each group after the first.
+    const groups = cols.reduce<{ g: Group; n: number }[]>((acc, c) => {
+        const last = acc[acc.length - 1];
+        if (last && last.g === c.group) last.n++;
+        else acc.push({ g: c.group, n: 1 });
+        return acc;
+    }, []);
+    const opens = new Set(cols.filter((c, i) => i > 0 && cols[i - 1].group !== c.group).map(c => c.key));
+    const SEAM = 'border-l border-l-line-strong/60';
     const headCells = (
         <>
-            <HeaderCell
-                label="Game"
-                title="Date and opponent"
-                align="left"
-                direction={sort?.key === 'date' ? sort.dir : null}
-                onSort={() => onSort('date')}
-                className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] pl-2')}
-            />
-            {cols.map(c => (
+            <tr>
+                <th scope="col" aria-hidden="true" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 border-b-0')} />
+                {groups.map((x, i) => (
+                    <th key={x.g} scope="colgroup" colSpan={x.n} className={cn(HEAD_CELL, 'h-6 border-b-0 px-2 text-left align-bottom text-micro font-semibold uppercase tracking-label text-fg-2', i > 0 && SEAM)}>
+                        <span className="block truncate">{x.g}</span>
+                    </th>
+                ))}
+            </tr>
+            <tr>
                 <HeaderCell
-                    key={c.key}
-                    label={c.label}
-                    title={c.title}
-                    align={UNSORTABLE.has(c.key) ? 'left' : 'center'}
-                    direction={UNSORTABLE.has(c.key) ? undefined : sort?.key === c.key ? sort.dir : null}
-                    onSort={UNSORTABLE.has(c.key) ? undefined : () => onSort(c.key)}
-                    className={HEAD_CELL}
+                    label="Game"
+                    title="Date and opponent"
+                    align="left"
+                    direction={sort?.key === 'date' ? sort.dir : null}
+                    onSort={() => onSort('date')}
+                    className={cn(HEAD_CELL, STICKY_EDGE, 'top-6 z-[4] pl-2')}
                 />
-            ))}
+                {cols.map(c => (
+                    <HeaderCell
+                        key={c.key}
+                        label={
+                            PAIRS[c.key as PairKey] ? (
+                                <span className="inline-flex items-baseline gap-1.5">
+                                    {c.label}
+                                    <span className="text-fg-disabled">F·A</span>
+                                </span>
+                            ) : (
+                                c.label
+                            )
+                        }
+                        title={c.title}
+                        align={c.align === 'left' ? 'left' : 'center'}
+                        direction={UNSORTABLE.has(c.key) ? undefined : sort?.key === c.key ? sort.dir : null}
+                        onSort={UNSORTABLE.has(c.key) ? undefined : () => onSort(c.key)}
+                        className={cn(HEAD_CELL, 'top-6', opens.has(c.key) && SEAM)}
+                    />
+                ))}
+            </tr>
         </>
+    );
+    // The shown games as one line: record, goals per game, special-teams rates, per-game pairs, save % and GSAx.
+    const avgRow = (
+        <tr className="group">
+            <th scope="row" className={cn(STICKY_EDGE, 'z-[2] h-9 border-b border-line-strong bg-surface-2 px-2 text-left font-normal')}>
+                <span className="flex items-baseline gap-2">
+                    <span className="text-micro font-semibold uppercase tracking-label text-fg-1">Avg</span>
+                    <span className="text-micro uppercase tracking-label text-fg-3">
+                        {games.length} GP<span className="sr-only">, per game where it applies</span>
+                    </span>
+                </span>
+            </th>
+            {cols.map(c => (
+                <td key={c.key} className={cn('h-9 border-b border-line-strong bg-surface-2 px-1.5 text-center text-fg-1', c.align === 'left' && 'text-left text-fg-3', opens.has(c.key) && SEAM)}>
+                    {c.avg ? c.avg(t, games, period, ctx) : null}
+                </td>
+            ))}
+        </tr>
     );
 
     const xgPct = t.xgf + t.xga > 0 ? (t.xgf / (t.xgf + t.xga)) * 100 : null;
@@ -289,31 +453,28 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                         <StickyHead ref={headRef} className="bg-bg">
                             <table className={tableCls} style={tableStyle}>
                                 {colgroup}
-                                <thead>
-                                    <tr>{headCells}</tr>
-                                </thead>
+                                <thead>{headCells}</thead>
                             </table>
                         </StickyHead>
                         <TableScroller label={`${seasonLabel} game log table`} pageScroll onScrollX={left => headRef.current && (headRef.current.scrollLeft = left)}>
                             <table className={tableCls} style={tableStyle}>
                                 <caption className="sr-only">{seasonLabel} game log. The first-column buttons show each boxscore.</caption>
                                 {colgroup}
-                                <thead className={PINNED_HEAD_HIDE}>
-                                    <tr>{headCells}</tr>
-                                </thead>
+                                <thead className={PINNED_HEAD_HIDE}>{headCells}</thead>
                                 <tbody>
+                                    {games.length > 1 ? avgRow : null}
                                     {sorted.map(g => {
                                         const isOpen = open.has(g.id);
                                         return (
                                             <React.Fragment key={g.id}>
                                                 <tr className="group">
-                                                    <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-8 border-b p-0 text-left font-normal')}>
+                                                    <th scope="row" className={cn(STICKY_EDGE, CELL_BG, 'z-[2] h-9 border-b p-0 text-left font-normal')}>
                                                         <button
                                                             type="button"
                                                             aria-expanded={isOpen}
                                                             aria-controls={`box-${g.id}`}
                                                             onClick={() => toggle(g.id)}
-                                                            className="flex h-8 w-full items-center gap-2 px-2 text-left focus-visible:outline-offset-[-2px]"
+                                                            className="flex h-9 w-full items-center gap-2 px-2 text-left focus-visible:outline-offset-[-2px]"
                                                         >
                                                             <svg aria-hidden="true" viewBox="0 0 12 12" className={cn('h-2.5 w-2.5 shrink-0 text-fg-3 transition-transform', isOpen && 'rotate-90 text-brand')}>
                                                                 <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
@@ -331,12 +492,13 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                                             key={c.key}
                                                             className={cn(
                                                                 CELL_BG,
-                                                                'h-8 border-b border-line px-1.5 text-center text-fg-1',
+                                                                'h-9 border-b border-line px-1.5 text-center text-fg-1',
                                                                 c.tone?.(g, period),
-                                                                UNSORTABLE.has(c.key) && 'truncate text-left text-fg-2',
+                                                                c.align === 'left' && 'truncate text-left text-fg-2',
+                                                                opens.has(c.key) && SEAM,
                                                             )}
                                                         >
-                                                            {c.render(g, period)}
+                                                            {c.render(g, period, ctx)}
                                                         </td>
                                                     ))}
                                                 </tr>

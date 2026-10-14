@@ -8,6 +8,7 @@ import { parseRatings } from '../players/ratings';
 import { disambiguate, gsaxWindow, isCoinFlip, shortDate } from './format';
 import type { GoalieView, InjuryView, MatchupDetails, MatchupDetailsPayload, PickSummaries, SideDetails } from '../../types/prediction';
 import { SEASON_ID, SEASON_START_DATE } from '../season';
+import { byImpact, injuryImpactScorer, type InjuryImpact } from '../injury-impact';
 import { TEAM_CODES, TEAM_NAMES } from '../../components/ui/team-color';
 import { loadSeasonGames } from '../../utils/team-stats/server';
 import { goalieStartsGsax } from '../../utils/team-stats/game-row';
@@ -47,6 +48,7 @@ interface GoalieLine {
 }
 
 interface Injury {
+    playerId?: number | null;
     name: string;
     team: string;
     position?: string;
@@ -72,10 +74,15 @@ function statusShort(s: string): string {
     return 'OUT';
 }
 
-export function injuriesFor(all: Injury[], team: string, lineupNames: Set<string>): InjuryView[] {
+/**
+ * A team's absentees for the matchup card, most immediate first: players who dressed in the team's last two
+ * games, then by role (lib/injury-impact.ts). Without a scorer (tests) the report order stands, IR before DTD.
+ */
+export function injuriesFor(all: Injury[], team: string, lineupNames: Set<string>, impact?: (id: number | null | undefined, name: string, team: string) => InjuryImpact): InjuryView[] {
     const items = all.filter(i => i && i.team === team && i.status && OUT_STATUSES.test(i.status) && !lineupNames.has(i.name.toLowerCase()));
     const display = disambiguate(items.map(i => i.name));
-    return items
+    const ordered = impact ? byImpact(items, i => impact(i.playerId, i.name, team)) : [...items].sort((a, b) => Number(/day-to-day/i.test(a.status ?? '')) - Number(/day-to-day/i.test(b.status ?? '')));
+    return ordered
         .map(i => ({
             name: i.name,
             display: display.get(i.name) ?? i.name,
@@ -84,7 +91,6 @@ export function injuriesFor(all: Injury[], team: string, lineupNames: Set<string
             detail: typeShort(i.type),
             returnLabel: i.returnDate && /^\d{4}-\d{2}-\d{2}/.test(i.returnDate) ? shortDate(i.returnDate.slice(0, 10)) : null,
         }))
-        .sort((a, b) => Number(a.status === 'DTD') - Number(b.status === 'DTD'))
         .slice(0, 8);
 }
 
@@ -146,6 +152,7 @@ export function getMatchupDetails(): MatchupDetailsPayload {
         readJson<Record<string, { gsax_per_game?: number | null; games_played?: number; gsax_total?: number | null; games_by_season?: Record<string, number> }>>('goalieRatings') ?? {},
     );
     const injuries = readJson<Injury[]>('injuries') ?? [];
+    const impact = injuryImpactScorer();
     const goalieInjuries = new Map(injuries.filter(i => i && (i.position ?? '').toUpperCase() === 'G' && i.status && OUT_STATUSES.test(i.status)).map(i => [fold(i.name), i]));
     const playerRatings = parseRatings(readJson<unknown>('ratings'));
     const ctx = leagueContext(buildIndex(playerRatings), readJson<Record<string, DfoLineup>>('lineups') ?? {});
@@ -207,7 +214,7 @@ export function getMatchupDetails(): MatchupDetailsPayload {
                 grade: view?.grade ?? null,
                 lineupSource: meta('lineup_source'),
                 lineupUpdatedAt: meta('updated_at') ?? meta('fetched_at'),
-                injuries: injuriesFor(injuries, tri, lineupNames),
+                injuries: injuriesFor(injuries, tri, lineupNames, impact),
                 goalies: tandem.map(n => goalieView(n, n === starter)),
                 recent: parseRecent(row[`${s}_l7_games`]),
                 news: Array.isArray(news) ? news.filter(n => n && typeof n.news === 'string') : [],

@@ -10,25 +10,37 @@ import { leaguesSummary } from '@/utils/team-stats/league-summary';
 import { prevSeasonId, seasonLabel, TEAM_SEASONS } from '@/utils/team-stats/season';
 import { isTeamTricode, TEAM_TRICODES } from '@/utils/team-stats/teams';
 import { loadPonySeason, ponySeasons } from '@/lib/pony/data';
+import { leagueRates } from '@/lib/pony/team-rates';
+import type { LeagueRates } from '@/lib/game/league-ranks';
 import type { SeasonGame } from '@/components/team/TeamBreakdown';
+import type { FormGame } from '@/components/team/TeamHeader';
+import { unpackGames } from '@/utils/team-stats/game-row';
 
-/** The team's games per season that the Breakdown tab can merge (built by scripts/pony_scores.ts), numbered from 1. */
-function breakdownGames(tri: string): Record<string, SeasonGame[]> {
+/**
+ * The team's games per season that the Breakdown tab can merge (built by scripts/pony_scores.ts), numbered
+ * from 1, and the league's per-game rates for ranking them.
+ */
+function breakdownGames(tri: string): { games: Record<string, SeasonGame[]>; league: Record<string, LeagueRates> } {
     const out: Record<string, SeasonGame[]> = {};
+    const league: Record<string, LeagueRates> = {};
     for (const s of ponySeasons()) {
         const data = loadPonySeason(s);
         if (!data) continue;
+        league[s] = leagueRates(data, tri);
         const games = [...data.games.values()]
             .filter(g => g.away === tri || g.home === tri)
             .sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
+        // The goalie credited with each game's decision, for the season goalie cards' W-L-OT.
+        const decisions = new Map<number, { goalie: number; result: 'W' | 'L' | 'O' }>();
+        for (const r of data.goalies) if (r.team === tri && r.box?.decision) decisions.set(r.game, { goalie: r.player, result: r.box.decision });
         out[s] = games.map((g, i) => {
             const home = g.home === tri;
             const gf = home ? g.homeScore : g.awayScore;
             const ga = home ? g.awayScore : g.homeScore;
-            return { id: g.id, num: i + 1, date: g.date, opp: home ? g.away : g.home, home, gf, ga, result: gf > ga ? 'W' : g.outcome !== 'REG' ? 'OTL' : 'L' };
+            return { id: g.id, num: i + 1, date: g.date, opp: home ? g.away : g.home, home, gf, ga, result: gf > ga ? 'W' : g.outcome !== 'REG' ? 'OTL' : 'L', decision: decisions.get(g.id) ?? null };
         });
     }
-    return out;
+    return { games: out, league };
 }
 
 /*
@@ -55,6 +67,12 @@ export default async function TeamPage({ params }: { params: Promise<{ teamAbbr:
     const prevRows = leagueStandings(prev).rows;
     const prevStanding = prevRows.find(r => r.tri === tri) ?? null;
     const prevKpis = leaguesSummary(prevRows).kpis(tri);
+    const bd = breakdownGames(tri);
+    const form: FormGame[] = unpackGames(payload.games)
+        .filter(g => g.type === 2)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(-10)
+        .map(g => ({ id: g.id, date: g.date, opp: g.opp, home: g.home, result: g.result, gf: g.gf, ga: g.ga, xgf: g.xgf, xga: g.xga }));
 
     return (
         <main className="page pb-tabbar pt-2 md:pb-10 md:pt-4">
@@ -85,10 +103,11 @@ export default async function TeamPage({ params }: { params: Promise<{ teamAbbr:
                 prevKpis={prevKpis}
                 hero={hero}
                 goalies={payload.goalies}
+                form={form}
             />
 
             <div className="mt-4">
-                <TeamPageClient initial={payload} seasons={[...TEAM_SEASONS]} breakdown={breakdownGames(tri)} />
+                <TeamPageClient initial={payload} seasons={[...TEAM_SEASONS]} breakdown={bd.games} league={bd.league} />
             </div>
         </main>
     );

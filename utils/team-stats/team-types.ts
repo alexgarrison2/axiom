@@ -123,6 +123,8 @@ export interface KpiSet {
     ranks: { xgf_pct: number; gf_pg: number; ga_pg: number; pp_pct: number; pk_pct: number; pt_pct: number };
     /** Every team has 10+ GP, so league ranks mean something (show #N badges only then). */
     ranked?: boolean;
+    /** Every team's value (teams with a game), for placing this one in the league spread. */
+    league?: Record<'xgf_pct' | 'gf_pg' | 'ga_pg' | 'pp_pct' | 'pk_pct', number[]>;
 }
 
 export interface NextGame {
@@ -141,8 +143,25 @@ export interface TeamHero {
     /** The next few games, earliest first (the browser skips any that are already over). */
     nextGames: NextGame[];
     playoffOdds: { pct: number; division: number | null; cup: number | null; avgPoints: number | null; sims: number | null } | null;
-    injuries: { name: string; pos: string; status: string; type: string | null; returnDate: string | null }[];
+    /** Most immediate first (dressed in the last two games, then by role). */
+    injuries: TeamInjury[];
     rosterChanges: { added: { name: string; from: string | null }[]; lost: { name: string; to: string | null }[] } | null;
+}
+
+export interface TeamInjury {
+    id: number | null;
+    name: string;
+    pos: string;
+    status: string;
+    /** "Lower Body", "Illness", "Personal"; null when ESPN has it undisclosed. */
+    type: string | null;
+    returnDate: string | null;
+    /** The report's note, byline trimmed; null when it only repeats the status. */
+    note: string | null;
+    /** When the entry was last updated (ISO). */
+    updated: string | null;
+    /** Dressed in one of the team's last two games. */
+    recent: boolean;
 }
 
 export interface TeamPayload {

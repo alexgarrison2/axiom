@@ -40,6 +40,13 @@ export function leaguesSummary(rows: TeamStat[]) {
                 pk_opps: s.pk_opps,
                 pt_pct: r(s.pt_pct, 3),
                 ranked,
+                league: {
+                    xgf_pct: cols.xgf_pct.map(v => r(v, 1)),
+                    gf_pg: cols.gf_pg.map(v => r(v, 2)),
+                    ga_pg: cols.ga_pg.map(v => r(v, 2)),
+                    pp_pct: cols.pp_pct.map(v => r(v, 1)),
+                    pk_pct: cols.pk_pct.map(v => r(v, 1)),
+                },
                 ranks: {
                     xgf_pct: rankOf(s.xgf_pct, cols.xgf_pct, true),
                     gf_pg: rankOf(s.gf_per_game, cols.gf_pg, true),

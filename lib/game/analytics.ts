@@ -664,6 +664,12 @@ export function gameIndexAt(m: GameModel, t: number): number {
     }
     return lo;
 }
+/** Games a player took a shift in (1 for a single game, his games played in a merged season). */
+export function gamesPlayed(m: GameModel, id: number): number {
+    const list = m.shifts[id] ?? [];
+    if (!m.starts?.length) return list.length ? 1 : 0;
+    return new Set(list.map(([a]) => gameIndexAt(m, a))).size;
+}
 const periodOfM = (m: GameModel, t: number) => periodOf(localT(m, t));
 
 /* ── Units: forward lines, D pairs, PP and PK groups ───────────────────── */

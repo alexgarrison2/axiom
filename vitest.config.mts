@@ -10,7 +10,11 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
     resolve: {
-        alias: { '@': fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '') },
+        alias: {
+            '@': fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, ''),
+            // Server modules import the `server-only` guard, which throws outside a React server build.
+            'server-only': fileURLToPath(new URL('./tests/unit/server-only-stub.ts', import.meta.url)),
+        },
     },
     oxc: {
         jsx: { runtime: 'automatic' },
