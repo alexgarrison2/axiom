@@ -7,6 +7,7 @@ import { PageHeading } from '@/components/ui/page-heading';
 import { Crest } from '@/components/ui/crest';
 import { clashSafePair, TEAM_NAMES } from '@/components/ui/team-color';
 import { cn } from '@/lib/utils';
+import { fmtInt } from '@/components/views/format';
 import { LocalTime } from '@/components/ui/local-time';
 import { formatTime, formatTimeET } from '@/lib/format/time';
 import { KIND_LABEL, matchesFilter, type NewsCard, type NewsFilter, type NewsGroup, type NewsKind } from './model';
@@ -34,10 +35,15 @@ const KIND_STYLE: Record<NewsKind, string> = {
     other: 'border-line-strong text-fg-3',
 };
 
+/** The league list holds 30 days of news (hundreds of cards): the newest page first, More for the rest. */
+const REST_PAGE = 60;
+
 const KIND_SHORT: Record<NewsKind, string> = { goalie: 'G', injury: 'INJ', returning: 'BACK', lineup: 'LINE', transaction: 'TXN', other: 'NEWS' };
 
 export function NewsFeed({ groups, dayLabel }: { groups: FeedGroup[]; dayLabel: string | null }) {
     const [filter, setFilter] = React.useState<NewsFilter>('all');
+    const [shown, setShown] = React.useState(REST_PAGE);
+    React.useEffect(() => setShown(REST_PAGE), [filter]);
     const counts = React.useMemo(() => {
         const all = groups.flatMap(g => g.cards);
         return Object.fromEntries(FILTERS.map(f => [f.value, all.filter(c => matchesFilter(c.kind, f.value)).length])) as Record<NewsFilter, number>;
@@ -83,10 +89,24 @@ export function NewsFeed({ groups, dayLabel }: { groups: FeedGroup[]; dayLabel: 
                         <span className="label ml-2">{rest.cards.length}</span>
                     </header>
                     <ul className="grid lg:grid-cols-2 lg:gap-x-px lg:bg-line">
-                        {rest.cards.map(c => (
+                        {rest.cards.slice(0, shown).map(c => (
                             <NewsRow key={c.id} card={c} showTeam />
                         ))}
                     </ul>
+                    {rest.cards.length > shown ? (
+                        <div className="flex items-center justify-between gap-3 border-t border-line px-3 py-2">
+                            <p className="label">
+                                {fmtInt(shown)} / {fmtInt(rest.cards.length)}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setShown(n => n + REST_PAGE)}
+                                className="rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11"
+                            >
+                                More
+                            </button>
+                        </div>
+                    ) : null}
                 </section>
             ) : null}
         </div>

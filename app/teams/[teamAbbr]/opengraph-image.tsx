@@ -13,6 +13,9 @@ export const alt = 'Team record, expected goals and next game on Pony xG';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+// All 32 cards are built at deploy time; nothing renders at request time (as on the page).
+export const dynamicParams = false;
+
 export function generateStaticParams() {
     return TEAM_TRICODES.map(teamAbbr => ({ teamAbbr }));
 }

@@ -61,6 +61,9 @@ const NEVER_READ_AT_RUNTIME = [
   "**/*.pdf",
   "**/*.xlsx",
   "public/data/shots.csv",
+  // Shot maps (~20MB and growing): only the browser fetches them (lib/shots.ts URLs).
+  "public/data/skater_shots/**",
+  "public/data/goalie_shots/**",
   "public/logos-animated/**",
   "output/**",
   "analysis/**",

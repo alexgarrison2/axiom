@@ -48,7 +48,10 @@ export const DEFAULT_BUDGET = {
 // Targets come from the workstream acceptance criteria (E7, F6, F7, G2, G3, G5).
 export const ROUTE_BUDGETS = {
     '/': { lcpMs: 2500, tbtMs: 150, htmlKB: 400, htmlGzKB: 40, jsKB: 200, totalKB: 700, domNodes: 2500 },
-    '/teams': { lcpMs: 2000, tbtMs: 200, jsKB: 250, totalKB: 900 },
+    // htmlKB 450: the 32-team table plus each team's last-10 form tape (bounded at 10 games, so
+    // it stops growing by late October) decodes to ~415KB, mostly repeated utility classes;
+    // as transferred it is ~46KB, under htmlGzKB 60.
+    '/teams': { lcpMs: 2000, tbtMs: 200, htmlKB: 450, jsKB: 250, totalKB: 900 },
     '/teams/EDM': { lcpMs: 3000, tbtMs: 250, jsKB: 250, totalKB: 900 },
     '/players': { tbtMs: 150, domNodes: 3000 },
     '/accuracy': { tbtMs: 200, domNodes: 3000 },
