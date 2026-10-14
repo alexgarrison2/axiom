@@ -4869,7 +4869,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sam Steel",
@@ -4921,10 +4921,20 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
+            {
+                "name": "Joel Kiviranta",
+                "number": 94,
+                "pos": "lw",
+                "id": 31187,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
             {
                 "name": "Radek Faksa",
                 "number": 12,
@@ -5130,7 +5140,7 @@
         ],
         "lineup_source": "Last Game (2026-10-13)",
         "updated_at": "2026-10-14T14:33:53.715Z",
-        "fetched_at": "2026-10-14T16:02:08Z"
+        "fetched_at": "2026-10-14T19:02:13Z"
     },
     "TBL": {
         "f1": [
