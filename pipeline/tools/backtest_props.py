@@ -49,6 +49,7 @@ import prop_model as pm  # noqa: E402
 PREREG = os.path.join(TOOLS, "prereg_props_calib.json")
 DEV_OUT = os.path.join(TOOLS, "prereg_props_calib_dev.json")
 HOLDOUT_OUT = os.path.join(TOOLS, "prereg_props_calib_holdout.json")
+BOOK_OUT = os.path.join(TOOLS, "prereg_props_calib_book.json")
 LOOK_LOG = os.path.join(TOOLS, "out", "props_look_log.jsonl")
 QUESTION = "props_calib"
 FIRST_SEASON = 2022                 # nhl_historical_skater_games.csv starts in 2022-23
@@ -330,7 +331,11 @@ def arms_main(argv=None):
             print(f"{arm:10} pooled dev d={p['d']:+.6f} (SE {p['se']:.6f}) n={p['n']}")
         print(f"candidate: {r['candidate']}  -> {DEV_OUT}")
     elif a.mode == "book":
-        print(json.dumps(run_book(), indent=1))
+        r = {"question": QUESTION, "code": _git_head(),
+             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), **run_book()}
+        with open(BOOK_OUT, "w") as f:
+            json.dump(r, f, indent=1)
+        print(json.dumps(r["markets"], indent=1), "->", BOOK_OUT)
     else:
         r = holdout_look(a.owner_look)
         print(json.dumps({k: r[k] for k in ("candidate", "pass")}), "->", HOLDOUT_OUT)
