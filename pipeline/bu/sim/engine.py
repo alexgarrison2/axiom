@@ -133,8 +133,11 @@ class Outcomes:
         self.n = n
 
 
-def simulate_game(rates, i: int, S: Structure, n: int, seed: int) -> Outcomes:
-    """Simulate game ``i`` of ``rates`` (a ``rates.GameRates``) ``n`` times."""
+def simulate_game(rates, i: int, S: Structure, n: int, seed: int, diag: dict | None = None) -> Outcomes:
+    """Simulate game ``i`` of ``rates`` (a ``rates.GameRates``) ``n`` times.  ``diag``: optional dict
+    accumulating, over the runs, the seconds a team trails by 1 / 2 / 3+ in the last 10 minutes of
+    regulation (``trail_s``) and the seconds its goalie is pulled (``pulled_s``) (diagnostics only;
+    no effect on the simulation)."""
     rng = np.random.Generator(np.random.PCG64(int(seed) & 0xFFFFFFFFFFFF))
     L5 = float(rates.L5[i]) * S.scale * float(rates.pace[i])
     tilt = float(rates.tilt[i])
@@ -163,6 +166,17 @@ def simulate_game(rates, i: int, S: Structure, n: int, seed: int) -> Outcomes:
     # class multipliers for the attacking side (EV, PP, SH, EA, EN)
     mh = np.array([E[0] * C[0], P[0] * C[0] * kpp, C[0], E[0] * C[0], 1.0])
     ma = np.array([E[1] * C[1], P[1] * C[1] * kpp, C[1], E[1] * C[1], 1.0])
+    # Starting-goalie mixture (prereg_goalie_mix.json): each run draws its own starters, so the
+    # conversion multiplier C (which reads the opposing starter) varies by run.  Off (None) for
+    # every game that does not carry a mixture: the class multipliers above are used unchanged.
+    mh_runs = ma_runs = None
+    gm = getattr(rates, "gmix", None)
+    gm = gm[i] if gm is not None else None
+    if gm:
+        Ch, Ca = mixture_conversion(gm, n, seed)
+        one = np.ones(n)
+        mh_runs = np.stack([E[0] * Ch, P[0] * Ch * kpp, Ch, E[0] * Ch, one], axis=1)
+        ma_runs = np.stack([E[1] * Ca, P[1] * Ca * kpp, Ca, E[1] * Ca, one], axis=1)
     ph_base, pa_base = Lpen * Q[0], Lpen * Q[1]
     ulo_h, uhi_h = S.pull_window(rng.random(n))
     ulo_a, uhi_a = S.pull_window(rng.random(n))
@@ -241,8 +255,8 @@ def simulate_game(rates, i: int, S: Structure, n: int, seed: int) -> Outcomes:
         since = ta - last_goal[act] + 1e-6          # tolerance: a change point lands exactly on t
         ph = np.searchsorted(S.lull_end, since, side="right")
         lull = np.where(ph < len(S.lull_end), S.lull_mult[np.minimum(ph, len(S.lull_end) - 1)], 1.0)
-        lam_h = base_h[act] * rh * mh[ch] * se_h * lull
-        lam_a = base_a[act] * ra * ma[ca] * se_a * lull
+        lam_h = base_h[act] * rh * (mh[ch] if mh_runs is None else mh_runs[act, ch]) * se_h * lull
+        lam_a = base_a[act] * ra * (ma[ca] if ma_runs is None else ma_runs[act, ca]) * se_a * lull
         # penalties
         five = (sk_h == 5) & (sk_a == 5) & (gh == 1) & (ga == 1) & ~in_ot
         pst = np.where(five, S.pen_state5, S.pen_other)
@@ -270,6 +284,13 @@ def simulate_game(rates, i: int, S: Structure, n: int, seed: int) -> Outcomes:
         step = np.where(ev, wait, nxt - ta)
         cum_h[act] += lam_h * step
         cum_a[act] += lam_a * step
+        if diag is not None:
+            late = p3 & (trem <= 600.0 + 1e-9)
+            for k in (1, 2, 3):
+                for dd, pl in ((dh, pull_h), (da, pull_a)):
+                    m = late & (dd == k)
+                    diag.setdefault("trail_s", np.zeros(4))[k] += float(step[m].sum())
+                    diag.setdefault("pulled_s", np.zeros(4))[k] += float(step[m & pl].sum())
         # ---- advance to the scheduled change
         adv = act[~ev]
         t[adv] = nxt[~ev]
@@ -390,6 +411,32 @@ def simulate_game(rates, i: int, S: Structure, n: int, seed: int) -> Outcomes:
     out.en_h, out.en_a = en_h, en_a
     out.cum_h, out.cum_a = cum_h, cum_a
     return out
+
+
+def stratified_assign(w, n: int, rng) -> np.ndarray:
+    """Component index of each of ``n`` runs: counts by largest remainder of n x w (so the runs
+    reproduce the mixture weights exactly up to rounding), order randomly permuted."""
+    w = np.asarray(w, dtype=float)
+    w = w / w.sum()
+    raw = w * n
+    cnt = np.floor(raw).astype(int)
+    short = n - int(cnt.sum())
+    if short > 0:
+        cnt[np.argsort(-(raw - cnt), kind="stable")[:short]] += 1
+    return rng.permutation(np.repeat(np.arange(len(w)), cnt))
+
+
+def mixture_conversion(gm: dict, n: int, seed: int):
+    """Per-run conversion multipliers (C_home, C_away) of a starting-goalie mixture.
+
+    ``gm``: {"w_home": weights of the home starter candidates, "C_away": the away side's C against
+    each of them, "w_away": weights of the away candidates, "C_home": the home side's C against each}.
+    The runs' starters come from their own generator (seed-derived), so the main random stream, and
+    with it every other draw of the game, is the one the single-starter simulation uses."""
+    rng = np.random.Generator(np.random.PCG64((int(seed) ^ 0x5A17_60A1) & 0xFFFFFFFFFFFF))
+    ka = stratified_assign(gm["w_away"], n, rng)        # the away starter of each run
+    kh = stratified_assign(gm["w_home"], n, rng)
+    return np.asarray(gm["C_home"], float)[ka], np.asarray(gm["C_away"], float)[kh]
 
 
 def tilt_weights(o: Outcomes, tilt: float, pace: float = 1.0) -> np.ndarray:

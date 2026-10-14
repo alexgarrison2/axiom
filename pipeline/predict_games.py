@@ -599,6 +599,25 @@ def _sim_rest(ctx):
                 else (1 if ctx.get(f"{s}_is_b2b") else None)) for s in SIDES}
 
 
+def _sim_goalies(game, ctx, inp):
+    """The simulator's starters: the projected goalies, or with PONYXG_SIM_GOALIE_MIX=on (off by
+    default; prereg_goalie_mix.json) a start-probability mixture for a side whose starter is not
+    confirmed.  Never raises."""
+    out = []
+    for side in SIDES:
+        g = ctx.get(f"{side}_goalie_confirmed") or None
+        try:
+            from bu.sim import goalie_mix as GMX
+            if GMX.live_enabled():
+                team, gd = game.get(f"{side}Team"), game_date_of(game)
+                starts = sorted((d, n) for (d, t), n in (inp.starter_lookup or {}).items() if t == team and d < gd)
+                g = GMX.live_mixture(g, ctx.get(f"{side}_goalie_status") == "Confirmed", starts, gd)
+        except Exception as e:
+            print(f"  [WARN] goalie mixture {side}: {e}")
+        out.append(g)
+    return out[0], out[1]
+
+
 def sim_run(game, ctx, inp, bf):
     """(SimRun, None) when the simulator can run this game at its own rates, else (None, why).
     Never raises."""
@@ -608,8 +627,8 @@ def sim_run(game, ctx, inp, bf):
     t0 = time.time()
     try:
         rest = _sim_rest(ctx)
-        return inp.sim.run(game.get("id"), h, a, h_goalie=ctx.get("home_goalie_confirmed") or None,
-                           a_goalie=ctx.get("away_goalie_confirmed") or None, bf=sim_lineup(game, inp, bf),
+        hg, ag = _sim_goalies(game, ctx, inp)
+        return inp.sim.run(game.get("id"), h, a, h_goalie=hg, a_goalie=ag, bf=sim_lineup(game, inp, bf),
                            h_rest=rest["home"], a_rest=rest["away"],
                            game_type=int(str(ctx.get("game_type") or "02")))
     except Exception as e:

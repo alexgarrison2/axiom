@@ -1,0 +1,39 @@
+{
+ "title": "As-of pulled-goalie curves and late-pull empty-net rates vs the fixed 2017-23 tables (pre-declared diagnosis, arms, comparison and promotion rule)",
+ "declared_at": "2026-10-14T18:07:00Z",
+ "declared_before": "any dev or holdout simulation of either arm. Done before this file: the simulator fit work directory was rebuilt from the lake (xG v2 walk-forward reproduces bu/xg/out/xgv2_report.json fold by fold and models/xg2_history.csv.gz exactly; RAPM stints; bu.sim.fit teamgames / glm / structural / hyper reproduce out/sim_params_st.json's structural tables, rate regressions and state hyper-parameters exactly) and the descriptive diagnosis below, on fit and dev seasons' event data and a raw simulation of two FIT seasons (no dev game was simulated, no dev or holdout outcome was scored).",
+ "question": "sim_pull_asof: the simulator under-produces empty-net goals (0.27 a game simulated vs 0.37 dev / 0.39 2025-26 actual; 2-goal margins over-produced, 3-goal under-produced). Should the pulled-goalie tables be fitted as of each season on the two seasons before it, with the pulled-goalie goal rates measured on the pulls the engine actually simulates?",
+ "diagnosis": {
+  "scope": "regular season, stints with game_onice_match >= 0.9 (as bu.sim.fit), seasons 2017-18 .. 2024-25 only; bu.sim.pull_asof diagnose + a raw simulation (live parameters, 5,000 runs) of the FIT seasons 2021-22 and 2022-23",
+  "actual_en_goals_per_game": {"20172018": 0.276, "20182019": 0.322, "20192020": 0.301, "20202021": 0.301, "20212022": 0.363, "20222023": 0.334, "20232024": 0.340, "20242025": 0.402},
+  "simulated_en_goals_per_game_fit_seasons": {"20212022": 0.260, "20222023": 0.267},
+  "finding_1_rate": "the shortfall exists on the fit seasons themselves (0.26 vs 0.35), where the pull curves are in sample, so it is mostly NOT pull-curve drift. The engine's empty-net hazard is L5 x r[5v6_10] with r = 7.12, estimated over ALL time with the opponent's goalie out; ~15% of that time is not a trailing team's 3rd-period pull (mostly delayed penalties, when the leading team cannot score into the empty net). Over a trailing team's P3 pulls only, the 5v6 empty-net rate is 8.1-8.9 x 5v5 in every season 2017-25 (all-time ratio 6.5-7.7): the engine's EN hazard is ~17% too low. The extra attacker 6v5 rate over the same pulls is 2.6-2.9 x 5v5 (fixed 2.92: slightly high).",
+  "finding_2_exposure": "simulated pulled time in the last 10 minutes on the fit seasons 55.7 / 54.8 s a game vs 59.2 / 56.3 actual (94-97%): the curves reproduce exposure in sample. Actual pulled time relative to what the fixed curves imply in the actual trailing states: 0.90-1.01 in 2017-21, 1.10 / 1.06 in 2021-23, 1.10 in 2023-24 and 1.24 in 2024-25: coaches pull earlier and more, and the fixed 2017-23 curves fall behind from 2021-22 on (deficit 1 curve's first non-zero bin 200-210 s left fixed, 210-250 s as of 2024-25; deficit 2 / 3+ similar).",
+  "conclusion": "both: on dev the simulated-to-actual ratio 0.27 / 0.37 (x1.37) splits roughly evenly into the rate (x~1.17, a definitional dilution present in every season) and pull timing (x~1.10 in 2023-24, x~1.24 in 2024-25, drift). The candidate therefore refits the curves as of each season AND measures the four pulled-goalie state ratios on trailing-team P3 pulls of the same two seasons; a curves-only arm is run as a decomposition."
+ },
+ "seasons": {
+  "dev": ["20232024", "20242025"],
+  "holdout": "20252026",
+  "asof_fit": "for a game of season S the tables are fitted on the regular seasons S-2 and S-1 (2023-24: 2021-22 + 2022-23; 2024-25: 2022-23 + 2023-24; 2025-26: 2023-24 + 2024-25); never on S or later"
+ },
+ "games": "exactly the games of prereg_st.json (prereg_primary set: regular season, finite inputs, a walk-forward logit row, complete player special-teams row; dev 2,375, holdout 1,312), bu.sim.armscore.game_set",
+ "arms": {
+  "BASE": "the live parameters, unchanged: out/sim_params_st.json (PONYXG_SIM_INPUTS=st, sim-m5-v4_st-20261003): pull curves and state ratios fitted on 2017-18 .. 2022-23",
+  "ASOF": "BASE with, for each game season S, (a) structural.pulls re-fitted by fit.pull_curves on S-2 and S-1 (same 10-s bins over the last 600 s, 3-bin smoothing, unimodal shape, 0.003 floor; deficits 1, 2, 3+) and (b) the state ratios 5v6_10, 4v6_10 (empty net), 6v5_01, 6v4_01 (extra attacker) replaced by their rate over a trailing team's 3rd-period pulls of S-2 and S-1 (goals / seconds / that seasons' regulation 5v5 goal rate, shrunk with 2 h of the all-pulled-time ratio as fit.state_ratios does; bu.sim.pull_asof.late_pull_state_ratios). Everything else (rate regressions, state, dispersion, score effects, anchoring) unchanged; nothing re-tuned.",
+  "ASOF_PULL": "decomposition only, not a candidate: (a) without (b)"
+ },
+ "simulation": "20,000 runs a game, base seed 20261002, seed = SHA-256(base, game id), as live; the derivative markets anchored (tilt + pace) to the arm's own raw win % and goal_model's expected total (pairing sim_gm): the published configuration",
+ "metrics": {
+  "primary": "the derivative score of prereg.json (sum over reg3, pl_home, pl_away, tot55, tot60, tot65, p1_3w, p1_2w of the mean per-game log loss), anchored as published, dev pooled",
+  "guard": "moneyline log loss of the raw simulator win % (the published model win %)",
+  "differences": "paired per game (ASOF - BASE), SE = sd / sqrt(n), per season and pooled; negative favours ASOF",
+  "declared_secondary_checks": "empty-net goals a game (simulated vs actual, anchored and raw); the final-margin distribution (histogram -7..+7 vs actual, and the mean log P(actual final margin), paired); per-market log loss (puck lines expected to move most); none of these gates the decision"
+ },
+ "promotion_rule": {
+  "pass": "ASOF is promoted iff (1) dev pooled derivative score ASOF - BASE < 0 (strictly), AND (2) dev pooled ML log loss ASOF - BASE <= +0.0010, AND (3) holdout 2025-26 derivative score ASOF - BASE <= +1 SE of that difference, AND (4) holdout ML log loss ASOF - BASE <= +0.0010 (owner's rule)",
+  "holdout_look": "one look at 2025-26, taken only by the owner after the dev results are written to bu/sim/out/validation.json (section pull_asof_dev): python -m bu.sim.pull_asof holdout --work <dir>; logged in bu/sim/out/look_log.jsonl with question = 'sim_pull_asof' (a 'started' line before any number); the code refuses a second look; all three arms' holdout numbers reported whatever they are",
+  "if_pass": "live: the published parameters gain the as-of tables for the current season (python -m bu.sim.pull_asof params --season 20262027: curves and late-pull ratios from 2024-25 + 2025-26), refreshed at each season rollover; the current file is kept for rollback (PONYXG_SIM_PARAMS / PONYXG_SIM_INPUTS)",
+  "if_fail": "nothing changes in the published path"
+ },
+ "amendments": []
+}

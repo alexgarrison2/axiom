@@ -130,6 +130,7 @@ class GameRates:
     so_home: np.ndarray       # P(home wins a shootout)
     tilt: np.ndarray = field(default=None)   # (G,) log tilt of home vs away goal rates (anchoring)
     pace: np.ndarray = field(default=None)   # (G,) multiplier on every goal rate (anchoring)
+    gmix: np.ndarray = field(default=None)   # (G,) object: None or a starting-goalie mixture (engine)
 
     def __post_init__(self):
         n = len(self.L5)
@@ -143,10 +144,12 @@ class GameRates:
 
     def subset(self, idx) -> "GameRates":
         idx = np.atleast_1d(idx)
-        return GameRates(**{k: getattr(self, k)[idx] for k in self.__dataclass_fields__})
+        return GameRates(**{k: (None if getattr(self, k) is None else getattr(self, k)[idx])
+                            for k in self.__dataclass_fields__})
 
     def with_anchor(self, tilt=None, pace=None) -> "GameRates":
-        g = GameRates(**{k: np.array(getattr(self, k), copy=True) for k in self.__dataclass_fields__})
+        g = GameRates(**{k: (None if getattr(self, k) is None else np.array(getattr(self, k), copy=True))
+                         for k in self.__dataclass_fields__})
         if tilt is not None:
             g.tilt = np.broadcast_to(np.asarray(tilt, dtype=float), (len(g),)).copy()
         if pace is not None:
@@ -171,7 +174,54 @@ def build_rates(g: pd.DataFrame, params: dict) -> GameRates:
         L5=pd.to_numeric(g["lg_ev_goals"], errors="coerce").to_numpy(dtype=float),
         Lpp=pd.to_numeric(g["lg_pp_goals"], errors="coerce").to_numpy(dtype=float),
         Lpen=pd.to_numeric(g["lg_pen"], errors="coerce").to_numpy(dtype=float),
-        E=E, C=C, P=P, Q=Q, playoff=(gt == 3), so_home=np.full(len(g), so))
+        E=E, C=C, P=P, Q=Q, playoff=(gt == 3), so_home=np.full(len(g), so),
+        gmix=goalie_mixtures(g, beta, k, fh, fa, C))
+
+
+def _mix_list(v):
+    """[(weight, gsv), ...] of a ``{h,a}_g_mix`` cell, or None (no mixture: the single starter)."""
+    if v is None or (isinstance(v, float) and math.isnan(v)):
+        return None
+    try:
+        out = [(float(w), float(x)) for w, x in v]
+    except (TypeError, ValueError):
+        return None
+    out = [(w, x) for w, x in out if w > 0 and np.isfinite(x) and x > 0]
+    return out if out else None
+
+
+def goalie_mixtures(g: pd.DataFrame, beta: dict, stretch: float, fh, fa, C) -> np.ndarray | None:
+    """Starting-goalie mixtures (``prereg_goalie_mix.json``), off unless ``g`` has ``h_g_mix`` /
+    ``a_g_mix`` cells: lists of (start probability, goals-per-xG multiplier gsv) over a side's
+    candidate starters.  Each side's conversion multiplier against every candidate of the other
+    side is C with the ``gsv`` term re-evaluated (``rates.linear``: b_gsv x stretch x log gsv);
+    a side without a mixture keeps its single starter (one component, weight 1)."""
+    if "h_g_mix" not in g and "a_g_mix" not in g:
+        return None
+    b = float(beta["conv"].get("gsv", 0.0)) * float(stretch)
+    out = np.empty(len(g), dtype=object)
+    hm = g["h_g_mix"].tolist() if "h_g_mix" in g else [None] * len(g)
+    am = g["a_g_mix"].tolist() if "a_g_mix" in g else [None] * len(g)
+    any_mix = False
+    for i in range(len(g)):
+        mh_, ma_ = _mix_list(hm[i]), _mix_list(am[i])
+        if mh_ is None and ma_ is None:
+            out[i] = None
+            continue
+        any_mix = True
+        # home's C reads the away starter (fh['gsv'] = log of the away starter's gsv), and vice versa
+        if ma_ is None:
+            w_a, c_h = np.array([1.0]), np.array([C[i, 0]])
+        else:
+            w_a = np.array([w for w, _ in ma_])
+            c_h = C[i, 0] * np.exp(b * (np.log([x for _, x in ma_]) - float(fh["gsv"].iloc[i])))
+        if mh_ is None:
+            w_h, c_a = np.array([1.0]), np.array([C[i, 1]])
+        else:
+            w_h = np.array([w for w, _ in mh_])
+            c_a = C[i, 1] * np.exp(b * (np.log([x for _, x in mh_]) - float(fa["gsv"].iloc[i])))
+        out[i] = {"w_home": w_h / w_h.sum(), "C_away": c_a, "w_away": w_a / w_a.sum(), "C_home": c_h}
+    return out if any_mix else None
 
 
 def finite_inputs(g: pd.DataFrame) -> np.ndarray:

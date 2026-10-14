@@ -587,6 +587,62 @@ python -m bu.sim.season_calib holdout ...       # the single logged look (questi
 python -m bu.sim.season_calib preseason --out $O
 ```
 
+## Empty-net goals: as-of pull curves and late-pull rates (`prereg_pull_asof.json`, `pull_asof.py`)
+
+Question `sim_pull_asof` (pre-registered 2026-10-14 before any dev run).  **Diagnosis** (fit and dev
+seasons, `python -m bu.sim.pull_asof diagnose`): the shortfall is there on the fit seasons too
+(raw simulator 0.26 empty-net goals a game on 2021-22 / 2022-23 vs 0.36 / 0.33 actual), where its
+pulled time is 94-97% of the actual, so it is mostly not curve drift.  The engine's empty-net hazard
+L5 x r[5v6_10] uses r = 7.12, measured over all time with the opponent's goalie out; ~15% of that
+time is delayed penalties, when the leading team cannot score into the empty net.  Over a trailing
+team's 3rd-period pulls (the only pull the engine simulates) the rate is 8.1-8.9 x 5v5 in every season
+2017-25.  Pull timing drifts on top: actual pulled time vs what the fixed curves imply in the actual
+trailing states 0.90-1.01 (2017-21), 1.06-1.10 (2021-24), 1.24 (2024-25).
+
+Arms (live ST parameters): **BASE** as published; **ASOF** for season S the pull curves re-fitted on
+S-2 and S-1 plus the four pulled-goalie state ratios (5v6, 4v6 empty net; 6v5, 6v4 extra attacker)
+measured on trailing-team P3 pulls of S-2 and S-1; **ASOF_PULL** the curves only (decomposition).
+
+Dev (2,375 games, 20,000 runs, derivative markets anchored as published; paired ASOF - BASE):
+
+| Season | n | deriv. BASE | deriv. ASOF | diff (SE) | ML diff (SE) | EN / game BASE / ASOF / actual | log P(margin) diff (SE) |
+|---|---|---|---|---|---|---|---|
+| 2023-24 | 1,312 | 6.31943 | 6.31774 | -0.00171 (0.00124) | +0.00002 (0.00021) | 0.266 / 0.315 / 0.341 | +0.0043 (0.0016) |
+| 2024-25 | 1,063 | 6.33153 | 6.32873 | -0.00279 (0.00131) | -0.00014 (0.00023) | 0.256 / 0.298 / 0.396 | +0.0011 (0.0016) |
+| pooled | 2,375 | 6.32481 | 6.32263 | **-0.00219 (0.00090)** | -0.00005 (0.00015) | 0.261 / 0.307 / 0.366 | +0.0029 (0.0011) |
+
+BASE reproduces the published ST dev numbers exactly (ML 0.65759, derivative 6.32481).  The gain is
+in the puck lines and the regulation 3-way (pooled: home -1.5 -0.0011, SE 0.0005; away -1.5 -0.0006;
+reg 3-way -0.0005); totals +0.0001 to +0.0002.  Margins move toward the actual (+-1: 0.429 -> 0.410,
+actual 0.385; +-3: 0.214 -> 0.227, actual 0.237; +-2 0.217 -> 0.220, actual 0.208, not fixed).  The curves alone do nothing (ASOF_PULL - BASE
++0.0005, SE 0.0006; EN 0.275): the rate is what matters.  **Dev: rules (1) and (2) pass**; the
+holdout look is the owner's (`python -m bu.sim.pull_asof holdout --work $W`, question
+`sim_pull_asof`).  `python -m bu.sim.pull_asof params --season <S> --out <file>` writes candidate
+parameters (never the live file).
+
+## Uncertain starting goalies (`prereg_goalie_mix.json`, `goalie_mix.py`)
+
+Question `sim_goalie_mix` (pre-registered 2026-10-14 before any run).  History has no DailyFaceoff
+projections, so the uncertainty is a proxy: a conditional-logit start model over each team's
+starters of its last 20 games (starts in the last 10 / 3, started the previous game, x back-to-back,
+season share, days since his last start), fitted on the fit seasons (argmax right 69.4% in sample,
+69.0% on dev; 97.8% of dev starters are candidates; DFO 'U' projections were right 74%).  **BASE** =
+the most likely starter treated as certain (the live behaviour); **MIX** = each run draws its own
+starters from the start probabilities (`engine.mixture_conversion`); **ORACLE** = the actual starter
+(every earlier validation; reference).
+
+| Season | n | ML ORACLE | ML BASE | ML MIX | MIX - BASE (SE) | deriv. MIX - BASE (SE) |
+|---|---|---|---|---|---|---|
+| 2023-24 | 1,312 | 0.65702 | 0.65459 | 0.65497 | +0.00038 (0.00075) | -0.0011 (0.0028) |
+| 2024-25 | 1,063 | 0.65830 | 0.65817 | 0.65870 | +0.00052 (0.00083) | +0.0016 (0.0030) |
+| pooled | 2,375 | 0.65759 | 0.65619 | 0.65664 | **+0.00044 (0.00056)** | +0.0001 (0.0020) |
+
+**Dev: rule (1) fails** (MIX is not better); the difference is within one SE: a null result.  The
+goalie barely moves the simulator (gsv sd 0.043 in log; ablation +0.0000): ORACLE - BASE is +0.0014
+(SE 0.0009), i.e. knowing the actual starter did not help either.  Nothing changes live; the flag
+`PONYXG_SIM_GOALIE_MIX=on` (off) would mix unconfirmed starters with the committed
+`out/goalie_start_model.json`.
+
 ## Runtime
 
 One game, 20,000 runs: ~0.13 s simulation + ~0.04 s anchoring on an idle core.  `predict_games`
@@ -605,9 +661,10 @@ both arms) ~100 s on 8 workers.
 ## Weaknesses (what is still heuristic)
 
 * Empty-net goals are under-produced: 0.27 a game simulated vs 0.37 (dev) / 0.39 (2025-26)
-  actual.  The pull curves are fitted on 2017-23 and coaches now pull earlier and at bigger
-  deficits; the curve is also league-wide (no team / coach effect).  This mostly costs the
-  away -1.5 / home +1.5 side and 2-goal margins.  Fix: as-of pull curves from the last two seasons.
+  actual.  Diagnosed 2026-10-14 (`prereg_pull_asof.json`): mostly the empty-net rate (measured over
+  all pulled time, delayed penalties included, ~17% too low for late pulls), partly pull timing
+  drift since 2021-22.  The candidate (as-of curves + late-pull rates) reaches 0.31 and passed dev;
+  holdout look pending.  The curve is still league-wide (no team / coach effect).
 * Regulation ties are still under-produced in high-tie seasons (2025-26: 24.9% actual vs 21.2%),
   and OT is decided in 3v3 a bit less often than in 2023-25 (65.6% vs 70%): both structural tables
   are fixed at their 2017-23 values.
