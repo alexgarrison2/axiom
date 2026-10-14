@@ -673,10 +673,11 @@ test.describe('URL state and routes', () => {
     });
 
     test('an off day shows the next game day', async ({ page }) => {
-        await page.goto('/?date=2030-01-01');
+        // Christmas: the NHL never plays Dec 24-26. (A date over ~a season ahead is out of range.)
+        await page.goto('/?date=2026-12-25');
         await expect(page.getByText('No games', { exact: true })).toBeVisible();
         // The date lives in the heading only (no repeated date line in the empty state).
-        await expect(page.getByRole('heading', { level: 1 })).toContainText(/Jan 1/i);
+        await expect(page.getByRole('heading', { level: 1 })).toContainText(/Dec 25/i);
     });
 
     test('legacy ?tab= links redirect to the new routes', async ({ request }) => {
