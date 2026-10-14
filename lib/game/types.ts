@@ -144,6 +144,8 @@ export interface GameModel {
     startUtc: string;
     venue: string | null;
     state: GameState;
+    /** The NHL has made a final official (OFF, some time after FINAL): its shifts and stats no longer change. */
+    settled: boolean;
     /** OT / SO when the game went past regulation. */
     outcome: 'REG' | 'OT' | 'SO' | null;
     /** Live clock: current period and time remaining in it. */

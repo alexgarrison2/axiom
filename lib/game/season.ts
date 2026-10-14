@@ -95,6 +95,7 @@ export function mergeSeason(games: GameModel[], tri: string): GameModel | null {
         id: 0,
         date: mine[mine.length - 1].date,
         state: 'final',
+        settled: mine.every(g => g.settled),
         outcome: null,
         live: null,
         end: offset - GAP,

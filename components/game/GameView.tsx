@@ -71,16 +71,18 @@ function useActiveSection(): string {
     return active;
 }
 
-/** While the game is live, re-render from the server every 30s (the feeds are cached for 30s). */
-function LiveRefresh({ live }: { live: boolean }) {
+/** While anything is live (or this game is about to start), re-render from the server every 30s (the feeds are cached for 30s). */
+function LiveRefresh({ live, start }: { live: boolean; start: number | null }) {
     const router = useRouter();
     React.useEffect(() => {
-        if (!live) return;
+        if (!live && start == null) return;
         const id = window.setInterval(() => {
-            if (document.visibilityState === 'visible') router.refresh();
+            // A pregame page starts half an hour before puck drop, so it turns live on its own.
+            const soon = start != null && Date.now() >= start - 30 * 60_000;
+            if (document.visibilityState === 'visible' && (live || soon)) router.refresh();
         }, 30_000);
         return () => window.clearInterval(id);
-    }, [live, router]);
+    }, [live, start, router]);
     return null;
 }
 
@@ -165,7 +167,8 @@ export function GameView({ m, slate = [] }: { m: GameModel; slate?: SlateGame[] 
     const edge = m.state === 'live' ? (slate.find(g => g.id === m.id)?.edge ?? null) : null;
     return (
         <GameProvider m={m}>
-            <LiveRefresh live={m.state === 'live'} />
+            {/* Also while another game on the slate is live, so the scoreboard bar keeps moving. */}
+            <LiveRefresh live={m.state === 'live' || slate.some(g => g.state === 'live')} start={m.state === 'pre' ? Date.parse(m.startUtc) || null : null} />
             <div className="flex flex-col gap-5">
                 <Scoreboard games={slate} current={m.id} />
                 <div ref={bandRef}>

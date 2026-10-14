@@ -50,6 +50,9 @@ export function strengthFor(side: Side, s: Situation): Strength {
     return own > opp ? 'pp' : own < opp ? 'sh' : 'ev';
 }
 
+/** A save percentage the NHL way: ".923", ".095", "1.000". */
+export const svPct = (v: number) => (v >= 1 ? '1.000' : v.toFixed(3).replace(/^0/, ''));
+
 const flipZone = (z: 'O' | 'N' | 'D'): 'O' | 'N' | 'D' => (z === 'O' ? 'D' : z === 'D' ? 'O' : 'N');
 
 export interface RawFeeds {
@@ -237,7 +240,7 @@ export function buildGame(
         star: s.star,
         playerId: s.playerId,
         side: sideOf.get(s.playerId) ?? (s.teamAbbrev === pbp.awayTeam.abbrev ? 'away' : 'home'),
-        line: s.position === 'G' ? `${s.savePctg != null ? `.${Math.round(s.savePctg * 1000)}` : ''} SV%` : `${s.goals ?? 0}G ${s.assists ?? 0}A`,
+        line: s.position === 'G' ? `${s.savePctg != null ? svPct(s.savePctg) : ''} SV%` : `${s.goals ?? 0}G ${s.assists ?? 0}A`,
     }));
 
     const raw = String(pbp.gameState ?? 'FUT');
@@ -276,6 +279,7 @@ export function buildGame(
         startUtc: pbp.startTimeUTC,
         venue: pbp.venue?.default ?? null,
         state,
+        settled: raw === 'OFF',
         outcome: state === 'final' ? (outcomeType === 'OT' || outcomeType === 'SO' ? outcomeType : 'REG') : null,
         live: state === 'live' ? { period: clock.period, remaining: clock.seconds != null ? formatClock(clock.seconds) : '', intermission: clock.intermission, breakLeft: clock.breakLeft } : null,
         otLength,

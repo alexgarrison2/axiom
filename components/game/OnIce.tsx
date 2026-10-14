@@ -34,6 +34,8 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
     const { m, colors } = useGame();
     const color = legibleOn(colors[side], '#0a0e15');
     const n = skaters.length;
+    // No shot scored yet (xG comes after the nightly run): blank, not GSAx = −GA.
+    const hasXg = m.events.some(e => e.xg != null);
     return (
         <div className="min-w-0">
             <div className="flex items-center gap-2 px-1.5 pb-1">
@@ -113,8 +115,17 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
                                         <Stat k="SA" v={String(goalie.sa)} />
                                         <Stat k="GA" v={String(goalie.ga)} />
                                         <Stat k="SV%" v={goalie.sa ? ((goalie.sa - goalie.ga) / goalie.sa).toFixed(3).replace(/^0/, '') : '–'} />
-                                        <Stat k="xGA" v={goalie.xga.toFixed(2)} model />
-                                        <Stat k="GSAx" v={`${goalie.xga - goalie.ga >= 0 ? '+' : '−'}${Math.abs(goalie.xga - goalie.ga).toFixed(2)}`} tone={goalie.xga - goalie.ga} />
+                                        {hasXg ? (
+                                            <>
+                                                <Stat k="xGA" v={goalie.xga.toFixed(2)} model />
+                                                <Stat k="GSAx" v={`${goalie.xga - goalie.ga >= 0 ? '+' : '−'}${Math.abs(goalie.xga - goalie.ga).toFixed(2)}`} tone={goalie.xga - goalie.ga} />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Stat k="xGA" v="—" />
+                                                <Stat k="GSAx" v="—" />
+                                            </>
+                                        )}
                                     </span>
                                 </td>
                             </tr>
@@ -127,7 +138,7 @@ function TeamIce({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[];
 }
 
 function Stat({ k, v, model, tone }: { k: string; v: string; model?: boolean; tone?: number }) {
-    const cls = model ? 'text-model' : tone == null ? 'text-fg-1' : tone > 0.005 ? 'text-pos' : tone < -0.005 ? 'text-neg' : 'text-fg-2';
+    const cls = v === '—' ? 'text-fg-3' : model ? 'text-model' : tone == null ? 'text-fg-1' : tone > 0.005 ? 'text-pos' : tone < -0.005 ? 'text-neg' : 'text-fg-2';
     return (
         <span className="whitespace-nowrap">
             <span className="mr-1 text-micro uppercase tracking-label text-fg-3">{k}</span>
@@ -174,7 +185,8 @@ function RailTeam({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[]
     // Blank slots (a team short a skater) go below the goalie, so he stays with his own skaters.
     const blanks = Math.max(0, RAIL_SLOTS - skaters.length);
     const svp = goalie && goalie.sa ? ((goalie.sa - goalie.ga) / goalie.sa).toFixed(3).replace(/^0/, '') : '–';
-    const gsax = goalie ? goalie.xga - goalie.ga : 0;
+    // No shot scored yet (xG comes after the nightly run): blank, not GSAx = −GA.
+    const gsax = goalie && m.events.some(e => e.xg != null) ? goalie.xga - goalie.ga : null;
     return (
         <div className="min-w-0">
             <div className="flex h-6 items-center gap-1.5">
@@ -219,10 +231,14 @@ function RailTeam({ side, skaters, goalie }: { side: Side; skaters: SkaterSnap[]
                         </span>
                         <span className="whitespace-nowrap text-right">
                             <span className="text-fg-1">{svp}</span>{' '}
-                            <span className={gsax > 0.005 ? 'text-pos' : gsax < -0.005 ? 'text-neg' : 'text-fg-2'}>
-                                {gsax >= 0 ? '+' : '−'}
-                                {Math.abs(gsax).toFixed(2)}
-                            </span>
+                            {gsax == null ? (
+                                <span className="text-fg-3">—</span>
+                            ) : (
+                                <span className={gsax > 0.005 ? 'text-pos' : gsax < -0.005 ? 'text-neg' : 'text-fg-2'}>
+                                    {gsax >= 0 ? '+' : '−'}
+                                    {Math.abs(gsax).toFixed(2)}
+                                </span>
+                            )}
                         </span>
                     </li>
                 ) : (

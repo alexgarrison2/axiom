@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseToiReport, playCoverage, reportCode, reportShiftRows, shiftCoverage } from '../toi-report';
+import { goalieShiftRows, parseToiReport, playCoverage, reportCode, reportShiftRows, shiftCoverage } from '../toi-report';
 
 // BOS home report from PHI @ BOS (2026020070), captured live with 4:30 left in the 1st.
 const html = readFileSync(resolve(__dirname, 'fixtures/TH020070.HTM'), 'utf8');
@@ -34,5 +34,16 @@ describe('NHL time-on-ice report', () => {
         expect(shiftCoverage(rows, 300)).toBe(597);
         expect(playCoverage([{ periodDescriptor: { number: 2 }, timeInPeriod: '4:30' }, { periodDescriptor: { number: 1 }, timeInPeriod: '19:00' }], 300)).toBe(1470);
         expect(shiftCoverage([{ typeCode: 517, period: 4, endTime: '1:00' }], 300)).toBe(3660);
+    });
+
+    it('skips a shootout but keeps playoff overtimes past the second', () => {
+        const so = { periodDescriptor: { number: 5, periodType: 'SO' }, timeInPeriod: '0:00' };
+        expect(playCoverage([{ periodDescriptor: { number: 4, periodType: 'OT' }, timeInPeriod: '5:00' }, so], 300)).toBe(3900);
+        expect(playCoverage([{ periodDescriptor: { number: 6, periodType: 'OT' }, timeInPeriod: '2:00' }], 1200)).toBe(3600 + 2 * 1200 + 120);
+        const shot = (number: number, periodType: string, t: string) => ({ periodDescriptor: { number, periodType }, timeInPeriod: t, situationCode: '1551', details: { goalieInNetId: 9, eventOwnerTeamId: 1 } });
+        const rows = goalieShiftRows([shot(1, 'REG', '1:00'), shot(6, 'OT', '3:00')], { away: 1, home: 2 }, { otLength: 1200, final: true });
+        expect(rows.filter(r => r.period === 6)).toEqual([{ typeCode: 517, playerId: 9, period: 6, startTime: '0:00', endTime: '20:00' }]);
+        const reg = goalieShiftRows([shot(4, 'OT', '1:00'), { ...shot(5, 'SO', '0:00'), situationCode: '1010' }], { away: 1, home: 2 }, { otLength: 300, final: true });
+        expect(reg.some(r => r.period === 5)).toBe(false);
     });
 });

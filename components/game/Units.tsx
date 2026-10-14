@@ -45,7 +45,7 @@ const COLS: Col[] = [
     { key: 'xgf', label: 'xGF', title: 'pony xG for', value: u => u.xgf, fmt: f2, model: true, total: t => t.xgf },
     { key: 'xga', label: 'xGA', title: 'pony xG against', value: u => u.xga, fmt: f2, model: true, total: t => t.xga },
     { key: 'xgfp', label: 'xGF%', title: 'pony xG share', value: u => pct(u.xgf, u.xga), fmt: f1p, model: true, total: t => pct(t.xgf, t.xga) },
-    { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: u => u.xgf - u.xga, fmt: sgn, signed: true, total: t => t.xgf - t.xga },
+    { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: u => u.xgf - u.xga, fmt: sgn, signed: true, model: true, total: t => t.xgf - t.xga },
     { key: 'oz', label: 'OZ', title: 'Shifts started on an offensive-zone faceoff', value: u => u.oz },
     { key: 'dz', label: 'DZ', title: 'Shifts started on a defensive-zone faceoff', value: u => u.dz },
     { key: 'ozp', label: 'OZS%', title: 'Offensive-zone share of O and D faceoff starts', value: u => pct(u.oz, u.dz), fmt: v => `${Math.round(v * 100)}%` },
@@ -95,6 +95,9 @@ export function Units() {
     const [period, setPeriod] = React.useState<string>('all');
     const [sort, setSort] = React.useState<{ key: string; dir: SortDir }>({ key: 'toi', dir: 'desc' });
     const per = period === 'all' ? 'all' : Number(period);
+    // Model columns stay blank until a shot of the game has pony xG (0.00 would read as a real number).
+    const hasXg = m.events.some(e => e.xg != null);
+    const cols = hasXg ? COLS : COLS.map(c => (c.model ? { ...c, value: () => null, total: c.total && (() => null) } : c));
     // Regular vs occasional is a whole-game call, so a period view keeps the same lines up top.
     const regularKeys = React.useMemo(() => {
         const all = units(m, side, kind).filter(u => u.toi >= MIN_TOI);
@@ -122,7 +125,7 @@ export function Units() {
         return r.toi >= 1 || r.cf || r.ca || r.gf || r.ga ? { r, n: all.length - rows.length } : null;
     }, [team, rows, all]);
     const periods = [...new Set(m.events.map(e => (e.period >= 4 ? 4 : e.period)))].sort();
-    const col = COLS.find(c => c.key === sort.key) ?? COLS[0];
+    const col = cols.find(c => c.key === sort.key) ?? cols[0];
     const byToi = [...rows].sort((a, b) => b.toi - a.toi);
     const regular = new Set(byToi.filter(u => regularKeys.has(u.ids.join('-'))));
     const nRegular = regular.size;
@@ -173,7 +176,7 @@ export function Units() {
                                     <th scope="col" className={cn(HEAD_CELL, STICKY_EDGE, 'z-[4] h-6 w-[10.5rem] min-w-[10.5rem] px-2 text-left md:w-auto md:min-w-[18rem]')}>
                                         <span className="text-micro font-medium uppercase tracking-[0.1em] text-fg-3">{kindLabel.label}</span>
                                     </th>
-                                    {COLS.map(c => (
+                                    {cols.map(c => (
                                         <HeaderCell
                                             key={c.key}
                                             label={c.label}
@@ -203,7 +206,7 @@ export function Units() {
                                                         Occasional · {byToi.length - nRegular} {byToi.length - nRegular === 1 ? 'group' : 'groups'}
                                                     </span>
                                                 </th>
-                                                <td colSpan={COLS.length} className={cn(CELL_BG, 'h-9 px-2 pt-3 shadow-[inset_0_-1px_0_var(--line-strong)]')}>
+                                                <td colSpan={cols.length} className={cn(CELL_BG, 'h-9 px-2 pt-3 shadow-[inset_0_-1px_0_var(--line-strong)]')}>
                                                 </td>
                                             </tr>
                                         ) : null}
@@ -226,7 +229,7 @@ export function Units() {
                                                     </span>
                                                 </span>
                                             </th>
-                                            {COLS.map(c => {
+                                            {cols.map(c => {
                                                 const v = c.value(u);
                                                 return (
                                                     <td
@@ -254,7 +257,7 @@ export function Units() {
                                                 {rest.n ? `Other ${rest.n} brief ${rest.n === 1 ? 'group' : 'groups'}` : 'Other time'}
                                             </span>
                                         </th>
-                                        {COLS.map(c => {
+                                        {cols.map(c => {
                                             const v = c.total ? c.total(rest.r) : null;
                                             return (
                                                 <td
@@ -284,7 +287,7 @@ export function Units() {
                                             </span>
                                         </span>
                                     </th>
-                                    {COLS.map(c => {
+                                    {cols.map(c => {
                                         const v = c.total ? c.total(team) : null;
                                         return (
                                             <td

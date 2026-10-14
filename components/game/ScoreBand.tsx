@@ -9,7 +9,7 @@ import { lineScore, marketResults, shortName, type Hit } from '@/lib/game/analyt
 import { other, SIDES, type Side } from '@/lib/game/types';
 import { useGame } from './GameContext';
 import type { SlateGame } from '@/lib/game/fetch';
-import { BreakClock, clockSeconds, periodLength, ppLength, TimeBar } from './TimeBar';
+import { BreakClock, clockSeconds, periodLength, periodName, ppLength, TimeBar } from './TimeBar';
 
 const pct = (p: number) => `${Math.round(p * 100)}%`;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -211,6 +211,9 @@ function Outlook() {
     );
 }
 
+/** The live period like the time bar names it (P2, OT, 2OT); a regular season's fifth is the shootout. */
+const livePeriod = (m: ReturnType<typeof useGame>['m']) => (!m.live ? '' : m.gameType !== 3 && m.live.period >= 5 ? 'SO' : periodName(m.live.period));
+
 /** The game's state in words: Final (/OT /SO), Intermission, Live or Pregame. */
 function statusOf(m: ReturnType<typeof useGame>['m']): string {
     return m.state === 'final' ? (m.outcome === 'REG' ? 'Final' : `Final/${m.outcome}`) : m.state === 'live' ? (m.live?.intermission ? 'Intermission' : 'Live') : 'Pregame';
@@ -264,7 +267,7 @@ export function CompactScore({ edge = null }: { edge?: Edge }) {
                 )}
             >
                 {m.live && !m.live.intermission ? <TimeBar left={clockSeconds(m.live.remaining)} total={periodLength(m.live.period, m.otLength)} /> : null}
-                {m.live?.intermission ? <BreakClock period={m.live.period} left={m.live.breakLeft} /> : m.live ? `${m.live.period <= 3 ? `P${m.live.period}` : 'OT'} ${m.live.remaining}` : statusOf(m)}
+                {m.live?.intermission ? <BreakClock period={m.live.period} left={m.live.breakLeft} /> : m.live ? `${livePeriod(m)} ${m.live.remaining}` : statusOf(m)}
             </span>
             {side('home')}
         </span>
@@ -299,7 +302,7 @@ export function ScoreBand({ edge = null }: { edge?: Edge }) {
                             <>
                                 <span className="max-[359px]:hidden"> · </span>
                                 <span className="max-[359px]:block">
-                                    {m.live.period <= 3 ? `P${m.live.period}` : 'OT'} {m.live.remaining}
+                                    {livePeriod(m)} {m.live.remaining}
                                 </span>
                             </>
                         ) : null}

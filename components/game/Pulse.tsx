@@ -499,7 +499,7 @@ export function Pulse() {
                         viewBox={`0 0 ${W} ${H}`}
                         width="100%"
                         height={H}
-                        role="img"
+                        role="group"
                         aria-label={`${metricLabel(barMetric)} per minute and running ${metricLabel(raceMetric)} for ${m.teams.away.tri} at ${m.teams.home.tri}, ${goals.length} goals. A table of goals and penalties follows the chart.`}
                         className="block select-none font-mono tabular-nums"
                         style={{ touchAction: 'pan-y pinch-zoom' }}

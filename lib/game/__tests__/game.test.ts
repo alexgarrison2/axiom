@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildGame, parseSituation, strengthFor } from '../build';
+import { buildGame, parseSituation, strengthFor, svPct } from '../build';
 import { clockOf, deployment, deservedSeries, gameScores, GS_PARTS, draws, FO_SPOTS, goalSwings, groupMatchups, hardMatches, lineGroups, marketResults, matchups, teamOnIce, type PonyConstants, iceAt, periodAt, skaterRows, teamTotals, units, winModel, zoneStarts } from '../analytics';
 import { mergeSeason } from '../season';
 import { contrastRatio, legibleOn } from '@/components/ui/color';
@@ -62,6 +62,10 @@ describe('game model', () => {
         const pulled = m.events.find(e => e.id === 3)!;
         expect(pulled.strength).toBe('ev');
         expect(teamTotals(m.events, 'awayPP', 'all').away.goals).toBe(0);
+    });
+
+    it('writes a star goalie save percentage the NHL way', () => {
+        expect([svPct(1), svPct(0.9234), svPct(0.095), svPct(0)]).toEqual(['1.000', '.923', '.095', '.000']);
     });
 
     it('normalizes every attack: home shoots right, away shoots left, whatever end they defend', () => {

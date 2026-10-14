@@ -15,10 +15,13 @@ const svp = (sa: number, ga: number) => {
 const sgn = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(2)}`;
 
 const tone = (v: number) => (v > 0.05 ? 'text-pos' : v < -0.05 ? 'text-neg' : 'text-fg-2');
-const Gsax = ({ v }: { v: number }) => <td className={cn('py-1.5 text-right', tone(v))}>{sgn(v)}</td>;
+const Gsax = ({ v }: { v: number | null }) => <td className={cn('py-1.5 text-right', v == null ? 'text-fg-3' : tone(v))}>{v == null ? '—' : sgn(v)}</td>;
 
 export function Goalies() {
     const { m, colors } = useGame();
+    // No shot scored yet (xG comes after the nightly run): blank, not GSAx = −GA.
+    const hasXg = m.events.some(e => e.xg != null);
+    const xg = (v: number) => (hasXg ? v.toFixed(2) : '—');
     return (
         <GameSection id="goalies" title="Goalies">
             <div className="grid gap-3 md:grid-cols-2">
@@ -28,7 +31,7 @@ export function Goalies() {
                         <div key={side} className={cn('flex flex-col gap-3', side === 'home' && 'md:items-stretch')}>
                             {rows.length === 0 ? <p className="panel p-card label">No goalie data</p> : null}
                             {rows.map(g => {
-                                const gsax = g.xga - g.ga;
+                                const gsax = hasXg ? g.xga - g.ga : null;
                                 return (
                                     <article key={g.player.id} className="panel flex flex-col gap-3 p-card">
                                         <header className={cn('flex items-center gap-3', side === 'home' && 'flex-row-reverse text-right')}>
@@ -48,8 +51,8 @@ export function Goalies() {
                                             {[
                                                 ['Saves', `${fmtInt(g.sa - g.ga)}/${fmtInt(g.sa)}`, 'text-fg-1'],
                                                 ['SV%', svp(g.sa, g.ga), 'text-fg-1'],
-                                                ['xGA', g.xga.toFixed(2), 'text-model'],
-                                                ['GSAx', sgn(gsax), tone(gsax)],
+                                                ['xGA', xg(g.xga), hasXg ? 'text-model' : 'text-fg-3'],
+                                                ['GSAx', gsax == null ? '—' : sgn(gsax), gsax == null ? 'text-fg-3' : tone(gsax)],
                                             ].map(([k, v, c]) => (
                                                 <div key={k}>
                                                     <dt className="label">{k}</dt>
@@ -93,8 +96,8 @@ export function Goalies() {
                                                             {fmtInt(s.sa - s.ga)}/{fmtInt(s.sa)}
                                                         </td>
                                                         <td className="py-1.5 text-right text-fg-1">{svp(s.sa, s.ga)}</td>
-                                                        <td className="py-1.5 text-right text-model">{s.xga.toFixed(2)}</td>
-                                                        <Gsax v={s.xga - s.ga} />
+                                                        <td className="py-1.5 text-right text-model">{xg(s.xga)}</td>
+                                                        <Gsax v={hasXg ? s.xga - s.ga : null} />
                                                     </tr>
                                                 ))}
                                                 <tr className="border-t border-line">
@@ -105,8 +108,8 @@ export function Goalies() {
                                                         {fmtInt(g.hdSa - g.hdGa)}/{fmtInt(g.hdSa)}
                                                     </td>
                                                     <td className="py-1.5 text-right text-fg-1">{svp(g.hdSa, g.hdGa)}</td>
-                                                    <td className="py-1.5 text-right text-model">{g.hdXga.toFixed(2)}</td>
-                                                    <Gsax v={g.hdXga - g.hdGa} />
+                                                    <td className="py-1.5 text-right text-model">{xg(g.hdXga)}</td>
+                                                    <Gsax v={hasXg ? g.hdXga - g.hdGa : null} />
                                                 </tr>
                                             </tbody>
                                         </table>

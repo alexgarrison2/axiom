@@ -50,7 +50,7 @@ export function useCountdown(seconds: number | null): number | null {
 /** "3:28" from 208. */
 export const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
-const periodName = (p: number) => (p <= 3 ? `P${p}` : p === 4 ? 'OT' : `${p - 3}OT`);
+export const periodName = (p: number) => (p <= 3 ? `P${p}` : p === 4 ? 'OT' : `${p - 3}OT`);
 
 /**
  * An intermission in progress: "End P2 3:28", the break counting down live, with its hairline

@@ -96,7 +96,7 @@ const COLS: Record<'ind' | 'ice' | 'use', Col[]> = {
         { key: 'xgf', label: 'xGF', title: 'pony xG for', value: r => r.xgf, fmt: f2, model: true, total: (_, t) => t.xgf },
         { key: 'xga', label: 'xGA', title: 'pony xG against', value: r => r.xga, fmt: f2, model: true, total: (_, t) => t.xga },
         { key: 'xgfp', label: 'xGF%', title: 'pony xG share', value: r => pct(r.xgf, r.xga), fmt: f1p, model: true, total: (_, t) => pct(t.xgf, t.xga) },
-        { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: r => r.xgf - r.xga, fmt: v => sgn(v), signed: true, total: (_, t) => t.xgf - t.xga },
+        { key: 'xgd', label: 'xG±', title: 'xGF − xGA', value: r => r.xgf - r.xga, fmt: v => sgn(v), signed: true, model: true, total: (_, t) => t.xgf - t.xga },
     ],
     use: [
         { key: 'toi', label: 'TOI', title: 'Time on ice', value: r => r.toi, fmt: clockOf, total: (_, t) => t.toi },

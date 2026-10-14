@@ -65,7 +65,7 @@ export function reportShiftRows(html: string, roster: Map<number, number>): Shif
 type ShiftRow = { typeCode: 517; playerId: number; period: number; startTime: string; endTime: string };
 
 interface PbpPlay {
-    periodDescriptor?: { number?: number };
+    periodDescriptor?: { number?: number; periodType?: string };
     timeInPeriod?: string;
     situationCode?: string;
     details?: { goalieInNetId?: number; eventOwnerTeamId?: number };
@@ -107,7 +107,7 @@ export function goalieShiftRows(
     for (const p of plays) {
         const period = p.periodDescriptor?.number ?? lastPeriod;
         const at = secs(p.timeInPeriod);
-        if (period > 5) break; // shootout rounds
+        if (p.periodDescriptor?.periodType === 'SO') break; // shootout rounds (playoff 2OT, 3OT... are played)
         if (period !== lastPeriod) {
             for (const side of sides) {
                 const had = cur[side].open != null;
@@ -165,7 +165,7 @@ export function playCoverage(plays: PbpPlay[], otLength: number): number {
     let end = 0;
     for (const p of plays) {
         const period = p.periodDescriptor?.number ?? 1;
-        if (period > 5) continue;
+        if (p.periodDescriptor?.periodType === 'SO') continue;
         const base = period <= 3 ? (period - 1) * 1200 : 3600 + (period - 4) * otLength;
         end = Math.max(end, base + secs(p.timeInPeriod));
     }
