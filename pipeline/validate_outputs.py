@@ -1222,6 +1222,10 @@ CHECKS = {
     "player_ratings": check_player_ratings,
 }
 
+# Checks of research-only logging (nothing published reads them): always warnings, so a logging
+# fault never blocks the hourly data commit.
+WARN_ONLY = {"totals_test"}
+
 
 def run(allow=(), offline=False, only=None, ctx=None, quiet=False):
     """Run the checks. Returns (errors, warnings) as {check: [problems]}."""
@@ -1273,7 +1277,7 @@ def main(argv=None):
             print(f"  [FAIL] {p}")
         print("freshness: " + ("FAIL" if probs else f"ok (generated_at {m.get('generated_at')})"))
         return 1 if probs else 0
-    allow = {a.strip() for a in args.allow.split(",") if a.strip()}
+    allow = {a.strip() for a in args.allow.split(",") if a.strip()} | WARN_ONLY
     only = {a.strip() for a in args.only.split(",") if a.strip()} or None
     t0 = time.time()
     print(f"validate_outputs: season {SEASON_ID}")
