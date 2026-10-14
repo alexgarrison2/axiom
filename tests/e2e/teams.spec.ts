@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { settle } from './quality';
 
 /**
  * Teams table and team pages (workstream F, Neon Arcade redesign R3).
@@ -10,6 +11,9 @@ import { join } from 'node:path';
 const AXE_SRC = readFileSync(join(process.cwd(), 'node_modules/axe-core/axe.min.js'), 'utf8');
 
 async function axeSerious(page: Page) {
+    // After hydration: Radix tab lists only become focusable once their effects run, so a scan
+    // of the server HTML flags them as unfocusable scroll regions (flaky on slow CI phones).
+    await settle(page);
     await page.addScriptTag({ content: AXE_SRC });
     return page.evaluate(async () => {
         // @ts-expect-error injected global
