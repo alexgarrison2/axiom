@@ -150,13 +150,15 @@ describe('a team season end to end', () => {
     });
 
     it('reads the body clock of an Eastern team out West', () => {
-        expect(g[1].local).toBe('7:00 PM');
-        expect(g[1].localTz).toBe('PT');
-        expect(g[1].body).toBe('10:00 PM');
-        expect(g[1].tzDelta).toBe(-3);
-        expect(g[1].tzShift).toBe(-3);
+        // Seattle, not Vancouver: tzdata 2026b keeps British Columbia on UTC-7 from
+        // November 2026, so the VAN game's clock depends on the runtime's zone data.
+        expect(g[2].local).toBe('7:00 PM');
+        expect(g[2].localTz).toBe('PT');
+        expect(g[2].body).toBe('10:00 PM');
+        expect(g[2].tzDelta).toBe(-3);
+        expect(g[1].tzShift).toBe(g[1].tzDelta);
         expect(g[1].tags).toEqual(expect.arrayContaining(['LATE', 'TZ']));
-        expect(g[2].tzShift).toBe(0);
+        expect(g[2].tzShift).toBe(g[2].tzDelta - g[1].tzDelta);
         expect(g[5].tzShift).toBe(3);
     });
 
