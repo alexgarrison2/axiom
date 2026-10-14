@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-14T10:01:48.983414+00:00",
+ "generated_at": "2026-10-14T14:02:39.081355+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -5019,9 +5019,9 @@
   "reasons": [
    "Backtest ROI 95% CI lower bound -9.5% is not above -2%.",
    "Backtest closing-line value -5.20% is not positive.",
-   "Only 15 graded games with market odds were predicted by the current model (logit-elo) so far (103 graded in 2026-27 in all); need 200 to compare it with the market."
+   "Only 85 graded games with market odds were predicted by the current model (sim-m5) so far (103 graded in 2026-27 in all); need 200 to compare it with the market."
   ],
-  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Only 15 graded games with market odds were predicted by the current model (logit-elo) so far (103 graded in 2026-27 in all); need 200 to compare it with the market.",
+  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Only 85 graded games with market odds were predicted by the current model (sim-m5) so far (103 graded in 2026-27 in all); need 200 to compare it with the market.",
   "backtest": {
    "n": 64,
    "roi": 0.1399,
@@ -5030,11 +5030,11 @@
    "clv_mean": -0.052
   },
   "rolling": {
-   "n": 15,
+   "n": 85,
    "window": 200,
-   "model_family": "logit-elo",
-   "model_log_loss": 0.6988,
-   "market_log_loss": 0.6826
+   "model_family": "sim-m5",
+   "model_log_loss": 0.6224,
+   "market_log_loss": 0.6379
   },
   "rule": {
    "min_ev": 0.03,
