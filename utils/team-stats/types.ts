@@ -88,6 +88,9 @@ export interface GameRow {
     cw1: number;
     cw2: number;
     cw3: number;
+    /** Goals for / against through two periods (full-game scalars, so blown third-period leads need no period splits). */
+    gf2: number;
+    ga2: number;
 
     starter: string;
     oppStarter: string;
@@ -124,6 +127,9 @@ export interface TeamStat {
     /** Standings convention: the shootout winner is credited one goal. */
     gf: number;
     ga: number;
+    /** Goals actually scored / allowed (no shootout goal); the period's goals under a period filter. */
+    gf_real: number;
+    ga_real: number;
     gf_per_game: number;
     ga_per_game: number;
     goal_diff: number;

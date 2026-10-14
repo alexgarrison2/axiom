@@ -67,6 +67,21 @@ describe('game-type splits', () => {
         expect(packGames(back)).toEqual(packed);
         expect(Math.abs(back[0].xgf - edm[0].xgf)).toBeLessThan(0.001);
     });
+
+    it('third-period blown leads and comebacks survive the core pack (no period splits)', () => {
+        const full = calculateTeamStats('EDM', edm);
+        expect(full.bl_3p + full.cw_3p).toBeGreaterThan(0);
+        const core = calculateTeamStats('EDM', unpackGames(packGames(edm, { periods: false })));
+        expect([core.bl_3p, core.cw_3p]).toEqual([full.bl_3p, full.cw_3p]);
+    });
+
+    it('real goals leave out the shootout goal that standings GF/GA credit', () => {
+        const s = calculateTeamStats('EDM', edm);
+        const soW = edm.filter(g => g.result === 'SOW').length;
+        const soL = edm.filter(g => g.result === 'SOL').length;
+        expect(s.gf - s.gf_real).toBe(soW);
+        expect(s.ga - s.ga_real).toBe(soL);
+    });
 });
 
 describe('persisted filters', () => {

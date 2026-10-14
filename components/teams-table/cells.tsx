@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { signed } from '@/utils/team-stats/format';
+import { mmss, oddsPct, signed } from '@/utils/team-stats/format';
 import type { Record3, ResultCode, TeamExtra, TeamProjection, TeamRatingEntry, TeamStat } from '@/utils/team-stats/types';
 import type { StatColumn } from './columns';
 
@@ -48,7 +48,7 @@ export function OddsBar({ pct }: { pct: number }) {
                 <span className="absolute inset-y-0 left-0 bg-model/70" style={{ width: `${Math.max(1.5, Math.min(100, pct))}%` }} />
                 <span className="absolute inset-y-0 left-1/2 w-px bg-bg" />
             </span>
-            <span className="min-w-[4ch] text-right font-semibold text-model">{pct < 1 ? '<1' : Math.round(pct)}%</span>
+            <span className="min-w-[4ch] text-right font-semibold text-model">{oddsPct(pct)}</span>
         </span>
     );
 }
@@ -164,8 +164,6 @@ export function DepthCells({ r }: { r: TeamRatingEntry | undefined }) {
         </span>
     );
 }
-
-const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 
 /** Time leading | tied | trailing per game as one bar, leading time left, trailing right. */
 export function Flow({ row }: { row: TeamStat }) {

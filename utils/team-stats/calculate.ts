@@ -6,7 +6,7 @@ const PERIOD_INDEX: Record<Exclude<PeriodFilter, 'All'>, number> = { '1st': 0, '
 export function emptyTeamStat(tri: string): TeamStat {
     return {
         tri, gp: 0, wins: 0, losses: 0, otl: 0, points: 0, pt_pct: 0, rw: 0, row: 0,
-        gf: 0, ga: 0, gf_per_game: 0, ga_per_game: 0, goal_diff: 0, true_goal_diff: 0,
+        gf: 0, ga: 0, gf_real: 0, ga_real: 0, gf_per_game: 0, ga_per_game: 0, goal_diff: 0, true_goal_diff: 0,
         true_gf_per_game: 0, true_ga_per_game: 0, total_goals_per_game: 0,
         pp_goals: 0, pp_opps: 0, pp_pct: 0, pp_lev: 0, pp_time_per_game: 0, pp_time_per_goal: null,
         pk_goals_allowed: 0, pk_opps: 0, pk_pct: 0, pk_lev: 0, pk_time_per_game: 0, pk_time_per_goal_allowed: null,
@@ -90,10 +90,8 @@ export function calculateTeamStats(tri: string, games: GameRow[], period: Period
         if (loss && g.tt === 0) ntl++;
         bl += g.bl1; bl2 += g.bl2; bl3 += g.bl3;
         cw += g.cw1; cw2 += g.cw2; cw3 += g.cw3;
-        const gf2 = g.p.gf[0] + g.p.gf[1];
-        const ga2 = g.p.ga[0] + g.p.ga[1];
-        if (loss && gf2 > ga2) bl3p++;
-        if (win && gf2 < ga2) cw3p++;
+        if (loss && g.gf2 > g.ga2) bl3p++;
+        if (win && g.gf2 < g.ga2) cw3p++;
     }
 
     const points = wins * 2 + otl;
@@ -109,6 +107,8 @@ export function calculateTeamStats(tri: string, games: GameRow[], period: Period
         rw, row,
         gf: gfStd,
         ga: gaStd,
+        gf_real: gf,
+        ga_real: ga,
         gf_per_game: gfStd / gp,
         ga_per_game: gaStd / gp,
         goal_diff: gfStd - gaStd,

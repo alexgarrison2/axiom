@@ -75,13 +75,13 @@ export const LENS_COLUMNS: Record<string, StatColumn> = {
     xg_shot_against: X({ key: 'xg_shot_against', label: 'xG / shot against', title: 'Expected goals per shot on goal allowed (league rank)', better: 'low', kind: 'ordinal', derive: r => (r.sa_per_game > 0 ? r.xga_per_game / r.sa_per_game : NaN), format: r3 }),
 
     // luck
-    gmx: X({ key: 'gmx', label: 'G − xG', title: 'Goals minus expected goals: finishing above or below the chances', better: 'none', kind: 'signed', signAt: 0.5, derive: r => r.gf - r.xgf_per_game * r.gp, format: s1 }),
+    gmx: X({ key: 'gmx', label: 'G − xG', title: 'Goals minus expected goals: finishing above or below the chances', better: 'none', kind: 'signed', signAt: 0.5, derive: r => r.gf_real - r.xgf_per_game * r.gp, format: s1 }),
     xgf_tot: X({ key: 'xgf_tot', label: 'xGF', title: 'Expected goals for', better: 'high', derive: r => r.xgf_per_game * r.gp, format: d1 }),
     xga_tot: X({ key: 'xga_tot', label: 'xGA', title: 'Expected goals against', better: 'low', derive: r => r.xga_per_game * r.gp, format: d1 }),
-    xgamg: X({ key: 'xgamg', label: 'xGA − GA', title: 'Expected goals against minus goals against: positive = goals kept out', better: 'none', kind: 'signed', signAt: 0.5, derive: r => r.xga_per_game * r.gp - r.ga, format: s1 }),
+    xgamg: X({ key: 'xgamg', label: 'xGA − GA', title: 'Expected goals against minus goals against: positive = goals kept out', better: 'none', kind: 'signed', signAt: 0.5, derive: r => r.xga_per_game * r.gp - r.ga_real, format: s1 }),
     xgd: X({ key: 'xgd', label: 'xGΔ', title: 'Expected-goal differential', better: 'high', derive: r => (r.xgf_per_game - r.xga_per_game) * r.gp, format: s1 }),
-    luck: X({ key: 'luck', label: 'GΔ − xGΔ', title: 'Goal differential beyond what the chances earned: + means results ahead of play', better: 'none', kind: 'signed', signAt: 0.5, derive: r => r.goal_diff - (r.xgf_per_game - r.xga_per_game) * r.gp, format: s1 }),
-    pdo: X({ key: 'pdo', label: 'PDO', title: 'Shooting % + save % (1000 = average luck)', better: 'none', kind: 'signed', signAt: 20, derive: r => r.sh_pct * 10 + r.sv_pct * 10 - 1000, format: v => String(Math.round(1000 + v)) }),
+    luck: X({ key: 'luck', label: 'GΔ − xGΔ', title: 'Goal differential beyond what the chances earned: + means results ahead of play', better: 'none', kind: 'signed', signAt: 0.5, derive: r => r.gf_real - r.ga_real - (r.xgf_per_game - r.xga_per_game) * r.gp, format: s1 }),
+    pdo: X({ key: 'pdo', label: 'PDO', title: 'Shooting % + save % (1000 = average luck)', better: 'none', kind: 'signed', signAt: 20, derive: r => (r.sf_per_game > 0 && r.sa_per_game > 0 ? r.sh_pct * 10 + r.sv_pct * 10 - 1000 : NaN), format: v => (Number.isFinite(v) ? Math.round(1000 + v).toLocaleString('en-US') : '—') }),
     gsax_ord: X({ key: 'gsax_ord', label: 'GSAx', title: 'Goals saved above expected (league rank)', better: 'high', kind: 'ordinal', derive: r => r.gsax, format: s1 }),
 
     // special teams

@@ -119,6 +119,8 @@ export function parseGameRow(raw: Record<string, unknown>, teamToTri: (name: str
         cw1: num(raw.comeback_1),
         cw2: num(raw.comeback_2),
         cw3: num(raw['comeback_3+']),
+        gf2: p.gf[0] + p.gf[1],
+        ga2: p.ga[0] + p.ga[1],
         starter: String(raw.starting_goalie ?? '').trim(),
         oppStarter: String(raw.starting_goalie_opp ?? '').trim(),
         p,
@@ -162,7 +164,7 @@ const SCALARS = [
     'gf', 'ga', 'sf', 'sa', 'cf', 'ca', 'cf5', 'ca5', 'hdf', 'hda', 'xgf', 'xga', 'xgane',
     'ppg', 'ppga', 'ppo', 'pko', 'ppt', 'pkt', 'saves',
     'engf', 'enga', 'enppgf', 'enppga', 'enatt', 'enattag',
-    'tl', 'tt', 'tti', 'ctrl', 'sfirst', 'bl1', 'bl2', 'bl3', 'cw1', 'cw2', 'cw3',
+    'tl', 'tt', 'tti', 'ctrl', 'sfirst', 'bl1', 'bl2', 'bl3', 'cw1', 'cw2', 'cw3', 'gf2', 'ga2',
 ] as const;
 const SPLITS = ['gf', 'ga', 'sf', 'sa', 'cf', 'ca', 'hdf', 'hda', 'xgf', 'xga', 'tl', 'tt', 'tti', 'ctrl'] as const;
 const HEAD = ['id', 'date', 'type', 'tri', 'opp', 'home', 'result', 'gn', 'starter', 'oppStarter'] as const;
@@ -216,6 +218,9 @@ export function unpackGames(packed: PackedGames): GameRow[] {
         for (const k of SCALARS) (r as unknown as Record<string, number>)[k] = Number(g(row, k));
         // Packs written before xgane existed: fall back to xga.
         if (!Number.isFinite(r.xgane)) r.xgane = r.xga;
+        // Packs written before gf2/ga2 existed: rebuild from the splits when present.
+        if (!Number.isFinite(r.gf2)) r.gf2 = p.gf[0] + p.gf[1];
+        if (!Number.isFinite(r.ga2)) r.ga2 = p.ga[0] + p.ga[1];
         return r;
     });
 }

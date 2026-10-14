@@ -19,6 +19,7 @@ interface TeamChartProps {
 }
 
 type Loc = 'All' | 'Home' | 'Away';
+const LOCS: Loc[] = ['All', 'Home', 'Away'];
 type Mode = 'cumulative' | 'rolling';
 
 const COMPARE_COLOR = 'rgb(var(--info-rgb))';
@@ -54,7 +55,10 @@ function readParam(key: string, fallback: string) {
 export default function TeamChart({ games, leagueAverages, primaryColor, teamName, seasonLabel }: TeamChartProps) {
     const [metric, setMetric] = React.useState(() => readParam('metric', CHART_METRICS[0].value));
     const [metric2, setMetric2] = React.useState(() => readParam('metric2', 'none'));
-    const [loc, setLoc] = React.useState<Loc>(() => (readParam('loc', 'All') as Loc) || 'All');
+    const [loc, setLoc] = React.useState<Loc>(() => {
+        const v = readParam('loc', 'All');
+        return LOCS.includes(v as Loc) ? (v as Loc) : 'All';
+    });
     const [mode, setMode] = React.useState<Mode>(() => (readParam('mode', 'cumulative') === 'rolling' ? 'rolling' : 'cumulative'));
     const [win, setWin] = React.useState(() => Math.min(25, Math.max(3, parseInt(readParam('window', '10'), 10) || 10)));
 
@@ -149,7 +153,7 @@ export default function TeamChart({ games, leagueAverages, primaryColor, teamNam
                         ))}
                     </select>
                 </label>
-                <Segmented label="Home or away games" size="sm" optionClassName="max-sm:px-2" value={loc} onChange={setLoc} options={(['All', 'Home', 'Away'] as Loc[]).map(v => ({ value: v, label: v }))} />
+                <Segmented label="Home or away games" size="sm" optionClassName="max-sm:px-2" value={loc} onChange={setLoc} options={LOCS.map(v => ({ value: v, label: v }))} />
                 <Segmented
                     label="Cumulative or rolling"
                     size="sm"

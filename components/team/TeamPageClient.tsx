@@ -285,7 +285,7 @@ export default function TeamPageClient({ initial, seasons, breakdown }: TeamPage
                         ) : null}
                     </div>
                 ) : (
-                    <GamesLogTable games={filtered} showSummary={!heroView} period={filters.period} seasonLabel={label} teamColor={initial.team.color} loadBoxscores={loadBoxscores} />
+                    <GamesLogTable key={season} games={filtered} showSummary={!heroView} period={filters.period} seasonLabel={label} teamColor={initial.team.color} loadBoxscores={loadBoxscores} />
                 )}
             </TabsContent>
 

@@ -26,7 +26,7 @@ function row(o: Partial<GameRow>): GameRow {
         gf: 3, ga: 2, sf: 30, sa: 25, cf: 55, ca: 50, cf5: 40, ca5: 35, hdf: 0, hda: 0, xgf: 3, xga: 2, xgane: 2,
         ppg: 1, ppga: 0, ppo: 3, pko: 2, ppt: 0, pkt: 0, saves: 23,
         engf: 0, enga: 0, enppgf: 0, enppga: 0, enatt: 0, enattag: 0,
-        tl: 0, tt: 0, tti: 0, ctrl: 1, sfirst: 0, bl1: 0, bl2: 0, bl3: 0, cw1: 0, cw2: 0, cw3: 0,
+        tl: 0, tt: 0, tti: 0, ctrl: 1, sfirst: 0, bl1: 0, bl2: 0, bl3: 0, cw1: 0, cw2: 0, cw3: 0, gf2: 0, ga2: 0,
         starter: 'Jordan Binnington', oppStarter: 'Jake Oettinger',
         p: { gf: zq, ga: zq, sf: zq, sa: zq, cf: zq, ca: zq, hdf: zq, hda: zq, xgf: zq, xga: zq, tl: zq, tt: zq, tti: zq, ctrl: zq },
         ...o,
