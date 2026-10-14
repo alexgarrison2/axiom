@@ -78,6 +78,7 @@ jobs:
           echo "Pipeline mode: $mode"
 
       - name: Run data pipeline
+        id: pipeline
         timeout-minutes: ${{ steps.mode.outputs.mode == 'full' && 30 || 20 }}
         env:
           MODE: ${{ steps.mode.outputs.mode }}
@@ -105,6 +106,7 @@ jobs:
         run: python pipeline/refresh_pipeline.py --mode "$MODE"
 
       - name: Validate outputs (data contract gate)
+        id: validate
         env:
           # Comma-separated validate_outputs.py checks to downgrade to warnings
           # (repository variable), e.g. while a known upstream fix is pending.
@@ -114,6 +116,34 @@ jobs:
           PONYXG_MODEL_WEIGHT: ${{ vars.PONYXG_MODEL_WEIGHT }}
           PONYXG_SEASON_SIM: ${{ vars.PONYXG_SEASON_SIM }}
         run: python pipeline/validate_outputs.py
+
+      # The frozen pregame snapshots (SiteHistory, closing odds) can't be rebuilt later: a
+      # game whose snapshot misses its hour is lost from the graded record. When the full
+      # gate fails on a check unrelated to the predictions (a stale ratings bundle, the
+      # live goalie roster, ...), still save them, provided the prediction checks pass.
+      - name: Save pregame snapshots despite a failed gate
+        if: failure() && steps.pipeline.outcome == 'success' && steps.validate.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PONYXG_SIM_INPUTS: ${{ vars.PONYXG_SIM_INPUTS }}
+          PONYXG_MODEL_WEIGHT: ${{ vars.PONYXG_MODEL_WEIGHT }}
+          PONYXG_SEASON_SIM: ${{ vars.PONYXG_SEASON_SIM }}
+        run: |
+          python pipeline/validate_outputs.py \
+            --only predictions,placeholders,after_start,teams,season_ids,odds,fair_odds,winpct_engine
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add public/data/SiteHistory/*.csv public/data/odds_closing.json
+          if git diff --cached --quiet; then echo "No snapshot changes."; exit 0; fi
+          git commit -q -m "Snapshots: pregame predictions [$(date -u +%Y-%m-%dT%H:%M:%SZ)] (data gate failed)"
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          for attempt in 1 2 3 4; do
+            git -c "http.https://github.com/.extraheader=$auth" fetch -q origin main
+            git rebase -q --autostash FETCH_HEAD || { git rebase --abort; echo "::error::snapshot rebase conflict"; exit 1; }
+            if git -c "http.https://github.com/.extraheader=$auth" push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 5))
+          done
+          echo "::error::snapshot push failed after 4 attempts"; exit 1
 
       # Pony Score: every finished game pony xG has scored, built with the game page's own code
       # (scripts/pony_scores.ts; only new games, so a few seconds a run).
@@ -179,6 +209,9 @@ jobs:
               public/data/player_bio.json public/data/contracts.json public/data/player_ratings.json
           # Season context
           # (season_sim_games.json: the day's simulated per-game table, so the hourly implications reuse it)
+          # Per-season skater on-ice rates (pipeline/skater_rates.py) and the season schedule
+          # (news page, team next-game fallback, site_history grading without a refetch)
+          add public/data/skater_rates/*.json pipeline/data/nhl_schedule_*.json
           add pipeline/data/season_projections.json public/data/season_projections.json \
               pipeline/data/season_sim_games.json \
               pipeline/data/schedule_detail_*.json \

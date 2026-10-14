@@ -42,9 +42,9 @@ There is no database behind the site. Data flows: Python scripts → files in `p
 Never hardcode a season. `pipeline/season.py` (`SEASON_ID`, `season_file()`, `read_season_csv()`, `SEASON_GAMES`) and `lib/season.ts` (`SEASON_ID`, `seasonFile()`, `SEASON_GAMES`) are the single sources of truth; both roll over on July 1. 2026-27 is an 84-game season. Early in a season most current-season stats are empty or tiny samples: show "no games yet" or label prior-season values explicitly rather than presenting last season's numbers as current. Last season's files stay in `pipeline/` as the archive (`nhl_season_2025_2026_*`), and `pipeline/tools/archive_season.py` folds a finished season into `nhl_historical_*.csv`.
 
 ### Data Pipeline (`pipeline/`)
-Runs via GitHub Actions (`.github/workflows/update_data.yml`), hourly 12:00-02:00 UTC:
-- **12:00-14:59 UTC**: full refresh via `refresh_pipeline.py` (scrape new games, re-score every shot with the xG model, team/goalie ratings, player impact, shifts/PBP enrichment, predictions, history, season simulation, playoff implications)
-- **Other hours**: lite update (upcoming games/goalies, odds, predictions, implications)
+Runs via GitHub Actions (`.github/workflows/update_data.yml`), hourly 12:00-07:00 UTC (GitHub's cron often fires late; most runs are dispatched at :01). `refresh_pipeline.py --mode auto` picks the mode:
+- **full** (scrape new games, re-score every shot with the xG model, team/goalie ratings, player impact, shifts/PBP enrichment, predictions, history, season simulation, playoff implications): once in the 12:00-14:59 UTC window, as a catch-up when the last full run is too old, and whenever finished games are waiting to be scraped (so overnight full runs are normal)
+- **lite** otherwise (upcoming games/goalies, odds, predictions, implications)
 
 The workflow commits the changed data files to `main`, which deploys to Vercel.
 
