@@ -193,10 +193,12 @@ export function edge(p: PropPlayer, line: Line): number | null {
     return f != null && b != null ? f - b : null;
 }
 
+/** American price, grouped and with a true minus: "+1,500", "−150", "EVEN". */
 export function american(p: number | null | undefined): string {
     if (p == null) return '—';
     if (Math.abs(p) === 100) return 'EVEN';
-    return p > 0 ? `+${p}` : String(p);
+    const abs = Math.abs(p).toLocaleString('en-US');
+    return p > 0 ? `+${abs}` : `−${abs}`;
 }
 
 /** Fair American price for a probability. */

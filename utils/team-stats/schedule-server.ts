@@ -202,7 +202,7 @@ function compact(s: TeamSchedule): TeamSchedule {
 
 const leagueCache = new Map<string, { all: ReturnType<typeof buildLeagueSchedules>; source: 'ratings' | 'season' }>();
 
-export function buildSchedulePayload(tri: string, season: string, now = new Date()): SchedulePayload | null {
+export function buildSchedulePayload(tri: string, season: string): SchedulePayload | null {
     let hit = leagueCache.get(season);
     if (!hit) {
         const raw = loadScheduleDetail(season);
@@ -218,7 +218,6 @@ export function buildSchedulePayload(tri: string, season: string, now = new Date
     return {
         season,
         tri,
-        today: now.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }),
         complete: own.games.every(g => g.state === 'final'),
         strength: hit.source,
         schedule: compact(own),

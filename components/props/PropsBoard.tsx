@@ -174,7 +174,11 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
         fetch(detailSrc)
             .then(r => (r.ok ? (r.json() as Promise<PropsDetailDoc>) : Promise.reject(new Error(String(r.status)))))
             .then(d => setDetail(d))
-            .catch(() => setDetail(null));
+            .catch(() => {
+                // A failed load is not final: the next row opened tries again.
+                detailRequested.current = false;
+                setDetail(null);
+            });
     }, [open, detailSrc]);
 
     const cat = categoryOf(catKey);

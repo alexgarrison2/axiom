@@ -16,7 +16,8 @@ import {
     DEFAULT_FILTERS, activeFilterCount, filterGames, groupByTeam, needsGameRows, sanitizeFilters,
     type Location, type Recent, type TableFilters, type TableView,
 } from '@/utils/team-stats/filter';
-import { signed, slateDate } from '@/utils/team-stats/format';
+import { signed } from '@/utils/team-stats/format';
+import { addDays, slateDate } from '@/lib/matchup/format';
 import { unpackGames } from '@/utils/team-stats/game-row';
 import { seasonLabel, TEAM_SEASONS, seasonGames } from '@/utils/team-stats/season';
 import { compareOfficial, computeStandings, officialKeysOf } from '@/utils/team-stats/standings';
@@ -215,7 +216,7 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
         let paired = false;
         if (filters.view === 'today' || filters.view === 'tomorrow') {
             paired = true;
-            const date = slateDate(filters.view === 'today' ? 0 : 1);
+            const date = addDays(slateDate(), filters.view === 'today' ? 0 : 1);
             const dow = filters.withDow ? new Date(`${date}T12:00:00`).getDay() : undefined;
             rows = payload.matchups
                 .filter(m => m.date === date)

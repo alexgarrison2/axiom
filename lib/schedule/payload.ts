@@ -4,8 +4,6 @@ import type { ComparedKey, LeagueStat, TeamSchedule } from './metrics';
 export interface SchedulePayload {
     season: string;
     tri: string;
-    /** Build date (ET), to mark today on the strip. */
-    today: string;
     /** Every game final. */
     complete: boolean;
     /** Where opponent strength came from: this season's team ratings, or the finished season's results. */

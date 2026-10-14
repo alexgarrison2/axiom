@@ -56,9 +56,17 @@ function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: n
                 'relative flex min-w-0 gap-3 rounded-card border bg-surface-1 p-3 transition-colors md:p-4',
                 away ? 'md:flex-row' : 'md:flex-row-reverse md:text-right',
                 lit ? 'border-brand' : 'border-line hover:border-line-strong',
+                'has-[>button:focus-visible]:outline has-[>button:focus-visible]:outline-2 has-[>button:focus-visible]:outline-brand',
             )}
             onClick={() => select(lit ? null : e.id)}
         >
+            {/* The card's click target for the keyboard (a role=button card would nest the player and clip links). */}
+            <button type="button" className="sr-only" aria-pressed={lit} onClick={ev => {
+                ev.stopPropagation();
+                select(lit ? null : e.id);
+            }}>
+                {`${periodLabel(e.period)} ${e.clock}, ${m.teams[side].tri} goal, ${playerName(p)}`}
+            </button>
             <div className="relative shrink-0">
                 <div className="h-14 w-14 overflow-hidden rounded-full border-2 bg-surface-2 md:h-16 md:w-16" style={{ borderColor: colors[side] }}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- NHL headshots are pre-sized PNGs */}

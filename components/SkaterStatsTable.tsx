@@ -175,16 +175,26 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
         if (next !== `${window.location.pathname}${window.location.search}${window.location.hash}`) window.history.replaceState(null, '', next);
     }, [fromUrl, filter.pos, page, chosenSet, defaultSet]);
 
+    // The full list; on failure the preview stays up (players null) with a retry.
+    const [failed, setFailed] = React.useState(false);
+    const [attempt, setAttempt] = React.useState(0);
     React.useEffect(() => {
         let alive = true;
         fetch(src)
-            .then(r => r.json() as Promise<Skater[]>)
-            .then(list => alive && setPlayers(list))
-            .catch(() => alive && setPlayers(preview?.rows ?? []));
+            .then(r => {
+                if (!r.ok) throw new Error(String(r.status));
+                return r.json() as Promise<Skater[]>;
+            })
+            .then(list => {
+                if (!alive) return;
+                setFailed(false);
+                setPlayers(list);
+            })
+            .catch(() => alive && setFailed(true));
         return () => {
             alive = false;
         };
-    }, [src, preview]);
+    }, [src, attempt]);
 
     const list = players ?? preview?.rows;
     const headline = headlineKey(list ?? []);
@@ -335,6 +345,14 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                     <span className="text-fg-1">{thousands(total)}</span> {total === 1 ? 'skater' : 'skaters'}
                     {total > PAGE ? ` · ${thousands(current * PAGE + 1)}–${thousands(Math.min(total, current * PAGE + PAGE))}` : ''}
                 </p>
+                {failed && !players ? (
+                    <p role="alert" className="flex items-center gap-2 text-warn">
+                        Partial list
+                        <button type="button" onClick={() => setAttempt(a => a + 1)} className="inline-flex min-h-8 items-center text-brand hover:underline coarse:min-h-11">
+                            Retry
+                        </button>
+                    </p>
+                ) : null}
                 <p className="md:hidden">
                     {phoneUnit}
                     {asOf ? <span className="text-fg-2"> · {asOf}</span> : null}

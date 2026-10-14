@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { teamPalette } from '@/components/ui/team-color';
 import { cn } from '@/lib/utils';
+import { fmtInt } from '@/components/views/format';
 import { SortLink } from '@/components/pony/SortLink';
 import type { LeaderRow, SortKey } from '@/lib/pony/data';
 import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
@@ -227,7 +228,7 @@ const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:
                                 <td className={num('gp')}>{r.gp}</td>
                                 {goalies ? (
                                     <>
-                                        <td className={num('sa')}>{r.goalie?.sa ?? '—'}</td>
+                                        <td className={num('sa')}>{r.goalie ? fmtInt(r.goalie.sa) : '—'}</td>
                                         <td className={num('sv')}>{sv}</td>
                                         <td className={cn(TD, 'text-model', sort === 'xga' && 'font-semibold')}>{r.goalie ? r.goalie.xga.toFixed(1) : '—'}</td>
                                     </>

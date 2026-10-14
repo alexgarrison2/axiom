@@ -47,15 +47,19 @@ export const shotLeagueUrl = (season: string) => `/data/goalie_shots/${season}/l
 const cache = new Map<string, Promise<unknown>>();
 
 /**
- * Fetch once per page session; a missing file (no shots yet) resolves to null. The deploy's id rides
- * the URL, so a new build (every data commit deploys) never reads a cached file of an older shape.
+ * Fetch once per page session; a missing file (no shots yet) resolves to null. Any other failure
+ * also resolves to null but is not cached, so the next call retries. The deploy's id rides the URL,
+ * so a new build (every data commit deploys) never reads a cached file of an older shape.
  */
 export function fetchShots<T>(url: string): Promise<T | null> {
     let p = cache.get(url) as Promise<T | null> | undefined;
     if (!p) {
         p = fetch(`${url}?v=${DEPLOY}`)
-            .then(r => (r.ok ? (r.json() as Promise<T>) : null))
-            .catch(() => null);
+            .then(r => (r.ok ? (r.json() as Promise<T>) : r.status === 404 ? null : Promise.reject(new Error(String(r.status)))))
+            .catch(() => {
+                cache.delete(url);
+                return null;
+            });
         cache.set(url, p);
     }
     return p;

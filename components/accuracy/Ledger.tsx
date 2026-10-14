@@ -27,17 +27,21 @@ export const LEDGER_COLOR_MIN = 100;
 
 let betsPromise: Promise<LedgerBet[]> | null = null;
 let betsEpoch = 0;
-/** Every bet, fetched once per data epoch (a stale tab coming back fetches again). */
+/** Every bet, fetched once per data epoch (a stale tab coming back fetches again). A failure rejects and is not cached. */
 function loadBets(epoch = 0): Promise<LedgerBet[]> {
     if (!betsPromise || betsEpoch !== epoch) {
         betsEpoch = epoch;
-        betsPromise = fetch('/data/bet_ledger.json', epoch ? { cache: 'no-cache' } : undefined)
-            .then(r => (r.ok ? r.json() : null))
+        const p: Promise<LedgerBet[]> = fetch('/data/bet_ledger.json', epoch ? { cache: 'no-cache' } : undefined)
+            .then(r => {
+                if (!r.ok) throw new Error(`bet ledger: HTTP ${r.status}`);
+                return r.json();
+            })
             .then(parseLedgerBets)
-            .catch(() => {
-                betsPromise = null;
-                return [];
+            .catch(e => {
+                if (betsPromise === p) betsPromise = null;
+                throw e;
             });
+        betsPromise = p;
     }
     return betsPromise;
 }
@@ -115,8 +119,11 @@ export function Ledger({
     const epoch = useDataEpoch();
     const loaded = bets != null;
     React.useEffect(() => {
-        if (epoch && loaded) void loadBets(epoch).then(setBets);
+        // A failed refresh keeps the bets already on screen.
+        if (epoch && loaded) loadBets(epoch).then(setBets, () => {});
     }, [epoch, loaded]);
+    const [failed, setFailed] = React.useState(false);
+    const [attempt, setAttempt] = React.useState(0);
     const [query, setQuery] = React.useState('');
     const [shown, setShown] = React.useState(PAGE);
     const ref = React.useRef<HTMLDivElement>(null);
@@ -126,7 +133,14 @@ export function Ledger({
     React.useEffect(() => {
         const el = ref.current;
         if (!el || bets) return;
-        const go = () => loadBets().then(setBets);
+        const go = () =>
+            loadBets().then(
+                b => {
+                    setFailed(false);
+                    setBets(b);
+                },
+                () => setFailed(true),
+            );
         if (window.location.hash === '#ledger' || typeof IntersectionObserver === 'undefined') {
             go();
             return;
@@ -142,7 +156,7 @@ export function Ledger({
         );
         io.observe(el);
         return () => io.disconnect();
-    }, [bets]);
+    }, [bets, attempt]);
 
     React.useEffect(() => setShown(PAGE), [season, query]);
 
@@ -234,7 +248,21 @@ export function Ledger({
                             <Input id={searchId} type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Team / date" className="h-8 coarse:h-11" />
                         </div>
                     </div>
-                    {!bets ? (
+                    {!bets && failed ? (
+                        <div role="alert" className="panel flex items-center gap-3 border-dashed px-3 py-2">
+                            <p className="label text-warn">Unavailable</p>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setFailed(false);
+                                    setAttempt(a => a + 1);
+                                }}
+                                className="ml-auto rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    ) : !bets ? (
                         <div aria-busy="true" className="h-40 rounded-card border border-line bg-surface-1/60" />
                     ) : (
                         <>

@@ -315,7 +315,21 @@ export function TravelMap({ tri, schedule, geo, focus, teamColor, selectedId, on
                             if (next) onSelect(next.id);
                         };
                         return (
-                            <g key={key} className="cursor-pointer" onClick={go}>
+                            <g
+                                key={key}
+                                role="button"
+                                tabIndex={0}
+                                aria-label={`${v.city}: ${v.games.length} game${v.games.length > 1 ? 's' : ''}`}
+                                aria-pressed={picked}
+                                onClick={go}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        go();
+                                    }
+                                }}
+                                className="cursor-pointer outline-none [&:focus-visible>circle:first-of-type]:stroke-brand [&:focus-visible>circle:first-of-type]:[stroke-width:2]"
+                            >
                                 <title>{`${v.city}: ${v.games.length} game${v.games.length > 1 ? 's' : ''}`}</title>
                                 <circle cx={x} cy={y} r={16} fill="transparent" />
                                 <ellipse cx={x} cy={y} rx={3.6} ry={2.2} fill="#000" fillOpacity={0.6} />

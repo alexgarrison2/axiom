@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { attemptsPer, boostFor, buildRows, extFor, seasonLabel, summarize, vsLog, categoryOf, fairAmerican, filterRows, lastN, lineFor, sortRows, streak, DEFAULT_FILTER, type LogRow, type PropPlayer, type PropsDoc } from '../model';
+import { attemptsPer, boostFor, buildRows, extFor, seasonLabel, summarize, vsLog, american, categoryOf, fairAmerican, filterRows, lastN, lineFor, sortRows, streak, DEFAULT_FILTER, type LogRow, type PropPlayer, type PropsDoc } from '../model';
 
 // [date, opp, home, toi, g, a, sog, ppp, prev]
 const log = (sog: number[], prevFrom = 0): LogRow[] => sog.map((s, i) => [`2026-10-${String(i + 1).padStart(2, '0')}`, 'BOS', 1, 18, s >= 4 ? 1 : 0, 0, s, 0, i < prevFrom ? 1 : 0]);
@@ -52,8 +52,10 @@ describe('props model', () => {
     });
 
     it('prints fair American prices', () => {
-        expect(fairAmerican(0.6)).toBe('-150');
+        expect(fairAmerican(0.6)).toBe('−150');
         expect(fairAmerican(0.4)).toBe('+150');
+        expect(fairAmerican(0.05)).toBe('+1,900');
+        expect(american(-1500)).toBe('−1,500');
         expect(fairAmerican(0.5)).toBe('EVEN');
         expect(fairAmerican(null)).toBe('—');
     });

@@ -7,6 +7,7 @@ import { FilterChip } from '@/components/ui/filter-chip';
 import { TEAM_PALETTE } from '@/components/ui/team-color';
 import { legibleOn } from '@/components/ui/color';
 import { scheduleUrl, type SchedulePayload } from '@/lib/schedule/payload';
+import { slateDate } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 import { fetchJsonCached } from '@/utils/team-stats/client-cache';
 import { seasonLabel } from '@/utils/team-stats/season';
@@ -87,6 +88,8 @@ const LEGEND: [Parameters<typeof Swatch>[0]['kind'], string][] = [
     ['trip', 'Trip'],
 ];
 
+const noopSubscribe = () => () => {};
+
 /**
  * The Schedule tab: season facts as lenses, the season rhythm strip, the
  * travel map and a month calendar, all focused together (season, a month, a
@@ -94,6 +97,8 @@ const LEGEND: [Parameters<typeof Swatch>[0]['kind'], string][] = [
  */
 export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
     const [payload, setPayload] = React.useState<SchedulePayload | null>(null);
+    // The payload is prerendered, so "today" comes from the browser's clock (the slate day, as on home).
+    const today = React.useSyncExternalStore(noopSubscribe, slateDate, () => '');
     const [geo, setGeo] = React.useState<NaGeo | null>(null);
     const [error, setError] = React.useState(false);
     const [focus, setFocus] = React.useState<Focus>({ kind: 'season' });
@@ -253,7 +258,7 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
                 </div>
                 <RhythmStrip
                     schedule={schedule}
-                    today={payload.today}
+                    today={today}
                     focus={focus}
                     lens={lens}
                     selectedId={selectedId}
@@ -294,7 +299,7 @@ export default function ScheduleTab({ tri, season }: ScheduleTabProps) {
                                 games={games}
                                 focus={focus}
                                 lens={lens}
-                                today={payload.today}
+                                today={today}
                                 teamColor={teamColor}
                                 selectedId={selectedId}
                                 onSelect={selectGame}

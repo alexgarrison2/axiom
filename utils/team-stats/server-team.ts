@@ -9,6 +9,7 @@ import { SEASON_ID } from '../../lib/season';
 import { leaguesSummary } from './league-summary';
 import { leagueAverages } from './chart-metrics';
 import { goalieKey } from './filter';
+import { UPCOMING_GRACE_MS } from './format';
 import { goalieStartsGsax, packGames } from './game-row';
 import { gameTypeOf, prevSeasonId, seasonLabel } from './season';
 import { leagueStandings, loadPredictionRows, loadProjections, readPublicJson } from './server';
@@ -360,57 +361,72 @@ interface SeasonScheduleGame {
  * The upcoming feed only covers today and tomorrow; fall back to the full
  * season schedule the pipeline keeps (pipeline/data/nhl_schedule_<season>.json).
  */
-function nextFromSeasonSchedule(tri: string, cutoff: number): Upcoming | undefined {
+function fromSeasonSchedule(tri: string, cutoff: number): Upcoming[] {
     try {
         const file = path.join(process.cwd(), 'pipeline', 'data', `nhl_schedule_${SEASON_ID}.json`);
         const raw = JSON.parse(fs.readFileSync(file, 'utf8')) as { games?: Record<string, SeasonScheduleGame> | SeasonScheduleGame[] };
         const games = Array.isArray(raw.games) ? raw.games : Object.values(raw.games ?? {});
-        const g = games
+        return games
             .filter(x => (x.home_abbrev === tri || x.away_abbrev === tri) && x.start_utc && x.state !== 'OFF' && x.state !== 'FINAL')
             .filter(x => (x.game_type ?? 2) >= 2 && Date.parse(x.start_utc!) >= cutoff)
-            .sort((a, b) => a.start_utc!.localeCompare(b.start_utc!))[0];
-        if (!g) return undefined;
-        // gameDate is the Eastern calendar date, as in upcoming_games.json.
-        const gameDate = new Date(g.start_utc!).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-        return { gameDate, startTimeUTC: g.start_utc, homeTeamAbbrev: g.home_abbrev, awayTeamAbbrev: g.away_abbrev } as Upcoming;
+            .map(g => {
+                // gameDate is the Eastern calendar date, as in upcoming_games.json.
+                const gameDate = new Date(g.start_utc!).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+                return { gameDate, startTimeUTC: g.start_utc, homeTeamAbbrev: g.home_abbrev, awayTeamAbbrev: g.away_abbrev } as Upcoming;
+            });
     } catch {
-        return undefined;
+        return [];
     }
 }
 
-export function nextGameFor(tri: string, now = new Date()): NextGame | null {
-    const up = readPublicJson<Upcoming[]>('upcoming_games.json') ?? [];
-    const cutoff = now.getTime() - 3 * 3600 * 1000;
-    const g = up
-        .filter(x => (x.homeTeamAbbrev === tri || x.awayTeamAbbrev === tri) && x.gameState !== 'OFF' && x.gameState !== 'FINAL')
-        .filter(x => !x.startTimeUTC || Date.parse(x.startTimeUTC) >= cutoff)
-        .sort((a, b) => (a.startTimeUTC ?? a.gameDate ?? '').localeCompare(b.startTimeUTC ?? b.gameDate ?? ''))[0] ?? nextFromSeasonSchedule(tri, cutoff);
-    if (!g || !g.gameDate) return null;
-    const home = g.homeTeamAbbrev === tri;
-    const opp = (home ? g.awayTeamAbbrev : g.homeTeamAbbrev) ?? '';
-    const pred = loadPredictionRows().find(p => p.date === g.gameDate && p.home === g.homeTeamAbbrev && p.away === g.awayTeamAbbrev);
-    const pct = pred ? (home ? pred.homeWinPct : pred.awayWinPct) : undefined;
+/**
+ * The team's next few games, earliest first. The page is prerendered, so the
+ * browser picks the first that has not been over for a while (firstUpcoming);
+ * the extra games cover the hours until the next deploy.
+ */
+export function upcomingGamesFor(tri: string, now = new Date(), limit = 3): NextGame[] {
+    const cutoff = now.getTime() - UPCOMING_GRACE_MS;
+    const key = (x: Upcoming) => `${x.gameDate}|${x.awayTeamAbbrev}|${x.homeTeamAbbrev}`;
+    const feed = (readPublicJson<Upcoming[]>('upcoming_games.json') ?? [])
+        .filter(x => (x.homeTeamAbbrev === tri || x.awayTeamAbbrev === tri) && x.gameDate && x.gameState !== 'OFF' && x.gameState !== 'FINAL')
+        .filter(x => !x.startTimeUTC || Date.parse(x.startTimeUTC) >= cutoff);
+    const seen = new Set(feed.map(key));
+    const order = (x: Upcoming) => x.startTimeUTC ?? x.gameDate ?? '';
+    const games = [...feed, ...fromSeasonSchedule(tri, cutoff).filter(x => !seen.has(key(x)))]
+        .sort((a, b) => order(a).localeCompare(order(b)))
+        .slice(0, limit);
+    const preds = loadPredictionRows();
     const goalie = (name?: string | null, status?: string | null) => (name ? { name, status: status || 'Unconfirmed' } : null);
-    const away = home ? opp : tri;
-    const homeTri = home ? tri : opp;
-    return {
-        date: g.gameDate,
-        startTimeUTC: g.startTimeUTC ?? null,
-        opp,
-        home,
-        modelWinPct: typeof pct === 'number' ? pct : null,
-        goalie: home ? goalie(g.homeGoalieConfirmed, g.homeGoalieStatus) : goalie(g.awayGoalieConfirmed, g.awayGoalieStatus),
-        oppGoalie: home ? goalie(g.awayGoalieConfirmed, g.awayGoalieStatus) : goalie(g.homeGoalieConfirmed, g.homeGoalieStatus),
-        href: `/?date=${g.gameDate}#${away.toLowerCase()}-${homeTri.toLowerCase()}`,
-        tv: g.tvNetwork || null,
-    };
+    return games.map(g => {
+        const home = g.homeTeamAbbrev === tri;
+        const opp = (home ? g.awayTeamAbbrev : g.homeTeamAbbrev) ?? '';
+        const pred = preds.find(p => p.date === g.gameDate && p.home === g.homeTeamAbbrev && p.away === g.awayTeamAbbrev);
+        const pct = pred ? (home ? pred.homeWinPct : pred.awayWinPct) : undefined;
+        const away = home ? opp : tri;
+        const homeTri = home ? tri : opp;
+        return {
+            date: g.gameDate!,
+            startTimeUTC: g.startTimeUTC ?? null,
+            opp,
+            home,
+            modelWinPct: typeof pct === 'number' ? pct : null,
+            goalie: home ? goalie(g.homeGoalieConfirmed, g.homeGoalieStatus) : goalie(g.awayGoalieConfirmed, g.awayGoalieStatus),
+            oppGoalie: home ? goalie(g.awayGoalieConfirmed, g.awayGoalieStatus) : goalie(g.homeGoalieConfirmed, g.homeGoalieStatus),
+            href: `/?date=${g.gameDate}#${away.toLowerCase()}-${homeTri.toLowerCase()}`,
+            tv: g.tvNetwork || null,
+        };
+    });
+}
+
+export function nextGameFor(tri: string, now = new Date()): NextGame | null {
+    return upcomingGamesFor(tri, now, 1)[0] ?? null;
 }
 
 export function buildTeamHero(tri: string): TeamHero {
     const proj = loadProjections()?.[tri];
     const rc = rosterChanges(tri);
     return {
-        nextGame: nextGameFor(tri),
+        nextGames: upcomingGamesFor(tri),
         playoffOdds: proj
             ? {
                   pct: proj.make_playoffs_pct,

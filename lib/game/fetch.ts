@@ -27,6 +27,18 @@ async function getJson(url: string, revalidate: number): Promise<unknown | null>
     }
 }
 
+/**
+ * Like getJson, but only a 404 means "no such game" (null); a timeout, 5xx or
+ * network error throws, so the page shows the error boundary's retry instead
+ * of a 404 that ISR would cache.
+ */
+async function getJsonOr404(url: string, revalidate: number): Promise<unknown | null> {
+    const res = await fetch(url, { next: { revalidate }, signal: AbortSignal.timeout(6000), headers: UA });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`NHL API ${res.status} for ${url}`);
+    return await res.json();
+}
+
 async function getText(url: string, revalidate: number): Promise<string | null> {
     try {
         // nhl.com serves the HTML reports to browsers; a script UA is turned away.
@@ -355,7 +367,7 @@ export async function getGame(idStr: string): Promise<GameModel | null> {
     if (!validGameId(idStr)) return null;
     const id = Number(idStr);
     // Final games never change: a day's cache. Everything else: 30s.
-    const pbp = (await getJson(`https://api-web.nhle.com/v1/gamecenter/${id}/play-by-play`, 30)) as RawFeeds['pbp'] | null;
+    const pbp = (await getJsonOr404(`https://api-web.nhle.com/v1/gamecenter/${id}/play-by-play`, 30)) as RawFeeds['pbp'] | null;
     if (!pbp || !pbp.id) return null;
     const final = pbp.gameState === 'OFF' || pbp.gameState === 'FINAL';
     const ttl = final ? 86_400 : 30;

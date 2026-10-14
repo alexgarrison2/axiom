@@ -166,6 +166,8 @@ export interface PlayoffGameAnalysis {
     players: PlayoffPlayerGameStat[];
     goalies: PlayoffGoalieGameStat[];
     maxGameSeconds: number;
+    /** Series aggregate only: where each game ends on the series clock (games with OT run past 3600s). */
+    gameEnds?: number[];
 }
 
 /** "20252026" → 2026 (the directory under public/data/playoffs). */

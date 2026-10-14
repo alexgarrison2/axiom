@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
+import { oddsPct } from '@/utils/team-stats/format';
 import { DIVISION_LABEL, DIVISION_OF, DIVISIONS } from '@/utils/team-stats/teams';
 import type { LeaguePayload } from '@/utils/team-stats/types';
 
@@ -326,7 +327,7 @@ function Race({ payload, rootRef }: { payload: LeaguePayload; rootRef: React.Ref
                                         <span className="absolute top-0.5 -ml-px h-2.5 w-0.5 rounded-[1px] bg-model" style={{ left: pc(p.points) }} />
                                     </span>
                                     <span className={cn('text-right text-caption tabular-nums', p.playoff >= 50 ? 'font-semibold text-model' : 'text-fg-3')}>
-                                        {p.playoff < 1 ? '<1' : Math.round(p.playoff)}%
+                                        {oddsPct(p.playoff)}
                                     </span>
                                 </button>
                             </React.Fragment>

@@ -38,10 +38,17 @@ export function ordinal(n: number): string {
     return `${n}${s[(v - 20) % 10] ?? s[v] ?? s[0]}`;
 }
 
-/** Today's date (YYYY-MM-DD) in America/Chicago, matching the pipeline's slate dates. */
-export function slateDate(offsetDays = 0, now = new Date()): string {
-    const d = new Date(now.getTime() + offsetDays * 86400000);
-    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+/** A playoff-odds percentage (0-100), never a hard 0% or 100% from a simulation: "<1%", "63%", ">99%". */
+export function oddsPct(p: number): string {
+    return p < 1 ? '<1%' : p > 99 ? '>99%' : `${Math.round(p)}%`;
+}
+
+/** A game stays "next" for 3 hours after puck drop (it is on, or just ended). */
+export const UPCOMING_GRACE_MS = 3 * 3600 * 1000;
+
+/** Index of the first game (start times, earliest first) still upcoming at `now`; -1 when all are past. A null start counts as upcoming. */
+export function firstUpcoming(starts: (string | null)[], now: number): number {
+    return starts.findIndex(s => !s || !(Date.parse(s) < now - UPCOMING_GRACE_MS));
 }
 
 /** "Oct 1" + " · 8:00 PM" in the viewer's zone. */

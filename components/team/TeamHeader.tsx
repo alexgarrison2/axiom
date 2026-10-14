@@ -5,12 +5,13 @@ import { SeasonTag, shortSeasonTag } from '@/components/ui/stat-chip';
 import { WinBar } from '@/components/ui/win-bar';
 import { cn } from '@/lib/utils';
 import { recordString } from '@/utils/team-stats/calculate';
-import { injuryCode, ordinal, shortDate } from '@/utils/team-stats/format';
+import { injuryCode, oddsPct, ordinal, shortDate } from '@/utils/team-stats/format';
 import { DIVISION_LABEL } from '@/utils/team-stats/teams';
-import type { GoalieLine, KpiSet, TeamHero } from '@/utils/team-stats/team-types';
+import type { GoalieLine, KpiSet, NextGame as NextGameData, TeamHero } from '@/utils/team-stats/team-types';
 import type { TeamMeta, TeamStat } from '@/utils/team-stats/types';
 import { GOALIE_NAME, goalieOut, goalieState, goalieStatLine, orderGoalies } from './goalie-line';
 import { LocalTime } from './LocalTime';
+import { UpcomingPick } from './UpcomingPick';
 
 interface TeamHeaderProps {
     team: TeamMeta;
@@ -76,7 +77,7 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                             </p>
                             <HeroStat value={standing?.points ?? 0} label="PTS" />
                             {divRank ? <HeroStat value={ordinal(divRank)} label={division.slice(0, 3)} /> : null}
-                            {hero.playoffOdds ? <HeroStat value={`${hero.playoffOdds.pct.toFixed(0)}%`} label="Playoffs" tone="text-brand" /> : null}
+                            {hero.playoffOdds ? <HeroStat value={oddsPct(hero.playoffOdds.pct)} label="Playoffs" tone="text-brand" /> : null}
                         </div>
                         {gp === 0 && prevStanding ? (
                             <p className="mt-1.5 flex items-center gap-1.5 text-micro uppercase tracking-wide text-fg-3">
@@ -236,17 +237,25 @@ function MoveRow({ label, tone, people }: { label: string; tone: string; people:
     );
 }
 
-/** The next game as a mini matchup: time, both crests with the named goalies, the forecast bar. */
+/** The next game as a mini matchup (the browser skips games that are already over). */
 function NextGame({ team, hero }: { team: TeamMeta; hero: TeamHero }) {
-    const g = hero.nextGame;
-    if (!g) {
-        return (
-            <div className="tile flex min-w-0 items-center justify-between bg-bg/40 md:w-[380px] md:self-start">
-                <span className="label">Next</span>
-                <span className="text-caption text-fg-3">—</span>
-            </div>
-        );
-    }
+    const none = (
+        <div className="tile flex min-w-0 items-center justify-between bg-bg/40 md:w-[380px] md:self-start">
+            <span className="label">Next</span>
+            <span className="text-caption text-fg-3">—</span>
+        </div>
+    );
+    return (
+        <UpcomingPick starts={hero.nextGames.map(g => g.startTimeUTC)} none={none}>
+            {hero.nextGames.map(g => (
+                <NextGameTile key={`${g.date}-${g.opp}`} team={team} g={g} />
+            ))}
+        </UpcomingPick>
+    );
+}
+
+/** One game as a mini matchup: time, both crests with the named goalies, the forecast bar. */
+function NextGameTile({ team, g }: { team: TeamMeta; g: NextGameData }) {
     const away = g.home ? g.opp : team.tri;
     const home = g.home ? team.tri : g.opp;
     const awayG = g.home ? g.oppGoalie : g.goalie;

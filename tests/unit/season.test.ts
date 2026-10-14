@@ -33,6 +33,11 @@ describe('lib/season', () => {
         expect(s.SEASON_ID).toBe('20262027');
     });
 
+    it('rolls over at midnight Eastern, whatever the local zone', async () => {
+        expect((await seasonAt('2026-07-01T03:59:00Z')).SEASON_ID).toBe('20252026'); // 23:59 EDT June 30
+        expect((await seasonAt('2026-07-01T04:00:00Z')).SEASON_ID).toBe('20262027'); // 00:00 EDT July 1
+    });
+
     it('builds per-season file names', async () => {
         const s = await seasonAt('2026-09-29T12:00:00');
         expect(s.seasonFile('gamestats')).toBe('nhl_season_2026_2027_gamestats.csv');

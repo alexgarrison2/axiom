@@ -1,7 +1,9 @@
 // Current NHL season. Mirrors pipeline/season.py: rolls over on July 1
-// (start of the NHL league year).
+// (start of the NHL league year) on the Eastern clock, so the server (UTC) and
+// every browser agree on the season at any instant.
 function seasonStartYear(today = new Date()): number {
-    return today.getMonth() >= 6 ? today.getFullYear() : today.getFullYear() - 1;
+    const [y, m] = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit' }).format(today).split('-').map(Number);
+    return m >= 7 ? y : y - 1;
 }
 
 export const SEASON_START_YEAR = seasonStartYear();

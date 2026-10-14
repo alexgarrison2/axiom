@@ -138,7 +138,8 @@ export interface NextGame {
 }
 
 export interface TeamHero {
-    nextGame: NextGame | null;
+    /** The next few games, earliest first (the browser skips any that are already over). */
+    nextGames: NextGame[];
     playoffOdds: { pct: number; division: number | null; cup: number | null; avgPoints: number | null; sims: number | null } | null;
     injuries: { name: string; pos: string; status: string; type: string | null; returnDate: string | null }[];
     rosterChanges: { added: { name: string; from: string | null }[]; lost: { name: string; to: string | null }[] } | null;

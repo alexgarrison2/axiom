@@ -8,6 +8,8 @@ import { PonyGames } from '@/components/player/PonyGames';
 import { GameLog } from '@/components/player/GameLog';
 import type { TrendGame } from '@/components/player/PonyTrend';
 import { cn } from '@/lib/utils';
+import { SeasonTag } from '@/components/ui/stat-chip';
+import { fmtInt } from '@/components/views/format';
 import { GS_PARTS, type GsPart } from '@/lib/game/analytics';
 import { leaderboard, loadPonySeason, playerGames, ponySeasons, DEFAULT_FILTERS, type GoalieGame, type SkaterGame } from '@/lib/pony/data';
 import { signed } from '@/lib/pony/parts';
@@ -158,6 +160,14 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
     const nhlPlayoffs = (profile?.seasons ?? []).filter(s => s.league === 'NHL' && s.gameType === 3);
     const otherPlayoffs = (profile?.seasons ?? []).filter(s => s.league !== 'NHL' && s.gameType === 3);
     const thisSeason = nhl.find(s => String(s.season) === cur?.s) ?? nhl[nhl.length - 1] ?? null;
+    // Not this season (no games yet, or an older season picked): every tile says which season it shows.
+    const priorPony = cur && cur.s !== SEASON_ID ? seasonLabel(cur.s) : null;
+    const nhlSeason = thisSeason && String(thisSeason.season) !== SEASON_ID ? seasonLabel(thisSeason.season) : null;
+    const nhlSub = (parts: (string | null)[]) => {
+        const out = [...parts, nhlSeason].filter((x): x is string => !!x);
+        return out.length ? out : undefined;
+    };
+    const perGameSub = rank ? `${rank.n} of ${rank.of} ${group === 'G' ? 'goalies' : group === 'D' ? 'defencemen' : 'forwards'}` : cur ? `${fmtInt(gp)} games` : 'No games yet';
     const age = ageOn(profile?.birthDate ?? null);
     const seasonQ = (s: string) => (s === seasons[0] ? `/players/${pid}` : `/players/${pid}?season=${s}`);
     // With or without you: skaters only, for the season the page shows.
@@ -255,18 +265,18 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                             <Tile
                                 k={goalie ? 'GSAx per game' : 'Pony per game'}
                                 v={gp ? signed(avg) : '—'}
-                                sub={rank ? `${rank.n} of ${rank.of} ${group === 'G' ? 'goalies' : group === 'D' ? 'defencemen' : 'forwards'}` : cur ? `${gp} games` : 'No games yet'}
+                                sub={priorPony ? [perGameSub, priorPony] : perGameSub}
                                 accent
                             />
                             {goalie ? (
-                                <Tile k="Save %" v={gSa ? sv3(1 - gGa / gSa) : '—'} sub={leagueSv != null ? [`league ${sv3(leagueSv)}`, `${gSa} shots`] : undefined} />
+                                <Tile k="Save %" v={gSa ? sv3(1 - gGa / gSa) : '—'} sub={leagueSv != null ? [`league ${sv3(leagueSv)}`, `${fmtInt(gSa)} shots`, ...(priorPony ? [priorPony] : [])] : undefined} />
                             ) : (
                                 <Tile k="Pony total" v={gp ? signed(total) : '—'} sub={cur ? [`${gp} games`, seasonLabel(cur.s)] : undefined} />
                             )}
                             {goalie ? (
-                                <Tile k="Record" v={thisSeason ? `${thisSeason.w ?? 0}-${thisSeason.l ?? 0}-${thisSeason.otl ?? 0}` : '—'} sub={thisSeason?.svPct != null ? [`SV% ${thisSeason.svPct.toFixed(3).replace(/^0/, '')}`, `GAA ${thisSeason.gaa?.toFixed(2)}`] : undefined} />
+                                <Tile k="Record" v={thisSeason ? `${thisSeason.w ?? 0}-${thisSeason.l ?? 0}-${thisSeason.otl ?? 0}` : '—'} sub={thisSeason ? nhlSub([thisSeason.svPct != null ? `SV% ${thisSeason.svPct.toFixed(3).replace(/^0/, '')}` : null, thisSeason.gaa != null ? `GAA ${thisSeason.gaa.toFixed(2)}` : null]) : undefined} />
                             ) : (
-                                <Tile k="Points" v={thisSeason ? `${thisSeason.g ?? 0}-${thisSeason.a ?? 0}-${thisSeason.p ?? 0}` : '—'} sub={thisSeason ? ['G-A-P', `${thisSeason.gp} GP`, `${thisSeason.toi ?? mmss(toi)} TOI`] : undefined} />
+                                <Tile k="Points" v={thisSeason ? `${thisSeason.g ?? 0}-${thisSeason.a ?? 0}-${thisSeason.p ?? 0}` : '—'} sub={thisSeason ? nhlSub(['G-A-P', `${thisSeason.gp} GP`, thisSeason.toi ? `${thisSeason.toi} TOI` : !nhlSeason && gp ? `${mmss(toi)} TOI` : null]) : undefined} />
                             )}
                             {goalie ? (
                                 <Tile
@@ -288,8 +298,9 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                 {/* Pony Score season. */}
                 <section aria-labelledby="pony-h" className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
-                        <h2 id="pony-h" className="font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
+                        <h2 id="pony-h" className="flex items-center gap-2 font-display text-h2 font-bold uppercase leading-none tracking-wide text-fg-1">
                             {goalie ? 'Season' : 'Pony score'}
+                            {priorPony && withGames.length < 2 ? <SeasonTag>{priorPony}</SeasonTag> : null}
                         </h2>
                         {withGames.length > 1 ? (
                             <nav aria-label="Season" className="flex gap-1.5">

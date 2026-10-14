@@ -74,8 +74,12 @@ function aggregateSeries(games: PlayoffGameAnalysis[]): PlayoffGameAnalysis | nu
     const goalies = new Map<string, PlayoffGameAnalysis['goalies'][number]>();
     const shots: PlayoffShotEvent[] = [];
     const add = (a: number | undefined, b: number | undefined) => (a == null && b == null ? undefined : (a ?? 0) + (b ?? 0));
+    // Each game starts where the previous one ended, overtime included.
+    const gameEnds: number[] = [];
 
-    games.forEach((g, gi) => {
+    games.forEach(g => {
+        const offset = gameEnds[gameEnds.length - 1] ?? 0;
+        gameEnds.push(offset + Math.max(3600, g.maxGameSeconds || 0, ...g.shots.map(s => s.elapsedSeconds)));
         for (const s of [g.awaySummary, g.homeSummary]) {
             const c = summaries.get(s.triCode) ?? zero(s.triCode);
             (['goals', 'shots', 'attempts', 'xG', 'xG5v5', 'ppGoals', 'ppOpps', 'hits'] as const).forEach(k => {
@@ -83,7 +87,7 @@ function aggregateSeries(games: PlayoffGameAnalysis[]): PlayoffGameAnalysis | nu
             });
             summaries.set(s.triCode, c);
         }
-        g.shots.forEach(s => shots.push({ ...s, gameId: g.gameId, gameNumber: g.gameNumber, elapsedSeconds: gi * 3600 + s.elapsedSeconds }));
+        g.shots.forEach(s => shots.push({ ...s, gameId: g.gameId, gameNumber: g.gameNumber, elapsedSeconds: offset + s.elapsedSeconds }));
         g.players.forEach(p => {
             const c = players.get(p.playerId);
             if (!c) {
@@ -137,7 +141,8 @@ function aggregateSeries(games: PlayoffGameAnalysis[]): PlayoffGameAnalysis | nu
         shots: shots.sort((a, b) => a.elapsedSeconds - b.elapsedSeconds),
         players: [...players.values()].sort((a, b) => b.toiSeconds - a.toiSeconds),
         goalies: [...goalies.values()].sort((a, b) => b.toiSeconds - a.toiSeconds),
-        maxGameSeconds: games.length * 3600,
+        maxGameSeconds: gameEnds[gameEnds.length - 1],
+        gameEnds,
     };
 }
 
@@ -203,7 +208,10 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
         () => (isSeries ? ['All'] : ['All', ...[...new Set(game?.shots.map(s => String(s.period)) ?? [])].sort((a, b) => Number(a) - Number(b))]),
         [game, isSeries],
     );
-    const shots = React.useMemo(() => (game ? filterShots(game.shots, strength, eventFilter, isSeries ? 'All' : period) : []), [game, strength, eventFilter, period, isSeries]);
+    // A filter the game on screen has no shots for (5v3, OT) reads as All, in the select and the charts alike.
+    const strengthValue = strengthOptions.includes(strength) ? strength : 'All';
+    const periodValue = periodOptions.includes(period) ? period : 'All';
+    const shots = React.useMemo(() => (game ? filterShots(game.shots, strengthValue, eventFilter, periodValue) : []), [game, strengthValue, eventFilter, periodValue]);
 
     if (!playable.length) {
         return <p className="label">No shot data</p>;
@@ -215,7 +223,15 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
     return (
         <section aria-label="Game analysis" className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                <FieldSelect label="Game" value={selected} onChange={setSelected} className="col-span-2 md:col-span-1">
+                <FieldSelect
+                    label="Game"
+                    value={selected}
+                    onChange={v => {
+                        setSelected(v);
+                        setPeriod('All');
+                    }}
+                    className="col-span-2 md:col-span-1"
+                >
                     {playable.length > 1 ? <option value="series">Series ({playable.length} games)</option> : null}
                     {playable.map(g => (
                         <option key={g.id} value={String(g.id)}>
@@ -223,7 +239,7 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
                         </option>
                     ))}
                 </FieldSelect>
-                <FieldSelect label="Strength" value={strength} onChange={setStrength}>
+                <FieldSelect label="Strength" value={strengthValue} onChange={setStrength}>
                     {strengthOptions.map(s => (
                         <option key={s} value={s}>
                             {s === 'All' ? 'All' : strengthLabel(s)}
@@ -237,7 +253,7 @@ export default function GameAnalysis({ year, games, initialGameId, teamNames }: 
                     <option value="missed">Missed shots</option>
                     <option value="blocked">Blocked shots</option>
                 </FieldSelect>
-                <FieldSelect label="Period" value={period} onChange={setPeriod} disabled={isSeries}>
+                <FieldSelect label="Period" value={periodValue} onChange={setPeriod} disabled={isSeries}>
                     {periodOptions.map(p => (
                         <option key={p} value={p}>
                             {p === 'All' ? 'All' : periodLabel(Number(p))}
@@ -530,7 +546,7 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
         return `${d} H ${x(maxTime)}`;
     };
     const goalPoints = points.filter(p => p.s.isGoal);
-    const ticks = isSeries ? Array.from({ length: Math.ceil(maxTime / 3600) }, (_, i) => (i + 1) * 3600) : [1200, 2400, 3600];
+    const ticks = isSeries ? (game.gameEnds ?? Array.from({ length: Math.ceil(maxTime / 3600) }, (_, i) => (i + 1) * 3600)) : [1200, 2400, 3600];
     const yStep = yMax > 8 ? 2 : 1;
     return (
         <div className="flex flex-col gap-2">
@@ -581,7 +597,7 @@ function XgFlow({ game, shots, awayColor, homeColor, isSeries }: { game: Playoff
                         {ticks.map((t, i) => (
                             <g key={t}>
                                 <line x1={x(t)} x2={x(t)} y1={pad.top} y2={h - pad.bottom} stroke="rgb(var(--text-3-rgb))" strokeDasharray="5 7" opacity="0.4" />
-                                <text x={x(t) - (x(t) - x(t - (isSeries ? 3600 : 1200))) / 2} y={h - (fit ? 9 : 12)} textAnchor="middle" fill="rgb(var(--text-2-rgb))" fontSize={font}>
+                                <text x={(x(t) + x(i ? ticks[i - 1] : 0)) / 2} y={h - (fit ? 9 : 12)} textAnchor="middle" fill="rgb(var(--text-2-rgb))" fontSize={font}>
                                     {isSeries ? `G${i + 1}` : periodLabel(i + 1)}
                                 </text>
                             </g>

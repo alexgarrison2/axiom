@@ -5,6 +5,8 @@ import { Rink3D } from '@/components/rink/Rink3D';
 import { ShotDetail, ShotMapFrame, ShotSummary, fileShotInfo, geometry, useShotPick, type ShotPerson } from '@/components/rink/ShotDetail';
 import { Segmented } from '@/components/ui/segmented';
 import { cn } from '@/lib/utils';
+import { SEASON_ID } from '@/lib/season';
+import { seasonLabel } from '@/utils/team-stats/season';
 import { S, fetchShots, skaterShotsUrl, type ShotFile } from '@/lib/shots';
 
 /**
@@ -31,7 +33,7 @@ export function ShotMap({ season, id, self }: { season: string; id: number; self
         [file, sit],
     );
     const pick = useShotPick(set);
-    if (file === null || (file && !file.shots.length)) return <p className="panel p-card text-caption text-fg-3">No shots this season yet.</p>;
+    if (file === null || (file && !file.shots.length)) return <p className="panel p-card text-caption text-fg-3">{season === SEASON_ID ? 'No shots this season yet.' : `No shots in ${seasonLabel(season)}.`}</p>;
     const goals = set.filter(s => s[S.goal]).length;
     const saved = set.filter(s => s[S.onGoal] && !s[S.goal]).length;
     const missed = set.filter(s => !s[S.onGoal]).length;

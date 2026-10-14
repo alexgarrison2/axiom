@@ -6,27 +6,40 @@ import type { GameRef, RawNewsItem } from '@/components/news/model';
 import fs from 'node:fs';
 import path from 'node:path';
 import { SEASON_ID } from '@/lib/season';
+import { slateDate } from '@/lib/matchup/format';
 import { TEAM_NAMES } from '@/components/ui/team-color';
 
-/** When each team's latest finished game (before `beforeUtc`) ended, from the pipeline's season schedule. */
-function prevGameEnds(beforeUtc: string | null): Record<string, string> {
-    const out: Record<string, string> = {};
+interface ScheduleGame {
+    start_utc?: string;
+    home_abbrev?: string;
+    away_abbrev?: string;
+    state?: string;
+}
+
+/** The pipeline's season schedule, read once per render ([] if missing: every item stays eligible). */
+function seasonSchedule(): ScheduleGame[] {
     try {
         const raw = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'pipeline', 'data', `nhl_schedule_${SEASON_ID}.json`), 'utf8')) as {
-            games?: Record<string, { start_utc?: string; home_abbrev?: string; away_abbrev?: string; state?: string }>;
+            games?: Record<string, ScheduleGame>;
         };
-        const cutoff = beforeUtc ? Date.parse(beforeUtc) : Date.now();
-        for (const g of Object.values(raw.games ?? {})) {
-            const start = g.start_utc ? Date.parse(g.start_utc) : NaN;
-            if (!Number.isFinite(start) || start >= cutoff) continue;
-            // Final per the schedule, or started 4h+ ago (the schedule file can lag a refresh).
-            if (g.state !== 'FINAL' && g.state !== 'OFF' && start + 4 * 3600 * 1000 > Date.now()) continue;
-            // A game is final about 2.5 hours after puck drop.
-            const end = new Date(start + 2.5 * 3600 * 1000).toISOString();
-            for (const t of [g.home_abbrev, g.away_abbrev]) if (t && (!out[t] || out[t] < end)) out[t] = end;
-        }
+        return Object.values(raw.games ?? {});
     } catch {
-        /* no schedule: every item stays eligible */
+        return [];
+    }
+}
+
+/** When each team's latest finished game (before `beforeUtc`) ended. */
+function prevGameEnds(schedule: ScheduleGame[], beforeUtc: string | null): Record<string, string> {
+    const out: Record<string, string> = {};
+    const cutoff = beforeUtc ? Date.parse(beforeUtc) : Date.now();
+    for (const g of schedule) {
+        const start = g.start_utc ? Date.parse(g.start_utc) : NaN;
+        if (!Number.isFinite(start) || start >= cutoff) continue;
+        // Final per the schedule, or started 4h+ ago (the schedule file can lag a refresh).
+        if (g.state !== 'FINAL' && g.state !== 'OFF' && start + 4 * 3600 * 1000 > Date.now()) continue;
+        // A game is final about 2.5 hours after puck drop.
+        const end = new Date(start + 2.5 * 3600 * 1000).toISOString();
+        for (const t of [g.home_abbrev, g.away_abbrev]) if (t && (!out[t] || out[t] < end)) out[t] = end;
     }
     return out;
 }
@@ -42,11 +55,6 @@ export const metadata: Metadata = {
 
 const readJson = readPublicJson;
 
-/** Today's date in New York (the NHL's slate day). */
-function todayEt(now = new Date()): string {
-    return now.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-}
-
 interface UpcomingGame {
     id?: number;
     gameDate?: string;
@@ -57,9 +65,8 @@ interface UpcomingGame {
 }
 
 /** Tonight's games, or the next slate if nothing is scheduled today. */
-function slate(upcoming: unknown): { games: GameRef[]; day: string | null } {
+function slate(upcoming: unknown, today: string): { games: GameRef[]; day: string | null } {
     const list = (Array.isArray(upcoming) ? upcoming : []) as UpcomingGame[];
-    const today = todayEt();
     const days = [...new Set(list.map(g => g.gameDate).filter((d): d is string => !!d && d >= today))].sort();
     const day = days[0] ?? null;
     const games = list
@@ -70,15 +77,18 @@ function slate(upcoming: unknown): { games: GameRef[]; day: string | null } {
 
 export default function NewsPage() {
     const news = (readJson('player_news.json') ?? {}) as Record<string, RawNewsItem[]>;
-    const { games, day } = slate(readJson('upcoming_games.json'));
+    // The current slate (Eastern, rolling over at 3:00 am ET, as on home).
+    const today = slateDate();
+    const { games, day } = slate(readJson('upcoming_games.json'), today);
     const names = Object.fromEntries(Object.entries(TEAM_NAMES).map(([t, v]) => [t, v?.short ?? t]));
+    const schedule = seasonSchedule();
     const withPrev = games.map(g => {
-        const ends = prevGameEnds(g.startUtc);
+        const ends = prevGameEnds(schedule, g.startUtc);
         return { ...g, names, prevEndUtc: { [g.home]: ends[g.home] ?? null, [g.away]: ends[g.away] ?? null } };
     });
     // Starter/lineup notes about games that have since gone final are dropped.
-    const groups = toFeedGroups(news, withPrev, prevGameEnds(null));
-    const isToday = day === todayEt();
+    const groups = toFeedGroups(news, withPrev, prevGameEnds(schedule, null));
+    const isToday = day === today;
     const dayLabel = day
         ? isToday
             ? 'Tonight'
