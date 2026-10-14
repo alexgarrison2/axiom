@@ -121,8 +121,6 @@ export interface KpiSet {
     pk_opps: number;
     pt_pct: number;
     ranks: { xgf_pct: number; gf_pg: number; ga_pg: number; pp_pct: number; pk_pct: number; pt_pct: number };
-    /** Every team has 10+ GP, so league ranks mean something (show #N badges only then). */
-    ranked?: boolean;
     /** Every team's value (teams with a game), for placing this one in the league spread. */
     league?: Record<'xgf_pct' | 'gf_pg' | 'ga_pg' | 'pp_pct' | 'pk_pct', number[]>;
 }

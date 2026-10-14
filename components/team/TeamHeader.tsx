@@ -62,8 +62,8 @@ const lastName = (n: string) => n.split(' ').slice(-1)[0];
  * record as a scoreboard number with points, division place and playoff
  * odds; the form strip (last ten games, goal differential mirrored around a
  * baseline); the next game as a mini matchup. A KPI band places each number
- * in the league's spread (better always to the right) with the rank once
- * ranks mean something; then goalies, injuries (most immediate first, with
+ * in the league's spread (better always to the right) with its rank from
+ * the first game (the GP notch marks a thin sample); then goalies, injuries (most immediate first, with
  * the reason) and moves. Server-rendered: this is the page's LCP content.
  */
 export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabel, prevStanding, prevKpis, hero, goalies, form }: TeamHeaderProps) {
@@ -139,7 +139,7 @@ export default function TeamHeader({ team, seasonLabel, standing, kpis, prevLabe
                 <dl className="grid grid-cols-2 min-[480px]:grid-cols-3 md:grid-cols-5">
                     {KPIS.map((k, i) => {
                         const v = set ? set[k.key] : null;
-                        const ranked = set && (prior || set.ranked) ? set.ranks[k.key] : null;
+                        const ranked = set ? set.ranks[k.key] : null;
                         return (
                             <div
                                 key={k.key}
