@@ -54,6 +54,11 @@ OUT_FILE = public_path("props.json")
 PROJ = {"sog": "lam_shots", "g": "lam_goals", "a": "lam_assists", "pts": "lam_points", "ppp": "lam_pp_points"}
 DETAIL_FILE = public_path("props_detail.json")
 HIST_FILE = pipeline_path("nhl_historical_skater_games.csv")
+# Prop model arm (tools/prereg_props_calib.json); PONYXG_PROP_ARM=base rolls back.
+ARM = os.environ.get("PONYXG_PROP_ARM") or pm.DEFAULT_ARM
+if ARM not in pm.ARMS:
+    print(f"  props: unknown PONYXG_PROP_ARM={ARM!r}, using {pm.DEFAULT_ARM!r}")
+    ARM = pm.DEFAULT_ARM
 LOG_GAMES = 20
 VS_GAMES = 10
 UNITS = ["f1", "f2", "f3", "f4", "d1", "d2", "d3"]
@@ -204,6 +209,17 @@ def _hits(part: pd.DataFrame) -> dict:
     return {key: int((part[stat] >= k).sum()) for key, stat, k in pm.PROPS}
 
 
+def _calibrated(feats: pd.DataFrame, fair: pd.DataFrame, today: str) -> pd.DataFrame:
+    """CAL arms: shift tonight's fair probabilities by the per-market logit shift fitted on the
+    last pm.CAL_WINDOW graded regular-season player-games before today (prereg_props_calib.json)."""
+    graded = feats["shots"].notna() & ((feats["game_id"] // 10000) % 100 == 2)
+    y = pm.outcomes(feats[graded])
+    sh = pm.calibration_shifts(feats.loc[graded, "date"], fair[graded], y, [today]).iloc[0].to_dict()
+    out = fair.copy()
+    out.loc[~graded] = pm.apply_shifts(fair[~graded], sh)
+    return out
+
+
 def build(today=None) -> tuple[dict, dict]:
     today = str(today or today_local())
     logs = load_logs()
@@ -252,8 +268,11 @@ def build(today=None) -> tuple[dict, dict]:
         for c in ["toi"] + pm.STATS:
             tn[c] = np.nan
         frame = pd.concat([frame, tn], ignore_index=True)
-    feats = pm.pregame_features(frame)
+    prior, shift = pm.ARMS[ARM]
+    feats = pm.pregame_features(frame, prior=prior)
     fair = pm.fair_probs(feats)
+    if shift:
+        fair = _calibrated(feats, fair, today)
     feats = pd.concat([feats, fair.add_prefix("fair_")], axis=1)
     tonight_feats = feats[feats["shots"].isna()].set_index("player_id") if tonight else pd.DataFrame()
 

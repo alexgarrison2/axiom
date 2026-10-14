@@ -17,6 +17,15 @@ the player's own history, regressed to his position's league rate:
 History is decayed by games played (half-life HALF_LIFE games) and crosses
 seasons, so early in a season last year's games still anchor the rate.
 
+Arms of tools/prereg_props_calib.json (prop_board publishes DEFAULT_ARM;
+PONYXG_PROP_ARM overrides it):
+  base        the model above
+  cal         base + a per-market logit shift fitted on the last CAL_WINDOW
+              graded player-games (calibration_shifts / apply_shifts)
+  struct      the prior is the rate of the player's position and expected-TOI
+              band (toi_band_rates) instead of one pooled position rate
+  struct_cal  struct + the same shift
+
 ``pregame_features`` computes the inputs for each row from the player's
 *previous* games only, so the same code serves the backtest
 (tools/backtest_props.py) and the live board (prop_board.py appends one
@@ -39,6 +48,16 @@ K_MINUTES = {"shots": 100.0, "goals": 450.0, "assists": 250.0, "points": 200.0}
 K_PPP_GAMES = 6.0
 NB_SIZE = 15.0          # SOG overdispersion: var = mu + mu^2 / NB_SIZE
 CONTEXT_POWER = {"shots": 0.7, "goals": 0.6}
+
+# Arms of tools/prereg_props_calib.json: declared values, not tuned.
+DEFAULT_ARM = "base"
+ARMS = {"base": ("position", False), "cal": ("position", True),
+        "struct": ("toi_band", False), "struct_cal": ("toi_band", True)}   # arm -> (prior, shift)
+TOI_BANDS = {"F": (12.0, 15.0, 18.0), "D": (17.0, 20.0, 23.0)}
+DEFAULT_TOI = {"F": 15.0, "D": 20.0}
+CAL_WINDOW = 20000      # graded player-games behind each date's shift
+CAL_V0 = 1000.0         # shrinkage: delta * V / (V + V0), V = sum p (1 - p)
+CAL_MIN_ROWS = 2000
 
 PROPS = [
     # key, stat, threshold
@@ -70,6 +89,31 @@ def position_rates(logs: pd.DataFrame) -> dict:
     return out
 
 
+def toi_band(grp, toi) -> np.ndarray:
+    """Band index 0..3 of each TOI within its position group's TOI_BANDS."""
+    grp, toi = np.asarray(grp), np.asarray(toi, dtype=float)
+    out = np.zeros(len(toi), dtype=int)
+    for g, edges in TOI_BANDS.items():
+        m = grp == g
+        out[m] = np.searchsorted(np.asarray(edges), toi[m], side="right")
+    return out
+
+
+def toi_band_rates(logs: pd.DataFrame) -> dict:
+    """League per-minute rates (PPP per game) by position group and TOI band: {(grp, band): {stat: rate}}.
+
+    Each player-season sits in the band of its mean TOI."""
+    grp = np.where(logs["pos"].eq("D"), "D", "F")
+    mean_toi = logs.groupby([logs["player_id"], logs["game_id"] // 1000000])["toi"].transform("mean")
+    band = toi_band(grp, mean_toi)
+    out = {}
+    for (g, b), part in logs.groupby([grp, band]):
+        toi = part["toi"].sum()
+        out[(g, int(b))] = {s: part[s].sum() / toi for s in ["shots", "goals", "assists", "points"]}
+        out[(g, int(b))]["pp_points_pg"] = part["pp_points"].mean()
+    return out
+
+
 def team_context(logs: pd.DataFrame) -> pd.DataFrame:
     """Per team-game: pre-game decayed goals for/against and shots against, plus league means.
 
@@ -85,8 +129,12 @@ def team_context(logs: pd.DataFrame) -> pd.DataFrame:
     return tg
 
 
-def pregame_features(logs: pd.DataFrame, lg: dict | None = None) -> pd.DataFrame:
+def pregame_features(logs: pd.DataFrame, lg: dict | None = None, prior: str = "position") -> pd.DataFrame:
     """Expected counts for every row, from that player's previous rows only.
+
+    ``prior`` is the regression target: "position" (one league rate per F / D)
+    or "toi_band" (the F / D rate of the band of the player's decayed mean
+    previous TOI; DEFAULT_TOI when he has no previous game).
 
     ``logs`` must carry game_id, date, player_id, team, opp, pos, toi and the
     STATS columns (NaN outcomes are fine for "tonight" rows). Optional columns
@@ -104,12 +152,23 @@ def pregame_features(logs: pd.DataFrame, lg: dict | None = None) -> pd.DataFrame
     toi_m = _ewm_prev(df["toi"], g, HALF_LIFE)
     df["toi_exp"] = _ewm_prev(df["toi"], g, TOI_HALF_LIFE)
     pos_grp = np.where(df["pos"].eq("D"), "D", "F")
+    if prior == "toi_band":
+        bands = toi_band_rates(played)
+        toi_ref = toi_m.fillna(pd.Series(pos_grp, index=df.index).map(DEFAULT_TOI))
+        keys = list(zip(pos_grp, toi_band(pos_grp, toi_ref)))
+
+        def prior_of(s):
+            return np.array([bands.get(k, lg[k[0]])[s] for k in keys])
+    elif prior == "position":
+        def prior_of(s):
+            return np.array([lg[p][s] for p in pos_grp])
+    else:
+        raise ValueError(f"unknown prior {prior!r}")
     for s in ["shots", "goals", "assists", "points"]:
-        prior = np.array([lg[p][s] for p in pos_grp])
         m = _ewm_prev(df[s], g, HALF_LIFE)
         k = K_MINUTES[s]
-        df[f"rate_{s}"] = ((m * neff).fillna(0) + k * prior) / ((toi_m * neff).fillna(0) + k)
-    ppp_prior = np.array([lg[p]["pp_points_pg"] for p in pos_grp])
+        df[f"rate_{s}"] = ((m * neff).fillna(0) + k * prior_of(s)) / ((toi_m * neff).fillna(0) + k)
+    ppp_prior = prior_of("pp_points_pg")
     m = _ewm_prev(df["pp_points"], g, HALF_LIFE)
     df["rate_ppp_pg"] = ((m * neff).fillna(0) + K_PPP_GAMES * ppp_prior) / (neff + K_PPP_GAMES)
 
@@ -189,6 +248,64 @@ def fair_probs(df: pd.DataFrame) -> pd.DataFrame:
         lam = df[f"lam_{stat}"]
         out[key] = p_at_least_nb(lam, k) if stat == "shots" else p_at_least_poisson(lam, k)
     return out
+
+
+def outcomes(df: pd.DataFrame) -> pd.DataFrame:
+    """One 0/1 column per prop key (NaN where the game has no result yet)."""
+    out = pd.DataFrame(index=df.index)
+    for key, stat, k in PROPS:
+        out[key] = np.where(df[stat].isna(), np.nan, (df[stat] >= k).astype(float))
+    return out
+
+
+def _logit(p):
+    p = np.clip(np.asarray(p, dtype=float), 1e-4, 1 - 1e-4)
+    return np.log(p / (1 - p))
+
+
+def fit_logit_shift(p, y, v0: float = CAL_V0, min_rows: int = CAL_MIN_ROWS) -> float:
+    """Shrunk intercept shift: delta with sum sigmoid(logit p + delta) = sum y, times V / (V + v0)."""
+    z, y = _logit(p), np.asarray(y, dtype=float)
+    if len(z) < min_rows:
+        return 0.0
+    q = 1 / (1 + np.exp(-z))
+    v = float(np.sum(q * (1 - q)))
+    d = 0.0
+    for _ in range(50):
+        q = 1 / (1 + np.exp(-(z + d)))
+        step = float(np.sum(y - q) / max(np.sum(q * (1 - q)), 1e-9))
+        d += step
+        if abs(step) < 1e-10:
+            break
+    return d * v / (v + v0)
+
+
+def apply_shifts(fair: pd.DataFrame, shifts) -> pd.DataFrame:
+    """p' = sigmoid(logit p + delta) per market; ``shifts`` maps key -> scalar or array aligned to ``fair``."""
+    out = fair.copy()
+    for key, _, _ in PROPS:
+        if key in out and key in shifts:
+            d = np.asarray(shifts[key], dtype=float)
+            out[key] = 1 / (1 + np.exp(-(_logit(out[key]) + d)))
+    return out
+
+
+def calibration_shifts(dates, fair: pd.DataFrame, y: pd.DataFrame, targets, window: int = CAL_WINDOW,
+                       v0: float = CAL_V0, min_rows: int = CAL_MIN_ROWS) -> pd.DataFrame:
+    """Walk-forward shifts: for each target date D, fit on the last ``window`` graded rows dated before D.
+
+    ``dates``, ``fair`` and ``y`` are aligned (graded rows only); returns one row per target date."""
+    d = np.asarray(dates).astype(str)
+    order = np.argsort(d, kind="stable")
+    dsort = d[order]
+    fv = {k: np.asarray(fair[k], dtype=float)[order] for k, _, _ in PROPS}
+    yv = {k: np.asarray(y[k], dtype=float)[order] for k, _, _ in PROPS}
+    rows = {}
+    for t in sorted({str(t) for t in targets}):
+        hi = int(np.searchsorted(dsort, t, side="left"))
+        lo = max(0, hi - window)
+        rows[t] = {k: fit_logit_shift(fv[k][lo:hi], yv[k][lo:hi], v0, min_rows) for k, _, _ in PROPS}
+    return pd.DataFrame.from_dict(rows, orient="index")
 
 
 def american_to_prob(price) -> float | None:
