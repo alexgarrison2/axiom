@@ -1,0 +1,51 @@
+{
+ "title": "Totals anchor: which expected total the published totals markets are anchored to (forward test on 2026-27 live games)",
+ "question": "totals_anchor",
+ "declared_at": "2026-10-14T17:55:00Z",
+ "declared_before": "any computation of the SIM / BLEND_GM / BLEND_SIM arms' over / push / under probabilities on any 2026-27 game. The logging code (bu/sim/totals_test.py, the predictions_detailed.csv / SiteHistory column totals_test) and the scoring script (bu/sim/totals_forward.py) are written after this file is committed. The decision set (below) consists only of games played after this timestamp, none of which has a result yet.",
+ "why": "The published expected_total (goal_model.expected_total; the simulator's derivative markets are anchored to it, prereg_primary.json totals rule) barely varies between games. 2026-27, first 100 graded games (descriptive look by the owner's assistant, 2026-10-14): published total sd 0.147 vs posted line sd 0.488; correlation with the result 0.06 (line 0.11); the simulator's anchored P(over | no push) on the posted line lost to the de-vigged market by +0.0098 log loss (SE 0.0054, n = 89). The earlier pre-registered question (prereg_primary.json totals) failed dev (T_sim - T_gm +0.0039, SE 0.0066) but won the 2025-26 holdout (-0.0172, SE 0.0086); README 'Totals' names the 2026-27 live totals as the next test. Dev seasons have no total prices, so the test is forward, on live games.",
+ "prior_knowledge": {
+  "statement": "NOT blind on the pre-declaration games: the numbers in 'why' were computed on 2026-27 games through 2026-10-13 from SiteHistory (GM arm and the de-vigged market only). The raw simulator's expected total (sim_expected_total) is published in predictions_detailed.csv every run, so its level and spread on past games were visible, but no SIM / BLEND arm probability has been computed or scored on any graded game. Nothing in the simulator, goal_model or the market code is changed for this test.",
+  "pre_declaration_games": "every game with puck drop before declared_at is EXCLUDED from the decision. They may be scored descriptively (dry run, reconstruction from the git history of data/predictions_detailed.csv, arms approximated as stated under 'dry_run') and that output is labelled descriptive."
+ },
+ "arms": {
+  "common": "every arm anchors the simulator (bu.sim.anchor.anchor_game: tilt + pace, exact likelihood-ratio reweighting of the same 20,000 runs, re-simulation when ESS < 25%) to the PUBLISHED home win % p_pub (home_win_pct, the market blend, unchanged) and to the arm's expected total T_arm; the arm's over / push / under probabilities are those of the anchored game at the posted line L (bu.sim.live.Dist.total: P(final total > L), = L, < L; the shootout winner's goal counts). Only the total target differs between arms.",
+  "GM": "incumbent and comparator: T = goal_model.expected_total (expected_total; today's published markets over_pct / total_push_pct / under_pct).",
+  "SIM": "T = the raw simulator's own expected total (sim_expected_total, the un-anchored simulation's mean total): win % anchored, total not.",
+  "BLEND_GM": "T = 0.80 x T_gm + 0.20 x T_mkt (the owner's 0.80 model / 0.20 market weight of the win %, market.OWNER_MODEL_WEIGHT, applied in goals).",
+  "BLEND_SIM": "T = 0.80 x T_sim + 0.20 x T_mkt.",
+  "MKT_reference": "descriptive only, never promoted: the de-vigged market q = market.devig([total_over, total_under], 'power')[0] as P(over | no push)."
+ },
+ "market_total": {
+  "q": "q = market.devig([total_over, total_under], method='power')[0], from the posted over / under American prices at the posted line L (the same snapshot as the arms).",
+  "T_mkt": "the expected total at which the simulator's own total distribution gives P(over | no push) at L equal to q: take the GM-anchored total histogram h_t (t = 0..15, 15 = 15+; the anchored simulation, sim_detail.total_hist unrounded), exponentially tilt it, h_t(k) proportional to h_t k^t (exact for a pure pace change of a Poisson-like count, an approximation for the simulator), solve k by bisection on log k in [-2, 2] so that P_k(t > L) / (P_k(t > L) + P_k(t < L)) = q, and T_mkt = sum_t t h_t(k) / sum_t h_t(k). When q is outside what the range of k can reach, k is the bound (flagged). Undefined (and the BLEND arms missing) without a posted line or either price.",
+  "why_this_mapping": "it uses the simulator's own shape (dispersion, pushes on whole lines, the shootout goal) instead of a Poisson / negative-binomial assumption, so with weight 1 on the market the arm would reproduce q up to the anchoring-vs-tilt difference; it is a pure function of logged numbers, so the dry run computes T_mkt exactly as live."
+ },
+ "logging": "predictions_detailed.csv gains one additive frozen column totals_test (JSON: {v: 1, status, line, q, t_mkt, k_bound, w_model: 0.8, arms: {gm|sim|blend_gm|blend_sim: {t, o, p, u}}}, probabilities as fractions with 4 decimals, computed by the live run from the same simulation as the published markets) and SiteHistory gains the same column, so the last pregame snapshot freezes it. Published values do not change. Rows with sim_status poisson_fallback log status 'poisson_fallback' and no arms.",
+ "games": {
+  "eligible": "regular-season games (game type 02) of 2026-27 (a) with puck drop after declared_at, (b) whose last pregame SiteHistory snapshot (site_history.last_pregame) carries totals_test v1 with status 'sim', all four arms finite, a posted total line L and both prices (q defined), and (c) with a final in pipeline/nhl_season_2026_2027_gamestats.csv. Games played before the logging code is deployed simply lack (b) and are not eligible; no reconstruction is used for the decision.",
+  "actual_total": "home row goals_for + goals_ag, + 1 when the game was decided in a shootout (result SOW / SOL): the betting total counts the shootout winner's goal.",
+  "ordering": "eligible games ordered by puck drop (NHL startTimeUTC), ties by NHL game id."
+ },
+ "metrics": {
+  "primary": "mean per-game log loss of P(over | no push) = o / (o + u) on eligible games whose result is not a push (p clipped to [1e-6, 1 - 1e-6]).",
+  "secondary_full": "mean per-game log loss of the full outcome over / push / under (3-class on whole lines, 2-class on half lines where P(push) = 0), on all eligible games including pushes.",
+  "differences": "paired per game, arm - GM; SE = sd / sqrt(n); negative favours the arm.",
+  "reported": "Brier of P(over | no push); logistic recalibration slope / intercept of the outcome on logit P(over | no push); mean and sd of each arm's T vs the line and the actual total, correlation of T with the actual total; each arm and GM minus MKT_reference (descriptive); the number of whole-line games and pushes; the consistency check |GM arm o / p / u - sim_markets.tot| <= 0.0006 (sim_markets is rounded to 0.1 %)."
+ },
+ "sample": {
+  "N": 500,
+  "definition": "the decision set is the first 500 eligible no-push games (primary metric), plus the eligible push games with puck drop no later than the 500th (secondary_full).",
+  "justification": "Per-game sd of a paired log-loss difference on this market: 0.0054 x sqrt(89) = 0.051 (GM vs the de-vigged market, 2026-27 so far); upper bound from the 2025-26 holdout totals question, SE 0.0086 at n = 1,312 on a sum of three highly correlated total markets, i.e. ~0.10 per market. With sd 0.05 to 0.10, N = 500 gives a paired SE of 0.0023 to 0.0045, so differences of the size seen so far (0.006 to 0.010 per market) are resolved at about 2 SE or better in the central case. 500 eligible games should be reached around the 650th game of the 1,344-game season (early December), leaving more than half of the season for the decision to matter.",
+  "interim": "no interim comparison: until the decision set is complete the scoring script reports only counts (eligible, no-push, pushes, logging coverage, the GM consistency check); arm-vs-GM numbers on decision-set games are computed once, at the look."
+ },
+ "promotion_rule": {
+  "pass": "an arm C passes iff, on the decision set, (1) its primary difference D1 = LL_C - LL_GM satisfies D1 <= -max(SE1, 0.0010) (better than GM by at least one paired SE and by at least 0.0010), AND (2) its secondary_full difference D2 <= +0.0010.",
+  "choice": "among passing arms the one with the lowest primary log loss; when another passing arm is within 0.0010 of it, the earlier in the order SIM, BLEND_SIM, BLEND_GM is chosen (no market input first, then the fewest changes to the README's named candidate). No arm passes: GM stays.",
+  "look": "one look, run only when the decision set is complete (python -m bu.sim.totals_forward look); logged in bu/sim/out/look_log.jsonl with question = 'totals_anchor'; the script refuses a second look. Every arm's numbers are reported whatever they are, MKT_reference included.",
+  "if_pass": "expected_total becomes the chosen arm's T (sim_params.json primary.total = 'sim' for SIM, already supported by predict_games.sim_total_mode; a blend needs the value 'blend_gm' / 'blend_sim' and the 0.80 weight, a code change made only after the look), the derivative markets are anchored to it, and the displayed home_xg / away_xg split (goal_model.display_xg of the published win % and total) follows the new total. goal_model's total stays logged (logit_expected_total). Rollback: primary.total = 'gm'.",
+  "if_fail": "expected_total stays goal_model's; the totals_test logging may stay on as a shadow."
+ },
+ "dry_run": "descriptive only, on pre-declaration games: from the git history of data/predictions_detailed.csv, each game's frozen (last pregame) row: sim_status, home_win_pct, expected_total, sim_expected_total, sim_detail.total_hist (GM-anchored), total_line / total_over / total_under. GM probabilities from that histogram; T_mkt exactly as above; the SIM / BLEND arms APPROXIMATED by exponentially tilting the GM-anchored histogram to each arm's T (no re-simulation is possible: lineups and state of past runs are not archived). Labelled descriptive and approximate; never part of the decision.",
+ "amendments": []
+}
