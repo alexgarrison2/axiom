@@ -254,7 +254,7 @@ def calculate_ratings(df=None, gamestats_file=season_file("gamestats"), save_fil
             json.dump(goalie_ratings, f, indent=4)
         print(f"Saved goalie_ratings.json to {goalie_ratings_path}")
 
-        # Compute and save team_stats_extended.json (splits by time/location/starter).
+        # Compute and save team_stats_extended.json (splits by location/starter).
         # Before the season's first game there is nothing to split: keep the file.
         if len(df):
             _save_extended_stats(df, PUBLIC_DATA_DIR)
@@ -453,7 +453,6 @@ def _save_extended_stats(df, public_data_dir):
     import numpy as np
     df = df.copy()
     df['game_date'] = pd.to_datetime(df['game_date'])
-    OLYMPICS_CUTOFF = pd.Timestamp('2026-02-22')
     WIN_RESULTS = {'RW', 'OTW', 'SOW', 'W'}
     OTL_RESULTS = {'OTL', 'SOL'}
 
@@ -502,7 +501,6 @@ def _save_extended_stats(df, public_data_dir):
     result = {}
     for team, tg in df.groupby('team'):
         tg = tg.sort_values('game_date')
-        since = tg[tg['game_date'] >= OLYMPICS_CUTOFF]
         home = tg[tg['home_away'] == 'Home']
         away = tg[tg['home_away'] == 'Away']
         by_goalie = {}
@@ -511,23 +509,11 @@ def _save_extended_stats(df, public_data_dir):
                 gs = calc_stats(gg)
                 if gs and gs['games'] >= 5:
                     by_goalie[goalie] = gs
-        home_since = since[since['home_away'] == 'Home']
-        away_since = since[since['home_away'] == 'Away']
-        by_goalie_since = {}
-        for goalie, gg in tg.groupby('starting_goalie'):
-            if isinstance(goalie, str) and goalie.strip():
-                gs_since = calc_stats(gg[gg['game_date'] >= OLYMPICS_CUTOFF])
-                if gs_since and gs_since['games'] >= 3:
-                    by_goalie_since[goalie] = gs_since
         result[team] = {
             'all': calc_stats(tg),
-            'since_olympics': calc_stats(since),
             'home': calc_stats(home),
             'away': calc_stats(away),
-            'home_since_olympics': calc_stats(home_since),
-            'away_since_olympics': calc_stats(away_since),
             'by_goalie': by_goalie,
-            'by_goalie_since_olympics': by_goalie_since,
         }
 
     out_path = os.path.join(public_data_dir, 'team_stats_extended.json')

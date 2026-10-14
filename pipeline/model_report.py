@@ -43,12 +43,34 @@ OUT_PATH = os.path.join(ROOT, 'public', 'data', 'model_report.json')
 HISTORY_META_PATH = os.path.join(ROOT, 'data', 'prediction_history_meta.json')
 META_PATH = os.path.join(SCRIPT_DIR, 'game_model_meta.json')
 ODDS_CLOSING_PATH = os.path.join(ROOT, 'public', 'data', 'odds_closing.json')
+PREDICTIONS_PATH = os.path.join(ROOT, 'public', 'data', 'predictions_detailed.csv')
 SCHEMA_VERSION = 1
 # Best calls / worst misses need a real lean: at least 55% on the pick.
 CALL_MIN_CONF = 0.55
 TIERS = [(0.50, 0.55, '50-55'), (0.55, 0.60, '55-60'), (0.60, 0.65, '60-65'), (0.65, 1.01, '65+')]
 ROLLING_WINDOW = 100
-CURRENT_MODEL_FAMILY = 'logit-elo'
+# Fallback only: the gate's family is that of the model_version currently published (published_model_version).
+CURRENT_MODEL_FAMILY = 'sim-m5'
+
+
+def model_family(version):
+    """Family of a model_version: its first two '-' tokens ('sim-m5-v4_st-20261003' -> 'sim-m5',
+    'logit-elo-v5-20261003-xg2-rapm' -> 'logit-elo'); retrains and input variants share a family."""
+    parts = str(version or '').split('-')
+    return '-'.join(parts[:2]) if len(parts) >= 2 and all(parts[:2]) else None
+
+
+def published_model_version(history=(), path=PREDICTIONS_PATH):
+    """The model_version the site publishes now: the most common one in predictions_detailed.csv
+    (the logit fallback can publish single games), else the newest graded row's."""
+    try:
+        v = pd.read_csv(path, usecols=['model_version'], dtype=str)['model_version'].dropna() if path else []
+        if len(v):
+            return v.mode().iloc[0]
+    except Exception:
+        pass
+    live = sorted((r for r in history if r.get('modelVersion')), key=lambda r: (r['date'], r['gameId']))
+    return live[-1]['modelVersion'] if live else None
 
 
 def wilson(k, n, z=1.96):
@@ -251,12 +273,14 @@ def block(rows, home_rate, home_rate_source, closing):
     return out
 
 
-def rolling_gate_stats(rows, closing, family=CURRENT_MODEL_FAMILY, window=market.ROLLING_N):
+def rolling_gate_stats(rows, closing, family=None, window=market.ROLLING_N):
     """Last ``window`` live games with a market price, predicted by the CURRENT
     model family (older site models do not count as evidence for this one).
+    ``family`` defaults to that of the newest row (build_report passes the published one).
     The model side is the model-only probability (``modelHomeProb``) when the
     snapshot recorded it, else the published probability."""
-    live = [r for r in rows if not r.get('retro') and str(r.get('modelVersion') or '').startswith(family)]
+    family = family or model_family(published_model_version(rows, path=None)) or CURRENT_MODEL_FAMILY
+    live = [r for r in rows if not r.get('retro') and model_family(r.get('modelVersion')) == family]
     live = sorted(live, key=lambda r: (r['date'], r['gameId']))
     pairs = []
     for r in live:
@@ -342,7 +366,8 @@ def build_report(history=None, now=None):
                       'rule': btj['betting_replay']['rule']}
     except Exception:
         bt_summary = None
-    rolling = rolling_gate_stats(history, closing)
+    published = published_model_version(history)
+    rolling = rolling_gate_stats(history, closing, family=model_family(published))
     state = {'backtest': bt, 'rolling': rolling}
     ok, reasons = market.site_gate(state)
     n_cur = sum(1 for r in history if season_of_row(r) == SEASON_LABEL and not r.get('retro'))

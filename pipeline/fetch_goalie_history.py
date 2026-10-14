@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import os
+import unicodedata
 
 from season import SEASON_ID, START_YEAR
 
@@ -169,7 +170,9 @@ def fetch_roster(team_tri):
 
 
 def _clean(name):
-    return str(name or "").lower().replace(".", "").strip()
+    """Lower-case, accent-free key ('Leevi Meriläinen' == 'Leevi Merilainen')."""
+    s = unicodedata.normalize("NFKD", str(name or "")).encode("ascii", "ignore").decode()
+    return s.lower().replace(".", "").strip()
 
 
 def find_player_id(name, team_tri):
@@ -188,11 +191,11 @@ def find_player_id(name, team_tri):
             break
     if pid is None and key:
         last = key.split(" ")[-1]
-        cands = [p for p in roster if p["lastName"]["default"].lower() == last]
+        cands = [p for p in roster if _clean(p["lastName"]["default"]) == last]
         if len(cands) == 1:
             pid = cands[0]["id"]
         elif len(cands) > 1:
-            pid = next((p["id"] for p in cands if p["firstName"]["default"].lower().startswith(key[0])), None)
+            pid = next((p["id"] for p in cands if _clean(p["firstName"]["default"]).startswith(key[0])), None)
     if pid is not None:
         cache["ids"][key] = pid
         _CACHE_DIRTY = True

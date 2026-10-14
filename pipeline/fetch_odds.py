@@ -334,12 +334,13 @@ def from_espn(books, now):
                                        or ((mlo.get(s) or {}).get("open") or {}).get("odds"))
             src = "espn_" + ((o.get("provider") or {}).get("name") or "").lower().replace(" ", "")
             b.put_ml(pick("home"), pick("away"), src)
+            priced = b.has_ml()
             if o.get("overUnder") is not None:
                 tot = o.get("total") or {}
-                b.put("total_line", _fmt_line(o.get("overUnder")), src)
-                b.put("total_over", _american(((tot.get("over") or {}).get("close") or {}).get("odds")), src)
-                b.put("total_under", _american(((tot.get("under") or {}).get("close") or {}).get("odds")), src)
-            n += 1
+                priced |= b.put("total_line", _fmt_line(o.get("overUnder")), src)
+                priced |= b.put("total_over", _american(((tot.get("over") or {}).get("close") or {}).get("odds")), src)
+                priced |= b.put("total_under", _american(((tot.get("under") or {}).get("close") or {}).get("odds")), src)
+            n += priced   # matched events without a price do not count as an ESPN source
     return n
 
 

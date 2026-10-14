@@ -96,3 +96,14 @@ def test_accuracy_all_sits_on_the_baselines_basis():
     assert b['accuracy_all'] == b['baselines']['market']['model_accuracy_same_games']
     assert b['by_model']['legacy']['accuracy_all'] == b['accuracy_all']
     assert MR.version_block([])['accuracy_all'] is None
+
+
+def test_rolling_gate_counts_only_the_published_model_family():
+    assert MR.model_family('sim-m5-v4_st-20261003') == 'sim-m5'
+    assert MR.model_family('logit-elo-v5-20261003-xg2-rapm') == 'logit-elo'
+    assert MR.model_family(None) is None
+    rows = [{'retro': False, 'modelVersion': v, 'date': '2026-10-0%d' % (i + 1), 'gameId': 2026020100 + i,
+             'marketHomeProb': 50.0, 'homeWinProb': 60.0, 'actualWinner': 'A', 'homeTeam': 'A'}
+            for i, v in enumerate(['logit-elo-v5-x', 'sim-m5-20261002', 'sim-m5-v4_st-20261003'])]
+    assert MR.rolling_gate_stats(rows, {})['n'] == 2            # newest row's family: sim-m5
+    assert MR.rolling_gate_stats(rows, {}, family='logit-elo')['n'] == 1

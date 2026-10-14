@@ -167,9 +167,10 @@ def run(lake: Lake, seasons=("20222023", "20232024", "20242025", "20252026")) ->
                                                      [10000, 20000, 40000], [5000, 10000, 20000, 40000, 80000])
     report["tuning"]["st_shots_off_def"] = _cv_split(model.build_design(win, "st", target="sh"),
                                                      [5000, 10000, 20000], [2500, 5000, 10000, 20000, 40000])
-    cur = "20262027"
+    from season import SEASON_ID, START_YEAR
+    cur = SEASON_ID
     if os.path.isdir(os.path.dirname(lake.table_path("shifts", cur))):
-        cw = ["20242025", "20252026", cur]
+        cw = [f"{y}{y + 1}" for y in range(START_YEAR - 2, START_YEAR + 1)]
         report["agreement_window"] = {"window": cw, **agreement(model.fit_maps(
             model.stack([inputs.build(lake, s) for s in cw], cw), "ev"))}
     singles = {s: _single(lake, s) for s in seasons}

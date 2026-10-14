@@ -186,7 +186,8 @@ class LineupAdjuster:
 
 def goalie_ids(pipeline_dir=SCRIPT_DIR):
     ids = set()
-    for p in (os.path.join(ROOT, 'public', 'data', 'nhl_season_2025_2026_player_stats.csv'),):
+    from season import PREV_START_YEAR, START_YEAR, season_file
+    for p in (os.path.join(ROOT, 'public', 'data', season_file('player_stats', y)) for y in (START_YEAR, PREV_START_YEAR)):
         if os.path.exists(p):
             ps = pd.read_csv(p, usecols=['player_id', 'is_goalie'], low_memory=False)
             ids |= set(ps.loc[ps['is_goalie'].astype(str).isin(['1', 'True', 'true']), 'player_id'].astype(int))

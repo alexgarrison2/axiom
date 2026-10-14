@@ -35,7 +35,8 @@ import pandas as pd
 
 from fetch_odds import FULLNAME_TO_TRI, _american
 from http_utils import try_get_json
-from io_utils import atomic_write_json, atomic_write_csv, keep_if_unchanged, read_json, utc_now_iso, record_source, mark_stale
+from io_utils import (atomic_write_json, atomic_write_csv, keep_if_unchanged, read_json, utc_now_iso, record_source,
+                      mark_stale, clear_stale)
 from paths import pipeline_path
 
 EVENTS_URL = "https://www.bovada.lv/services/sports/event/v2/events/A/description/hockey/nhl"
@@ -199,6 +200,7 @@ def fetch_props(now=None):
     atomic_write_json(PROPS_FILE, doc)
     archived = _archive(games)
     record_source("player_props", fetched_at=fetched, games=len(games))
+    clear_stale("player_props")
     return {"status": "ok", "rows_written": archived}
 
 

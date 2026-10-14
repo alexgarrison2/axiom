@@ -116,5 +116,9 @@ def read_season_csv(kind, path=None, game_types=COUNTED_GAME_TYPES, start_year=S
 # committed player ratings (and their team assignments) stay in use.
 PLAYER_MODEL_MIN_GAMES = 240
 
-# Regular-season length: 84 games from 2026-27 (2025 CBA), 82 before.
-SEASON_GAMES = 84 if START_YEAR >= 2026 else 82
+def season_games(start_year=START_YEAR):
+    """Regular-season length: 84 games from 2026-27 (2025 CBA), 82 before."""
+    return 84 if start_year >= 2026 else 82
+
+
+SEASON_GAMES = season_games()

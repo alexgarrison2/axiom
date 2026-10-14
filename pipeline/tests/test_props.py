@@ -113,13 +113,18 @@ def test_skater_game_frame_joins_attempts_and_toi_reports():
                 "opponentTeamAbbrev": "BBB", "homeRoad": "H", "positionCode": "D", "timeOnIcePerGame": 900,
                 "goals": 0, "assists": 0, "points": 0, "shots": 0, "ppGoals": 0, "ppPoints": 0}]
     extra = {"realtime": [{"gameId": 1, "playerId": 7, "totalShotAttempts": 9, "missedShots": 3, "shotAttemptsBlocked": 2}],
-             "timeonice": [{"gameId": 1, "playerId": 7, "evTimeOnIce": 960, "ppTimeOnIce": 150}]}
+             "timeonice": [{"gameId": 1, "playerId": 7, "evTimeOnIce": 960, "ppTimeOnIce": 150,
+                           "shTimeOnIce": 90}]}
     df = fsg._frame(summary, extra).set_index("player_id")
     assert set(fsg.COLUMNS) <= set(df.reset_index().columns)
     assert (df.at[7, "attempts"], df.at[7, "missed"], df.at[7, "blocked"]) == (9, 3, 2)
-    assert df.at[7, "ev_toi"] == 16.0 and df.at[7, "pp_toi"] == 2.5
+    assert df.at[7, "ev_toi"] == 16.0 and df.at[7, "pp_toi"] == 2.5 and df.at[7, "sh_toi"] == 1.5
     # A player missing from an extra report keeps the row, with the extra columns empty.
     assert pd.isna(df.at[8, "attempts"]) and pd.isna(df.at[8, "pp_toi"])
+    # A field the API omits from a report is empty instead of failing the stage.
+    del extra["timeonice"][0]["shTimeOnIce"]
+    df = fsg._frame(summary, extra).set_index("player_id")
+    assert df.at[7, "pp_toi"] == 2.5 and pd.isna(df.at[7, "sh_toi"])
 
 
 def test_rest_days_count_from_each_teams_last_game():

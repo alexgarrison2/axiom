@@ -92,7 +92,7 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `side_blend_odds` | string | no | Fair American odds of the **published** probability `side_win_pct` (the blend). Both lines are computed from the rounded percentages and agree with them to within 1 cent (validate_outputs `fair_odds`). |
 | `side_vegas_odds` | int | yes | Market moneyline (American) at prediction time. Empty without a line. |
 | `side_vegas_win_pct` | float % | yes | De-vigged market probability (power method). Home + away = 100.0 ± 0.1. |
-| `blend_weight` | float | yes | Model weight in the logit blend (0-1). It ramps up from 0.2 over the first 20 GP. Empty without odds. |
+| `blend_weight` | float | yes | Model weight in the logit blend (0-1): a fixed 0.80 from game 1 (`market.OWNER_MODEL_WEIGHT`). Only with `PONYXG_MODEL_WEIGHT=fitted` does it ramp up from 0.2 over the first 20 GP. Empty without odds. |
 | `side_ev` | float fraction | yes | Expected profit per unit staked at `side_vegas_odds`, using the published (blended) probability. `-0.0457` = -4.57%. |
 | `ev_gated` | bool | no | `True` only when `market.gate` allows a bet on this game. The gate requires a backtest-proven edge, a rolling log loss that beats the market, EV ≥ 3%, and both teams at 10+ GP. |
 | `bet_side` | enum | yes | `home` / `away` when units are shown, else empty. |

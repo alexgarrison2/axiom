@@ -12,10 +12,13 @@ fallback; `PONYXG_WINPCT=logit` rolls back.  Since 2026-10-03 (later the same da
 ratings are **ratings v4** (`bu/rapm/README.md` "Ratings v4") instead of RAPM v2 (see "Lineup
 inputs: ratings v4"); `PONYXG_SIM_INPUTS=v2` rolls the inputs back.  Two further pre-registered
 questions (2026-10-03, "Player special teams and penalties", "Season projections on the
-simulator") were scored on dev and did not pass their rules; both paths are built and opt-in
-(`PONYXG_SIM_INPUTS=st`, `PONYXG_SEASON_SIM=sim`).  A calibrated version of the season path
-("Calibrated season projections", `prereg_season_calib.json`) chose no calibration on its tuning
-seasons, passed dev and missed the holdout playoff log-loss margin by 0.0009: still opt-in.
+simulator") were scored on dev and did not pass their rules.  The player special-teams inputs
+nevertheless run live: the repository variable `PONYXG_SIM_INPUTS=st` serves
+`out/sim_params_st.json`, so the published version is `sim-m5-v4_st-20261003` (see "Player special
+teams and penalties").  The season path is built and opt-in (`PONYXG_SEASON_SIM=sim`).  A
+calibrated version of it ("Calibrated season projections", `prereg_season_calib.json`) chose no
+calibration on its tuning seasons, passed dev and missed the holdout playoff log-loss margin by
+0.0009: still opt-in.
 
 Everything runs from `pipeline/`.  Pre-declared rules: `prereg.json` (written before any dev or
 holdout run, amendments timestamped).  Fitted parameters: `out/sim_params.json`.  Validation
@@ -426,12 +429,14 @@ Dev (2,375 games, paired ST - V4; 20,000 runs):
 | 2024-25 | 1,063 | 0.65847 | 0.65830 | -0.00016 (0.00064) | 6.33026 | 6.33153 | +0.00127 (0.00244) |
 | pooled | 2,375 | 0.65815 | 0.65759 | **-0.00055 (0.00045)** | 6.32449 | 6.32481 | **+0.00033 (0.00174)** |
 
-**Decision: not promoted.**  Rule (1) (dev ML lower) passes, rule (3) (dev derivative score not
+**Dev decision: not promoted.**  Rule (1) (dev ML lower) passes, rule (3) (dev derivative score not
 worse) fails by +0.00033 (well inside one SE; per market: reg 3-way +0.0004, home -1.5 +0.0003,
-total 6.0 +0.0003, 1st period -0.0004 / -0.0004).  The live simulator stays `sim-m5-v4`; the
-2025-26 look for this question was **not** taken (the dev rule already decides), so it is unspent
-for a later pre-registered version.  The ST parameters are kept as `out/sim_params_st.json`
-(`decision` records the result); `PONYXG_SIM_INPUTS=st` serves them (opt-in only).  ST predictions
+total 6.0 +0.0003, 1st period -0.0004 / -0.0004).  The ST parameters are kept as
+`out/sim_params_st.json`, whose `decision` block still records this dev result.  The 2025-26 look
+was then taken after all (`out/look_log.jsonl`, 2026-10-03 16:55 UTC: 1,312 games, ML ST - V4
++0.0006 (SE 0.00063), `promote_st: true`), and the repository variable `PONYXG_SIM_INPUTS=st` now
+serves these parameters live: the published `model_version` is `sim-m5-v4_st-20261003`.
+Rollback: unset the variable (back to `out/sim_params.json`, `sim-m5-v4`).  ST predictions
 are a bit more spread (SD of logit p 0.509 vs 0.487) and better calibrated on 2024-25 (slope 1.08
 vs 1.14).
 
@@ -582,8 +587,9 @@ both arms) ~100 s on 8 workers.
 * Delayed-penalty extra attackers, stacked third penalties (dropped), misconducts and penalty
   shots are not simulated; the shootout is a league coin (50.4% home), with no shooter / goalie
   history.
-* Power-play strength and penalty rates are team level in the published simulator; the lineup
-  version (`out/sim_params_st.json`) improved dev ML but not the derivative score (opt-in).  The
+* Power-play strength and penalty rates read the dressed lineup's player ratings in the live ST
+  parameters (`out/sim_params_st.json`, `PONYXG_SIM_INPUTS=st`), which improved dev ML but not the
+  derivative score; the base `out/sim_params.json` keeps them team level.  The
   goalie is the expected starter all game (no in-game pulls for performance).
 * Season projections on the simulator (opt-in) use one typical lineup all season (no injuries,
   trades or call-ups after today); preseason they are much more spread than the logit's (2026-27

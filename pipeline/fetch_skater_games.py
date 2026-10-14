@@ -89,7 +89,7 @@ def _frame(rows: list, extra: dict | None = None) -> pd.DataFrame:
         part = part.drop_duplicates(["gameId", "playerId"]).set_index(["gameId", "playerId"])
         key = pd.MultiIndex.from_arrays([df["gameId"].astype(int), df["playerId"].astype(int)])
         for src, (col, minutes) in fields.items():
-            v = part[src].reindex(key).to_numpy(dtype=float)
+            v = part.reindex(columns=[src])[src].reindex(key).to_numpy(dtype=float)  # a field the API omits -> NA
             out[col] = (v / 60).round(2) if minutes else pd.array(v, dtype="Int64")
     return out
 

@@ -1,7 +1,9 @@
-"""xG v1: the incumbent shot model (``xg_model_xgb.pkl``), still the published xG.
+"""xG v1: the previous shot model (``xg_model_xgb.pkl``), now the rollback shadow.
 
-Its successor, xG v2 (DESIGN §3.1, milestone M1), lives in ``pipeline/bu/xg/``
-and runs live in shadow (``PONYXG_XG``, see ``bu/xg/README.md``).  Known v1
+The published xG is xG v2 (DESIGN §3.1, milestone M1, shipped 2026-10-01), in
+``pipeline/bu/xg/``: ``xg_raw`` is v2's score and v1 only scores shots v2 cannot
+score yet, plus the ``xg_raw_v1`` shadow column (``PONYXG_XG=v1`` rolls back; see
+``bu/xg/README.md``).  Known v1
 limits, measured there: no strength or empty-net feature, ``player_hand.json``
 is all "U" (off-wing always 0), ``is_rebound``/``is_rush`` always 0 (the
 scraper compares against old type names), and a random 80/20 split, so the

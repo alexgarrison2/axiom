@@ -53,15 +53,11 @@ import pandas as pd
 
 from io_utils import VOLATILE_KEYS, atomic_write_json, keep_if_unchanged, read_json, utc_now_iso
 from paths import PIPELINE_DIR, PUBLIC_DATA_DIR
-from season import PREV_START_YEAR, REGULAR_SEASON, START_YEAR, season_file
+from season import PREV_START_YEAR, REGULAR_SEASON, START_YEAR, season_file, season_games
 
 FULL_SEASON_MIN = 100      # HockeyViz's bar for a full season, minutes together
 FLOOR_MIN = 10             # never lower than this, however early in the season
 TOP = 12                   # teammates kept per player (the site shows up to 8)
-
-
-def season_games(start_year: int) -> int:
-    return 84 if start_year >= 2026 else 82
 
 
 def out_path(start_year: int) -> str:

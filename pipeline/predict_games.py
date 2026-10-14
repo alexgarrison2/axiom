@@ -44,6 +44,7 @@ import pandas as pd  # noqa: E402
 import goal_model  # noqa: E402
 import market  # noqa: E402
 from bu.sim.live import COLUMNS as SIM_COLUMNS  # noqa: E402
+from bu.sim.state import norm_name  # noqa: E402
 from features import BU_COLUMNS  # noqa: E402
 from ml_predict import bu_mode  # noqa: E402
 import season_context as SC  # noqa: E402
@@ -276,6 +277,17 @@ def goalie_percentiles(goalie_ratings):
     return {name: ((i / (n - 1)) * 100 if n > 1 else 50) for i, (name, _) in enumerate(vals)}
 
 
+def goalie_rating_key(goalie_ratings, name):
+    """The goalie_ratings key for ``name``, ignoring accents and punctuation
+    (DailyFaceoff 'Leevi Merilainen' vs NHL 'Leevi Meriläinen')."""
+    if not name or not goalie_ratings:
+        return None
+    if name in goalie_ratings:
+        return name
+    n = norm_name(name)
+    return next((k for k in goalie_ratings if norm_name(k) == n), None)
+
+
 def existing_key(row):
     gid = str(row.get("nhl_game_id") or "").split(".")[0]
     return gid if gid.isdigit() and len(gid) == 10 else row.get("game_id")
@@ -425,10 +437,11 @@ def build_context(game, inp, existing_row=None):
         ctx[f"{side}_goalie_cur_gp"] = cur_gp if name else None
         prev_used |= bool(prev_line)
         ctx[f"{side}_goalie_po"] = (inp.goalie_po.get(name) or "") if (gtype == "03" and name) else ""
-        gr = inp.goalie_ratings.get(name) if name else None
+        gkey = goalie_rating_key(inp.goalie_ratings, name)
+        gr = inp.goalie_ratings.get(gkey) if gkey else None
         ctx[f"{side}_gsax"] = round(gr.get("gsax_per_game", 0) or 0, 3) if gr else None
-        ctx[f"{side}_gsax_total"] = gr.get("gsax_total") if gr else None
-        ctx[f"{side}_gsax_pct"] = round(inp._gsax_pct.get(name, 50), 1) if gr else None
+        ctx[f"{side}_gsax_total"] = round(gr["gsax_total"], 3) if gr and gr.get("gsax_total") is not None else None
+        ctx[f"{side}_gsax_pct"] = round(inp._gsax_pct.get(gkey, 50), 1) if gr else None
         vs = inp.vs_opp(name, tri, opp_tri) if (name and inp.vs_opp) else None
         ctx[f"{side}_starter_vs_opp_gp"] = vs.get("vs_opp_gp") if vs else None
         ctx[f"{side}_starter_vs_opp"] = vs if (vs and vs.get("record")) else None

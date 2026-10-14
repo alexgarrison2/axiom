@@ -771,14 +771,19 @@ def has_unscraped_finals():
     """True when the NHL schedule lists a completed game that is not yet in this
     season's gamestats.  Only the full run scrapes games, so the lite hours
     would otherwise serve stale records, game logs and player stats until the
-    next morning window (which GitHub's cron can skip).  Any lookup failure
-    counts as False so the hourly run stays lite."""
+    next morning window (which GitHub's cron can skip).  Games a full run
+    already tried and could not store (pending_failed.json) do not count, so
+    a permanently broken game cannot force a full run every hour; the morning
+    run still retries them.  Any lookup failure counts as False so the hourly
+    run stays lite."""
     import scrape_games
     try:
         path = os.path.join(PIPELINE_DIR, season_file("gamestats"))
         stored = set()
         if os.path.exists(path):
             stored = set(pd.read_csv(path, usecols=["game_id"])["game_id"].astype("int64"))
+        failed = read_json(os.path.join(PIPELINE_DIR, scrape_games.PENDING_FAILED_FILE), {}) or {}
+        stored |= {int(g) for g in failed if str(g).isdigit()}
         sched, _ = scrape_games.completed_schedule_games(date(START_YEAR, 9, 1), today_local())
     except Exception as e:
         print(f"[WARN] unscraped-finals check failed: {e}")

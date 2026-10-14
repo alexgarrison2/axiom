@@ -85,7 +85,7 @@ if PIPELINE_DIR not in sys.path:
     sys.path.insert(0, PIPELINE_DIR)
 
 from paths import REPO_ROOT, PUBLIC_DATA_DIR, DATA_DIR, MANIFEST_FILE  # noqa: E402
-from season import SEASON_ID, START_YEAR, season_file  # noqa: E402
+from season import SEASON_GAMES, SEASON_ID, START_YEAR, season_file  # noqa: E402
 
 ISO_Z = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$")
 GAME_ID = re.compile(r"^\d{10}$")
@@ -1121,7 +1121,7 @@ def _check_prod(doc, cols, rows, roster):
         return [f"player_ratings.json: prod without columns {miss}"]
     meta = doc.get("prod") or {}
     pm = meta.get("position_means") or {}
-    games = meta.get("games") or 82
+    games = meta.get("games") or SEASON_GAMES
     if not all(isinstance(pm.get(g), (int, float)) for g in ("F", "D")):
         return ["player_ratings.json: prod columns without prod.position_means {F, D}"]
     bad = [r.get("name") for r in rows
