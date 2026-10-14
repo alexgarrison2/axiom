@@ -5,6 +5,7 @@ import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Too
 import { Segmented } from '@/components/ui/segmented';
 import { CHART_METRICS, buildTotals, metricValue, type ChartMetric } from '@/utils/team-stats/chart-metrics';
 import { shortDate } from '@/utils/team-stats/format';
+import { finalScore } from '@/utils/team-stats/game-row';
 import type { GameRow } from '@/utils/team-stats/types';
 
 interface TeamChartProps {
@@ -246,7 +247,7 @@ function ChartTip({ active, payload, m1, m2, color }: TipProps) {
     return (
         <div className="min-w-[180px] rounded-control border border-line-strong bg-bg/95 px-2.5 py-2 font-mono text-caption">
             <p className="text-micro uppercase tracking-wide text-fg-3">
-                GP {d.i} · {shortDate(g.date)} · {g.home ? 'vs' : '@'} {g.opp} · <span className="text-fg-1">{g.gf}–{g.ga}</span>
+                GP {d.i} · {shortDate(g.date)} · {g.home ? 'vs' : '@'} {g.opp} · <span className="text-fg-1">{finalScore(g).join('–')}</span>
             </p>
             <p className="mt-1 flex justify-between gap-4 font-semibold">
                 <span style={{ color }}>{m1.label}</span>

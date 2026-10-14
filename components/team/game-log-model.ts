@@ -1,5 +1,5 @@
 import { filterGames, type GameLevelFilters, type Location, type Scope, type TriState } from '@/utils/team-stats/filter';
-import { gsaxOf, isLoss, isWin } from '@/utils/team-stats/game-row';
+import { finalScore, gsaxOf, isLoss, isWin } from '@/utils/team-stats/game-row';
 import type { GameRow, PeriodFilter } from '@/utils/team-stats/types';
 
 export type Recent = 'All' | 5 | 10 | 15 | 20;
@@ -64,10 +64,8 @@ export function stat(g: GameRow, key: SplitKey, period: PeriodFilter): number {
 
 /** Final score; the shootout winner is credited one goal (full game only), as on NHL.com. */
 export function score(g: GameRow, period: PeriodFilter): [number, number] {
-    const gf = stat(g, 'gf', period);
-    const ga = stat(g, 'ga', period);
-    if (period !== 'All') return [gf, ga];
-    return [gf + (g.result === 'SOW' ? 1 : 0), ga + (g.result === 'SOL' ? 1 : 0)];
+    if (period === 'All') return finalScore(g);
+    return [stat(g, 'gf', period), stat(g, 'ga', period)];
 }
 
 export function resultLabel(g: GameRow): string {

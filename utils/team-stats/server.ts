@@ -17,7 +17,7 @@ import { finalizeRows, parseGameRow } from './game-row';
 import { seasonGames, seasonLabel, prevSeasonId } from './season';
 import { computeStandings, withStandings } from './standings';
 import { ALL_TEAMS, TEAM_TRICODES } from './teams';
-import { isWin } from './game-row';
+import { finalScore, isWin } from './game-row';
 import type { GameRow, LeaguePayload, Matchup, Record3, TeamExtra, TeamProjection, TeamRatingEntry, TeamStat } from './types';
 
 const ROOT = process.cwd();
@@ -325,14 +325,17 @@ export function teamExtras(games: GameRow[]): Record<string, TeamExtra> {
         }
         const last10 = gs.slice(-10);
         out[tri] = {
-            form: last10.map(g => ({
-                xs: g.xgf + g.xga > 0 ? Math.round((g.xgf / (g.xgf + g.xga)) * 1000) / 1000 : 0.5,
-                r: g.result,
-                home: g.home,
-                opp: g.opp,
-                gf: g.gf,
-                ga: g.ga,
-            })),
+            form: last10.map(g => {
+                const [gf, ga] = finalScore(g);
+                return {
+                    xs: g.xgf + g.xga > 0 ? Math.round((g.xgf / (g.xgf + g.xga)) * 1000) / 1000 : 0.5,
+                    r: g.result,
+                    home: g.home,
+                    opp: g.opp,
+                    gf,
+                    ga,
+                };
+            }),
             home: record3(gs.filter(g => g.home)),
             away: record3(gs.filter(g => !g.home)),
             l10: record3(last10),

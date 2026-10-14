@@ -25,6 +25,16 @@ export const isWin = (r: ResultCode) => r === 'RW' || r === 'OTW' || r === 'SOW'
 export const isLoss = (r: ResultCode) => r === 'RL' || r === 'OTL' || r === 'SOL';
 
 /**
+ * Final score as NHL.com prints it. gamestats.csv leaves the shootout out of
+ * goals_for/goals_ag (right for GF/GP and xG comparisons), so a shootout game
+ * reads as a tie there; the winner is credited one goal for display.
+ */
+export const finalScore = (g: { result: ResultCode; gf: number; ga: number }): [number, number] => [
+    g.gf + (g.result === 'SOW' ? 1 : 0),
+    g.ga + (g.result === 'SOL' ? 1 : 0),
+];
+
+/**
  * Parse one gamestats.csv row. `teamToTri` maps the CSV's common names
  * ("Oilers") to tricodes. Returns null for rows we do not show (preseason,
  * all-star, international games, unknown teams or results).

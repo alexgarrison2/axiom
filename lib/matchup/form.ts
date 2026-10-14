@@ -10,6 +10,7 @@
 import { goalieMatchKey, ordinal, sideValues, type MatchupGame } from './matchup-stats';
 import { SEASON_ID, SEASON_START_DATE } from '../season';
 import type { RecentGame } from '../../types/prediction';
+import { finalScore } from '../../utils/team-stats/game-row';
 
 export type Outcome = 'W' | 'L' | 'OTL';
 
@@ -149,7 +150,8 @@ const parseScore = (score: string): [number, number] | null => {
 export function buildEntries(games: MatchupGame[], recent: RecentGame[], tonightId: string, tonightDate: string, n: number): FormEntry[] {
     const logged: FormEntry[] = recentGames(games, tonightId, tonightDate).map(g => {
         const r = resultOf(g.row.result);
-        return { key: g.row.id, date: g.row.date, opp: g.row.opp, home: g.row.home, outcome: r.outcome, extra: r.extra, gf: g.row.gf, ga: g.row.ga, starter: g.row.starter, game: g };
+        const [gf, ga] = finalScore(g.row);
+        return { key: g.row.id, date: g.row.date, opp: g.row.opp, home: g.row.home, outcome: r.outcome, extra: r.extra, gf, ga, starter: g.row.starter, game: g };
     });
     const have = new Set(logged.map(e => `${e.date}|${e.opp}`));
     const ids = new Set(logged.map(e => e.key));
