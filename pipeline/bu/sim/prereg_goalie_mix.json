@@ -1,0 +1,44 @@
+{
+ "title": "Uncertain starting goalies: start-probability mixture vs the single most likely starter (pre-declared proxy, comparison and promotion rule)",
+ "declared_at": "2026-10-14T18:07:00Z",
+ "declared_before": "any simulation of either arm on the dev seasons or the holdout, and any fit of the start-probability model. Done before this file: the simulator fit work directory was rebuilt from the lake (xG v2 walk-forward -> RAPM stints -> bu.sim.fit) and checked against the committed parameters; the engine gained an optional per-run starter mixture (off unless a game carries one; with none, simulations are bit-identical, tested). No outcome of any game was looked at for this question.",
+ "question": "sim_goalie_mix: when tonight's starter is not certain, should the simulator mix over the team's plausible starters, weighted by their start probabilities, instead of treating the projected starter as certain?",
+ "prior_knowledge": {
+  "statement": "Live snapshots (2026-27 to date): DailyFaceoff starters marked unconfirmed ('U') were wrong 8 of 31 times (26%), confirmed ones ~98% right; when no starter is projected predict_games.py falls back to the team's goalie with the most GP (_goalie_for); the simulator uses one goalie as certain. The prereg_primary ablation (dev, v2 simulator) says the opposing-goalie term adds +0.0000 (SE 0.0012) to moneyline log loss when removed: the goalie term carries little information, so the expected effect is small. Every published dev / holdout number of the simulator used the ACTUAL starter (an oracle that the live path does not have). The 2025-26 holdout has been looked at for primary_winpct, sim_inputs_v4, sim_player_st and season_sim_calib; this question's look is logged under question = 'sim_goalie_mix'.",
+  "known_numbers": {"live_ST_dev_pooled_ml": 0.65759, "live_ST_dev_pooled_derivative": 6.32481, "live_ST_dev_n": 2375}
+ },
+ "seasons": {
+  "start_model_fit": ["20172018", "20182019", "20192020", "20202021", "20212022", "20222023"],
+  "dev": ["20232024", "20242025"],
+  "holdout": "20252026"
+ },
+ "games": "exactly the games of prereg_st.json (prereg_primary set: regular season, finite inputs, a walk-forward logit row, complete player special-teams row; dev 2,375, holdout 1,312), bu.sim.armscore.game_set",
+ "proxy": {
+  "why": "history has no DailyFaceoff projections; the uncertainty is a point-in-time start model over each team's recent starters, the same for both arms",
+  "candidates": "goalies with >= 1 start in the team's (franchise's) last 20 games, any game type, earlier games only; a team game whose actual starter is not a candidate keeps that goalie out of both arms (coverage reported)",
+  "features": "s10 = starts in the team's last 10 games / 10; s3 = starts in the last 3 / 3; prev = started the team's previous game; prev_b2b = prev x (that game was yesterday); sea = share of the team's starts this season (0 before its first game); gap = log(1 + days since his last start for the team)",
+  "model": "conditional logit (softmax over the candidates), L2 1e-3 on the coefficients, fitted once on the regular-season team games of the fit seasons whose actual starter is a candidate; applied unchanged to dev and holdout (point in time: it never sees a dev or holdout game)",
+  "goalie_state": "each candidate's gsv (goals per xG against, decayed and shrunk as in state.SimState.goalie_rel) as of the game date, from the same replay that builds the history inputs; the replay must reproduce the history inputs' gsv for the actual starter (checked, max abs diff reported)"
+ },
+ "arms": {
+  "BASE": "the live parameters (out/sim_params_st.json, PONYXG_SIM_INPUTS=st, sim-m5-v4_st-20261003) with each side's starter = the start model's most likely candidate (argmax; ties to the lower id), treated as certain: the live behaviour",
+  "MIX": "the same parameters; each of the 20,000 runs draws its own home and away starter from the start model's probabilities (stratified: counts by largest remainder, order permuted with a seed-derived generator separate from the game's main stream, so all other random numbers equal BASE's); the conversion multiplier of each side reads the drawn opposing starter's gsv (rates.goalie_mixtures, engine.mixture_conversion)",
+  "ORACLE": "reference only, not part of the rule: the actual starter (the protocol of every earlier validation); ORACLE - BASE reports what knowing the starter is worth"
+ },
+ "simulation": "20,000 runs a game, base seed 20261002, seed = SHA-256(base, game id), as live; derivative markets anchored (tilt + pace) to the arm's own raw win % and goal_model's expected total (pairing sim_gm, the live configuration)",
+ "metrics": {
+  "primary": "mean per-game moneyline log loss of the raw simulator P(home win), p clipped to [1e-6, 1 - 1e-6], dev pooled",
+  "derivative": "the derivative score of prereg.json (reg3, pl_home, pl_away, tot55, tot60, tot65, p1_3w, p1_2w), anchored as published",
+  "differences": "paired per game (MIX - BASE), SE = sd / sqrt(n), per season and pooled; negative favours MIX",
+  "secondary": "Brier, calibration slope, per-market log loss, distribution checks; proxy diagnostics: BASE pick accuracy, start-model log loss, coverage, reliability of the top candidate's probability; ORACLE - BASE"
+ },
+ "promotion_rule": {
+  "pass": "MIX is promoted iff (1) dev pooled ML log loss MIX < BASE (strictly), AND (2) dev pooled derivative score MIX - BASE <= +1 SE of that difference, AND (3) holdout ML log loss MIX - BASE <= +0.0010 (owner's rule), AND (4) holdout derivative score MIX - BASE <= +1 SE",
+  "noise_statement": "whatever the rule says, the report states whether |dev ML MIX - BASE| is within 2 SE (a null result is a valid result)",
+  "holdout_look": "one look at 2025-26, taken only by the owner after the dev results are written to bu/sim/out/validation.json (section goalie_mix_dev): python -m bu.sim.goalie_mix holdout --work <dir>; logged in bu/sim/out/look_log.jsonl with question = 'sim_goalie_mix' (a 'started' line before any number); the code refuses a second look",
+  "if_pass": "live, behind repository variable PONYXG_SIM_GOALIE_MIX=on: a side whose starter is not 'Confirmed' (DFO 'U' / 'Likely', ESPN probable, or the most-GP fallback) is simulated as a mixture: the projected goalie at weight 0.74 (the measured DFO 'U' hit rate, 23 / 31; re-estimated from the snapshots each month) and the rest over the team's other candidates in proportion to the start model's probabilities; with no projection, the start model's probabilities. Confirmed starters stay single. Unset = today's behaviour.",
+  "if_fail": "nothing changes in the published path; the engine support stays (off)"
+ },
+ "caveat": "the proxy makes every historical game uncertain (BASE pick accuracy is reported); live, only unconfirmed starters would be mixed, so any historical effect overstates the live one in proportion to that share",
+ "amendments": []
+}
