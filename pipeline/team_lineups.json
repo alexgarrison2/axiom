@@ -1725,6 +1725,16 @@
                 "movement": null
             },
             {
+                "name": "Justin Dowling",
+                "number": 37,
+                "pos": "c",
+                "id": 2675,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Matt Rempe",
                 "number": 73,
                 "pos": "rw",
@@ -1828,7 +1838,7 @@
                 "pos": "ir1",
                 "id": 25267,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -1926,9 +1936,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-13)",
-        "updated_at": "2026-10-14T14:18:28.923Z",
-        "fetched_at": "2026-10-14T16:02:08Z"
+        "lineup_source": "Colin Stephenson",
+        "updated_at": "2026-10-14T17:39:28.388Z",
+        "fetched_at": "2026-10-14T18:01:59Z"
     },
     "EDM": {
         "f1": [
@@ -8083,7 +8093,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f2": [
@@ -8147,7 +8157,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -8162,14 +8172,14 @@
                 "movement": null
             },
             {
-                "name": "Carter Mazur",
-                "number": 43,
+                "name": "Keegan Kolesar",
+                "number": 55,
                 "pos": "rw",
-                "id": 34532,
+                "id": 3790,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -8365,7 +8375,7 @@
         ],
         "lineup_source": "Ansar Khan",
         "updated_at": "2026-10-14T15:40:12.628Z",
-        "fetched_at": "2026-10-14T16:02:08Z"
+        "fetched_at": "2026-10-14T18:01:59Z"
     },
     "UTA": {
         "f1": [
@@ -10086,6 +10096,16 @@
         ],
         "f4": [
             {
+                "name": "Reid Schaefer",
+                "number": 49,
+                "pos": "lw",
+                "id": 32867,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Jack Drury",
                 "number": 18,
                 "pos": "c",
@@ -10108,10 +10128,10 @@
         ],
         "d1": [
             {
-                "name": "Adam Wilsby",
-                "number": 83,
+                "name": "Nicolas Hague",
+                "number": 41,
                 "pos": "ld",
-                "id": 36308,
+                "id": 2799,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -10162,10 +10182,10 @@
                 "movement": null
             },
             {
-                "name": "Nicolas Hague",
-                "number": 41,
+                "name": "Adam Wilsby",
+                "number": 83,
                 "pos": "rd",
-                "id": 2799,
+                "id": 36308,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -10297,8 +10317,8 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-13)",
-        "updated_at": "2026-10-14T14:40:07.615Z",
-        "fetched_at": "2026-10-14T16:02:08Z"
+        "lineup_source": "Max Herz",
+        "updated_at": "2026-10-14T17:40:54.358Z",
+        "fetched_at": "2026-10-14T18:01:59Z"
     }
 }
