@@ -93,7 +93,8 @@ def sync_history():
             database=DB_NAME,
             user=DB_USER,
             password=DB_PASSWORD,
-            port=DB_PORT
+            port=DB_PORT,
+            sslmode="require",  # never fall back to plaintext with the password on the wire
         )
         cur = conn.cursor()
         

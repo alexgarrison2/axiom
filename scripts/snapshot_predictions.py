@@ -90,7 +90,8 @@ def generate_and_execute_snapshot():
             database=DB_NAME,
             user=DB_USER,
             password=DB_PASSWORD,
-            port=DB_PORT
+            port=DB_PORT,
+            sslmode="require",  # never fall back to plaintext with the password on the wire
         )
         cur = conn.cursor()
 

@@ -11,9 +11,6 @@ RATE_LIMIT_SEC = 0.4
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "historical_pbp")
 
 import argparse
-import ssl
-
-ssl._create_default_https_context = ssl._create_unverified_context
 
 def get_pbp(game_id):
     """Fetch play-by-play data for a specific game ID."""
