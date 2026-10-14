@@ -54,14 +54,26 @@ export function trimGame(g: NhlGame): LiveGame | null {
     };
 }
 
+const DAY_MS = 86_400_000;
+/** The home page's archive reaches back to 2005; the NHL schedule is out about a season ahead. */
+const FIRST_DATE = '2005-10-01';
+const MAX_AHEAD_DAYS = 400;
+/** A day this far back is settled (finals turn OFF within hours): cache it for a day, not 20s. */
+const SETTLED_DAYS = 2;
+
 export async function GET(request: NextRequest) {
     const date = request.nextUrl.searchParams.get('date');
     if (!validDate(date)) {
         return NextResponse.json({ error: 'date must be YYYY-MM-DD' }, { status: 400 });
     }
+    const ageDays = (Date.now() - Date.parse(`${date}T00:00:00Z`)) / DAY_MS;
+    if (date < FIRST_DATE || ageDays < -MAX_AHEAD_DAYS) {
+        return NextResponse.json({ error: 'date out of range' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=86400' } });
+    }
+    const settled = ageDays > SETTLED_DAYS;
     try {
         const res = await fetch(`https://api-web.nhle.com/v1/score/${date}`, {
-            next: { revalidate: 20 },
+            next: { revalidate: settled ? 86_400 : 20 },
             signal: AbortSignal.timeout(6000),
             headers: { 'User-Agent': 'pony-xg (live scores)' },
         });
@@ -70,7 +82,13 @@ export async function GET(request: NextRequest) {
         const games = (body.games ?? []).map(trimGame).filter((g): g is LiveGame => g !== null);
         return NextResponse.json(
             { date, fetchedAt: new Date().toISOString(), games },
-            { headers: { 'Cache-Control': 'public, max-age=10, s-maxage=20, stale-while-revalidate=40' } },
+            {
+                headers: {
+                    'Cache-Control': settled
+                        ? 'public, max-age=3600, s-maxage=86400'
+                        : 'public, max-age=10, s-maxage=20, stale-while-revalidate=40',
+                },
+            },
         );
     } catch {
         return NextResponse.json({ error: 'upstream unavailable' }, { status: 502 });

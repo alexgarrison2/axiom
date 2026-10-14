@@ -23,8 +23,9 @@ const loadPredictions = cache(getPredictions);
 
 /**
  * ?date= must be a real day between the first season the NHL score feed
- * covers well and five years out: bounds the feed fetches (each day is one
- * cached fetch), anything else falls back to the default slate.
+ * covers well and about a season out (the NHL schedule is published no
+ * further): bounds the feed fetches (each day is one cached fetch), anything
+ * else falls back to the default slate.
  */
 const FIRST_DATE = '2005-10-01';
 
@@ -32,7 +33,7 @@ function requested(sp: Record<string, string | string[] | undefined>, today: str
     const d = sp.date;
     const s = Array.isArray(d) ? d[0] : d;
     if (!validDate(s)) return null;
-    return s >= FIRST_DATE && s <= addDays(today, 5 * 366) ? s : null;
+    return s >= FIRST_DATE && s <= addDays(today, 400) ? s : null;
 }
 
 /**
