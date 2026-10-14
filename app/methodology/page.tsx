@@ -241,7 +241,7 @@ export default function MethodologyPage() {
         <main className="pb-tabbar">
             <HashScroll />
             <div className="page py-5 md:py-7">
-                <h1 className="heading-page">Methodology</h1>
+                <h1 className="heading-page">How it works</h1>
 
                 <div className="mt-5 grid gap-6 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-10">
                     <nav aria-label="On this page" className="min-w-0 lg:sticky lg:top-[calc(var(--appbar-h)+20px)] lg:self-start">

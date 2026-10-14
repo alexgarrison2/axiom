@@ -24,7 +24,7 @@ export default function Footer() {
                 </p>
                 <nav aria-label="Footer" className="flex items-center gap-x-5 md:ml-auto">
                     <Link href="/methodology" className={link}>
-                        Methodology
+                        How it works
                     </Link>
                     <span>21+ · 1-800-GAMBLER</span>
                 </nav>
