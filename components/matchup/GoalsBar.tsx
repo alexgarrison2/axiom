@@ -8,7 +8,8 @@ const GOAL_SCALE = 9;
 /**
  * Projected goals on a goal axis, in the win bar's own language: each team's xG
  * stacked end to end (gradient, hatch, the heavier side lit), a white tick at the
- * posted total. Over/under reads as whether the bar passes the tick.
+ * posted total. No over/under lean is printed: the projected total barely moves from game to
+ * game (sd ~0.15 goals vs ~0.5 for the line), so a lean would only restate the line.
  * `compact` (the slate pane's header): a slimmer bar, numbers only, the line's value beside the readout.
  */
 export function GoalsBar({
@@ -31,8 +32,6 @@ export function GoalsBar({
     const total = ax + hx;
     const lineN = line != null ? Number(line) : null;
     const pos = (g: number) => Math.min(100, (g / GOAL_SCALE) * 100);
-    const diff = lineN != null ? total - lineN : null;
-    const lean = diff == null ? null : Math.abs(diff) < 0.25 ? 'On the line' : diff > 0 ? `Over by ${diff.toFixed(1)}` : `Under by ${Math.abs(diff).toFixed(1)}`;
     const awayLead = ax >= hx;
     const seg = (side: 'away' | 'home') => {
         const tri = side === 'away' ? away : home;
@@ -70,7 +69,7 @@ export function GoalsBar({
                     {lineN != null ? (
                         <>
                             {' '}
-                            vs {lineN} · {lean}
+                            vs {lineN}
                         </>
                     ) : null}
                 </span>
