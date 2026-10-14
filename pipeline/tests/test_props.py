@@ -132,6 +132,19 @@ def test_rest_days_count_from_each_teams_last_game():
     assert prop_board._rest(logs, "2026-10-05") == {"AAA": 1, "BBB": 3}
 
 
+def test_slate_prices_the_lineup_or_else_the_last_dressed_skaters():
+    logs = pd.DataFrame({
+        "game_id": [2026020001, 2026020001, 2026020001, 2026020005, 2026020005, 2025020900, 2026020002],
+        "team":    ["AAA", "AAA", "AAA", "AAA", "AAA", "AAA", "BBB"],
+        "player_id": [1, 2, 3, 1, 2, 4, 9],
+        "prev":    [0, 0, 0, 0, 0, 1, 0]})
+    lineups = {9: {"team": "BBB"}, 10: {"team": "BBB"}}
+    d = prop_board._dressing(lineups, logs)
+    # BBB posted a lineup: exactly it. AAA did not: who dressed in its latest game (3 was scratched,
+    # 4 only played last season), not everyone who has played for it.
+    assert d == {"BBB": {9, 10}, "AAA": {1, 2}}
+
+
 def test_goalie_carries_regressed_gsax_when_rated():
     g = prop_board._goalie("X Y", "Confirmed", {"X Y": {"gsax_per_game": 0.2149}})
     assert g == {"name": "X Y", "status": "Confirmed", "gsax": 0.21}

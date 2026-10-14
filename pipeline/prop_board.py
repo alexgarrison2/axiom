@@ -209,6 +209,20 @@ def _hits(part: pd.DataFrame) -> dict:
     return {key: int((part[stat] >= k).sum()) for key, stat, k in pm.PROPS}
 
 
+def _dressing(lineups: dict, logs: pd.DataFrame) -> dict:
+    """{team: skater ids priced tonight}: its posted DailyFaceoff lineup, or, for a team without one,
+    the skaters who dressed in its latest game this season (not everyone who has played for it:
+    scratched, injured and reassigned players stay unpriced)."""
+    out = {}
+    for pid, lu in lineups.items():
+        out.setdefault(lu["team"], set()).add(pid)
+    cur = logs[logs["prev"] == 0]
+    last = cur.groupby("team")["game_id"].transform("max")
+    for team, part in cur[cur["game_id"] == last].groupby("team"):
+        out.setdefault(team, set(part["player_id"]))
+    return out
+
+
 def _calibrated(feats: pd.DataFrame, fair: pd.DataFrame, today: str) -> pd.DataFrame:
     """CAL arms: shift tonight's fair probabilities by the per-market logit shift fitted on the
     last pm.CAL_WINDOW graded regular-season player-games before today (prereg_props_calib.json)."""
@@ -239,7 +253,7 @@ def build(today=None) -> tuple[dict, dict]:
     ids = sorted(set(lineups) | cur_ids)
     team_of = {pid: (lineups[pid]["team"] if pid in lineups else latest.at[pid, "team"]) for pid in ids if pid in latest.index}
 
-    lineup_teams = {lu["team"] for lu in lineups.values()}
+    dressing = _dressing(lineups, logs)
     # Tonight rows for slate skaters.
     tonight, game_rows = [], []
     for g in games:
@@ -255,8 +269,7 @@ def build(today=None) -> tuple[dict, dict]:
                                       "away": _goalie(g.get("awayGoalieConfirmed"), g.get("awayGoalieStatus"), ratings)},
                           "rest": {"home": rest.get(home), "away": rest.get(away)}})
         for pid, t in team_of.items():
-            # A team with a posted lineup dresses only its lineup; otherwise everyone on it is listed.
-            if t not in (home, away) or (t in lineup_teams and pid not in lineups):
+            if t not in (home, away) or pid not in dressing.get(t, ()):
                 continue
             last = latest.loc[pid]
             tonight.append({"game_id": gid, "date": today, "player_id": pid, "name": last["name"], "team": t,
