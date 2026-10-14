@@ -308,8 +308,8 @@ promoted win % and either total): dev pooled T_sim - T_gm **+0.0039** (SE 0.0066
 2024-25 +0.0027), holdout **-0.0172** (SE 0.0086).  Fails on dev, so **`expected_total` stays
 goal_model's** and the derivative markets are anchored to (published win %, goal_model total).
 The holdout says the opposite (over 5.5 slope 0.93 with the sim's total vs 0.55): 2025-26 scored
-6.25 goals a game and the simulator's game-to-game spread of totals tracked it better.  A next
-pre-registered test should use the 2026-27 live totals closes.
+6.25 goals a game and the simulator's game-to-game spread of totals tracked it better.  The next
+pre-registered test runs forward on 2026-27 live games: "Totals anchor forward test" below.
 
 **Diagnostics** (dev, descriptive).  Ablations of the raw simulator (each coefficient group set
 to 0; ML log loss change, SE): RAPM lineup term +0.0091 (0.0024), home ice +0.0041 (0.0015),
@@ -332,6 +332,37 @@ Per-game fallback to the logit (`winpct_engine = logit`) when the simulator cann
 (lineup term stale / under the coverage gate, missing pack or parameters, non-finite inputs).
 Rollback: repository variable `PONYXG_WINPCT=logit`.  `validate_outputs.py winpct_engine` checks
 every row.
+
+### Totals anchor forward test (`prereg_totals_forward.json`, `totals_test.py`, `totals_forward.py`)
+
+Pre-registered 2026-10-14T17:55Z (committed before any arm was computed): which expected total the
+published totals markets are anchored to.  Every arm is the same simulation anchored to the
+published win % and a different total: **GM** `goal_model.expected_total` (today), **SIM** the
+simulator's own total, **BLEND_GM** / **BLEND_SIM** 0.80 x that + 0.20 x the market's total
+`T_mkt` (the de-vigged (power) P(over | no push) read through the GM-anchored total histogram,
+exponentially tilted until it matches).  Primary metric: log loss of P(over | no push) on the posted
+line of the last pregame SiteHistory snapshot; also the full over / push / under outcome.  One look
+at the first **500** eligible no-push games after the declaration (early December); an arm replaces
+GM iff it is better on the primary metric by at least max(1 paired SE, 0.0010) and not worse than
++0.0010 on the full outcome (lowest log loss among passing arms, near-ties in the order SIM,
+BLEND_SIM, BLEND_GM).  The live run logs every arm in the frozen column `totals_test`
+(predictions_detailed.csv and SiteHistory, contract v2.5; nothing published changes;
+`validate_outputs.py totals_test`).
+
+```bash
+cd pipeline
+python -m bu.sim.totals_forward status    # counts only until the decision set is complete
+python -m bu.sim.totals_forward look      # the single look (out/look_log.jsonl, refused twice)
+python -m bu.sim.totals_forward dry-run   # descriptive: pre-declaration games
+```
+
+Dry run (DESCRIPTIVE, not part of the decision: the 89 pre-declaration games of 2026-10-02 ..
+10-13 with a simulated row, a posted line and both prices, rebuilt from the git history of
+predictions_detailed.csv; SIM / BLEND arms approximated by tilting the GM-anchored histogram,
+within 0.0015 of exact re-anchoring on synthetic games): P(over | no push) log loss GM 0.6978,
+SIM 0.6754, BLEND_SIM 0.6774, BLEND_GM 0.6956, de-vigged market 0.6877; SIM - GM -0.0224 (SE
+0.0099), BLEND_SIM - GM -0.0204 (SE 0.0086), BLEND_GM - GM -0.0022 (SE 0.0011).  Spread of the
+total: GM sd 0.15 (corr with the result -0.02), SIM sd 0.35 (0.25), line sd 0.49.
 
 ## Lineup inputs: ratings v4 (`prereg_inputs_v4.json`, `inputs_v4.py`)
 

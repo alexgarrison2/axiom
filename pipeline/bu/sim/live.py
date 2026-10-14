@@ -31,6 +31,7 @@ from . import anchor as AN
 from . import engine as EN
 from . import markets as MK
 from . import rates as RT
+from . import totals_test as TT
 from .params import load_params, state_pack_path
 from .state import SimState, rows_from_season_csvs
 
@@ -361,6 +362,13 @@ class SimServer:
                   "margin_hist": [round(float(x), 4) for x in s["margin_hist"]],
                   "anchor": info or None, "fallback_reason": why if dist.source != "sim" else None}
         out["sim_detail"] = json.dumps(detail, separators=(",", ":"))
+        # Totals-anchor forward test (prereg_totals_forward.json): every arm's over / push / under on
+        # the posted line, logged only (predictions_detailed / SiteHistory ``totals_test``)
+        if dist.source == "sim" and info and run is not None:
+            out["totals_test"] = TT.live_record(run, self.S, self.n, float(p_pub), float(total_pub),
+                                                s["total_hist"], odds or {})
+        else:
+            out["totals_test"] = TT.record(dist.source if dist.source != "sim" else self.variant)
         return out
 
     # ---------------------------------------------------------------- prices

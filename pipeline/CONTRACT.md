@@ -1,4 +1,4 @@
-# Predictions data contract (schema v2.4)
+# Predictions data contract (schema v2.5)
 
 v2.1 added the shadow columns, v2.2 the game simulator columns, v2.3 the win-% engine columns
 (`winpct_engine`, `logit_*`: the simulator became the engine of the model win %), v2.4 player
@@ -8,7 +8,9 @@ inputs (`sim_version` `sim-m5-v4-...`; rollback `PONYXG_SIM_INPUTS=v2`) (all add
 `schema_version` column stays `2`; no predictions column changed shape).  Ratings v5 (impact-only:
 `player_ratings.json` gains `fin_pp` and `impact.pen_units` / `pen_t0` / `fin_pp`, the bundle's `v4`
 table `fin_pp`; still version 4) is additive too, as is the production score (`player_ratings.json`
-`prod` / `gs_pg` and key `prod`, the bundle's `prod` table; still version 4).
+`prod` / `gs_pg` and key `prod`, the bundle's `prod` table; still version 4).  v2.5 adds the
+logged-only `totals_test` column (the totals-anchor forward test, `bu/sim/prereg_totals_forward.json`)
+to `predictions_detailed.csv` and SiteHistory; no published value changes.
 
 `predictions_detailed.csv` is written by `pipeline/predict_games.py` to
 `data/predictions_detailed.csv` (server copy) and
@@ -87,6 +89,7 @@ All of these columns are empty unless `prediction_status` is `pregame` or `froze
 | `logit_model_win_pct` | float % | no | Shadow, not displayed: the logit game model's model-only home win % (its rollback chain included: F1 / no-FIN models per `side_lineup_score`). Equals `home_model_win_pct` when `winpct_engine` is `logit`. |
 | `logit_home_win_pct` | float % | no | The same, blended with the market like `home_win_pct` (same price and `blend_weight`). |
 | `logit_expected_total` | float goals | no | `goal_model.expected_total` of the logit's features (league pace × matchup pace). |
+| `totals_test` | JSON object | yes | Logged only, not displayed (v2.5; `bu/sim/totals_test.py`, `bu/sim/prereg_totals_forward.json`): `{v: 1, status, line, posted, q, t_mkt, k_bound, w_model, arms: {gm, sim, blend_gm, blend_sim: {t, o, p, u} \| null} \| null}`. `status` `sim` (else `poisson_fallback` / `raw` with no arms, or `error: ...`); `line` the priced total line (`sim_total_line`), `posted` whether it is a book line; `q` the de-vigged (power) P(over \| no push) of `total_over` / `total_under`; `t_mkt` the market's expected total read through the simulator's GM-anchored total histogram (exponentially tilted until P(over \| no push) = q; `k_bound` true when the tilt hit its bound). Each arm: its expected-total target `t` (`gm` = `expected_total`, `sim` = `sim_expected_total`, `blend_*` = 0.80 x that + 0.20 x `t_mkt`) and the over / push / under fractions (4 dp) of the same simulation re-anchored to `home_win_pct` and `t`; `gm` equals `over_pct` / `total_push_pct` / `under_pct` up to rounding; the blend arms are null without a market total. Empty on rows frozen before v2.5. |
 | `side_win_pct` | float % | no | **Published** win probability: the model blended with the de-vigged market (`market.py`). Home + away = 100. |
 | `side_model_odds` | string | no | Fair American odds of the **model-only** probability `side_model_win_pct` (`-125`, `+105`). Before fix1-G1 this held the published line; rows frozen before then are relabelled on read. |
 | `side_blend_odds` | string | no | Fair American odds of the **published** probability `side_win_pct` (the blend). Both lines are computed from the rounded percentages and agree with them to within 1 cent (validate_outputs `fair_odds`). |
@@ -374,6 +377,8 @@ schedule columns), `side_xg_sparkline`, `side_avg_speed`, `side_rr_rate`,
 * SiteHistory gains (v2.3) `winpct_engine`, `logit_model%` and `logit%` (`logit_model_win_pct` /
   `logit_home_win_pct`): the logit game model's record is kept every run after the simulator
   became the win-% engine, for a rollback (`PONYXG_WINPCT=logit`) and the live comparison.
+* SiteHistory gains (v2.5) `totals_test`: the row's `totals_test` JSON as is, so the last pregame
+  snapshot freezes every totals-anchor arm for `python -m bu.sim.totals_forward` (`bu/sim/prereg_totals_forward.json`).
 * RAPM v2 lineup term (`pipeline/bu/lineup/out/serving_bundle.json.gz`, rebuilt by the daily
   `bu_refresh.yml` workflow, see `pipeline/bu/README.md`): `built_at`, `max_source_date`,
   `n_games`, current ratings, TOI-share state, team lineup histories, the DFO-name

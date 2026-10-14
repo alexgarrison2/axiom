@@ -121,6 +121,9 @@ FIELDNAMES = [
     # Win-% engine (contract v2.3): which engine made home_model% and the logit game model's
     # model-only / blended home win %, kept for the rollback and the live comparison.
     'winpct_engine', 'logit_model%', 'logit%',
+    # Totals-anchor forward test (contract v2.5, bu/sim/prereg_totals_forward.json): the frozen
+    # predictions_detailed totals_test JSON (every candidate total's over / push / under on the line).
+    'totals_test',
 ]
 
 
@@ -260,6 +263,7 @@ def snapshot(predictions_path=None, history_dir=None, now_utc=None):
                 'winpct_engine': (row.get('winpct_engine') or '').strip(),
                 'logit_model%': format_pct(row.get('logit_model_win_pct', '')),
                 'logit%': format_pct(row.get('logit_home_win_pct', '')),
+                'totals_test': (row.get('totals_test') or '').strip(),
                 'awayteam': row.get('away_team', ''),
                 'hometeam': row.get('home_team', ''),
 

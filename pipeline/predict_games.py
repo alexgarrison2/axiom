@@ -99,6 +99,9 @@ FROZEN_COLUMNS = [
     # Win-% engine (schema v2.3, additive): which engine made home_model_win_pct, and the logit
     # game model's own model-only / blended home win % and total, logged every run (rollback shadow)
     "winpct_engine", "logit_model_win_pct", "logit_home_win_pct", "logit_expected_total",
+    # Totals-anchor forward test (schema v2.5, additive, not displayed; bu/sim/prereg_totals_forward.json):
+    # each candidate expected total's over / push / under on the posted line (bu/sim/totals_test.py)
+    "totals_test",
 ]
 
 

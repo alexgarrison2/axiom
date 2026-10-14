@@ -46,6 +46,9 @@ Checks (each is named; ``--allow`` or $PONYXG_VALIDATE_ALLOW can downgrade one):
   winpct_engine  every pregame row names the engine of its model % (sim / logit) and logs the
                  logit's own %; a sim row was simulated, carries the simulator version and its
                  model % is the simulated %; a logit row's model % is the logit's
+  totals_test    every simulated pregame row logs the totals-anchor arms (bu/sim/prereg_totals_forward.json):
+                 v1 JSON, the GM arm is the published total market, each arm sums to 1, the blend
+                 arms exist exactly when the market total does
   goal_splits    current-season goals_ev + goals_pp + goals_sh + emptynet_goalsfor == goals_for
   bu_bundle      when the live game model uses the RAPM v2 lineup term: its serving bundle
                  (bu/lineup/out/serving_bundle.json.gz) is readable, carries the model's
@@ -729,6 +732,62 @@ def check_winpct_engine(ctx):
     return errs
 
 
+def check_totals_test(ctx):
+    """predictions_detailed.csv ``totals_test`` (contract v2.5, bu/sim/prereg_totals_forward.json):
+    every pregame row with a simulated game logs the totals-anchor arms (JSON v1); a 'sim' record's
+    GM arm is exactly the published total market (within rounding), each arm's over / push / under
+    sums to 1 at the priced line, and the BLEND arms are there exactly when the market total is.
+    Rows frozen before v2.5 (empty) are skipped."""
+    from bu.sim import totals_test as TT
+    errs = []
+    for path in ctx.get("pred_files", PRED_FILES):
+        if not os.path.exists(path):
+            continue
+        name = os.path.relpath(path, REPO_ROOT)
+        rows = _rows(path)
+        if not rows or "totals_test" not in rows[0]:
+            continue
+        for r in rows:
+            st = r.get("prediction_status")
+            if st not in ("pregame", "frozen") or _blank(r.get("sim_status")):
+                continue
+            raw = r.get("totals_test")
+            if _blank(raw) and st == "frozen":
+                continue
+            gid = r.get("game_id")
+            d = TT.parse(raw)
+            if d is None:
+                errs.append(f"{name} {gid}: totals_test missing or not v1 JSON")
+                continue
+            if r.get("sim_status") != "sim" or d.get("status") != "sim":
+                if r.get("sim_status") == "sim" and d.get("status") != "raw":
+                    errs.append(f"{name} {gid}: simulated row with totals_test status {d.get('status')!r}")
+                continue
+            arms = d.get("arms") or {}
+            line = _num(d.get("line"))
+            if line is None or line != _num(r.get("sim_total_line")):
+                errs.append(f"{name} {gid}: totals_test line {d.get('line')} != sim_total_line {r.get('sim_total_line')}")
+            for a in ("gm", "sim"):
+                if not arms.get(a):
+                    errs.append(f"{name} {gid}: totals_test arm {a} missing")
+            for a, v in arms.items():
+                if not v:
+                    continue
+                probs = [v.get(k) for k in ("o", "p", "u")]
+                if any(x is None or not 0 <= x <= 1 for x in probs) or abs(sum(probs) - 1) > 0.0005:
+                    errs.append(f"{name} {gid}: totals_test arm {a} probabilities {probs}")
+            gm = arms.get("gm") or {}
+            pub = [_num(r.get(c)) for c in ("over_pct", "total_push_pct", "under_pct")]
+            if gm and None not in pub and any(abs(gm.get(k, -1) - p / 100) > 0.0006
+                                              for k, p in zip(("o", "p", "u"), pub)):
+                errs.append(f"{name} {gid}: totals_test GM arm {gm} is not the published total market {pub}")
+            has_mkt = d.get("t_mkt") is not None
+            for a in ("blend_gm", "blend_sim"):
+                if bool(arms.get(a)) != has_mkt:
+                    errs.append(f"{name} {gid}: totals_test arm {a} {'missing' if has_mkt else 'without a market total'}")
+    return errs
+
+
 def model_pct_from_breakdown(row):
     """Home model-only win % rebuilt from the row's own factor breakdown, or None.
 
@@ -1155,6 +1214,7 @@ CHECKS = {
     "sim_markets": check_sim_markets,
     "model_independent": check_model_independent,
     "winpct_engine": check_winpct_engine,
+    "totals_test": check_totals_test,
     "goal_splits": check_gamestats_goals,
     "bu_bundle": check_bu_bundle,
     "sim_inputs": check_sim_inputs,
