@@ -4309,18 +4309,8 @@
             {
                 "name": "Parker Kelly",
                 "number": 17,
-                "pos": "lw",
-                "id": 4600,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Nicolas Roy",
-                "number": 10,
                 "pos": "c",
-                "id": 3818,
+                "id": 4600,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4334,7 +4324,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4356,7 +4346,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d2": [
@@ -4368,7 +4358,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sam Malinski",
@@ -4378,7 +4368,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -4390,7 +4380,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Brent Burns",
@@ -4400,7 +4390,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -4432,6 +4422,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Nicolas Roy",
+                "number": 10,
+                "pos": "ir2",
+                "id": 3818,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -4445,11 +4444,11 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Nicolas Roy",
-                "number": 10,
+                "name": "Artturi Lehkonen",
+                "number": 62,
                 "pos": "sk2",
-                "id": 3818,
-                "ppUnit": null,
+                "id": 2679,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -4483,10 +4482,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Artturi Lehkonen",
-                "number": 62,
+                "name": "Jaden Schwartz",
+                "number": 71,
                 "pos": "sk2",
-                "id": 2679,
+                "id": 1864,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4510,9 +4509,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-10-14T23:30:22.695Z",
-        "fetched_at": "2026-10-14T23:33:11Z"
+        "lineup_source": "Evan Rawal",
+        "updated_at": "2026-10-15T00:08:05.808Z",
+        "fetched_at": "2026-10-15T01:02:05Z"
     },
     "LAK": {
         "f1": [
@@ -4831,14 +4830,14 @@
     "DAL": {
         "f1": [
             {
-                "name": "Jason Robertson",
-                "number": 21,
+                "name": "Tyler Seguin",
+                "number": 91,
                 "pos": "lw",
-                "id": 2793,
+                "id": 139,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Roope Hintz",
@@ -4851,26 +4850,26 @@
                 "movement": null
             },
             {
-                "name": "Jamie Benn",
-                "number": 14,
+                "name": "Mikko Rantanen",
+                "number": 96,
                 "pos": "rw",
-                "id": 425,
-                "ppUnit": 2,
+                "id": 2477,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
             {
-                "name": "Tyler Seguin",
-                "number": 91,
+                "name": "Jason Robertson",
+                "number": 21,
                 "pos": "lw",
-                "id": 139,
+                "id": 2793,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Sam Steel",
@@ -4883,23 +4882,23 @@
                 "movement": null
             },
             {
-                "name": "Mikko Rantanen",
-                "number": 96,
+                "name": "Jamie Benn",
+                "number": 14,
                 "pos": "rw",
-                "id": 2477,
-                "ppUnit": 1,
+                "id": 425,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f3": [
             {
-                "name": "Oskar Back",
-                "number": 10,
+                "name": "Justin Hryckowian",
+                "number": 49,
                 "pos": "lw",
-                "id": 29109,
-                "ppUnit": null,
+                "id": 31798,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4915,11 +4914,11 @@
                 "movement": null
             },
             {
-                "name": "Justin Hryckowian",
-                "number": 49,
+                "name": "Oskar Back",
+                "number": 10,
                 "pos": "rw",
-                "id": 31798,
-                "ppUnit": 2,
+                "id": 29109,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5139,9 +5138,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-10-14T21:15:17.684Z",
-        "fetched_at": "2026-10-14T22:02:05Z"
+        "lineup_source": "Mike Heika",
+        "updated_at": "2026-10-15T00:28:11.334Z",
+        "fetched_at": "2026-10-15T01:02:05Z"
     },
     "TBL": {
         "f1": [
