@@ -23,8 +23,9 @@ import type { DetailsState } from './DetailsLoading';
 /**
  * The Preview tab: everything that answers "who wins tonight and why" on one
  * sheet, mirrored like the card (away left, home right, labels down the
- * centre). Left: why the forecast leans, the goalie duel, recent form and who
- * is out. Right: the tale of the tape, filterable to tonight's situation.
+ * centre). Left: the tale of the tape, filterable to tonight's situation,
+ * and the goalie duel. Right: why the forecast leans, the stakes and our
+ * record. Recent form and who is out run full width below.
  * Lines, prices and news keep their own tabs.
  */
 
@@ -396,7 +397,14 @@ export function PreviewPanel({ p, phase, state, implication }: { p: Prediction; 
     const blend = w != null && w < 0.999 ? `Forecast = model ${Math.round(w * 100)}% + market ${100 - Math.round(w * 100)}%` : null;
     const confHref = termHref('conf');
     return (
-        <div className="grid grid-cols-1 gap-x-8 gap-y-5 cq-lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] cq-lg:items-start">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-5 cq-lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] cq-lg:items-start">
+            <div className="flex min-w-0 flex-col gap-5">
+                <section aria-label="Tale of the tape" className="flex flex-col gap-2">
+                    <Heading>Tape</Heading>
+                    <MatchupPanel p={p} state={state} />
+                </section>
+                <Goalies p={p} state={state} />
+            </div>
             <div className="flex min-w-0 flex-col gap-5">
                 <section aria-label="Why" className="flex flex-col gap-2">
                     <Heading
@@ -425,13 +433,6 @@ export function PreviewPanel({ p, phase, state, implication }: { p: Prediction; 
                         </p>
                     ) : null}
                     <ContextChips p={p} />
-                </section>
-                <Goalies p={p} state={state} />
-            </div>
-            <div className="flex min-w-0 flex-col gap-5">
-                <section aria-label="Tale of the tape" className="flex flex-col gap-2">
-                    <Heading>Tape</Heading>
-                    <MatchupPanel p={p} state={state} compact />
                 </section>
                 <Extras p={p} state={state} implication={implication} />
             </div>

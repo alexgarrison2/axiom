@@ -239,8 +239,8 @@ export function sideValues(tri: string, games: MatchupGame[]): SideValues {
 
 // ── league reference ─────────────────────────────────────────────────────────
 
-/** A team needs this many games in a slice to enter the league reference. */
-export const REF_MIN_GP = 3;
+/** A team needs this many games in a slice to enter the league reference: one, so ranks show from game 1. */
+export const REF_MIN_GP = 1;
 
 export const refKey = (location: LocationKey, rest: RestKey, last: LastKey = 'all') => (last === 'all' ? `${location}|${rest}` : `${location}|${rest}|L${last}`);
 
@@ -295,13 +295,29 @@ export function percentile(v: number | null | undefined, ref: number[] | undefin
     return Math.max(0, Math.min(100, ((worse + 0.5 * equal) / n) * 100));
 }
 
+/**
+ * League rank, 1 = best (lower-is-better stats flipped), ties sharing the
+ * better rank. The reference holds values rounded to 3 dp, so the side's value
+ * is too. A value not in the reference (a starter-filtered side) counts itself in.
+ */
+export function leagueRank(v: number | null | undefined, ref: number[] | undefined, higherBetter: boolean): { rank: number; outOf: number } | null {
+    if (v == null || !Number.isFinite(v) || !ref?.length) return null;
+    const r = Math.round(v * 1000) / 1000;
+    let better = 0, member = false;
+    for (const x of ref) {
+        if (Math.abs(x - r) < 1e-9) member = true;
+        else if (higherBetter ? x > r : x < r) better++;
+    }
+    return { rank: better + 1, outOf: ref.length + (member ? 0 : 1) };
+}
+
 /** Percentile from a 1-based rank (1 = best) among `outOf`, same mid-rank rule. */
 export function rankPercentile(rank: number | null | undefined, outOf: number): number | null {
     if (rank == null || !(outOf > 0) || rank < 1) return null;
     return Math.max(0, Math.min(100, ((outOf - rank + 0.5) / outOf) * 100));
 }
 
-/** Below this many games a side's bar is hatched and it never shows an advantage. */
+/** Below this many games a side is a small sample: marked, never hidden (ranks and edges show from game 1). */
 export const MIN_GP = 10;
 /** Percentile gap under which neither side gets the advantage. */
 export const TIE_PCT = 5;
@@ -316,13 +332,12 @@ export interface SideScore {
 
 export const smallSample = (s: SideScore) => s.gp != null && s.gp < (s.minGp ?? MIN_GP);
 
-/** Which side is better, or null for a near-tie, a missing value or a small-sample winner. */
+/** Which side is better, or null for a near-tie or a missing value. A small sample still wins its row; the Tape marks the sample instead. */
 export function advantage(away: SideScore, home: SideScore): 'away' | 'home' | null {
     if (away.pct == null || home.pct == null) return null;
     const d = away.pct - home.pct;
     if (Math.abs(d) < TIE_PCT) return null;
-    const side = d > 0 ? 'away' : 'home';
-    return smallSample(side === 'away' ? away : home) ? null : side;
+    return d > 0 ? 'away' : 'home';
 }
 
 /** "68th" */

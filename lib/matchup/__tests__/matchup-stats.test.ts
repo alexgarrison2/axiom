@@ -5,6 +5,7 @@ import {
     daysOff,
     filterGames,
     goalieMatchKey,
+    leagueRank,
     ordinal,
     percentile,
     rankPercentile,
@@ -142,11 +143,21 @@ describe('percentiles and advantage', () => {
         expect(advantage({ pct: null, gp: 40 }, { pct: 48, gp: 40 })).toBeNull();
     });
 
-    it('a small-sample side (< 10 GP) never gets the advantage; the other side still can', () => {
-        expect(advantage({ pct: 90, gp: 6 }, { pct: 40, gp: 40 })).toBeNull();
+    it('a small-sample side (< 10 GP) still gets the advantage (marked, not hidden)', () => {
+        expect(advantage({ pct: 90, gp: 6 }, { pct: 40, gp: 40 })).toBe('away');
         expect(advantage({ pct: 20, gp: 6 }, { pct: 60, gp: 40 })).toBe('home');
         // values without a sample (lineup) are never small
         expect(advantage({ pct: 90 }, { pct: 20 })).toBe('away');
+    });
+
+    it('league rank: 1 = best, lower-is-better flips, ties share, an outside value counts itself in', () => {
+        expect(leagueRank(4, ref, true)).toEqual({ rank: 1, outOf: 4 });
+        expect(leagueRank(1, ref, false)).toEqual({ rank: 1, outOf: 4 });
+        expect(leagueRank(3.0004, ref, true)).toEqual({ rank: 2, outOf: 4 }); // rounds to the reference's 3 dp
+        expect(leagueRank(2.5, ref, true)).toEqual({ rank: 3, outOf: 5 });
+        expect(leagueRank(2, [1, 2, 2, 3], true)).toEqual({ rank: 2, outOf: 4 });
+        expect(leagueRank(null, ref, true)).toBeNull();
+        expect(leagueRank(2, [], true)).toBeNull();
     });
 
     it('ordinals', () => {
@@ -172,14 +183,14 @@ describe('last N filter', () => {
 });
 
 describe('league reference', () => {
-    it('ranks each slice (location × rest) separately and skips teams under the minimum', () => {
+    it('ranks each slice (location × rest) separately, every team from its first game', () => {
         const byTeam = new Map<string, MatchupGame[]>([
             ['STL', [1, 2, 3, 4].map(i => game({ id: `s${i}`, home: i % 2 === 0, gf: i }, 0))],
-            ['DAL', [1, 2].map(i => game({ id: `d${i}`, tri: 'DAL', home: true }, 1))],
+            ['DAL', [game({ id: 'd1', tri: 'DAL', home: true, gf: 1 }, 1)]],
         ]);
         const ref = buildReference(byTeam);
-        expect(ref[refKey('all', 'all')].gf_gp).toEqual([2.5]); // DAL has 2 games < 3
-        expect(ref[refKey('home', 'all')].gf_gp).toBeUndefined();
+        expect(ref[refKey('all', 'all')].gf_gp).toEqual([1, 2.5]); // DAL counts from game 1
+        expect(ref[refKey('road', 'all')].gf_gp).toEqual([2]);
         expect(ref[refKey('all', 0)].gf_gp).toEqual([2.5]);
         expect(Object.keys(ref)).toHaveLength(45);
     });

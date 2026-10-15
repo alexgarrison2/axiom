@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { Prediction, SideData, SideDetails } from '@/types/prediction';
+import type { Prediction, SideDetails } from '@/types/prediction';
 import { DEPLOY, loadJson } from '@/lib/client-data';
 import { SEASON_ID } from '@/lib/season';
 import { shortSeason } from '@/utils/team-stats/season';
@@ -17,6 +17,7 @@ import {
     STATS,
     advantage,
     filterGames,
+    leagueRank,
     ordinal,
     percentile,
     rankPercentile,
@@ -50,6 +51,9 @@ type LoadState = { status: 'loading' } | { status: 'error' } | { status: 'ready'
 interface Cell {
     value: number | null;
     pct: number | null;
+    /** League rank, 1 = best. */
+    rank: number | null;
+    outOf: number | null;
     gp?: number;
     minGp?: number;
 }
@@ -60,49 +64,6 @@ interface RowModel {
     adv: Side | null;
 }
 
-/**
- * One half of a row: the value sits in a fixed column at the outer edge and
- * the bar grows outward from the axis inside its own track, so nothing can
- * overflow the panel (no horizontal scroll at any width).
- */
-function Bar({ side, cell, color, state, fmt, h }: { side: Side; cell: Cell; color: string; state: BarState; fmt: (v: number) => string; h: string }) {
-    const away = side === 'away';
-    const w = cell.pct == null ? 0 : Math.max(cell.pct, 2);
-    const missing = cell.value == null || cell.pct == null;
-    const value = (
-        <span
-            className={cn(
-                'whitespace-nowrap text-caption tabular-nums',
-                away ? 'text-left' : 'text-right',
-                state === 'adv' ? 'font-bold text-fg-1' : missing ? 'text-fg-3' : 'text-fg-2',
-            )}
-        >
-            {missing ? '—' : fmt(cell.value!)}
-        </span>
-    );
-    const track = (
-        <div className={cn('relative', h)}>
-            {missing ? null : (
-                <div
-                    data-bar={state}
-                    className={cn('absolute top-1/2 h-2.5 -translate-y-1/2', away ? 'right-0 rounded-l-full' : 'left-0 rounded-r-full')}
-                    style={{
-                        width: `${w}%`,
-                        background: color,
-                        opacity: state === 'adv' ? 1 : state === 'even' ? 0.55 : 0.28,
-                    }}
-                />
-            )}
-        </div>
-    );
-    return (
-        <>
-            {away ? value : track}
-            {away ? track : value}
-        </>
-    );
-}
-
 type BarState = 'adv' | 'dim' | 'even';
 
 function barState(row: RowModel, side: Side): BarState {
@@ -110,127 +71,130 @@ function barState(row: RowModel, side: Side): BarState {
     return row.adv === side ? 'adv' : 'dim';
 }
 
-/** White wedge between the stat label and the bar of the side with the advantage. */
-function Wedge({ side }: { side: Side }) {
+/** Room on a track's outer end for the rank at the tip of a full-length bar. */
+const RANK_ROOM = '1.875rem';
+
+/**
+ * A side's bar, growing outward from its value at the spine, with the team's
+ * league rank at the tip: bar length is the league standing, so the rank
+ * labels what the length already says. The track keeps room for the rank, so
+ * nothing overflows the panel at any width.
+ */
+function Track({ side, cell, color, state }: { side: Side; cell: Cell; color: string; state: BarState }) {
+    const away = side === 'away';
+    if (cell.value == null || cell.pct == null) return <span />;
+    const w = Math.max(cell.pct, 3);
     return (
-        <span
-            aria-hidden="true"
-            data-wedge={side}
-            className={cn(
-                'absolute top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-y-transparent',
-                side === 'away' ? 'left-1 border-r-[7px] border-r-white' : 'right-1 border-l-[7px] border-l-white',
-            )}
-        />
+        <span className="relative h-full min-w-0">
+            <span className="absolute inset-y-0" style={away ? { left: RANK_ROOM, right: 0 } : { left: 0, right: RANK_ROOM }}>
+                <span
+                    data-bar={state}
+                    className={cn('absolute top-1/2 h-3 -translate-y-1/2', away ? 'right-0 rounded-l-[3px]' : 'left-0 rounded-r-[3px]')}
+                    style={{ width: `${w}%`, background: color, opacity: state === 'adv' ? 1 : state === 'even' ? 0.6 : 0.3 }}
+                />
+                {cell.rank != null ? (
+                    <span
+                        data-rank
+                        className={cn('absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-micro leading-none tabular-nums', cell.rank <= 8 ? 'font-semibold text-fg-1' : 'text-fg-3')}
+                        style={away ? { right: `calc(${w}% + 5px)` } : { left: `calc(${w}% + 5px)` }}
+                    >
+                        #{cell.rank}
+                    </span>
+                ) : null}
+            </span>
+        </span>
     );
 }
 
-function ChartRow({ row, colors, compact }: { row: RowModel; colors: Record<Side, string>; compact?: boolean }) {
-    const h = compact ? 'h-6' : 'h-7';
+/** A side's value beside the spine: bold ink with the edge, dim without it. */
+function Value({ side, cell, state, fmt }: { side: Side; cell: Cell; state: BarState; fmt: (v: number) => string }) {
+    const missing = cell.value == null;
     return (
-        <div
-            className="grid grid-cols-[2.75rem_minmax(0,1fr)_5.25rem_minmax(0,1fr)_2.75rem] items-center gap-x-1.5 cq-md:grid-cols-[3.25rem_minmax(0,1fr)_6rem_minmax(0,1fr)_3.25rem]"
-            data-stat={row.stat.key}
-            data-adv={row.adv ?? 'none'}
+        <span
+            className={cn(
+                'whitespace-nowrap text-caption tabular-nums',
+                side === 'away' ? 'text-right' : 'text-left',
+                missing || state === 'dim' ? 'text-fg-3' : state === 'adv' ? 'font-bold text-fg-1' : 'text-fg-2',
+            )}
         >
-            <Bar side="away" cell={row.cells.away} color={colors.away} state={barState(row, 'away')} fmt={row.stat.fmt} h={h} />
-            <span className={cn('relative flex items-center justify-center whitespace-nowrap border-x border-line px-3 text-micro font-bold uppercase tracking-wide text-fg-2', h)}>
-                {row.adv === 'away' ? <Wedge side="away" /> : null}
-                {row.stat.label}
-                {row.adv === 'home' ? <Wedge side="home" /> : null}
-            </span>
-            <Bar side="home" cell={row.cells.home} color={colors.home} state={barState(row, 'home')} fmt={row.stat.fmt} h={h} />
+            {missing ? '—' : fmt(cell.value!)}
+        </span>
+    );
+}
+
+/** Columns: away track, away value, stat label (the spine), home value, home track. */
+const COLS = 'grid grid-cols-[minmax(0,1fr)_2.5rem_4.25rem_2.5rem_minmax(0,1fr)] gap-x-1.5 cq-md:grid-cols-[minmax(0,1fr)_3rem_5rem_3rem_minmax(0,1fr)] cq-md:gap-x-2';
+
+function ChartRow({ row, colors }: { row: RowModel; colors: Record<Side, string> }) {
+    return (
+        <div className={cn(COLS, 'h-7 items-center')} data-stat={row.stat.key} data-adv={row.adv ?? 'none'}>
+            <Track side="away" cell={row.cells.away} color={colors.away} state={barState(row, 'away')} />
+            <Value side="away" cell={row.cells.away} state={barState(row, 'away')} fmt={row.stat.fmt} />
+            <span className="whitespace-nowrap text-center text-micro font-bold uppercase tracking-wide text-fg-3">{row.stat.label}</span>
+            <Value side="home" cell={row.cells.home} state={barState(row, 'home')} fmt={row.stat.fmt} />
+            <Track side="home" cell={row.cells.home} color={colors.home} state={barState(row, 'home')} />
         </div>
     );
 }
 
-/** Centered group label on the axis ("5v5", "Ignores filters"). */
+/** Centred group label on the spine ("5v5", "Ignores filters"). */
 function GroupTag({ children, extra, first }: { children: React.ReactNode; extra?: React.ReactNode; first?: boolean }) {
     return (
-        <div className={cn('flex items-center justify-center gap-1.5 pb-0.5', !first && 'mt-1 border-t border-dashed border-line pt-1.5')}>
-            <span className="rounded-[3px] border border-mute px-1 text-micro uppercase leading-[14px] tracking-wide text-fg-3">{children}</span>
+        <div className={cn('flex items-center justify-center gap-1.5 pb-0.5', first ? 'pt-1.5' : 'mt-1.5 border-t border-dashed border-line pt-2')}>
+            <span className="text-micro uppercase leading-[14px] tracking-label text-fg-3">{children}</span>
             {extra}
         </div>
     );
 }
 
-const DIVISION_SHORT: Record<string, string> = { Metropolitan: 'Metro' };
-
-/** ["3-1-0", "(6 pts)", "1st Metro"]: record, standings points, division place; each part stays on one line. */
-export function standingLine(s: Pick<SideData, 'record' | 'points' | 'divRank' | 'division'>): string[] | null {
-    if (!s.record) return null;
-    const [w, , otl] = s.record.split('-').map(Number);
-    const pts = s.points ?? (Number.isFinite(w) && Number.isFinite(otl) ? 2 * w + otl : null);
-    const div = s.divRank && s.division ? `${ordinal(s.divRank)} ${DIVISION_SHORT[s.division] ?? s.division}` : null;
-    return [s.record, ...(pts != null ? [`(${pts} pts)`] : []), ...(div ? [div] : [])];
-}
-
-function TeamHead({ side, tri, gp, pending, tags, standing }: { side: Side; tri: string; gp: number; pending: number; tags: string[]; standing: string[] | null }) {
+/**
+ * A side's head over its half of the chart: crest flush at the outer edge, the
+ * tri over a stroke of the colour its bars use, and the games counted. Under
+ * the sample minimum the count is boxed amber-dashed (a small sample, marked
+ * rather than hidden). Games played but not logged yet and filter tags follow.
+ */
+function SideHead({ side, tri, color, gp, minGp, pending, tags }: { side: Side; tri: string; color: string; gp: number; minGp: number; pending: number; tags: string[] }) {
     const away = side === 'away';
+    const small = gp < minGp;
     return (
         <div className={cn('flex min-w-0 items-center gap-2', !away && 'flex-row-reverse text-right')}>
-            <Crest tri={tri} size={96} className="-my-1 h-16 w-16 shrink-0 cq-sm:h-20 cq-sm:w-20 cq-md:h-24 cq-md:w-24" />
-            <div className={cn('flex min-w-0 flex-col', away ? 'items-start' : 'items-end')}>
-                <span className="font-display text-h2 font-bold uppercase leading-none text-fg-1">{tri}</span>
-                <span className={cn('mt-1 text-micro uppercase tracking-wide tabular-nums', gp < MIN_GP ? 'text-warn' : 'text-fg-3')}>
-                    GP <span className="font-bold">{gp}</span>
+            <Crest tri={tri} size={48} className="h-10 w-10 drop-shadow-none cq-md:h-12 cq-md:w-12" />
+            <div className={cn('flex min-w-0 flex-col gap-1', away ? 'items-start' : 'items-end')}>
+                <span className={cn('flex flex-col gap-1 font-display text-title font-bold uppercase leading-none text-fg-1', away ? 'items-start' : 'items-end')}>
+                    {tri}
+                    <span aria-hidden="true" className="h-[3px] w-6 rounded-full" style={{ background: color }} />
                 </span>
-                {standing ? (
-                    <span className={cn('mt-0.5 flex flex-wrap gap-x-1.5 text-micro uppercase tracking-wide tabular-nums text-fg-2', !away && 'justify-end')} data-standing>
-                        {standing.map(part => (
-                            <span key={part} className="whitespace-nowrap">
-                                {part}
-                            </span>
-                        ))}
+                <span className={cn('flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-micro uppercase tracking-wide tabular-nums', !away && 'justify-end')}>
+                    <span data-small-sample={small ? '' : undefined} className={cn('whitespace-nowrap', small ? 'rounded-[3px] border border-dashed border-warn/60 px-1 leading-[14px] text-warn' : 'text-fg-3')}>
+                        GP <b className="font-bold">{gp}</b>
+                        {small ? <span className="sr-only">, small sample</span> : null}
                     </span>
-                ) : null}
-                {pending > 0 ? (
-                    <span className="mt-0.5 text-micro uppercase tracking-wide text-amber" title="Played, but not in these numbers yet: the game log updates after the nightly ingest.">
-                        +{pending} pending
-                    </span>
-                ) : null}
-                {tags.length ? (
-                    <span className="mt-0.5 flex flex-wrap gap-x-1.5 text-micro uppercase tracking-wide text-brand" data-situation>
-                        {tags.map(t => (
-                            <span key={t} className="whitespace-nowrap">
-                                {t}
-                            </span>
-                        ))}
-                    </span>
-                ) : null}
+                    {pending > 0 ? (
+                        <span className="whitespace-nowrap text-amber" title="Played, but not in these numbers yet: the game log updates after the nightly ingest.">
+                            +{pending} pending
+                        </span>
+                    ) : null}
+                    {tags.map(t => (
+                        <span key={t} className="whitespace-nowrap text-brand">
+                            {t}
+                        </span>
+                    ))}
+                </span>
             </div>
         </div>
     );
 }
 
-/** Compact mode: a side's games counted (amber under the minimum), filter tags and games not logged yet, on its edge. */
-function SideCount({ gp, pending, tags, home = false }: { gp: number; pending: number; tags: string[]; home?: boolean }) {
-    return (
-        <span className={cn('flex min-w-0 flex-wrap gap-x-1.5 tabular-nums', home && 'justify-end text-right')}>
-            <span className={gp < MIN_GP ? 'text-warn' : undefined}>
-                GP <b className="font-bold">{gp}</b>
-            </span>
-            {pending > 0 ? (
-                <span className="text-amber" title="Played, but not in these numbers yet: the game log updates after the nightly ingest.">
-                    +{pending} pending
-                </span>
-            ) : null}
-            {tags.map(t => (
-                <span key={t} className="whitespace-nowrap text-brand">
-                    {t}
-                </span>
-            ))}
-        </span>
-    );
-}
-
-const pctText = (c: Cell) => (c.pct == null ? 'no value' : `${ordinal(c.pct)} pct`);
+const rankText = (c: Cell) => (c.rank == null ? 'no rank' : `ranked ${ordinal(c.rank)}${c.outOf ? ` of ${c.outOf}` : ''}`);
 
 /**
- * Tornado chart: each team's league percentile per stat, away left / home right, with filters for tonight's situation.
- * `compact` (the Preview tab, under a header that already names the teams): no team heads, tighter rows; games
- * counted and any filter tags ride the line above the chart.
+ * The Tape: each team per stat, away left / home right, mirrored on a spine of
+ * stat labels with the values beside it. Bars grow outward by league
+ * percentile and carry the league rank at their tip; the side with the edge is
+ * bold and full colour, the other dimmed. Filters narrow each team to its own
+ * situation tonight.
  */
-export function MatchupPanel({ p, state, compact = false }: { p: Prediction; state: DetailsState; compact?: boolean }) {
+export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState }) {
     const tris: Record<Side, string> = { away: p.away.team.triCode, home: p.home.team.triCode };
     const [load, setLoad] = useState<LoadState>({ status: 'loading' });
     const [useLoc, setUseLoc] = useState(false);
@@ -287,11 +251,12 @@ export function MatchupPanel({ p, state, compact = false }: { p: Prediction; sta
             for (const side of SIDES) {
                 if (stat.key === 'lineup') {
                     const g = details?.[side]?.grade ?? null;
-                    cells[side] = { value: g?.value ?? null, pct: g ? rankPercentile(g.rank, g.outOf) : null };
+                    cells[side] = { value: g?.value ?? null, pct: g ? rankPercentile(g.rank, g.outOf) : null, rank: g?.rank ?? null, outOf: g?.outOf ?? null };
                 } else {
                     const ref = league.ref[refKey(filters[side].location, filters[side].rest, last)]?.[stat.key];
                     const v = values[side][stat.key];
-                    cells[side] = { value: v, pct: percentile(v, ref, stat.higherBetter), gp: gp[side], minGp: last === 'all' ? undefined : last };
+                    const r = leagueRank(v, ref, stat.higherBetter);
+                    cells[side] = { value: v, pct: percentile(v, ref, stat.higherBetter), rank: r?.rank ?? null, outOf: r?.outOf ?? null, gp: gp[side], minGp: last === 'all' ? undefined : last };
                 }
             }
             return { stat, cells, adv: advantage(cells.away, cells.home) };
@@ -323,16 +288,10 @@ export function MatchupPanel({ p, state, compact = false }: { p: Prediction; sta
     const teamRows = model.rows.filter(r => r.stat.key !== 'lineup');
     const lineupRow = model.rows.find(r => r.stat.key === 'lineup')!;
     const name = (s: Side) => tris[s];
+    const minGp = last === 'all' ? MIN_GP : last;
 
     return (
-        <div className={cn('flex flex-col', compact ? 'gap-2' : 'gap-2.5')}>
-            {compact ? null : (
-                <div className="flex items-center justify-between gap-2">
-                    <TeamHead side="away" tri={tris.away} gp={model.gp.away} pending={model.pending.away} tags={tags('away')} standing={standingLine(p.away)} />
-                    <TeamHead side="home" tri={tris.home} gp={model.gp.home} pending={model.pending.home} tags={tags('home')} standing={standingLine(p.home)} />
-                </div>
-            )}
-
+        <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center justify-center gap-1.5" role="group" aria-label="Filter each team by its own situation tonight">
                 <FilterChip selected={useLoc} onSelectedChange={setUseLoc} title={`${tris.away} road games, ${tris.home} home games`}>
                     Home/Road
@@ -361,41 +320,43 @@ export function MatchupPanel({ p, state, compact = false }: { p: Prediction; sta
                 </FilterChip>
             </div>
 
-            <div className={cn('items-center gap-2 text-micro uppercase tracking-wide text-fg-3', compact ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-center')}>
-                {compact ? <SideCount gp={model.gp.away} pending={model.pending.away} tags={tags('away')} /> : null}
-                <span className="flex items-center gap-2">
-                    <SeasonTag>
-                        {windowLabel}
-                        <span className="sr-only"> seasons, regular season</span>
-                    </SeasonTag>
-                    <span>League pct</span>
-                </span>
-                {compact ? <SideCount gp={model.gp.home} pending={model.pending.home} tags={tags('home')} home /> : null}
-            </div>
+            <div className="flex flex-col">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b border-line pb-2">
+                    <SideHead side="away" tri={tris.away} color={colors.away} gp={model.gp.away} minGp={minGp} pending={model.pending.away} tags={tags('away')} />
+                    <span className="flex flex-col items-center gap-1 text-micro uppercase tracking-wide text-fg-3">
+                        <SeasonTag>
+                            {windowLabel}
+                            <span className="sr-only"> regular season,</span>
+                        </SeasonTag>
+                        Rank
+                    </span>
+                    <SideHead side="home" tri={tris.home} color={colors.home} gp={model.gp.home} minGp={minGp} pending={model.pending.home} tags={tags('home')} />
+                </div>
 
-            {/* Visual chart; the table below is its text equivalent. */}
-            <div aria-hidden="true" className="flex flex-col">
-                <GroupTag first>5v5</GroupTag>
-                {teamRows
-                    .filter(r => r.stat.sub)
-                    .map(r => (
-                        <ChartRow key={r.stat.key} row={r} colors={colors} compact={compact} />
-                    ))}
-                <GroupTag>All situations</GroupTag>
-                {teamRows
-                    .filter(r => !r.stat.sub)
-                    .map(r => (
-                        <ChartRow key={r.stat.key} row={r} colors={colors} compact={compact} />
-                    ))}
-                <GroupTag extra={lineupImpactSeason && lineupImpactSeason !== SEASON_ID ? <SeasonTag>{shortSeason(lineupImpactSeason)}</SeasonTag> : null}>
-                    Ignores filters
-                </GroupTag>
-                <ChartRow row={lineupRow} colors={colors} compact={compact} />
+                {/* Visual chart; the table below is its text equivalent. */}
+                <div aria-hidden="true" className="flex flex-col">
+                    <GroupTag first>5v5</GroupTag>
+                    {teamRows
+                        .filter(r => r.stat.sub)
+                        .map(r => (
+                            <ChartRow key={r.stat.key} row={r} colors={colors} />
+                        ))}
+                    <GroupTag>All situations</GroupTag>
+                    {teamRows
+                        .filter(r => !r.stat.sub)
+                        .map(r => (
+                            <ChartRow key={r.stat.key} row={r} colors={colors} />
+                        ))}
+                    <GroupTag extra={lineupImpactSeason && lineupImpactSeason !== SEASON_ID ? <SeasonTag>{shortSeason(lineupImpactSeason)}</SeasonTag> : null}>
+                        Ignores filters
+                    </GroupTag>
+                    <ChartRow row={lineupRow} colors={colors} />
+                </div>
             </div>
 
             <table className="sr-only">
                 <caption>
-                    {`League percentiles, ${windowLabel} regular season${useLoc || useRest || useStarter || last !== 'all' ? ', filtered to each team’s situation tonight' : ''}. ${tris.away} ${model.gp.away} games, ${tris.home} ${model.gp.home} games.`}
+                    {`League ranks, ${windowLabel} regular season${useLoc || useRest || useStarter || last !== 'all' ? ', filtered to each team’s situation tonight' : ''}. ${tris.away} ${model.gp.away} games, ${tris.home} ${model.gp.home} games.`}
                 </caption>
                 <thead>
                     <tr>
@@ -411,7 +372,7 @@ export function MatchupPanel({ p, state, compact = false }: { p: Prediction; sta
                             <th scope="row">{r.stat.key === 'lineup' ? `${r.stat.name} (ignores filters)` : r.stat.name}</th>
                             {SIDES.map(s => (
                                 <td key={s}>
-                                    {r.cells[s].value == null ? 'no value' : `${r.stat.fmt(r.cells[s].value!)}, ${pctText(r.cells[s])}${smallSample(r.cells[s]) ? ', small sample' : ''}`}
+                                    {r.cells[s].value == null ? 'no value' : `${r.stat.fmt(r.cells[s].value!)}, ${rankText(r.cells[s])}${smallSample(r.cells[s]) ? ', small sample' : ''}`}
                                 </td>
                             ))}
                             <td>{r.adv ? name(r.adv) : 'None'}</td>
