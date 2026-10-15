@@ -628,13 +628,18 @@
                 "country": "US"
             },
             {
-                "network": "Prime Video",
+                "network": "FOXLA+",
                 "market": "H",
                 "team": "ANA",
                 "country": "US"
             }
         ],
         "tvBroadcasts": [
+            {
+                "network": "FOXLA+",
+                "market": "H",
+                "countryCode": "US"
+            },
             {
                 "network": "Prime Video",
                 "market": "H",
@@ -643,11 +648,6 @@
             {
                 "network": "NESN",
                 "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "KCOP-13",
-                "market": "H",
                 "countryCode": "US"
             }
         ]
