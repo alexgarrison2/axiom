@@ -198,7 +198,7 @@ export function describe(m: Milestone, sinceTag: string | null): Copy {
             return { title: `Pass ${lastName(who?.[1] ?? '')}${others}`, context: `${place(m, m.rank ?? 0)} all-time in ${s.list}`, hof };
         case 'franchise':
             if (m.rank === 1 && !m.tie) {
-                return { title: `${teamShort(m.fr ?? '')} record`, context: `${cap(s.list)} · ${lastName(who?.[1] ?? '')} ${fmtInt(who?.[2] ?? 0)}`, hof };
+                return { title: `${teamShort(m.fr ?? '')} record`, context: `Most ${s.list}`, hof };
             }
             return { title: `Pass ${lastName(who?.[1] ?? '')}${others}`, context: `${place(m, m.rank ?? 0)} in ${teamShort(m.fr ?? '')} ${s.list}`, hof };
         case 'streak': {

@@ -29,7 +29,7 @@ export function MilestoneRow({ m, doc, sinceTag }: { m: Milestone; doc: Pick<Mil
         <li className="ms-row" style={{ '--tc': teamColor(team) } as React.CSSProperties}>
             <Crest tri={team} size={48} alt={team} className="ms-crest" />
             <div className="ms-who min-w-0">
-                <p className="font-bold text-fg-1 lg:truncate">
+                <p className="text-body font-bold leading-5 text-fg-1 lg:truncate">
                     <PlayerLink id={m.p}>
                         <span className="md:hidden">{first.charAt(0)}. </span>
                         <span className="max-md:hidden">{first} </span>
@@ -41,13 +41,13 @@ export function MilestoneRow({ m, doc, sinceTag }: { m: Milestone; doc: Pick<Mil
                 </p>
             </div>
             <div className="ms-what min-w-0">
-                <p className="truncate font-bold text-fg-1">
+                <p className="truncate text-title font-bold text-fg-1">
                     {c.title}
                     {c.hof ? <HofTag /> : null}
                 </p>
                 <p className="truncate text-caption text-fg-3">{c.context}</p>
-                <Ladder m={m} name={`${first} ${last}`} className="mt-1.5" />
             </div>
+            <Ladder m={m} name={`${first} ${last}`} className="ms-ladder" />
             <div className="ms-count">
                 <p className="flex items-end justify-end gap-1.5 lg:justify-start">
                     {/* Scoreboard cells up to four characters; bigger gaps in plain figures. */}
@@ -55,21 +55,19 @@ export function MilestoneRow({ m, doc, sinceTag }: { m: Milestone; doc: Pick<Mil
                     <span className="sr-only">{needValue(m)}</span>
                     <span className="text-micro uppercase leading-none tracking-label text-fg-3">{needUnit(m)}</span>
                 </p>
-                <Meter m={m} className="ml-auto mt-1.5 w-16 lg:ml-0 lg:w-[84px]" />
+                <Meter m={m} className="ml-auto mt-2 w-16 lg:ml-0 lg:w-[84px]" />
             </div>
-            <div className="ms-eta min-w-0 text-caption">
+            <div className="ms-when min-w-0 text-caption">
                 <p className="whitespace-nowrap text-model">
                     <span className="font-bold">G{gameNo}</span> · {isNext ? 'next game' : dayLabel(date)}
                     {isNext ? null : <span className="text-fg-3"> {home ? 'vs' : '@'} {opp}</span>}
+                    <span className="text-fg-3"> · {rateText(m)}</span> <ThinTag n={m.n} />
                 </p>
-                <p className="flex items-center gap-1.5 whitespace-nowrap text-fg-3">
-                    {rateText(m)} <ThinTag n={m.n} />
+                <p className="mt-1 flex items-center gap-2">
+                    <span className="label">Next</span>
+                    <GameChip game={nextGame} />
                 </p>
             </div>
-            <p className="ms-next flex items-center gap-2 text-caption">
-                <span className="label">Next</span>
-                <GameChip game={nextGame} />
-            </p>
         </li>
     );
 }

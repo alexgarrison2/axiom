@@ -556,23 +556,25 @@
   }
 
   /* ---- Milestones board (/players/milestones) ----
-     One row per milestone: flush crest on a faint club wash (--tc), who,
-     what, the countdown, the projected game, his next game. Phones fold it
-     to three columns, the projected and next game on their own lines. */
+     One row per milestone, every cell top-aligned on the row's first line:
+     flush crest on a faint club wash (--tc), who, what, the list around a
+     pass (ladder), the countdown, and when (projected game over his next
+     game). Phones: crest beside who/what with the countdown right; ladder
+     and when below on the text column. lg: ladder under what. xl: ladder
+     in its own column. */
   .ms-row {
     display: grid;
     grid-template-columns: 52px minmax(0, 1fr) auto;
     grid-template-areas:
       "crest who count"
       "crest what what"
-      "eta eta eta"
-      "next next next";
-    column-gap: 10px;
-    row-gap: 2px;
-    align-items: center;
-    padding: 8px 14px 10px 0;
+      ". ladder ladder"
+      ". when when";
+    column-gap: 12px;
+    align-items: start;
+    padding: 12px 14px 12px 0;
     border-bottom: 1px solid var(--line);
-    background: radial-gradient(90px 64px at 0 28px, color-mix(in srgb, var(--tc, transparent) 20%, transparent), transparent 75%);
+    background: radial-gradient(90px 64px at 0 30px, color-mix(in srgb, var(--tc, transparent) 20%, transparent), transparent 75%);
   }
   .ms-row:last-child {
     border-bottom: 0;
@@ -584,30 +586,37 @@
     grid-area: crest;
     width: 52px;
     height: 52px;
-    align-self: start;
+    margin-top: -6px;
   }
   .ms-who { grid-area: who; }
-  .ms-what { grid-area: what; }
+  .ms-what { grid-area: what; margin-top: 4px; }
+  .ms-ladder { grid-area: ladder; margin-top: 10px; }
   .ms-count { grid-area: count; text-align: right; }
-  .ms-eta { grid-area: eta; padding: 6px 0 0 14px; }
-  .ms-next { grid-area: next; padding: 2px 0 0 14px; }
+  .ms-when { grid-area: when; margin-top: 10px; }
   @media (min-width: 1024px) {
     .ms-row {
-      grid-template-columns: 60px minmax(140px, 1fr) minmax(180px, 1.4fr) 110px minmax(150px, 0.9fr) max-content;
-      grid-template-areas: "crest who what count eta next";
-      column-gap: 16px;
-      padding: 0 16px 0 0;
-      min-height: 60px;
-      background: radial-gradient(110px 70px at 0 50%, color-mix(in srgb, var(--tc, transparent) 20%, transparent), transparent 75%);
+      grid-template-columns: 60px minmax(130px, 0.8fr) minmax(220px, 1.4fr) 104px minmax(230px, 1fr);
+      grid-template-areas:
+        "crest who what count when"
+        "crest who ladder count when";
+      column-gap: 20px;
+      padding: 14px 20px 14px 0;
+      background: radial-gradient(110px 76px at 0 34px, color-mix(in srgb, var(--tc, transparent) 20%, transparent), transparent 75%);
     }
     .ms-crest {
       width: 60px;
       height: 60px;
-      align-self: center;
+      margin-top: -10px;
     }
+    .ms-what, .ms-when { margin-top: 0; }
     .ms-count { text-align: left; }
-    .ms-eta, .ms-next { padding: 0; }
-    .ms-next { justify-self: start; }
+  }
+  @media (min-width: 1280px) {
+    .ms-row {
+      grid-template-columns: 60px minmax(140px, 0.9fr) minmax(170px, 1fr) 300px 104px minmax(240px, 1fr);
+      grid-template-areas: "crest who what ladder count when";
+    }
+    .ms-ladder { margin-top: 0; }
   }
   /* A lit meter pip: the LED cell of the wordmark (ink fill, teal edge). */
   .ms-pip-on {

@@ -96,47 +96,46 @@ export function ThinTag({ n }: { n: number | undefined }) {
 
 /**
  * The list around a pass as a micro table: up to two places above the name he
- * passes, that name, then him (raised fill, ink). Ranks and totals are the
- * list as it stands today; games played ride along unless the list is games.
+ * passes, that name, then him on a raised row. One 18px rhythm, fixed value
+ * columns so tables line up row to row, "T8" for a shared place. Ranks and
+ * totals are the list as it stands today; games played ride along unless the
+ * list is games.
  */
 export function Ladder({ m, name, className }: { m: Milestone; name: string; className?: string }) {
     if (!m.ladder?.length) return null;
     const rows = m.ladder;
     const target = rows[rows.length - 1];
     const gp = m.stat !== 'gp' && m.ngp != null;
-    const cols = gp ? 'grid-cols-[2.25rem_minmax(0,1fr)_auto_auto]' : 'grid-cols-[2.25rem_minmax(0,1fr)_auto]';
-    const row = 'col-span-full grid grid-cols-subgrid px-1.5';
+    const cols = gp ? 'grid-cols-[2.25rem_minmax(0,1fr)_3.25rem_3.25rem]' : 'grid-cols-[2.25rem_minmax(0,1fr)_3.25rem]';
+    const row = 'col-span-full grid grid-cols-subgrid items-baseline rounded-[4px] px-1.5 leading-[18px]';
     return (
-        <ol className={cn('grid w-full max-w-[320px] text-micro tabular-nums', cols, className)}>
-            <li aria-hidden="true" className={cn(row, 'leading-[16px] uppercase tracking-[0.08em] text-fg-3')}>
-                <span />
-                <span />
-                <span className="pl-3 text-right">{STAT_ABBR[m.stat]}</span>
-                {gp ? <span className="pl-3 text-right">GP</span> : null}
+        <ol className={cn('grid w-full max-w-[300px] text-micro tabular-nums', cols, className)} aria-label={`${STAT_ABBR[m.stat]} list`}>
+            <li aria-hidden="true" className={cn(row, 'uppercase tracking-[0.08em] text-fg-3')}>
+                <span className="col-start-3 text-right">{STAT_ABBR[m.stat]}</span>
+                {gp ? <span className="text-right">GP</span> : null}
             </li>
             {rows.map(r => (
-                <li key={r[1]} className={cn(row, 'leading-[18px]', r === target ? 'text-fg-2' : 'text-fg-3')}>
-                    <span className="text-right">{r[0]}</span>
-                    <span className="truncate pl-2">
+                <li key={r[1]} className={cn(row, r === target ? 'text-fg-2' : 'text-fg-3')}>
+                    <span className="text-right">{r[5] ? `T${r[0]}` : r[0]}</span>
+                    <span className="truncate pl-2.5">
                         {r[2]}
                         {r[5] ? <span className="text-fg-3"> +{r[5]}</span> : null}
                         {r[4] ? <span className="ml-1 font-bold tracking-[0.08em] text-fg-2">HOF</span> : null}
                     </span>
-                    <span className="pl-3 text-right">{fmtInt(r[3])}</span>
-                    {gp ? <span className="pl-3 text-right">{r[6] != null ? fmtInt(r[6]) : '—'}</span> : null}
+                    <span className="text-right">{fmtInt(r[3])}</span>
+                    {gp ? <span className="text-right">{r[6] != null ? fmtInt(r[6]) : '—'}</span> : null}
                 </li>
             ))}
             {m.gap ? (
-                <li className={cn(row, 'leading-[18px] text-fg-3')}>
-                    <span />
-                    <span className="pl-2">+{m.gap} between</span>
+                <li className={cn(row, 'text-fg-3')}>
+                    <span className="col-start-2 pl-2.5">+{m.gap} between</span>
                 </li>
             ) : null}
-            <li className={cn(row, 'rounded-[4px] bg-surface-3 font-bold leading-[20px] text-fg-1')}>
+            <li className={cn(row, 'bg-surface-3 font-bold text-fg-1')}>
                 <span className="text-right">{m.now ?? ''}</span>
-                <span className="truncate pl-2">{name}</span>
-                <span className="pl-3 text-right">{fmtInt(m.have)}</span>
-                {gp ? <span className="pl-3 text-right">{fmtInt(m.ngp ?? 0)}</span> : null}
+                <span className="truncate pl-2.5">{name}</span>
+                <span className="text-right">{fmtInt(m.have)}</span>
+                {gp ? <span className="text-right">{fmtInt(m.ngp ?? 0)}</span> : null}
             </li>
         </ol>
     );
