@@ -5,7 +5,7 @@ import { PlayerLink } from '@/components/players/PlayerLink';
 import { teamColor } from '@/components/ui/team-color';
 import { describe, needUnit, type Milestone, type MilestonesDoc } from '@/lib/milestones';
 import { LedNumber } from './LedNumber';
-import { DayLabel, GameChip, HofTag, Meter, OutTag } from './parts';
+import { DayLabel, GameChip, HofTag, Ladder, Meter, OutTag } from './parts';
 
 const ledValue = (m: Milestone) => (m.stat === 'ixg' ? m.need.toFixed(2) : String(m.need));
 
@@ -69,6 +69,7 @@ export function NextGameBoard({ doc, date, items, total, sinceTag }: {
                                             {c.hof ? <HofTag /> : null}
                                         </p>
                                         <p className="truncate text-caption text-fg-3">{c.context}</p>
+                                        <Ladder m={m} name={`${first} ${last}`} className="mt-2" />
                                     </div>
                                 </div>
                             </div>

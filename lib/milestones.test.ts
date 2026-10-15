@@ -43,16 +43,21 @@ suite('copy', () => {
     });
 
     it('describes each kind', () => {
-        expect(describe(base({ club: 46 }), null)).toEqual({ title: '500 goals', context: '47th ever', hof: false });
-        expect(describe(base({ club: 0, target: 950 }), null).context).toBe('First ever');
-        expect(describe(base({ club: 222, nth: 224, tie: 1 }), null).context).toBe('T-224th ever');
+        expect(describe(base({ club: 46 }), null)).toEqual({ title: '500 goals', context: '47th ever · has 497', hof: false });
+        expect(describe(base({ club: 0, target: 950 }), null).context).toBe('First ever · has 497');
+        expect(describe(base({ club: 222, nth: 224, tie: 1 }), null).context).toBe('T-224th ever · has 497');
         expect(describe(base({ kind: 'alltime', stat: 'p', rank: 21, who: [9, 'Doug Gilmour', 1414, 1, 0] }), null)).toEqual({
             title: 'Pass Gilmour', context: '21st all-time in points', hof: true,
         });
         expect(describe(base({ kind: 'franchise', stat: 'p', rank: 1, fr: 'TBL', who: [9, 'Steven Stamkos', 1137, 0, 1] }), null).title).toBe('Lightning record');
         expect(describe(base({ kind: 'streak', stat: 'pstreak', target: 8, best: [7, 5, 'Sebastian Aho'] }), null).context).toBe('Season best 7 · Aho');
+        expect(describe(base({ kind: 'streak', stat: 'ironman', have: 497, target: 500, best: [612, 5, 'Brady Skjei'] }), null)).toEqual({
+            title: '500 straight games', context: 'Longest active 612 · Skjei', hof: false,
+        });
+        expect(describe(base({ p: 5, kind: 'streak', stat: 'ironman', target: 700, best: [612, 5, 'Brady Skjei'] }), null).context).toBe('Longest active');
+        expect(describe(base({ kind: 'streak', stat: 'ironman', target: 1000, best: [1012, 5, 'X Y'] }), null).title).toBe('1,000 straight games');
         expect(describe(base({ kind: 'season', race: 1, target: 10 }), null).title).toBe('First to 10');
-        expect(describe(base({ kind: 'pony', stat: 'ixg', target: 100, club: 48 }), '22-23').context).toBe('49th since 22-23');
+        expect(describe(base({ kind: 'pony', stat: 'ixg', have: 99.74, target: 100, club: 48 }), '22-23').context).toBe('49th since 22-23 · has 99.7');
         expect(needText(base({ need: 1 }))).toBe('1 goal');
         expect(needText(base({ stat: 'ixg', need: 0.26 }))).toBe('0.26 ixG');
     });
@@ -62,6 +67,8 @@ suite('board', () => {
     it('meter: pips up to 10 to go, else a bar', () => {
         expect(meter(base({ need: 3 }))).toEqual({ pips: 10, hollow: 3 });
         expect(meter(base({ kind: 'streak', stat: 'pstreak', have: 7, target: 8, need: 1 }))).toEqual({ pips: 8, hollow: 1 });
+        // An iron-man streak counts down like a round number, not one pip per game of it.
+        expect(meter(base({ kind: 'streak', stat: 'ironman', have: 497, target: 500, need: 3 }))).toEqual({ pips: 10, hollow: 3 });
         expect(meter(base({ have: 450, target: 500, need: 50 }))).toEqual({ bar: 0.9 });
         expect(meter(base({ stat: 'ixg', have: 99.74, target: 100, need: 0.26 }))).toEqual({ bar: 0.9974 });
     });

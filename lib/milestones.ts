@@ -9,12 +9,14 @@ import { fmtInt } from '@/components/views/format';
 export type Kind = 'career' | 'alltime' | 'franchise' | 'streak' | 'season' | 'pony';
 export type Stat =
     | 'gp' | 'g' | 'a' | 'p' | 'ppg' | 'ppp' | 'gwg' | 'sog' | 'hit' | 'blk' | 'fow'
-    | 'w' | 'so' | 'sv' | 'ixg' | 'pstreak' | 'gstreak';
+    | 'w' | 'so' | 'sv' | 'ixg' | 'pstreak' | 'gstreak' | 'ironman';
 
 /** [gameId, date, opponent, home (1/0), team game number] */
 export type Eta = [number, string, string, number, number];
 /** [id, name, value, hall of famer (1/0), on a current roster (1/0)] */
 export type Who = [number, string, number, number, number];
+/** [rank, id, name, value, hall of famer (1/0), others tied at that value, games played on that list] */
+export type LadderRow = [number, number, string, number, number, number, number?];
 
 export interface Milestone {
     p: number;
@@ -40,9 +42,17 @@ export interface Milestone {
     rank?: number;
     who?: Who;
     tied?: number;
+    /** The list around a pass, best first: up to two places above the name he passes, then that name. */
+    ladder?: LadderRow[];
+    /** His place on that list today. */
+    now?: number;
+    /** Names between him and the one he passes (a Hall of Famer further up). */
+    gap?: number;
+    /** His games played on that list (career, or with the franchise). */
+    ngp?: number;
     /** Franchise (current club tricode). */
     fr?: string;
-    /** Season's longest streak: [games, player id, name]. */
+    /** Season's longest streak (iron man: longest active): [games, player id, name]. */
     best?: [number, number, string];
     pace?: number;
     race?: 1;
@@ -107,6 +117,13 @@ const STAT: Record<Stat, { one: string; many: string; list: string }> = {
     ixg: { one: 'ixG', many: 'ixG', list: 'ixG' },
     pstreak: { one: 'game', many: 'games', list: 'point streak' },
     gstreak: { one: 'game', many: 'games', list: 'goal streak' },
+    ironman: { one: 'game', many: 'games', list: 'games-played streak' },
+};
+
+/** Column head for a list's value: "PTS", "G", "W". */
+export const STAT_ABBR: Record<Stat, string> = {
+    gp: 'GP', g: 'G', a: 'A', p: 'PTS', ppg: 'PPG', ppp: 'PPP', gwg: 'GWG', sog: 'SOG', hit: 'HIT', blk: 'BLK',
+    fow: 'FOW', w: 'W', so: 'SO', sv: 'SV', ixg: 'ixG', pstreak: 'GP', gstreak: 'GP', ironman: 'GP',
 };
 
 export const KINDS: { key: Kind | 'all'; label: string }[] = [
@@ -169,12 +186,12 @@ export function describe(m: Milestone, sinceTag: string | null): Copy {
         case 'career':
         {
             const nth = m.nth ?? (m.club ?? 0) + 1;
-            return { title: `${fmtInt(m.target)} ${s.many}`, context: nth === 1 && !m.tie ? 'First ever' : `${place(m, nth)} ever`, hof: false };
+            return { title: `${fmtInt(m.target)} ${s.many}`, context: `${nth === 1 && !m.tie ? 'First ever' : `${place(m, nth)} ever`} · has ${fmtInt(m.have)}`, hof: false };
         }
         case 'pony':
             return {
                 title: `${fmtInt(m.target)} ixG`,
-                context: `${place(m, m.nth ?? (m.club ?? 0) + 1)} since ${sinceTag ?? 'start'}`,
+                context: `${place(m, m.nth ?? (m.club ?? 0) + 1)} since ${sinceTag ?? 'start'} · has ${m.have.toFixed(1)}`,
                 hof: false,
             };
         case 'alltime':
@@ -185,8 +202,12 @@ export function describe(m: Milestone, sinceTag: string | null): Copy {
             }
             return { title: `Pass ${lastName(who?.[1] ?? '')}${others}`, context: `${place(m, m.rank ?? 0)} in ${teamShort(m.fr ?? '')} ${s.list}`, hof };
         case 'streak': {
-            const kind = m.stat === 'gstreak' ? 'goal' : 'point';
             const best = m.best;
+            if (m.stat === 'ironman') {
+                const context = !best ? 'Iron-man streak' : best[1] === m.p ? 'Longest active' : `Longest active ${fmtInt(best[0])} · ${lastName(best[2])}`;
+                return { title: `${fmtInt(m.target)} straight games`, context, hof: false };
+            }
+            const kind = m.stat === 'gstreak' ? 'goal' : 'point';
             const context = !best ? `Active ${kind} streak` : best[1] === m.p ? 'Season’s longest' : `Season best ${best[0]} · ${lastName(best[2])}`;
             return { title: `${m.target}-game ${kind} streak`, context, hof: false };
         }
@@ -212,7 +233,7 @@ export function rarity(m: Milestone): number {
         case 'franchise':
             return m.rank === 1 ? 3 : (m.rank ?? 10) * 12;
         case 'streak':
-            return 60 - m.target;
+            return m.stat === 'ironman' ? 40 - m.target / 25 : 60 - m.target;
         case 'season':
             return m.race ? 30 : 80;
     }
@@ -272,7 +293,7 @@ export function nextGameMilestones(doc: MilestonesDoc, limit = 8): { date: strin
 /** Countdown meter: 10 pips with `need` of them hollow, or a 0-1 bar when the gap is bigger or fractional. */
 export function meter(m: Pick<Milestone, 'need' | 'have' | 'target' | 'stat' | 'kind'>): { pips: number; hollow: number } | { bar: number } {
     if (Number.isInteger(m.need) && m.need >= 1 && m.need <= 10) {
-        if (m.kind === 'streak') return { pips: m.target, hollow: m.need };
+        if (m.kind === 'streak' && m.stat !== 'ironman') return { pips: m.target, hollow: m.need };
         return { pips: 10, hollow: m.need };
     }
     return { bar: m.target > 0 ? Math.max(0, Math.min(1, m.have / m.target)) : 0 };

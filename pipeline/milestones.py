@@ -15,7 +15,8 @@ Every active NHL player (on a current roster) is checked against:
     franchise  the next name he passes in his current franchise's top 10
                (the franchise record when that name is first)
     streak     an active point streak (5+) or goal streak (3+), with the
-               season's longest
+               season's longest; the iron-man streak (consecutive regular-
+               season games played) at every 100 and past the longest active one
     season     on pace for 50 goals, 100 points, 70 assists or 40 wins, and
                the race to be the league's first to a round number this season
     pony       pony xG ixG since the first season of the shot archive
@@ -31,8 +32,12 @@ Sources: NHL stats API (career, franchise and season aggregates, one query
 each, regular season only), records.nhl.com (franchises, Hall of Fame), the
 current rosters (fetch_player_bio), the season schedule
 (data/schedule_detail_<season>.json, fetch_schedule_detail.py), per-game
-skater logs (nhl_season_*_skater_games.csv), the shot archive for ixG and
-ESPN injuries (public/data/injuries.json).
+skater logs (nhl_season_*_skater_games.csv), the shot archive for ixG,
+ESPN injuries (public/data/injuries.json) and, for the iron-man streak, each
+player's game logs and his clubs' schedules in earlier seasons
+(api-web.nhle.com). That walk ends at last season's final game and is cached
+in milestones_ironman.json (rebuilt when the season rolls over), so a daily
+run only extends it with this season's skater logs.
 
 Output: public/data/milestones.json
     { season, built_at, since_ixg, players: {id: [first, last, pos, team, out]},
@@ -60,6 +65,8 @@ from season import PREV_SEASON_ID, PREV_START_YEAR, SEASON_ID, START_YEAR, seaso
 STATS = "https://api.nhle.com/stats/rest/en"
 RECORDS = "https://records.nhl.com/site/api"
 OUT = os.path.join(PUBLIC_DATA_DIR, "milestones.json")
+WEB = "https://api-web.nhle.com/v1"
+IRONMAN_CACHE = os.path.join(PIPELINE_DIR, "milestones_ironman.json")
 RECENT_DAYS = 10
 
 # Stat key -> (report, field) in the NHL stats API.
@@ -105,11 +112,14 @@ SKATER_FRANCHISE = ("gp", "g", "a", "p", "ppg", "gwg")
 GOALIE_FRANCHISE = ("gp", "w", "so")
 # The most a player plausibly adds in one game: within this, it can happen tonight.
 ONE_GAME = {"gp": 1, "g": 2, "a": 2, "p": 3, "ppg": 1, "ppp": 2, "gwg": 1, "sog": 5, "hit": 4, "blk": 3,
-            "fow": 10, "w": 1, "so": 1, "sv": 30, "ixg": 0.6, "pstreak": 1, "gstreak": 1}
+            "fow": 10, "w": 1, "so": 1, "sv": 30, "ixg": 0.6, "pstreak": 1, "gstreak": 1, "ironman": 1}
 PACE = {"g": 50, "p": 100, "w": 40}
 RACE = {"g": (10, 20, 30, 40, 50, 60), "p": (25, 50, 75, 100, 125), "w": (10, 20, 30, 40)}
 RACE_WITHIN = {"g": 3, "p": 4, "w": 2}
 STREAK_LADDER = (5, 10, 15, 20, 25, 30)
+IRONMAN_LADDER = tuple(range(100, 1001, 100))
+IRONMAN_RARE = 500   # straight-game targets from here show all season, like rare career numbers
+END = "9999-12-31"   # the present, as the last entry of an iron-man walk
 MIN_BASIS = 10   # games behind a pace before it is not marked thin
 # Common round numbers (more than RARE_CLUB players have them) only show inside
 # the next NEAR_GAMES team games; rare ones, list passes, streaks and the season
@@ -286,6 +296,21 @@ def passes(value: float, pid: int, groups) -> list[tuple[int, float, list[int]]]
     return out
 
 
+def ladder(ups, k: int, names: dict[int, str], hof: set[int], players, gp: dict[int, float]) -> list[list]:
+    """The list around a pass: up to two places above the name he passes, then
+    that name, best first, as [rank, id, name, value, hall of famer, others tied,
+    games played on that list (career, or with the franchise)]."""
+    out = []
+    for rank, val, ids in reversed(ups[k:k + 3]):
+        ids = sorted(ids, key=lambda i: (i not in hof, i not in players, names.get(i, "")))
+        out.append([rank, ids[0], names.get(ids[0], ""), int(val), int(ids[0] in hof), len(ids) - 1, int(gp.get(ids[0], 0))])
+    return out
+
+
+def rank_now(have: float, pid: int, table: dict[int, float]) -> int:
+    return 1 + sum(1 for i, v in table.items() if i != pid and v > have)
+
+
 def streak(flags) -> int:
     n = 0
     for f in reversed(list(flags)):
@@ -301,6 +326,33 @@ def longest(flags) -> int:
         run = run + 1 if f else 0
         best = max(best, run)
     return best
+
+
+def missed(p: tuple, q: tuple, club_dates) -> bool:
+    """Did he miss a club game between two of his games ``p`` and ``q``
+    ((season id, date, club), in order)? Within a season the club is the one
+    he plays ``q`` for, so after a trade only the new club's games count (the
+    old club's games after his last one may come after the trade). Across
+    seasons: the old club's games after ``p`` and the new club's before ``q``.
+    ``club_dates(club, season id)`` lists the club's completed regular-season
+    game dates."""
+    if p[0] == q[0]:
+        return any(p[1] < d < q[1] for d in club_dates(q[2], q[0]))
+    return any(d > p[1] for d in club_dates(p[2], p[0])) or any(d < q[1] for d in club_dates(q[2], q[0]))
+
+
+def straight_games(games: list[tuple], club_dates) -> int:
+    """The iron-man streak: his games at the end of ``games`` (oldest first)
+    with no missed club game between them. The last entry is the present
+    ((season id, END, current club)), not a game, so a club game since his
+    last one ends the streak at 0. Equal to len(games) - 1 when it runs back
+    to the first game listed."""
+    n = 0
+    for p, q in zip(reversed(games[:-1]), reversed(games[1:])):
+        if missed(p, q, club_dates):
+            break
+        n += 1
+    return n
 
 
 def assign_places(items: list[dict]) -> None:
@@ -331,6 +383,102 @@ def assign_places(items: list[dict]) -> None:
                 i["rank"] = int(i["rank"]) + place
             if tied:
                 i["tie"] = 1
+
+
+# ── Iron man ────────────────────────────────────────────────────────────────
+
+def _sid(start_year: int) -> str:
+    return f"{start_year}{start_year + 1}"
+
+
+def game_log(pid: int, start_year: int) -> list[tuple]:
+    """His regular-season games in a season as (season id, date, club), oldest first."""
+    sid = _sid(start_year)
+    rows = (get_json(f"{WEB}/player/{pid}/game-log/{sid}/2", ua="plain") or {}).get("gameLog") or []
+    return sorted((sid, r["gameDate"], r["teamAbbrev"]) for r in rows if r.get("gameDate") and r.get("teamAbbrev"))
+
+
+class ClubDates:
+    """Completed regular-season game dates per (club, season id), fetched once."""
+
+    def __init__(self):
+        self.seen: dict[tuple[str, str], list[str]] = {}
+
+    def __call__(self, club: str, sid: str) -> list[str]:
+        if (club, sid) not in self.seen:
+            games = (get_json(f"{WEB}/club-schedule-season/{club}/{sid}", ua="plain") or {}).get("games") or []
+            self.seen[(club, sid)] = sorted(g["gameDate"] for g in games
+                                            if g.get("gameType") == 2 and g.get("gameState") in ("OFF", "FINAL"))
+        return self.seen[(club, sid)]
+
+
+def walk_tail(pid: int, log=game_log, club_dates=None, max_seasons: int = 25) -> list:
+    """His streak at the end of last season, walking earlier seasons until he
+    missed a game: [games, date of his last game, its club], [0] when he did
+    not play last season or missed his club's last games."""
+    club_dates = club_dates or ClubDates()
+    games = log(pid, PREV_START_YEAR)
+    if not games:
+        return [0]
+    last = games[-1]
+    games = games + [(PREV_SEASON_ID, END, last[2])]
+    year = PREV_START_YEAR
+    while True:
+        n = straight_games(games, club_dates)
+        if n < len(games) - 1 or PREV_START_YEAR - year + 1 >= max_seasons:
+            break
+        year -= 1
+        earlier = log(pid, year)
+        if not earlier:
+            break
+        games = earlier + games
+    return [n, last[1], last[2]] if n else [0]
+
+
+def ironman_tails(pids) -> dict[int, list]:
+    """walk_tail for each player, from the cache (keyed to this season) and
+    walking only the players it does not have yet."""
+    doc = read_json(IRONMAN_CACHE, {}) or {}
+    tails = {int(k): v for k, v in (doc.get("tails") or {}).items()} if doc.get("season") == SEASON_ID else {}
+    todo = [p for p in pids if p not in tails]
+    if todo:
+        t0, club_dates, failed = time.time(), ClubDates(), 0
+        for pid in todo:
+            try:
+                tails[pid] = walk_tail(pid, club_dates=club_dates)
+            except Exception as e:  # one player's log failing must not cost the board
+                failed += 1
+                print(f"  [WARN] iron-man walk {pid}: {e}")
+        print(f"  iron man: walked {len(todo) - failed} players ({failed} failed), {time.time() - t0:.0f}s")
+        atomic_write_json(IRONMAN_CACHE, {"season": SEASON_ID, "tails": {str(k): tails[k] for k in sorted(tails)}},
+                          indent=None, separators=(",", ":"), label="milestones_ironman.json")
+    return tails
+
+
+def ironman_streaks(sg: pd.DataFrame, clubs: dict[int, str], tails: dict[int, list]) -> dict[int, int]:
+    """Each player's active streak: this season's games from the skater logs,
+    joined to last season's cached tail when he has missed nothing since.
+    ``clubs`` is each player's current club. A club game counts as completed
+    once it is in the skater logs, so a log a day behind breaks nothing."""
+    logged = sg.drop_duplicates("game_id") if not sg.empty else sg
+    done: dict[str, list[str]] = {}
+    for _, r in logged.iterrows():
+        for club in (r["team"], r["opp"]):
+            done.setdefault(club, []).append(r["date"])
+    cur_dates = lambda club, sid: done.get(club, []) if sid == SEASON_ID else []
+    mine = {int(pid): list(zip(g["date"], g["team"])) for pid, g in sg.groupby("player_id")} if not sg.empty else {}
+    out = {}
+    for pid, club in clubs.items():
+        tail = tails.get(pid) or [0]
+        games = [(SEASON_ID, d, t) for d, t in mine.get(pid, [])] + [(SEASON_ID, END, club)]
+        if tail[0]:
+            games.insert(0, (PREV_SEASON_ID, tail[1], tail[2]))
+        n = straight_games(games, cur_dates)
+        if tail[0] and n == len(games) - 1:
+            n += tail[0] - 1
+        if n:
+            out[pid] = n
+    return out
 
 
 # ── Build ───────────────────────────────────────────────────────────────────
@@ -422,7 +570,7 @@ def build() -> dict:
         need = target - have
         if stat == "gp":
             k = games_needed(need, 1.0)
-        elif stat in ("pstreak", "gstreak"):
+        elif stat in ("pstreak", "gstreak", "ironman"):
             k = int(need)
         else:
             k = games_needed(need, rate)
@@ -441,7 +589,7 @@ def build() -> dict:
                 "rate": round(rate, 3), "eta": e}
         if need <= ONE_GAME.get(stat, 0):
             item["one"] = 1
-        if basis < MIN_BASIS and stat not in ("gp", "pstreak", "gstreak"):
+        if basis < MIN_BASIS and stat not in ("gp", "pstreak", "gstreak", "ironman"):
             item["n"] = int(basis)
         item.update({k2: v for k2, v in extra.items() if v is not None})
         items.append(item)
@@ -473,15 +621,18 @@ def build() -> dict:
             shown = set()
             nxt = ups[0]
             legend = next((u for u in reversed(ups) if u[1] + 1 <= reach and any(i in hof for i in u[2])), None)
+            now = rank_now(have, pid, t["car"][key])
             for u in (nxt, legend):
                 if u is None or u[0] in shown:
                     continue
                 shown.add(u[0])
                 rank, val, ids = u
+                k = ups.index(u)
                 ids = sorted(ids, key=lambda i: (i not in hof, i not in players, names.get(i, "")))
                 add(pid, "alltime", key, have, val + 1, rate, basis, goalie, rank=rank,
                     who=[ids[0], names.get(ids[0], ""), int(val), int(ids[0] in hof), int(ids[0] in players)],
-                    tied=len(ids) - 1 or None)
+                    tied=len(ids) - 1 or None, ladder=ladder(ups, k, names, hof, players, t["car"]["gp"]), now=now, gap=k or None,
+                    ngp=int(t["car"]["gp"].get(pid, 0)))
 
         # Franchise top 10.
         ft = (fr_gk if goalie else fr_sk).get(p["team"])
@@ -498,7 +649,8 @@ def build() -> dict:
                 rate, basis = rate_for(pid, key, goalie)
                 add(pid, "franchise", key, have, val + 1, rate, basis, goalie, rank=rank, fr=p["team"],
                     who=[ids[0], names.get(ids[0], ""), int(val), int(ids[0] in hof), int(ids[0] in players)],
-                    tied=len(ids) - 1 or None)
+                    tied=len(ids) - 1 or None, ladder=ladder(ups, 0, names, hof, players, ft["gp"]),
+                    now=rank_now(have, pid, ft[key]), ngp=int(ft["gp"].get(pid, 0)))
 
         # pony xG: ixG since the archive's first season.
         if not goalie and since is not None and pid in ixg_tot:
@@ -557,6 +709,21 @@ def build() -> dict:
                 if target:
                     add(pid, "streak", stat, have, target, 1.0, have, False,
                         best=[best[0], best[1], names.get(best[1], "")] if best[1] else None)
+
+    # Iron man: consecutive regular-season games played.
+    clubs = {pid: p["team"] for pid, p in players.items() if not p["goalie"]}
+    iron = ironman_streaks(sg, clubs, ironman_tails(sorted(clubs)))
+    if iron:
+        top = max(iron.items(), key=lambda x: (x[1], -x[0]))
+        best = [top[1], top[0], names.get(top[0], "")]
+        for pid, have in iron.items():
+            target = next_rung(have, sorted({*IRONMAN_LADDER, top[1] + 1}) if pid != top[0] else IRONMAN_LADDER)
+            if target is None:
+                continue
+            # Common hundreds only inside the next NEAR_GAMES; rare ones and passing the leader all season.
+            if target - have > NEAR_GAMES and target < IRONMAN_RARE and target != top[1] + 1:
+                continue
+            add(pid, "streak", "ironman", have, target, 1.0, have, False, best=best)
 
     # Recently crossed round numbers.
     recent = []

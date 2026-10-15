@@ -649,7 +649,9 @@ export default function MethodologyPage() {
                                 </li>
                                 <li>
                                     <strong>Streaks</strong>: active point streaks of 5+ games and goal streaks of 3+, against the season&apos;s
-                                    longest. <strong>Season</strong>: on pace for 50 goals, 100 points or 40 wins, and the race to be the first to a
+                                    longest. The <strong>iron-man</strong> streak is consecutive regular-season games played, back to the
+                                    last game his club played without him (after a trade, the new club&apos;s games he missed), at every 100
+                                    and past the longest active one. <strong>Season</strong>: on pace for 50 goals, 100 points or 40 wins, and the race to be the first to a
                                     round number this season. <strong>pony xG</strong>: the expected goals of his own shots (ixG) since the first
                                     season in our shot archive.
                                 </li>

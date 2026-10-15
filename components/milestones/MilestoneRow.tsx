@@ -6,14 +6,14 @@ import { teamColor } from '@/components/ui/team-color';
 import { fmtInt, fmtNum } from '@/components/views/format';
 import { dayLabel, describe, needUnit, type Milestone, type MilestonesDoc } from '@/lib/milestones';
 import { LedNumber } from './LedNumber';
-import { GameChip, HofTag, Meter, OutTag, ThinTag } from './parts';
+import { GameChip, HofTag, Ladder, Meter, OutTag, ThinTag } from './parts';
 
 const needValue = (m: Milestone) => (m.stat === 'ixg' ? m.need.toFixed(2) : fmtInt(m.need));
 const ledValue = (m: Milestone) => (m.stat === 'ixg' ? m.need.toFixed(2) : String(m.need));
 const rateText = (m: Milestone) =>
     m.stat === 'gstreak' ? 'a goal a game'
         : m.stat === 'pstreak' ? 'a point a game'
-            : m.stat === 'gp' ? 'every game'
+            : m.stat === 'gp' || m.stat === 'ironman' ? 'every game'
                 : `${m.rate < 1 ? m.rate.toFixed(2) : fmtNum(Math.round(m.rate * 10) / 10, 1)}/GP`;
 
 /** One milestone on the board: who, what, how far, the projected game and his next game. */
@@ -46,6 +46,7 @@ export function MilestoneRow({ m, doc, sinceTag }: { m: Milestone; doc: Pick<Mil
                     {c.hof ? <HofTag /> : null}
                 </p>
                 <p className="truncate text-caption text-fg-3">{c.context}</p>
+                <Ladder m={m} name={`${first} ${last}`} className="mt-1.5" />
             </div>
             <div className="ms-count">
                 <p className="flex items-end justify-end gap-1.5 lg:justify-start">

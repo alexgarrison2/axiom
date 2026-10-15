@@ -187,8 +187,8 @@ jobs:
               public/data/props.json public/data/props_detail.json public/data/game_xg/*.json
           # Pony Score season data (per player-game) and the nightly top / bottom
           add public/data/pony/*.json
-          # Player milestones (pipeline/milestones.py, full run)
-          add public/data/milestones.json
+          # Player milestones (pipeline/milestones.py, full run; iron-man walk cache)
+          add public/data/milestones.json pipeline/milestones_ironman.json
           # 5v5 with-or-without-you pairs (pipeline/wowy.py, full run)
           add public/data/wowy/*.json
           # Shot maps: shots each goalie faced and each skater took (pipeline/goalie_shots.py, full run)

@@ -66,3 +66,69 @@ def test_assign_places_orders_chasers_and_ties_same_night():
     y = mk(5, "2026-10-22", kind="franchise", rank=2, fr="UTA")
     M.assign_places([x, y])
     assert (x["rank"], y["rank"]) == (2, 3)
+
+
+def test_ladder_shows_two_above_the_passed_name_best_first():
+    groups = M.top_groups({1: 900, 2: 800, 3: 700, 4: 600, 9: 550}, 10)
+    ups = M.passes(550, 9, groups)
+    names = {1: "A One", 2: "B Two", 3: "C Three", 4: "D Four"}
+    lad = M.ladder(ups, 0, names, {2}, set(), {2: 1200})
+    assert [r[:4] for r in lad] == [[2, 2, "B Two", 800], [3, 3, "C Three", 700], [4, 4, "D Four", 600]]
+    assert lad[0][4] == 1 and lad[0][6] == 1200 and lad[1][6] == 0
+    assert M.rank_now(550, 9, {1: 900, 2: 800, 9: 550, 5: 550}) == 3
+
+
+def _dates(table):
+    return lambda club, sid: table.get((club, sid), [])
+
+
+def test_missed_counts_the_new_club_after_a_trade_and_both_ends_across_seasons():
+    cd = _dates({("EDM", "1"): ["01", "02", "03", "05"], ("TOR", "1"): ["02", "04"],
+                 ("EDM", "0"): ["90", "95"], ("TOR", "0"): ["90"]})
+    assert not M.missed(("1", "01", "EDM"), ("1", "02", "EDM"), cd)
+    assert M.missed(("1", "01", "EDM"), ("1", "05", "EDM"), cd)
+    # Traded EDM -> TOR after "01": EDM's "02"/"03" do not count, TOR's "02" does.
+    assert M.missed(("1", "01", "EDM"), ("1", "04", "TOR"), cd)
+    assert not M.missed(("1", "03", "EDM"), ("1", "04", "TOR"), cd)
+    # Across seasons: the old club's games after his last, the new club's before his first.
+    assert M.missed(("0", "90", "EDM"), ("1", "02", "TOR"), cd)
+    assert not M.missed(("0", "95", "EDM"), ("1", "01", "EDM"), cd)
+    assert M.missed(("0", "95", "EDM"), ("1", "03", "EDM"), cd)
+
+
+def test_straight_games_ends_at_a_missed_game_and_at_zero_when_he_missed_the_latest():
+    cd = _dates({("EDM", "1"): ["01", "02", "03", "04", "05"]})
+    played = [("1", d, "EDM") for d in ("01", "03", "04", "05")]
+    assert M.straight_games(played + [("1", M.END, "EDM")], cd) == 3
+    assert M.straight_games(played[:-1] + [("1", M.END, "EDM")], cd) == 0
+    assert M.straight_games([("1", M.END, "EDM")], _dates({})) == 0
+
+
+def test_walk_tail_walks_back_through_unbroken_seasons(monkeypatch):
+    prev, older = M.PREV_START_YEAR, M.PREV_START_YEAR - 1
+    psid, osid = M._sid(prev), M._sid(older)
+    logs = {prev: [(psid, "2026-01-01", "TOR"), (psid, "2026-01-03", "TOR")],
+            older: [(osid, "2025-01-01", "EDM"), (osid, "2025-01-02", "EDM")]}
+    cd = _dates({("TOR", psid): ["2026-01-01", "2026-01-03"], ("EDM", osid): ["2024-12-30", "2025-01-01", "2025-01-02"]})
+    # A season he played whole, then an offseason move: 2 + 2. The streak starts at his first game
+    # (the club's opener before it does not count) and the walk stops at a season he did not play.
+    assert M.walk_tail(1, log=lambda pid, y: logs.get(y, []), club_dates=cd) == [4, "2026-01-03", "TOR"]
+    # He missed his club's last game: no streak to carry.
+    cd2 = _dates({("TOR", psid): ["2026-01-01", "2026-01-03", "2026-01-05"]})
+    assert M.walk_tail(1, log=lambda pid, y: logs.get(y, []), club_dates=cd2) == [0]
+    assert M.walk_tail(1, log=lambda pid, y: [], club_dates=cd) == [0]
+
+
+def test_ironman_streaks_joins_this_season_to_the_cached_tail():
+    import pandas as pd
+    sid = M.SEASON_ID
+    gid = lambda n: int(f"{sid[:4]}02{n:04d}")
+    sg = pd.DataFrame([
+        {"game_id": gid(1), "date": "2026-10-01", "player_id": 1, "team": "EDM", "opp": "TOR"},
+        {"game_id": gid(1), "date": "2026-10-01", "player_id": 3, "team": "TOR", "opp": "EDM"},
+        {"game_id": gid(2), "date": "2026-10-03", "player_id": 1, "team": "EDM", "opp": "CGY"},
+    ])
+    tails = {1: [500, "2026-04-16", "EDM"], 2: [80, "2026-04-16", "TOR"], 3: [40, "2026-04-16", "TOR"]}
+    out = M.ironman_streaks(sg, {1: "EDM", 2: "TOR", 3: "TOR", 4: "CGY"}, tails)
+    # 1 played both EDM games; 2 missed TOR's opener; 3 played TOR's only game; 4 has neither.
+    assert out == {1: 502, 3: 41}

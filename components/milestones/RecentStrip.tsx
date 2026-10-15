@@ -25,7 +25,7 @@ export function RecentStrip({ doc, limit = 10 }: { doc: Pick<MilestonesDoc, 'pla
                                 <span className="whitespace-nowrap text-caption">
                                     <span className="font-bold text-fg-1 group-hover:text-brand">{first.charAt(0)}. {last}</span>{' '}
                                     <span className="font-bold text-pos">{c.title}</span>{' '}
-                                    <span className="text-fg-3">{c.context} · {dayLabel(r.date)}</span>
+                                    <span className="text-fg-3">{c.context.split(" · ")[0]} · {dayLabel(r.date)}</span>
                                 </span>
                             </Link>
                         </li>

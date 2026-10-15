@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
 import { Crest } from '@/components/ui/crest';
 import { LocalTime } from '@/components/ui/local-time';
-import { dayLabel, meter, type Milestone, type NextGame } from '@/lib/milestones';
+import { dayLabel, meter, STAT_ABBR, type Milestone, type NextGame } from '@/lib/milestones';
 import { cn } from '@/lib/utils';
+import { fmtInt } from '@/components/views/format';
 
 const noop = () => () => {};
 const todayET = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
@@ -91,4 +92,52 @@ export function OutTag({ tag }: { tag: string | null | undefined }) {
 export function ThinTag({ n }: { n: number | undefined }) {
     if (n == null) return null;
     return <span className="rounded-chip border border-dashed border-warn/60 px-1 text-micro leading-[16px] text-warn">n={n}</span>;
+}
+
+/**
+ * The list around a pass as a micro table: up to two places above the name he
+ * passes, that name, then him (raised fill, ink). Ranks and totals are the
+ * list as it stands today; games played ride along unless the list is games.
+ */
+export function Ladder({ m, name, className }: { m: Milestone; name: string; className?: string }) {
+    if (!m.ladder?.length) return null;
+    const rows = m.ladder;
+    const target = rows[rows.length - 1];
+    const gp = m.stat !== 'gp' && m.ngp != null;
+    const cols = gp ? 'grid-cols-[2.25rem_minmax(0,1fr)_auto_auto]' : 'grid-cols-[2.25rem_minmax(0,1fr)_auto]';
+    const row = 'col-span-full grid grid-cols-subgrid px-1.5';
+    return (
+        <ol className={cn('grid w-full max-w-[320px] text-micro tabular-nums', cols, className)}>
+            <li aria-hidden="true" className={cn(row, 'leading-[16px] uppercase tracking-[0.08em] text-fg-3')}>
+                <span />
+                <span />
+                <span className="pl-3 text-right">{STAT_ABBR[m.stat]}</span>
+                {gp ? <span className="pl-3 text-right">GP</span> : null}
+            </li>
+            {rows.map(r => (
+                <li key={r[1]} className={cn(row, 'leading-[18px]', r === target ? 'text-fg-2' : 'text-fg-3')}>
+                    <span className="text-right">{r[0]}</span>
+                    <span className="truncate pl-2">
+                        {r[2]}
+                        {r[5] ? <span className="text-fg-3"> +{r[5]}</span> : null}
+                        {r[4] ? <span className="ml-1 font-bold tracking-[0.08em] text-fg-2">HOF</span> : null}
+                    </span>
+                    <span className="pl-3 text-right">{fmtInt(r[3])}</span>
+                    {gp ? <span className="pl-3 text-right">{r[6] != null ? fmtInt(r[6]) : '—'}</span> : null}
+                </li>
+            ))}
+            {m.gap ? (
+                <li className={cn(row, 'leading-[18px] text-fg-3')}>
+                    <span />
+                    <span className="pl-2">+{m.gap} between</span>
+                </li>
+            ) : null}
+            <li className={cn(row, 'rounded-[4px] bg-surface-3 font-bold leading-[20px] text-fg-1')}>
+                <span className="text-right">{m.now ?? ''}</span>
+                <span className="truncate pl-2">{name}</span>
+                <span className="pl-3 text-right">{fmtInt(m.have)}</span>
+                {gp ? <span className="pl-3 text-right">{fmtInt(m.ngp ?? 0)}</span> : null}
+            </li>
+        </ol>
+    );
 }
