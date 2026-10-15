@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import type { GameModel } from '@/lib/game/types';
-import { GameProvider, GameSection } from './GameContext';
+import { GameProvider, GameSection, useGame } from './GameContext';
 import { GameScore } from './GameScore';
 import { Goalies } from './Goalies';
 import { Goals } from './Goals';
@@ -14,6 +14,7 @@ import { Matchups } from './Matchups';
 import { Pulse } from './Pulse';
 import { CompactScore, ScoreBand } from './ScoreBand';
 import { Scoreboard } from './Scoreboard';
+import { Shootout } from './Shootout';
 import type { SlateGame } from '@/lib/game/fetch';
 import { Shots } from './Shots';
 import { Skaters } from './Skaters';
@@ -26,6 +27,8 @@ import { Zones } from './Zones';
 const SECTIONS = [
     { id: 'story', label: 'Story' },
     { id: 'goals', label: 'Goals' },
+    // Only when the game went to a shootout (the rail skips it otherwise).
+    { id: 'shootout', label: 'Shootout' },
     { id: 'shots', label: 'Shots' },
     { id: 'xg', label: 'xG' },
     { id: 'team', label: 'Team' },
@@ -88,6 +91,8 @@ function LiveRefresh({ live, start }: { live: boolean; start: number | null }) {
 
 /** Section chips in a sticky bar under the app bar, at every width (the page keeps its full width for the charts). */
 function Rail({ active, score, edge }: { active: string; score: boolean; edge: SlateGame['edge'] }) {
+    const { m } = useGame();
+    const sections = SECTIONS.filter(s => s.id !== 'shootout' || m.shootout.length > 0);
     // Where the chips overflow (phones), keep the current one in view as the page scrolls.
     const list = React.useRef<HTMLOListElement>(null);
     // Its height, for headers that pin under it (PinnedTable); only while it is showing.
@@ -121,7 +126,7 @@ function Rail({ active, score, edge }: { active: string; score: boolean; edge: S
                 </div>
             ) : null}
             <ol ref={list} className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto scrollbar-hide">
-                {SECTIONS.map(s => (
+                {sections.map(s => (
                     <li key={s.id} className="shrink-0">
                         <a
                             href={`#${s.id}`}
@@ -190,6 +195,7 @@ export function GameView({ m, slate = [] }: { m: GameModel; slate?: SlateGame[] 
                         {started ? (
                             <>
                                 <Goals />
+                                <Shootout />
                                 <Shots />
                                 <XgBreakdown />
                                 <TeamStats />

@@ -101,7 +101,20 @@ export function buildGame(
             if (type === 'goal' || type === 'shot' || type === 'miss') {
                 const shooter = d.scoringPlayerId ?? d.shootingPlayerId ?? null;
                 const side = (shooter && sideOf.get(shooter)) || sideOfTeam(d.eventOwnerTeamId);
-                if (side) shootout.push({ side, player: shooter, goal: type === 'goal' });
+                // Release point turned toward the +89 net, keeping the shooter's left and right.
+                const flip = typeof d.xCoord === 'number' && d.xCoord < 0;
+                if (side)
+                    shootout.push({
+                        side,
+                        player: shooter,
+                        goal: type === 'goal',
+                        goalie: d.goalieInNetId ?? null,
+                        shotType: d.shotType ?? null,
+                        x: typeof d.xCoord === 'number' ? Math.abs(d.xCoord) : null,
+                        y: typeof d.yCoord === 'number' ? (flip ? -d.yCoord : d.yCoord) : null,
+                        reason: d.reason ?? null,
+                        clip: d.highlightClipSharingUrl ?? null,
+                    });
             }
             continue;
         }

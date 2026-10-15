@@ -303,16 +303,6 @@ export function Goals() {
                     ))}
                 </ol>
             )}
-            {m.shootout.length ? (
-                <p className="mt-3 text-caption text-fg-2">
-                    <span className="label mr-2">Shootout</span>
-                    {m.shootout.map((s, i) => (
-                        <span key={i} className={cn('mr-2', s.goal ? 'font-bold text-fg-1' : 'text-fg-3')}>
-                            {m.teams[s.side].tri} {shortName(s.player != null ? byId.get(s.player) : undefined)} {s.goal ? 'G' : '–'}
-                        </span>
-                    ))}
-                </p>
-            ) : null}
         </GameSection>
     );
 }

@@ -134,6 +134,23 @@ export interface Star {
     line: string;
 }
 
+/**
+ * One shootout attempt. `x`/`y` is the release point in feet, turned so the shooter attacks the net at +89
+ * (y keeps the shooter's left / right); null in models stored before these fields.
+ */
+export interface ShootoutAttempt {
+    side: Side;
+    player: number | null;
+    goal: boolean;
+    goalie?: number | null;
+    shotType?: string | null;
+    x?: number | null;
+    y?: number | null;
+    /** Why a miss missed ("hit-right-post", "wide-of-net"). */
+    reason?: string | null;
+    clip?: string | null;
+}
+
 export type GameState = 'pre' | 'live' | 'final';
 
 export interface GameModel {
@@ -160,8 +177,8 @@ export interface GameModel {
     shifts: Record<number, Shift[]>;
     /** Boxscore extras the play-by-play does not carry. */
     box: Record<number, { pim: number; plusMinus: number; shifts: number; foPct: number | null }>;
-    /** Shootout attempts (not on the clock). */
-    shootout: { side: Side; player: number | null; goal: boolean }[];
+    /** Shootout attempts in order (not on the clock). */
+    shootout: ShootoutAttempt[];
     stars: Star[];
     pregame: Pregame | null;
     odds: GameOdds | null;
