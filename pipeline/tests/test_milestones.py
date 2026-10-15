@@ -72,10 +72,36 @@ def test_ladder_shows_two_above_the_passed_name_best_first():
     groups = M.top_groups({1: 900, 2: 800, 3: 700, 4: 600, 9: 550}, 10)
     ups = M.passes(550, 9, groups)
     names = {1: "A One", 2: "B Two", 3: "C Three", 4: "D Four"}
-    lad = M.ladder(ups, 0, names, {2}, set(), {2: 1200})
-    assert [r[:4] for r in lad] == [[2, 2, "B Two", 800], [3, 3, "C Three", 700], [4, 4, "D Four", 600]]
-    assert lad[0][4] == 1 and lad[0][6] == 1200 and lad[1][6] == 0
+    rows, between, gap = M.ladder(ups, 0, names, {2}, set(), {2: 1200})
+    assert [r[:4] for r in rows] == [[2, 2, "B Two", 800], [3, 3, "C Three", 700], [4, 4, "D Four", 600]]
+    assert rows[0][4] == 1 and rows[0][6] == 1200 and rows[1][6] == 0
+    assert between == [] and gap == 0
     assert M.rank_now(550, 9, {1: 900, 2: 800, 9: 550, 5: 550}) == 3
+
+
+def test_entry_into_top_n_shows_the_names_between():
+    # He is 13th; 10th is the top-10 cut, 11th and 12th sit between.
+    table = {i: 1000 - i * 10 for i in range(1, 13)}
+    table[99] = 860
+    groups = M.top_groups(table, M.FULL)
+    ups = M.passes(860, 99, groups)
+    now = M.rank_now(860, 99, table)
+    assert now == 13
+    targets = M.pass_targets(ups, 10, 25, now)
+    assert targets == [(0, None), (2, 10)]
+    rows, between, gap = M.ladder(ups, 2, {}, set(), set(), {})
+    assert [r[0] for r in rows] == [8, 9, 10]
+    assert [r[0] for r in between] == [11, 12]
+    assert gap == 0
+    rows, between, gap = M.ladder(ups, 5, {}, set(), set(), {})
+    assert [r[0] for r in between] == [11, 12] and gap == 3
+
+
+def test_inside_the_top_n_only_the_next_name():
+    table = {1: 900, 2: 800, 3: 700, 9: 650}
+    ups = M.passes(650, 9, M.top_groups(table, M.FULL))
+    assert M.pass_targets(ups, 10, 25, 4) == [(0, None)]
+
 
 
 def _dates(table):

@@ -46,8 +46,12 @@ export interface Milestone {
     ladder?: LadderRow[];
     /** His place on that list today. */
     now?: number;
-    /** Names between him and the one he passes (a Hall of Famer further up). */
+    /** The names between that one and him, nearest him last (at most two). */
+    between?: LadderRow[];
+    /** Further names between that are not shown. */
     gap?: number;
+    /** Breaking into this list's top N (all-time 100 or 50, franchise 10). */
+    entry?: number;
     /** His games played on that list (career, or with the franchise). */
     ngp?: number;
     /** Franchise (current club tricode). */
@@ -195,11 +199,13 @@ export function describe(m: Milestone, sinceTag: string | null): Copy {
                 hof: false,
             };
         case 'alltime':
+            if (m.entry) return { title: `All-time top ${m.entry}`, context: `${cap(s.list)} · passes ${lastName(who?.[1] ?? '')}`, hof };
             return { title: `Pass ${lastName(who?.[1] ?? '')}${others}`, context: `${place(m, m.rank ?? 0)} all-time in ${s.list}`, hof };
         case 'franchise':
             if (m.rank === 1 && !m.tie) {
                 return { title: `${teamShort(m.fr ?? '')} record`, context: `Most ${s.list}`, hof };
             }
+            if (m.entry) return { title: `${teamShort(m.fr ?? '')} top ${m.entry}`, context: `${cap(s.list)} · passes ${lastName(who?.[1] ?? '')}`, hof };
             return { title: `Pass ${lastName(who?.[1] ?? '')}${others}`, context: `${place(m, m.rank ?? 0)} in ${teamShort(m.fr ?? '')} ${s.list}`, hof };
         case 'streak': {
             const best = m.best;

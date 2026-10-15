@@ -115,7 +115,7 @@ export function Ladder({ m, name, className }: { m: Milestone; name: string; cla
                 {gp ? <span className="text-right">GP</span> : null}
             </li>
             {rows.map(r => (
-                <li key={r[1]} className={cn(row, r === target ? 'text-fg-2' : 'text-fg-3')}>
+                <li key={r[1]} className={cn(row, r === target ? 'text-fg-2' : 'text-fg-3', r === target && m.entry && 'rounded-none border-b border-dashed border-line-strong')}>
                     <span className="text-right">{r[5] ? `T${r[0]}` : r[0]}</span>
                     <span className="truncate pl-2.5">
                         {r[2]}
@@ -128,9 +128,21 @@ export function Ladder({ m, name, className }: { m: Milestone; name: string; cla
             ))}
             {m.gap ? (
                 <li className={cn(row, 'text-fg-3')}>
-                    <span className="col-start-2 pl-2.5">+{m.gap} between</span>
+                    <span className="col-start-2 pl-2.5">+{m.gap} more</span>
                 </li>
             ) : null}
+            {(m.between ?? []).map(r => (
+                <li key={r[1]} className={cn(row, 'text-fg-3')}>
+                    <span className="text-right">{r[5] ? `T${r[0]}` : r[0]}</span>
+                    <span className="truncate pl-2.5">
+                        {r[2]}
+                        {r[5] ? <span> +{r[5]}</span> : null}
+                        {r[4] ? <span className="ml-1 font-bold tracking-[0.08em] text-fg-2">HOF</span> : null}
+                    </span>
+                    <span className="text-right">{fmtInt(r[3])}</span>
+                    {gp ? <span className="text-right">{r[6] != null ? fmtInt(r[6]) : '—'}</span> : null}
+                </li>
+            ))}
             <li className={cn(row, 'bg-surface-3 font-bold text-fg-1')}>
                 <span className="text-right">{m.now ?? ''}</span>
                 <span className="truncate pl-2.5">{name}</span>

@@ -50,6 +50,9 @@ suite('copy', () => {
             title: 'Pass Gilmour', context: '21st all-time in points', hof: true,
         });
         expect(describe(base({ kind: 'franchise', stat: 'p', rank: 1, fr: 'TBL', who: [9, 'Steven Stamkos', 1137, 0, 1] }), null).title).toBe('Lightning record');
+        expect(describe(base({ kind: 'franchise', stat: 'p', rank: 10, entry: 10, fr: 'DAL', who: [9, 'Brenden Morrow', 528, 0, 0] }), null)).toEqual({
+            title: 'Stars top 10', context: 'Points · passes Morrow', hof: false,
+        });
         expect(describe(base({ kind: 'streak', stat: 'pstreak', target: 8, best: [7, 5, 'Sebastian Aho'] }), null).context).toBe('Season best 7 · Aho');
         expect(describe(base({ kind: 'streak', stat: 'ironman', have: 497, target: 500, best: [612, 5, 'Brady Skjei'] }), null)).toEqual({
             title: '500 straight games', context: 'Longest active 612 · Skjei', hof: false,

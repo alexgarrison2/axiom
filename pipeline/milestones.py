@@ -108,6 +108,11 @@ ALLTIME_TOP = {"gp": 100, "g": 100, "a": 100, "p": 100, "w": 100, "ppg": 50, "pp
 SKATER_ALLTIME = ("gp", "g", "a", "p", "ppg", "ppp", "gwg")
 GOALIE_ALLTIME = ("gp", "w", "so", "sv")
 FRANCHISE_TOP = 10
+# A franchise pass of the very next name counts while he is inside its top 25;
+# from outside the top 10 (all-time: the ALLTIME_TOP depth) breaking into it is
+# its own milestone. Lists are read in full so the names between always show.
+FRANCHISE_SHOW = 25
+FULL = 10 ** 6
 SKATER_FRANCHISE = ("gp", "g", "a", "p", "ppg", "gwg")
 GOALIE_FRANCHISE = ("gp", "w", "so")
 # The most a player plausibly adds in one game: within this, it can happen tonight.
@@ -287,24 +292,51 @@ def top_groups(table: dict[int, float], top: int) -> list[tuple[int, float, list
 
 def passes(value: float, pid: int, groups) -> list[tuple[int, float, list[int]]]:
     """Groups above ``value`` that hold someone other than ``pid``, nearest first."""
+    lo, hi = 0, len(groups)
+    while lo < hi:  # first group at or below value (groups run best first)
+        mid = (lo + hi) // 2
+        if groups[mid][1] > value:
+            lo = mid + 1
+        else:
+            hi = mid
     out = []
-    for rank, v, ids in groups:
+    for rank, v, ids in reversed(groups[:lo]):
         others = [i for i in ids if i != pid]
-        if v > value and others:
+        if others:
             out.append((rank, v, others))
-    out.reverse()
     return out
 
 
-def ladder(ups, k: int, names: dict[int, str], hof: set[int], players, gp: dict[int, float]) -> list[list]:
-    """The list around a pass: up to two places above the name he passes, then
-    that name, best first, as [rank, id, name, value, hall of famer, others tied,
-    games played on that list (career, or with the franchise)]."""
+def pass_targets(ups, top: int, show: int, rank_now_: int) -> list[tuple[int, int | None]]:
+    """(index into ``ups``, entry depth or None) for the passes worth a row: the
+    very next name while it ranks inside ``show``, and breaking into the top
+    ``top`` when he is outside it and that is further than the next name."""
     out = []
-    for rank, val, ids in reversed(ups[k:k + 3]):
-        ids = sorted(ids, key=lambda i: (i not in hof, i not in players, names.get(i, "")))
-        out.append([rank, ids[0], names.get(ids[0], ""), int(val), int(ids[0] in hof), len(ids) - 1, int(gp.get(ids[0], 0))])
+    if ups and ups[0][0] <= show:
+        out.append((0, top if rank_now_ > top and ups[0][0] <= top else None))
+    if rank_now_ > top:
+        k = next((k for k, u in enumerate(ups) if u[0] <= top), None)
+        if k is not None and k > 0:
+            out.append((k, top))
     return out
+
+
+def _row(group, names, hof, players, gp) -> list:
+    rank, val, ids = group
+    ids = sorted(ids, key=lambda i: (i not in hof, i not in players, names.get(i, "")))
+    return [rank, ids[0], names.get(ids[0], ""), int(val), int(ids[0] in hof), len(ids) - 1, int(gp.get(ids[0], 0))]
+
+
+def ladder(ups, k: int, names: dict[int, str], hof: set[int], players, gp: dict[int, float]):
+    """The list around a pass, best first, as rows of [rank, id, name, value,
+    hall of famer, others tied, games played on that list (career, or with the
+    franchise)]: up to two places above the name he passes and that name
+    (``ladder``), then the names between it and him nearest him, at most two
+    (``between``), and how many more are hidden between (``gap``)."""
+    top = [_row(g, names, hof, players, gp) for g in reversed(ups[k:k + 3])]
+    shown = ups[:min(k, 2)]
+    between = [_row(g, names, hof, players, gp) for g in reversed(shown)]
+    return top, between, k - len(shown)
 
 
 def rank_now(have: float, pid: int, table: dict[int, float]) -> int:
@@ -543,9 +575,9 @@ def build() -> dict:
           f"{len(fr)} franchises, {time.time() - t0:.1f}s")
 
     prev_games = season_games(PREV_START_YEAR)
-    at_groups = {("g" if gl else "s", k): top_groups((gk if gl else sk)["car"][k], ALLTIME_TOP[k])
+    at_groups = {("g" if gl else "s", k): top_groups((gk if gl else sk)["car"][k], FULL)
                  for gl, keys in ((False, SKATER_ALLTIME), (True, GOALIE_ALLTIME)) for k in keys}
-    fr_groups = {(tri, gl, k): top_groups(tab[tri][k], FRANCHISE_TOP)
+    fr_groups = {(tri, gl, k): top_groups(tab[tri][k], FULL)
                  for gl, tab, keys in ((False, fr_sk, SKATER_FRANCHISE), (True, fr_gk, GOALIE_FRANCHISE))
                  for tri in tab for k in keys}
     items: list[dict] = []
@@ -610,47 +642,45 @@ def build() -> dict:
                 continue
             add(pid, "career", key, have, target, rate, basis, goalie, club=club_size(target, t["car"][key].values()))
 
-        # All-time list: the next name and the highest Hall of Famer within reach.
-        for key in (GOALIE_ALLTIME if goalie else SKATER_ALLTIME):
-            have = t["car"][key].get(pid, 0)
-            ups = passes(have, pid, at_groups[("g" if goalie else "s", key)])
+        # All-time and franchise lists: the next name, breaking into the top N,
+        # and (all-time) the highest Hall of Famer within reach this season.
+        def list_passes(kind, key, table, groups, top, show, gp_table, legend_ok, **extra):
+            have = table.get(pid, 0)
+            if not have:
+                return
+            ups = passes(have, pid, groups)
             if not ups:
-                continue
+                return
             rate, basis = rate_for(pid, key, goalie)
-            reach = have + rate * len(ctx.remaining(p["team"], pid)) * (start_share(pid, p["team"]) if goalie else 1)
-            shown = set()
-            nxt = ups[0]
-            legend = next((u for u in reversed(ups) if u[1] + 1 <= reach and any(i in hof for i in u[2])), None)
-            now = rank_now(have, pid, t["car"][key])
-            for u in (nxt, legend):
-                if u is None or u[0] in shown:
+            now = rank_now(have, pid, table)
+            targets = pass_targets(ups, top, show, now)
+            if legend_ok:
+                reach = have + rate * len(ctx.remaining(p["team"], pid)) * (start_share(pid, p["team"]) if goalie else 1)
+                k = next((k for k in range(len(ups) - 1, -1, -1)
+                          if ups[k][0] <= top and ups[k][1] + 1 <= reach and any(i in hof for i in ups[k][2])), None)
+                if k is not None:
+                    targets.append((k, None))
+            seen = set()
+            for k, entry in targets:
+                if k in seen:
                     continue
-                shown.add(u[0])
-                rank, val, ids = u
-                k = ups.index(u)
+                seen.add(k)
+                rank, val, ids = ups[k]
                 ids = sorted(ids, key=lambda i: (i not in hof, i not in players, names.get(i, "")))
-                add(pid, "alltime", key, have, val + 1, rate, basis, goalie, rank=rank,
+                rows, between, gap = ladder(ups, k, names, hof, players, gp_table)
+                add(pid, kind, key, have, val + 1, rate, basis, goalie, rank=rank, entry=entry,
                     who=[ids[0], names.get(ids[0], ""), int(val), int(ids[0] in hof), int(ids[0] in players)],
-                    tied=len(ids) - 1 or None, ladder=ladder(ups, k, names, hof, players, t["car"]["gp"]), now=now, gap=k or None,
-                    ngp=int(t["car"]["gp"].get(pid, 0)))
+                    tied=len(ids) - 1 or None, ladder=rows, between=between or None, gap=gap or None,
+                    now=now, ngp=int(gp_table.get(pid, 0)), **extra)
 
-        # Franchise top 10.
+        for key in (GOALIE_ALLTIME if goalie else SKATER_ALLTIME):
+            list_passes("alltime", key, t["car"][key], at_groups[("g" if goalie else "s", key)],
+                        ALLTIME_TOP[key], ALLTIME_TOP[key], t["car"]["gp"], True)
         ft = (fr_gk if goalie else fr_sk).get(p["team"])
         if ft:
             for key in (GOALIE_FRANCHISE if goalie else SKATER_FRANCHISE):
-                have = ft[key].get(pid, 0)
-                if not have:
-                    continue
-                ups = passes(have, pid, fr_groups[(p["team"], goalie, key)])
-                if not ups:
-                    continue
-                rank, val, ids = ups[0]
-                ids = sorted(ids, key=lambda i: (i not in hof, names.get(i, "")))
-                rate, basis = rate_for(pid, key, goalie)
-                add(pid, "franchise", key, have, val + 1, rate, basis, goalie, rank=rank, fr=p["team"],
-                    who=[ids[0], names.get(ids[0], ""), int(val), int(ids[0] in hof), int(ids[0] in players)],
-                    tied=len(ids) - 1 or None, ladder=ladder(ups, 0, names, hof, players, ft["gp"]),
-                    now=rank_now(have, pid, ft[key]), ngp=int(ft["gp"].get(pid, 0)))
+                list_passes("franchise", key, ft[key], fr_groups[(p["team"], goalie, key)],
+                            FRANCHISE_TOP, FRANCHISE_SHOW, ft["gp"], False, fr=p["team"])
 
         # pony xG: ixG since the archive's first season.
         if not goalie and since is not None and pid in ixg_tot:

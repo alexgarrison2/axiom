@@ -639,13 +639,14 @@ export default function MethodologyPage() {
                                     ordered the same way.
                                 </li>
                                 <li>
-                                    <strong>All-time</strong>: the next name he passes on the NHL list (top 100 for games, goals, assists, points and
-                                    wins; top 50 for the rest), and the highest Hall of Famer he passes this season at his pace.{' '}
-                                    <strong>HOF</strong> marks a Hockey Hall of Fame member.
+                                    <strong>All-time</strong>: the next name above him on the NHL list inside its top 100 (games, goals, assists,
+                                    points and wins; top 50 for the rest), breaking into that top 100 or 50 when he is outside it, and the highest
+                                    Hall of Famer he passes this season at his pace. <strong>HOF</strong> marks a Hockey Hall of Fame member.
                                 </li>
                                 <li>
-                                    <strong>Franchise</strong>: the next name he passes in his current club&apos;s top 10, or its record. A franchise
-                                    keeps its history through moves, as the NHL counts it.
+                                    <strong>Franchise</strong>: the next name above him on his current club&apos;s list while he is inside its top
+                                    25, breaking into its top 10, and its record. A franchise keeps its history through moves, as the NHL counts it.
+                                    The table under a pass shows the names above the one he passes and the ones he passes on the way.
                                 </li>
                                 <li>
                                     <strong>Streaks</strong>: active point streaks of 5+ games and goal streaks of 3+, against the season&apos;s
