@@ -2360,7 +2360,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Marco Rossi",
@@ -2392,7 +2392,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Filip Chytil",
@@ -2402,7 +2402,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": true,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Brock Boeser",
@@ -2424,7 +2424,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Max Sasson",
@@ -2493,24 +2493,24 @@
         ],
         "d3": [
             {
-                "name": "Guillaume Brisebois",
-                "number": 55,
+                "name": "Zeev Buium",
+                "number": 8,
                 "pos": "ld",
-                "id": 3789,
+                "id": 33153,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "new"
             },
             {
-                "name": "Luke Schenn",
-                "number": 2,
+                "name": "Victor Mancini",
+                "number": 90,
                 "pos": "rd",
-                "id": 1442,
+                "id": 33084,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -2620,10 +2620,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Luke Schenn",
-                "number": 2,
+                "name": "Victor Mancini",
+                "number": 90,
                 "pos": "sk4",
-                "id": 1442,
+                "id": 33084,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -2631,7 +2631,7 @@
         ],
         "lineup_source": "Thomas Drance",
         "updated_at": "2026-10-15T15:42:08.722Z",
-        "fetched_at": "2026-10-15T15:58:12Z"
+        "fetched_at": "2026-10-15T17:02:21Z"
     },
     "VGK": {
         "f1": [
@@ -3007,7 +3007,7 @@
                 "number": 86,
                 "pos": "rw",
                 "id": 2128,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3022,7 +3022,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Frank Nazar",
@@ -3032,7 +3032,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Ryan Donato",
@@ -3042,7 +3042,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -3054,7 +3054,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ryan Greene",
@@ -3064,7 +3064,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jordan Greenway",
@@ -3074,19 +3074,19 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
             {
-                "name": "Bowen Byram",
-                "number": 24,
+                "name": "Ethan Del Mastro",
+                "number": 38,
                 "pos": "ld",
-                "id": 28523,
-                "ppUnit": 1,
+                "id": 30841,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Artyom Levshunov",
@@ -3167,10 +3167,19 @@
             {
                 "name": "Andrew Mangiapane",
                 "number": 88,
-                "pos": "ir2",
+                "pos": "ir1",
                 "id": 4622,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Bowen Byram",
+                "number": 24,
+                "pos": "ir2",
+                "id": 28523,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -3252,7 +3261,7 @@
         ],
         "lineup_source": "@CHGO_Blackhawks",
         "updated_at": "2026-10-15T15:52:04.098Z",
-        "fetched_at": "2026-10-15T15:58:12Z"
+        "fetched_at": "2026-10-15T17:02:21Z"
     },
     "PHI": {
         "f1": [
