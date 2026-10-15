@@ -2741,11 +2741,11 @@
         ],
         "f4": [
             {
-                "name": "Braeden Bowman",
-                "number": 42,
+                "name": "Marc Gatcomb",
+                "number": 17,
                 "pos": "lw",
-                "id": 30925,
-                "ppUnit": 2,
+                "id": 37866,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2761,11 +2761,11 @@
                 "movement": null
             },
             {
-                "name": "Marc Gatcomb",
-                "number": 17,
+                "name": "Braeden Bowman",
+                "number": 42,
                 "pos": "rw",
-                "id": 37866,
-                "ppUnit": null,
+                "id": 30925,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2812,7 +2812,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -2834,7 +2834,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -2953,9 +2953,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-13)",
-        "updated_at": "2026-10-14T14:37:56.610Z",
-        "fetched_at": "2026-10-14T16:02:08Z"
+        "lineup_source": "Hannah Kirkell",
+        "updated_at": "2026-10-15T18:05:13.468Z",
+        "fetched_at": "2026-10-15T19:02:05Z"
     },
     "CHI": {
         "f1": [
@@ -5479,14 +5479,14 @@
                 "movement": null
             },
             {
-                "name": "Beckett Sennecke",
-                "number": 45,
+                "name": "Nikita Klepov",
+                "number": 40,
                 "pos": "rw",
-                "id": 36637,
-                "ppUnit": 1,
+                "id": 38664,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f2": [
@@ -5501,24 +5501,24 @@
                 "movement": null
             },
             {
-                "name": "Mikael Granlund",
-                "number": 64,
+                "name": "Cutter Gauthier",
+                "number": 61,
                 "pos": "c",
-                "id": 1934,
+                "id": 33248,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": true,
+                "movement": "new"
+            },
+            {
+                "name": "Beckett Sennecke",
+                "number": 45,
+                "pos": "rw",
+                "id": 36637,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Sam Colangelo",
-                "number": 12,
-                "pos": "rw",
-                "id": 32857,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f3": [
@@ -5543,26 +5543,26 @@
                 "movement": null
             },
             {
-                "name": "A.J. Greer",
-                "number": 18,
+                "name": "Judd Caulfield",
+                "number": 28,
                 "pos": "rw",
-                "id": 2706,
-                "ppUnit": null,
+                "id": 30440,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
             {
-                "name": "Jeff Malott",
-                "number": 39,
+                "name": "A.J. Greer",
+                "number": 18,
                 "pos": "lw",
-                "id": 34555,
+                "id": 2706,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Tim Washe",
@@ -5575,11 +5575,11 @@
                 "movement": null
             },
             {
-                "name": "Judd Caulfield",
-                "number": 28,
+                "name": "Jeff Malott",
+                "number": 39,
                 "pos": "rw",
-                "id": 30440,
-                "ppUnit": 1,
+                "id": 34555,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5619,14 +5619,14 @@
                 "movement": null
             },
             {
-                "name": "Drew Helleson",
-                "number": 14,
+                "name": "Tristan Luneau",
+                "number": null,
                 "pos": "rd",
-                "id": 30429,
-                "ppUnit": null,
+                "id": 34070,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d3": [
@@ -5641,14 +5641,14 @@
                 "movement": null
             },
             {
-                "name": "Tristan Luneau",
-                "number": null,
+                "name": "Drew Helleson",
+                "number": 14,
                 "pos": "rd",
-                "id": 34070,
-                "ppUnit": 2,
+                "id": 30429,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -5695,7 +5695,7 @@
                 "number": 61,
                 "pos": "ir4",
                 "id": 33248,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             },
@@ -5706,6 +5706,15 @@
                 "id": 2792,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Mikael Granlund",
+                "number": 64,
+                "pos": "ir6",
+                "id": 1934,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -5749,10 +5758,10 @@
         ],
         "pk2": [
             {
-                "name": "Mikael Granlund",
-                "number": 64,
+                "name": "Leo Carlsson",
+                "number": 91,
                 "pos": "sk1",
-                "id": 1934,
+                "id": 37943,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5785,9 +5794,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-13)",
-        "updated_at": "2026-10-14T14:48:16.148Z",
-        "fetched_at": "2026-10-15T03:03:40Z"
+        "lineup_source": "Zach Cavanagh",
+        "updated_at": "2026-10-15T18:06:47.899Z",
+        "fetched_at": "2026-10-15T19:02:05Z"
     },
     "NJD": {
         "f1": [
@@ -8680,9 +8689,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-13)",
-        "updated_at": "2026-10-14T14:45:09.272Z",
-        "fetched_at": "2026-10-14T16:02:08Z"
+        "lineup_source": "Jason Gregor",
+        "updated_at": "2026-10-15T18:32:28.805Z",
+        "fetched_at": "2026-10-15T19:02:05Z"
     },
     "WPG": {
         "f1": [
