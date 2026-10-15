@@ -7276,7 +7276,7 @@
                 "id": 2139,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -7306,7 +7306,7 @@
                 "number": 65,
                 "pos": "rd",
                 "id": 2099,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7314,21 +7314,21 @@
         ],
         "d3": [
             {
-                "name": "Dmitry Orlov",
-                "number": 9,
+                "name": "Nolan Allan",
+                "number": 5,
                 "pos": "ld",
-                "id": 1572,
-                "ppUnit": 1,
+                "id": 32541,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Luca Cagnoni",
-                "number": 42,
+                "name": "Dmitry Orlov",
+                "number": 9,
                 "pos": "rd",
-                "id": 38123,
-                "ppUnit": 2,
+                "id": 1572,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7351,6 +7351,17 @@
                 "id": 33018,
                 "ppUnit": null,
                 "injuryStatus": null,
+                "gameTimeDecision": false
+            }
+        ],
+        "ir": [
+            {
+                "name": "Darnell Nurse",
+                "number": 25,
+                "pos": "ir1",
+                "id": 2139,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -7380,14 +7391,14 @@
                 "id": 2139,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Jacob Trouba",
                 "number": 65,
                 "pos": "sk4",
                 "id": 2099,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -7430,9 +7441,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-13)",
-        "updated_at": "2026-10-14T14:56:45.918Z",
-        "fetched_at": "2026-10-15T03:03:40Z"
+        "lineup_source": "Sheng Peng",
+        "updated_at": "2026-10-15T19:49:33.124Z",
+        "fetched_at": "2026-10-15T20:02:06Z"
     },
     "SEA": {
         "f1": [
