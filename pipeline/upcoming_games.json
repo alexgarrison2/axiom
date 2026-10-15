@@ -1,100 +1,5 @@
 [
     {
-        "id": 2026020106,
-        "gameDate": "2026-10-14",
-        "startTimeUTC": "2026-10-14T23:30:00Z",
-        "gameType": 2,
-        "gameState": "OFF",
-        "homeTeam": "Capitals",
-        "awayTeam": "Canadiens",
-        "homeTeamAbbrev": "WSH",
-        "awayTeamAbbrev": "MTL",
-        "homeGoalieConfirmed": "Charlie Lindgren",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Jakub Dobes",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "MNMT",
-                "market": "H",
-                "team": "WSH",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "Prime",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "MNMT",
-                "market": "H",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020107,
-        "gameDate": "2026-10-14",
-        "startTimeUTC": "2026-10-15T00:30:00Z",
-        "gameType": 2,
-        "gameState": "FINAL",
-        "homeTeam": "Avalanche",
-        "awayTeam": "Stars",
-        "homeTeamAbbrev": "COL",
-        "awayTeamAbbrev": "DAL",
-        "homeGoalieConfirmed": "Scott Wedgewood",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Casey DeSmith",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "TNT",
-        "tvDisplay": [
-            {
-                "network": "TNT",
-                "market": "N",
-                "team": null,
-                "country": "US"
-            },
-            {
-                "network": "truTV",
-                "market": "N",
-                "team": null,
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "TNT",
-                "market": "N",
-                "countryCode": "US"
-            },
-            {
-                "network": "truTV",
-                "market": "N",
-                "countryCode": "US"
-            },
-            {
-                "network": "HBO MAX",
-                "market": "N",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
         "id": 2026020108,
         "gameDate": "2026-10-15",
         "startTimeUTC": "2026-10-15T23:00:00Z",
@@ -626,6 +531,122 @@
             },
             {
                 "network": "SCRIPPS",
+                "market": "H",
+                "countryCode": "US"
+            }
+        ]
+    },
+    {
+        "id": 2026020119,
+        "gameDate": "2026-10-16",
+        "startTimeUTC": "2026-10-17T01:00:00Z",
+        "gameType": 2,
+        "gameState": "FUT",
+        "homeTeam": "Avalanche",
+        "awayTeam": "Penguins",
+        "homeTeamAbbrev": "COL",
+        "awayTeamAbbrev": "PIT",
+        "homeGoalieConfirmed": "Scott Wedgewood",
+        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieSource": "dailyfaceoff",
+        "homeGoalieConflict": true,
+        "homeGoalieAlt": "Mackenzie Blackwood",
+        "awayGoalieConfirmed": "Arturs Silovs",
+        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieSource": "dailyfaceoff",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
+        "tvNetwork": "",
+        "tvDisplay": [
+            {
+                "network": "SN-PIT",
+                "market": "A",
+                "team": "PIT",
+                "country": "US"
+            },
+            {
+                "network": "ALT",
+                "market": "H",
+                "team": "COL",
+                "country": "US"
+            }
+        ],
+        "tvBroadcasts": [
+            {
+                "network": "SN+",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "TVAS",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "SN-PIT",
+                "market": "A",
+                "countryCode": "US"
+            },
+            {
+                "network": "ALT",
+                "market": "H",
+                "countryCode": "US"
+            },
+            {
+                "network": "KTVD",
+                "market": "H",
+                "countryCode": "US"
+            }
+        ]
+    },
+    {
+        "id": 2026020120,
+        "gameDate": "2026-10-16",
+        "startTimeUTC": "2026-10-17T02:00:00Z",
+        "gameType": 2,
+        "gameState": "FUT",
+        "homeTeam": "Ducks",
+        "awayTeam": "Bruins",
+        "homeTeamAbbrev": "ANA",
+        "awayTeamAbbrev": "BOS",
+        "homeGoalieConfirmed": "Lukas Dostal",
+        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieSource": "dailyfaceoff",
+        "homeGoalieConflict": false,
+        "homeGoalieAlt": null,
+        "awayGoalieConfirmed": "Jeremy Swayman",
+        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieSource": "dailyfaceoff",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
+        "tvNetwork": "",
+        "tvDisplay": [
+            {
+                "network": "NESN",
+                "market": "A",
+                "team": "BOS",
+                "country": "US"
+            },
+            {
+                "network": "Prime Video",
+                "market": "H",
+                "team": "ANA",
+                "country": "US"
+            }
+        ],
+        "tvBroadcasts": [
+            {
+                "network": "Prime Video",
+                "market": "H",
+                "countryCode": "US"
+            },
+            {
+                "network": "NESN",
+                "market": "A",
+                "countryCode": "US"
+            },
+            {
+                "network": "KCOP-13",
                 "market": "H",
                 "countryCode": "US"
             }

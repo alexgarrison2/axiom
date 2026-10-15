@@ -42461,5 +42461,66 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020107,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-14",
+    "homeTeam": "Avalanche",
+    "awayTeam": "Stars",
+    "homeScore": 2,
+    "awayScore": 3,
+    "decision": "SO",
+    "homeXg": 3.44,
+    "awayXg": 2.59,
+    "homeWinProb": 63.9,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Stars",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.4083,
+    "logLoss": 1.0189,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-15T00:02:00Z",
+    "startUtc": "2026-10-15T00:30:00Z",
+    "marketHomeProb": 59.9,
+    "modelHomeProb": 64.9,
+    "homeOdds": -162.0,
+    "awayOdds": 136.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 64.9,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.214,
+        "ll": 1.5418,
+        "naive_ll": 1.8377,
+        "market_p": 0.2098
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.604,
+        "ll": 0.5042,
+        "naive_ll": 0.4858,
+        "market_p": 0.6459
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.575,
+        "ll": 0.5534,
+        "naive_ll": 0.557,
+        "market_p": 0.5547
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.33,
+        "ll": 1.1087,
+        "naive_ll": 1.1808,
+        "market_p": null
+      }
+    }
   }
 ]
