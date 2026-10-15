@@ -27,7 +27,7 @@ import {
     COLUMN_BY_KEY, COLUMN_GROUPS, DEFAULT_HIDDEN, EMPHASIS_MIN_GP, THIN_CHANCES, columnValue, emphasisMap,
     type ColumnCtx, type Emphasis, type StatColumn,
 } from './columns';
-import { LENSES, LENS_BY_KEY, isLensKey, lensColumn, lensColumns, type LensKey } from './lenses';
+import { LENSES, LENS_BY_KEY, isLensKey, lensColumn, lensColumns, WIN_PCT_COLUMN, type LensKey } from './lenses';
 import {
     CentreBar, Dash, DepthCells, DepthHeader, FormTape, Flow, Frac, OddsBar, Ordinal, ProjRange, RecordCell, SignedText, StSplit, StSplitHeader, Streak,
 } from './cells';
@@ -284,9 +284,15 @@ export default function TeamsTable({ initial }: { initial?: LeaguePayload }) {
             return teams.some(r => Number.isFinite(columnValue(c, r, ctx)));
         };
         const kept = base.filter(c => has(c.col));
+        // A slate (Today / Tomorrow): the game's win % right after the rank column.
+        if (filters.view === 'today' || filters.view === 'tomorrow') {
+            const at = kept.findIndex(c => c.col.kind === 'rank' || c.col.kind === 'ranking' || c.col.kind === 'pos');
+            const i = at >= 0 ? at + 1 : 0;
+            kept.splice(i, 0, { col: WIN_PCT_COLUMN, groupEnd: false, group: kept[Math.max(0, i - 1)]?.group ?? '' });
+        }
         // Re-mark group ends after dropping columns.
         return kept.map((c, i) => ({ ...c, groupEnd: i === kept.length - 1 || kept[i + 1].group !== c.group }));
-    }, [lensKey, lens, hiddenSet, ratingsMissing, payload, ctx]);
+    }, [lensKey, lens, hiddenSet, ratingsMissing, payload, ctx, filters.view]);
     const groupSpans = React.useMemo(() => {
         const out: { name: string; n: number; link?: LensKey }[] = [];
         for (const c of columns) {

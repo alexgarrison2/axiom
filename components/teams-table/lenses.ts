@@ -33,6 +33,25 @@ const as = (key: string, label: string, extra: Partial<StatColumn> = {}): StatCo
 
 const X = (c: Omit<StatColumn, 'format'> & { format?: StatColumn['format'] }): StatColumn => ({ format: d2, ...c });
 
+/**
+ * Today / Tomorrow: the team's published win % for its game (as on the matchup card). The table adds it after
+ * the rank column in every lens while a slate is shown; rows without a game read NaN.
+ */
+export const WIN_PCT_COLUMN: StatColumn = X({
+    key: 'win_pct',
+    label: 'Win %',
+    title: 'pony xG win chance for this game (the published, market-blended number)',
+    better: 'high',
+    kind: 'odds',
+    model: true,
+    width: 104,
+    derive: r => {
+        const g = r as typeof r & { matchup?: { homeWinPct?: number; awayWinPct?: number }; side?: 'home' | 'away' };
+        const v = g.matchup && g.side ? (g.side === 'home' ? g.matchup.homeWinPct : g.matchup.awayWinPct) : undefined;
+        return typeof v === 'number' ? v : NaN;
+    },
+});
+
 /** Columns that exist only in lenses (derived values and drawn cells). */
 export const LENS_COLUMNS: Record<string, StatColumn> = {
     // ranks

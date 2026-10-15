@@ -202,6 +202,8 @@ export function loadMatchups(): Matchup[] {
             awayStarterStatus: statusOf(r.away_starter),
             homeVegasOdds: numOrUndef(r.home_vegas_odds),
             awayVegasOdds: numOrUndef(r.away_vegas_odds),
+            homeWinPct: numOrUndef(r.home_win_pct),
+            awayWinPct: numOrUndef(r.away_win_pct),
             // Fair line of the published (blended) %, like the matchup card's
             // "Fair"; home/away_model_odds is the model-only line since fix1-G1.
             homeModelOdds: r.home_blend_odds?.trim() || r.home_model_odds?.trim() || undefined,
