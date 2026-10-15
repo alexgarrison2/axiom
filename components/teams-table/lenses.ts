@@ -152,7 +152,7 @@ export const LENSES: Lens[] = [
         sort: { key: 'rk_power', dir: 'asc' },
         groups: [
             g('', ['rk_power']),
-            g('Record', ['record', as('points', 'PTS')], 'standings'),
+            g('Record', ['record', as('points', 'PTS'), 'pt_pct'], 'standings'),
             g('Rating', ['rating'], 'ratings'),
             g('Play', ['xg_share'], 'shots'),
             g('Luck', ['luck'], 'luck'),

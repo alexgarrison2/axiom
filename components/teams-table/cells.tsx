@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { mmss, oddsPct, signed } from '@/utils/team-stats/format';
+import { mmss, oddsPct, pct3, signed } from '@/utils/team-stats/format';
 import type { Record3, ResultCode, TeamExtra, TeamProjection, TeamRatingEntry, TeamStat } from '@/utils/team-stats/types';
 import type { StatColumn } from './columns';
 
@@ -240,6 +240,16 @@ export function StSplit({ pp, pk, avg, children }: { pp: number; pk: number; avg
 }
 
 /** Signed value, green above / red below the column's threshold. */
+/**
+ * Points % as .000, signed around .500: green above, red below, .500 itself neutral; a team .100 or more from
+ * .500 (a .600 or .400 club) is set bold.
+ */
+export function PtPct({ v }: { v: number }) {
+    const d = v - 0.5;
+    const tone = Math.abs(d) < 0.0005 ? 'text-fg-2' : d > 0 ? 'text-pos' : 'text-neg';
+    return <span className={cn(tone, Math.abs(d) >= 0.1 && 'font-semibold')}>{pct3(v)}</span>;
+}
+
 export function SignedText({ col, v }: { col: StatColumn; v: number }) {
     const t = col.signAt ?? 0;
     return <span className={v > t ? 'text-pos' : v < -t ? 'text-neg' : 'text-fg-2'}>{col.format(v)}</span>;

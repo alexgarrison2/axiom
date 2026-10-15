@@ -29,7 +29,7 @@ import {
 } from './columns';
 import { LENSES, LENS_BY_KEY, isLensKey, lensColumn, lensColumns, WIN_PCT_COLUMN, type LensKey } from './lenses';
 import {
-    CentreBar, Dash, DepthCells, DepthHeader, FormTape, Flow, Frac, OddsBar, Ordinal, ProjRange, RecordCell, SignedText, StSplit, StSplitHeader, Streak,
+    CentreBar, Dash, DepthCells, DepthHeader, FormTape, Flow, Frac, OddsBar, Ordinal, ProjRange, PtPct, RecordCell, SignedText, StSplit, StSplitHeader, Streak,
 } from './cells';
 import { FilterSheet } from '@/components/ui/filter-sheet';
 import { Field, RangeFields } from './FilterFields';
@@ -882,6 +882,7 @@ function Row({
                 const e = thin ? undefined : emphasis.get(col.key)?.get(row.tri);
                 let body: React.ReactNode = col.format(v);
                 if (kind === 'signed') body = <SignedText col={col} v={v} />;
+                else if (kind === 'ptPct') body = <PtPct v={v} />;
                 else if (kind === 'ordinal') body = <Ordinal text={col.format(v)} rank={thin ? undefined : ranks.get(col.rankOf ?? col.key)?.get(row.tri)} />;
                 else if (kind === 'modelBar' && col.bar) body = <CentreBar v={v} mid={col.bar.mid} span={col.bar.span} text={col.format(v)} tone="model" />;
                 else if (kind === 'share' && col.bar) body = <CentreBar v={v} mid={col.bar.mid} span={col.bar.span} text={col.format(v)} tone="sign" width={64} />;

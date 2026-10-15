@@ -8,7 +8,7 @@ export type Better = 'high' | 'low' | 'none';
 export type CellKind =
     | 'num' | 'ordinal' | 'signed' | 'rank' | 'pos' | 'ranking'
     | 'modelBar' | 'share' | 'odds' | 'proj' | 'flow' | 'depth' | 'form'
-    | 'record' | 'homeRec' | 'awayRec' | 'l10' | 'streak' | 'frac' | 'stSplit';
+    | 'record' | 'homeRec' | 'awayRec' | 'l10' | 'streak' | 'frac' | 'stSplit' | 'ptPct';
 
 /** Data beyond the stat row: current ratings, the game-log extras and the season simulation. */
 export interface ColumnCtx {
@@ -78,7 +78,7 @@ export const COLUMNS: StatColumn[] = [
     C('losses', 'L', 'Regulation losses (every loss in the playoffs)', 'low', int),
     C('otl', 'OT', 'Overtime and shootout losses', 'none', int),
     C('points', 'PTS', 'Points (2 per win, 1 per OT/SO loss)', 'high', int),
-    C('pt_pct', 'P%', 'Points percentage', 'high', pct3, { tip: 'points-pct' }),
+    C('pt_pct', 'P%', 'Points percentage', 'high', pct3, { tip: 'points-pct', kind: 'ptPct' }),
     C('rw', 'RW', 'Regulation wins (first tiebreaker)', 'high', int, { tip: 'points-pct' }),
 
     C('gf_per_game', 'GF/G', 'Goals for per game (shootout winner credited one goal)', 'high', d2),
