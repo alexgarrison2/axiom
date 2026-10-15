@@ -65,6 +65,7 @@ Key pipeline scripts:
 | `fetch_skater_games.py` | Per-game skater logs incl. PP points, shot attempts (missed/blocked), EV/PP/SH TOI and penalties drawn/taken (`nhl_season_*_skater_games.csv`, NHL stats API `summary` + `realtime` + `timeonice` + `penalties` in weekly windows; one query caps at 10k rows). Older seasons live in `nhl_historical_skater_games.csv` (from 2022-23) for games vs an opponent |
 | `skater_rates.py` | Descriptive per-season on-ice rates for the team skater cards (`public/data/skater_rates/<season>.json`: 5v5 xGF/xGA/60, xG%, rel, ixG/60 from pony xG stints; Pen/60 and TOI splits from skater_games). Current season from game 1, unlike the frozen `player_impact.json` |
 | `fetch_props.py` | Bovada player props (SOG O/U, anytime goal, 1+/2+ points, assists, 1+ PPP) → `player_props.json`, per-day archive in `prop_lines/` |
+| `milestones.py` | Players nearing milestones for `/players/milestones` (`public/data/milestones.json`): career round numbers, all-time and franchise list passes (NHL stats API aggregates, records.nhl.com Hall of Fame), streaks, season pace, pony xG ixG; projected game from pace on the club schedule. Full run, after the schedule and skater logs |
 | `prop_model.py` / `prop_board.py` | Fair prop probabilities (backtest: `tools/backtest_props.py`), `public/data/props.json` for `/props` and `props_detail.json` (opened-row detail: attempts, TOI, ixG, splits, games vs tonight's opponent; fetched on first open) |
 
 ### Model files and tracking

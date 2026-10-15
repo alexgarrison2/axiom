@@ -48,6 +48,7 @@ const SECTIONS = [
     { id: 'game-story', label: 'Game story' },
     { id: 'schedule', label: 'Schedule' },
     { id: 'pony-score', label: 'Pony score' },
+    { id: 'milestones', label: 'Milestones' },
     { id: 'players', label: 'Players & standings' },
     { id: 'wowy', label: 'With or without' },
     { id: 'props', label: 'Player props' },
@@ -619,6 +620,46 @@ export default function MethodologyPage() {
                             <p>
                                 Goalies score goals saved above expected. One game is a small sample: the score describes the night, it does not
                                 rate the player.
+                            </p>
+                        </Section>
+
+                        <Section id="milestones" index={++i} title="Milestones">
+                            <p>
+                                <strong>Milestones</strong> (Players, Milestones) lists every rostered player who reaches one this season at his
+                                pace. Career totals, all-time and franchise lists are the NHL&apos;s own regular-season numbers (NHL stats API and
+                                records.nhl.com), refreshed after each game day; hits and blocks are counted from 2005-06 and faceoffs from 1997-98,
+                                as the NHL tracks them.
+                            </p>
+                            <ul className="list-disc space-y-1 pl-5">
+                                <li>
+                                    <strong>Career</strong>: round numbers (100, 250, 500, 1,000 games; every 50 goals from 100; 100s of assists and
+                                    points; PP goals and points, game-winners, shots, hits, blocks, faceoff wins; goalie wins, shutouts and saves).
+                                    &quot;47th ever&quot; is the place he takes: everyone in NHL history who has reached it, plus the players projected to
+                                    get there before him (<strong>T-</strong> when two are projected for the same night). Passes on a list are
+                                    ordered the same way.
+                                </li>
+                                <li>
+                                    <strong>All-time</strong>: the next name he passes on the NHL list (top 100 for games, goals, assists, points and
+                                    wins; top 50 for the rest), and the highest Hall of Famer he passes this season at his pace.{' '}
+                                    <strong>HOF</strong> marks a Hockey Hall of Fame member.
+                                </li>
+                                <li>
+                                    <strong>Franchise</strong>: the next name he passes in his current club&apos;s top 10, or its record. A franchise
+                                    keeps its history through moves, as the NHL counts it.
+                                </li>
+                                <li>
+                                    <strong>Streaks</strong>: active point streaks of 5+ games and goal streaks of 3+, against the season&apos;s
+                                    longest. <strong>Season</strong>: on pace for 50 goals, 100 points or 40 wins, and the race to be the first to a
+                                    round number this season. <strong>pony xG</strong>: the expected goals of his own shots (ixG) since the first
+                                    season in our shot archive.
+                                </li>
+                            </ul>
+                            <p>
+                                The <strong>projected game</strong> (<strong>G23</strong>: his club&apos;s 23rd game) is where his pace gets him: his
+                                per-game rate over this season and last together (his career rate with fewer than 10 games), applied to his
+                                club&apos;s schedule, starting after the expected return date of an injured player. Goalies move at their share of
+                                starts. A pace on fewer than 10 games carries an <strong>n=</strong> tag. <strong>One game</strong> means he can get
+                                there in a single game. Iron-man streaks are not tracked yet.
                             </p>
                         </Section>
 

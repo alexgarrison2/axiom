@@ -358,6 +358,14 @@ A 1px hover-edge spine down the centre from md; away goal cards sit in the left 
 - **Matchup grid:** 5v5 time between every away and home skater as squares sized by the square root of time (cells 22-44px), each split area-true along the diagonal by xG share, away colour from the upper-left corner over the home colour; no xG shows mute, under 5 seconds a 2px hover-edge dot.
 - **Shot map:** marks in side colour sized by xG (goals solid with an ink ring, saved 50%, misses outlined, blocks as crosses); the stop gains a cyan ring.
 
+### Countdown board (signature, `/players/milestones`)
+A rink scoreboard counting down: how many to go, and which night.
+- **LED numeral:** the countdown in the wordmark's LED cells (5 x 7 dot matrix per digit, 10px cells with 1.8px corners on an 11.66 pitch, lit cells #F5F7FA with a #0F9EA0 edge, unlit cells in the hairline colour at 40%). Lights left to right once on scrolling into view (`led-on`, 420ms, 22ms per column); lit and still under reduced motion, without JS, and in dense rows (thinner 0.6 edge). Decorative; the number is also in text. Rows fall back to plain score figures past four characters.
+- **Pip meter:** up to 10 to go, one pip per unit (8px tall, 10px md, 2px corners, 3px gaps): lit pips are the LED cell (ink fill, teal inset edge), hollow pips a line-strong outline, one per unit still to come. Further out, a 4px full-round bar on the track filled in ink at 80%.
+- **Next-game panel:** everyone who can get there in his next game, on the earliest such night, headed by the day ("Tonight") and a count label. One panel split into columns (min 232px, 1px hairline seams) on md+, a snap-scrolling row of 16px cards on phones. Each column: crest flush in the corner (68px, 76px md) over a club wash at 24%, name and dim meta, LED numeral with its unit label, pip meter, milestone line, and a hairline-topped game chip. With three or more, the rarest leads at double width with a larger numeral.
+- **Milestone row:** grouped by projected date under rink-black day headers inside one panel; 60px rows on lg (crest, who, what, count, projected game, next game), folding to three columns on phones. A flush 52px (60px lg) crest over a 20% club wash; the projected game ("G12 · Fri, Oct 16") in magenta with the pace in dim text; amber tags only for injury and thin pace (dashed `n=`); a bordered HOF tag on passed names. The next-game chip (vs/@, 20px crest, tri, day, local time) links to the matchup and turns cyan on hover.
+- **Just reached:** a strip of full-pill links with a flush 44px crest, the milestone in green, and the day.
+
 ## Do's and Don'ts
 
 ### Do:

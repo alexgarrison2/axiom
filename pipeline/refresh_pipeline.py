@@ -718,6 +718,11 @@ def run_full(r, phase, rescore_all=False):
         r.skip("playoff_news", "not in the playoffs")
         r.skip("goalie_playoff_career", "not in the playoffs")
     pregame_stages(r, phase, "full")
+    # After the schedule, the skater logs and this run's injuries; rosters are memoised.
+    if phase["in_season"]:
+        r.run("milestones", _call, "milestones", title="Player milestones (/players/milestones)")
+    else:
+        r.skip("milestones", "offseason")
     r.run("bu_bundle", stage_bu_bundle, title="RAPM lineup bundle freshness")
     r.run("player_ratings", stage_player_ratings, title="Player ratings (RAPM v2) export")
     print("Running Predictions...")

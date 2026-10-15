@@ -555,6 +555,75 @@
     mask-image: linear-gradient(to left, #000 calc(100% - 32px), transparent 100%);
   }
 
+  /* ---- Milestones board (/players/milestones) ----
+     One row per milestone: flush crest on a faint club wash (--tc), who,
+     what, the countdown, the projected game, his next game. Phones fold it
+     to three columns, the projected and next game on their own lines. */
+  .ms-row {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "crest who count"
+      "crest what what"
+      "eta eta eta"
+      "next next next";
+    column-gap: 10px;
+    row-gap: 2px;
+    align-items: center;
+    padding: 8px 14px 10px 0;
+    border-bottom: 1px solid var(--line);
+    background: radial-gradient(90px 64px at 0 28px, color-mix(in srgb, var(--tc, transparent) 20%, transparent), transparent 75%);
+  }
+  .ms-row:last-child {
+    border-bottom: 0;
+  }
+  .ms-row:hover {
+    background-color: color-mix(in srgb, var(--line) 45%, transparent);
+  }
+  .ms-crest {
+    grid-area: crest;
+    width: 52px;
+    height: 52px;
+    align-self: start;
+  }
+  .ms-who { grid-area: who; }
+  .ms-what { grid-area: what; }
+  .ms-count { grid-area: count; text-align: right; }
+  .ms-eta { grid-area: eta; padding: 6px 0 0 14px; }
+  .ms-next { grid-area: next; padding: 2px 0 0 14px; }
+  @media (min-width: 1024px) {
+    .ms-row {
+      grid-template-columns: 60px minmax(140px, 1fr) minmax(180px, 1.4fr) 110px minmax(150px, 0.9fr) max-content;
+      grid-template-areas: "crest who what count eta next";
+      column-gap: 16px;
+      padding: 0 16px 0 0;
+      min-height: 60px;
+      background: radial-gradient(110px 70px at 0 50%, color-mix(in srgb, var(--tc, transparent) 20%, transparent), transparent 75%);
+    }
+    .ms-crest {
+      width: 60px;
+      height: 60px;
+      align-self: center;
+    }
+    .ms-count { text-align: left; }
+    .ms-eta, .ms-next { padding: 0; }
+    .ms-next { justify-self: start; }
+  }
+  /* A lit meter pip: the LED cell of the wordmark (ink fill, teal edge). */
+  .ms-pip-on {
+    background: #f5f7fa;
+    box-shadow: inset 0 0 0 1px #0f9ea0;
+  }
+  /* The next-game panel: club wash in each column's corner. */
+  .ms-tile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(150px 110px at 0 0, color-mix(in srgb, var(--tc, transparent) 24%, transparent), transparent 75%);
+  }
+
   .pb-tabbar {
     padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px);
   }
