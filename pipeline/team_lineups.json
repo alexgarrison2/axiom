@@ -2001,17 +2001,17 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
-                "name": "Jason Dickinson",
-                "number": 16,
+                "name": "Filip Hallander",
+                "number": 19,
                 "pos": "c",
-                "id": 2160,
-                "ppUnit": null,
+                "id": 29096,
+                "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "up"
             },
             {
                 "name": "Kasperi Kapanen",
@@ -2058,14 +2058,14 @@
         ],
         "f4": [
             {
-                "name": "Filip Hallander",
-                "number": 19,
+                "name": "Max Jones",
+                "number": 46,
                 "pos": "lw",
-                "id": 29096,
-                "ppUnit": 2,
+                "id": 2657,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "new"
             },
             {
                 "name": "Josh Samanski",
@@ -2259,13 +2259,13 @@
         ],
         "pk1": [
             {
-                "name": "Jason Dickinson",
-                "number": 16,
+                "name": "Owen Michaels",
+                "number": 43,
                 "pos": "sk1",
-                "id": 2160,
+                "id": 32239,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Alex Formenton",
@@ -2297,11 +2297,11 @@
         ],
         "pk2": [
             {
-                "name": "Owen Michaels",
-                "number": 43,
+                "name": "Filip Hallander",
+                "number": 19,
                 "pos": "sk1",
-                "id": 32239,
-                "ppUnit": null,
+                "id": 29096,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -2334,8 +2334,8 @@
             }
         ],
         "lineup_source": "Bob Stauffer",
-        "updated_at": "2026-10-15T17:32:13.890Z",
-        "fetched_at": "2026-10-15T18:02:06Z"
+        "updated_at": "2026-10-16T00:40:56.865Z",
+        "fetched_at": "2026-10-16T00:54:32Z"
     },
     "VAN": {
         "f1": [
@@ -7615,7 +7615,7 @@
                 "id": 2724,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -7678,6 +7678,15 @@
                 "id": 4632,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Brandon Montour",
+                "number": 62,
+                "pos": "ir4",
+                "id": 2724,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -7754,12 +7763,12 @@
                 "id": 2724,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "lineup_source": "Seattle Kraken",
-        "updated_at": "2026-10-15T22:50:57.537Z",
-        "fetched_at": "2026-10-15T23:02:01Z"
+        "updated_at": "2026-10-16T00:45:21.973Z",
+        "fetched_at": "2026-10-16T00:54:32Z"
     },
     "OTT": {
         "f1": [
@@ -8701,9 +8710,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jason Gregor",
-        "updated_at": "2026-10-15T18:32:28.805Z",
-        "fetched_at": "2026-10-15T19:02:05Z"
+        "lineup_source": "Utah Mammoth",
+        "updated_at": "2026-10-16T00:34:46.115Z",
+        "fetched_at": "2026-10-16T00:54:32Z"
     },
     "WPG": {
         "f1": [
