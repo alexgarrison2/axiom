@@ -9148,8 +9148,8 @@
                 "id": 28056,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "up"
+                "gameTimeDecision": true,
+                "movement": null
             },
             {
                 "name": "Ryan McLeod",
@@ -9201,7 +9201,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -9335,6 +9335,24 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Jiri Kulich",
+                "number": 20,
+                "pos": "ir6",
+                "id": 36381,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Josh Norris",
+                "number": 9,
+                "pos": "ir7",
+                "id": 28056,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -9383,7 +9401,7 @@
                 "id": 28056,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Zach Benson",
@@ -9414,8 +9432,8 @@
             }
         ],
         "lineup_source": "@BuffaloSabres",
-        "updated_at": "2026-10-15T22:40:11.942Z",
-        "fetched_at": "2026-10-15T22:46:59Z"
+        "updated_at": "2026-10-16T04:30:16.470Z",
+        "fetched_at": "2026-10-16T08:52:38Z"
     },
     "STL": {
         "f1": [
