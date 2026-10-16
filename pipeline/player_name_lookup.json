@@ -39,6 +39,7 @@
     "brendan gaunce": "8476867",
     "dysin mayo": "8478062",
     "egor zamula": "8481178",
+    "justin kirkland": "8477993",
     "jake bean": "8479402",
     "dryden hunt": "8478211",
     "john beecher": "8481556",
@@ -58,6 +59,7 @@
     "jason polin": "8484255",
     "zakhar bardakov": "8482947",
     "t.j. tynan": "8476391",
+    "alex barre-boulet": "8479718",
     "ivan ivan": "8483930",
     "keaton middleton": "8479387",
     "taylor makar": "8482953",
@@ -94,13 +96,11 @@
     "noah gregor": "8479393",
     "donovan sebrango": "8482131",
     "jacob moverare": "8479421",
-    "jared wright": "8483756",
     "angus booth": "8483699",
     "taylor ward": "8483406",
     "kenny connors": "8483675",
     "anze kopitar": "8471685",
     "marcus johansson": "8475149",
-    "carson lambos": "8482781",
     "ben jones": "8480259",
     "hunter haight": "8483452",
     "robby fabbri": "8477952",
@@ -155,7 +155,6 @@
     "olle lycksell": "8480245",
     "jorian donovan": "8483435",
     "xavier bourgault": "8482673",
-    "artem zub": "8482245",
     "arthur kaliyev": "8481560",
     "kurtis macdermid": "8477073",
     "lassi thomson": "8481575",
@@ -199,7 +198,6 @@
     "hugh mcging": "8481070",
     "nathan walker": "8477573",
     "jonathan drouin": "8477494",
-    "justin holl": "8475718",
     "oskar sundqvist": "8476897",
     "matt luff": "8479644",
     "jack finley": "8482090",
@@ -230,6 +228,7 @@
     "andrew agozzino": "8475461",
     "kevin rooney": "8479291",
     "pierre-olivier joseph": "8480058",
+    "aatu raty": "8482691",
     "evander kane": "8475169",
     "mackenzie maceachern": "8476907",
     "ty mueller": "8484406",
@@ -253,7 +252,6 @@
     "parker ford": "8484135",
     "gustav nyquist": "8474679",
     "isaak phillips": "8482192",
-    "ville heinola": "8481572",
     "brayden yager": "8484242",
     "elias salomonsson": "8483510",
     "danil zhilkin": "8483526",
@@ -372,7 +370,6 @@
     "mason marchment": "8478975",
     "kent johnson": "8482660",
     "kirill marchenko": "8480893",
-    "justin kirkland": "8477993",
     "morgan frost": "8480028",
     "ryan lomberg": "8479066",
     "matt coronato": "8482679",
@@ -434,7 +431,6 @@
     "sam malinski": "8484258",
     "nick blankenburg": "8483565",
     "valeri nichushkin": "8477501",
-    "alex barre-boulet": "8479718",
     "nazem kadri": "8475172",
     "gabriel landeskog": "8476455",
     "jack drury": "8480835",
@@ -528,6 +524,7 @@
     "niko mikkola": "8478859",
     "alex turcotte": "8481532",
     "quinton byfield": "8482124",
+    "jared wright": "8483756",
     "drew doughty": "8474563",
     "kevin fiala": "8477942",
     "brian dumoulin": "8475208",
@@ -553,6 +550,7 @@
     "mats zuccarello": "8475692",
     "marcus foligno": "8475220",
     "yakov trenin": "8478508",
+    "carson lambos": "8482781",
     "ryan hartman": "8477451",
     "matt kiersted": "8482641",
     "nick foligno": "8473422",
@@ -688,6 +686,7 @@
     "cameron crotty": "8480075",
     "dennis gilbert": "8478502",
     "carter yakemchuk": "8484759",
+    "artem zub": "8482245",
     "hayden hodgson": "8478173",
     "tim stutzle": "8482116",
     "thomas chabot": "8478469",
@@ -780,6 +779,7 @@
     "mario ferraro": "8479983",
     "will smith": "8484227",
     "jordan kyrou": "8479385",
+    "justin holl": "8475718",
     "pius suter": "8480459",
     "robert thomas": "8480023",
     "theo lindstein": "8484188",
@@ -861,7 +861,6 @@
     "nick desimone": "8480084",
     "nils hoglander": "8481535",
     "drew o'connor": "8482055",
-    "aatu raty": "8482691",
     "marcus pettersson": "8477969",
     "jake debrusk": "8478498",
     "marco rossi": "8482079",
@@ -914,6 +913,7 @@
     "mark scheifele": "8476460",
     "vladislav namestnikov": "8476480",
     "morgan barron": "8480289",
+    "ville heinola": "8481572",
     "dylan demelo": "8476331",
     "adam lowry": "8476392",
     "haydn fleury": "8477938",
@@ -1239,6 +1239,13 @@
         "team": "CBJ"
       }
     ],
+    "kirkland": [
+      {
+        "pid": "8477993",
+        "full_name": "justin kirkland",
+        "team": "CGY"
+      }
+    ],
     "bean": [
       {
         "pid": "8479402",
@@ -1374,6 +1381,13 @@
       {
         "pid": "8476391",
         "full_name": "t.j. tynan",
+        "team": "COL"
+      }
+    ],
+    "barre-boulet": [
+      {
+        "pid": "8479718",
+        "full_name": "alex barre-boulet",
         "team": "COL"
       }
     ],
@@ -1679,18 +1693,6 @@
         "team": "LAK"
       }
     ],
-    "wright": [
-      {
-        "pid": "8483756",
-        "full_name": "jared wright",
-        "team": "LAK"
-      },
-      {
-        "pid": "8483524",
-        "full_name": "shane wright",
-        "team": "SEA"
-      }
-    ],
     "booth": [
       {
         "pid": "8483699",
@@ -1729,13 +1731,6 @@
         "pid": "8481607",
         "full_name": "albert johansson",
         "team": "DET"
-      }
-    ],
-    "lambos": [
-      {
-        "pid": "8482781",
-        "full_name": "carson lambos",
-        "team": "MIN"
       }
     ],
     "jones": [
@@ -2161,13 +2156,6 @@
         "team": "OTT"
       }
     ],
-    "zub": [
-      {
-        "pid": "8482245",
-        "full_name": "artem zub",
-        "team": "OTT"
-      }
-    ],
     "kaliyev": [
       {
         "pid": "8481560",
@@ -2463,13 +2451,6 @@
         "team": "STL"
       }
     ],
-    "holl": [
-      {
-        "pid": "8475718",
-        "full_name": "justin holl",
-        "team": "STL"
-      }
-    ],
     "sundqvist": [
       {
         "pid": "8476897",
@@ -2681,6 +2662,13 @@
         "team": "EDM"
       }
     ],
+    "raty": [
+      {
+        "pid": "8482691",
+        "full_name": "aatu raty",
+        "team": "VAN"
+      }
+    ],
     "kane": [
       {
         "pid": "8475169",
@@ -2852,13 +2840,6 @@
       {
         "pid": "8482192",
         "full_name": "isaak phillips",
-        "team": "WPG"
-      }
-    ],
-    "heinola": [
-      {
-        "pid": "8481572",
-        "full_name": "ville heinola",
         "team": "WPG"
       }
     ],
@@ -3703,13 +3684,6 @@
         "team": "TOR"
       }
     ],
-    "kirkland": [
-      {
-        "pid": "8477993",
-        "full_name": "justin kirkland",
-        "team": "MIN"
-      }
-    ],
     "frost": [
       {
         "pid": "8480028",
@@ -4117,13 +4091,6 @@
         "pid": "8477501",
         "full_name": "valeri nichushkin",
         "team": "CBJ"
-      }
-    ],
-    "barre-boulet": [
-      {
-        "pid": "8479718",
-        "full_name": "alex barre-boulet",
-        "team": "SJS"
       }
     ],
     "kadri": [
@@ -4741,6 +4708,18 @@
         "team": "LAK"
       }
     ],
+    "wright": [
+      {
+        "pid": "8483756",
+        "full_name": "jared wright",
+        "team": "LAK"
+      },
+      {
+        "pid": "8483524",
+        "full_name": "shane wright",
+        "team": "SEA"
+      }
+    ],
     "doughty": [
       {
         "pid": "8474563",
@@ -4907,6 +4886,13 @@
       {
         "pid": "8478508",
         "full_name": "yakov trenin",
+        "team": "MIN"
+      }
+    ],
+    "lambos": [
+      {
+        "pid": "8482781",
+        "full_name": "carson lambos",
         "team": "MIN"
       }
     ],
@@ -5754,6 +5740,13 @@
         "team": "OTT"
       }
     ],
+    "zub": [
+      {
+        "pid": "8482245",
+        "full_name": "artem zub",
+        "team": "OTT"
+      }
+    ],
     "hodgson": [
       {
         "pid": "8478173",
@@ -6383,6 +6376,13 @@
         "team": "WSH"
       }
     ],
+    "holl": [
+      {
+        "pid": "8475718",
+        "full_name": "justin holl",
+        "team": "WSH"
+      }
+    ],
     "suter": [
       {
         "pid": "8480459",
@@ -6915,13 +6915,6 @@
         "team": "NSH"
       }
     ],
-    "raty": [
-      {
-        "pid": "8482691",
-        "full_name": "aatu raty",
-        "team": "VAN"
-      }
-    ],
     "pettersson": [
       {
         "pid": "8477969",
@@ -7259,6 +7252,13 @@
         "pid": "8476480",
         "full_name": "vladislav namestnikov",
         "team": "WPG"
+      }
+    ],
+    "heinola": [
+      {
+        "pid": "8481572",
+        "full_name": "ville heinola",
+        "team": "VGK"
       }
     ],
     "demelo": [
