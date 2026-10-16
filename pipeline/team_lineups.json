@@ -706,7 +706,7 @@
                 "id": 1016,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -791,7 +791,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -916,6 +916,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "John Tavares",
+                "number": 91,
+                "pos": "ir5",
+                "id": 1016,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -995,8 +1004,8 @@
             }
         ],
         "lineup_source": "David Alter",
-        "updated_at": "2026-10-15T22:43:42.549Z",
-        "fetched_at": "2026-10-15T22:46:59Z"
+        "updated_at": "2026-10-16T02:27:07.308Z",
+        "fetched_at": "2026-10-16T03:04:14Z"
     },
     "MTL": {
         "f1": [
