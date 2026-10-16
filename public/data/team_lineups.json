@@ -5525,7 +5525,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f2": [
@@ -5547,7 +5547,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": true,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Beckett Sennecke",
@@ -5557,7 +5557,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -5573,7 +5573,7 @@
             },
             {
                 "name": "Roger McQueen",
-                "number": null,
+                "number": 95,
                 "pos": "c",
                 "id": 37324,
                 "ppUnit": 2,
@@ -5589,19 +5589,19 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
             {
-                "name": "A.J. Greer",
-                "number": 18,
+                "name": "Jeff Malott",
+                "number": 39,
                 "pos": "lw",
-                "id": 2706,
+                "id": 34555,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Tim Washe",
@@ -5614,10 +5614,10 @@
                 "movement": null
             },
             {
-                "name": "Jeff Malott",
-                "number": 39,
+                "name": "A.J. Greer",
+                "number": 18,
                 "pos": "rw",
-                "id": 34555,
+                "id": 2706,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -5665,7 +5665,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -5687,7 +5687,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -5730,18 +5730,9 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Cutter Gauthier",
-                "number": 61,
-                "pos": "ir4",
-                "id": 33248,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Ryan Poehling",
                 "number": 25,
-                "pos": "ir5",
+                "pos": "ir3",
                 "id": 2792,
                 "ppUnit": null,
                 "injuryStatus": "ir",
@@ -5750,7 +5741,7 @@
             {
                 "name": "Mikael Granlund",
                 "number": 64,
-                "pos": "ir6",
+                "pos": "ir4",
                 "id": 1934,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
@@ -5833,9 +5824,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Zach Cavanagh",
-        "updated_at": "2026-10-15T18:06:47.899Z",
-        "fetched_at": "2026-10-15T19:02:05Z"
+        "lineup_source": "Patrick Present",
+        "updated_at": "2026-10-16T17:17:31.394Z",
+        "fetched_at": "2026-10-16T18:02:37Z"
     },
     "NJD": {
         "f1": [
@@ -6572,7 +6563,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Boone Jenner",
@@ -6582,7 +6573,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Tom Wilson",
@@ -6592,7 +6583,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -6604,7 +6595,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ilya Protas",
@@ -6614,7 +6605,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ivan Miroshnichenko",
@@ -6624,7 +6615,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -6636,7 +6627,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Anthony Beauvillier",
@@ -6727,19 +6718,19 @@
         ],
         "g": [
             {
-                "name": "Charlie Lindgren",
-                "number": 79,
+                "name": "Logan Thompson",
+                "number": 48,
                 "pos": "g1",
-                "id": 2615,
+                "id": 28990,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Logan Thompson",
-                "number": 48,
+                "name": "Charlie Lindgren",
+                "number": 79,
                 "pos": "g2",
-                "id": 28990,
+                "id": 2615,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -6852,7 +6843,7 @@
         ],
         "lineup_source": "Tom Gulitti",
         "updated_at": "2026-10-16T16:17:34.954Z",
-        "fetched_at": "2026-10-16T17:02:50Z"
+        "fetched_at": "2026-10-16T18:02:37Z"
     },
     "CBJ": {
         "f1": [
