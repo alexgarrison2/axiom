@@ -213,7 +213,7 @@ export function ShotDetail({ info, summary, accent, className }: { info: ShotInf
     const label = info?.result === 'goal' ? 'Goal' : info?.result === 'saved' ? 'Saved' : 'Missed';
     const evenStrength = info?.strength ? info.strength === 'Even' || /^(\d)v\1/.test(info.strength) : true;
     return (
-        <aside aria-live="polite" className={cn('flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface-1/60 p-3', className)}>
+        <aside aria-live="polite" className={cn('flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface-1/60 p-3 lg:gap-2', className)}>
             {info && g ? (
                 <>
                     {info.game ? <GameBand g={info.game} /> : null}
@@ -297,7 +297,11 @@ export function ShotMapFrame({ map, detail }: { map: React.ReactNode; detail: Re
     return (
         <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_18.5rem] lg:items-stretch">
             <div className="min-w-0 self-center">{map}</div>
-            {detail}
+            {/* lg+: the card fills the row the rink sets and never sets it itself, so hovering a shot (a taller
+                card) cannot resize the row and nudge the rink up and down; a card taller than the rink scrolls. */}
+            <div className="min-w-0 lg:relative">
+                <div className="flex flex-col lg:absolute lg:inset-0 lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-width:thin] [&>aside]:flex-1">{detail}</div>
+            </div>
         </div>
     );
 }
