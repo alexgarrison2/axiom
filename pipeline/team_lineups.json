@@ -1546,19 +1546,19 @@
         ],
         "g": [
             {
-                "name": "Jeremy Swayman",
-                "number": 1,
+                "name": "Michael DiPietro",
+                "number": 80,
                 "pos": "g1",
-                "id": 28098,
+                "id": 4771,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Michael DiPietro",
-                "number": 80,
+                "name": "Jeremy Swayman",
+                "number": 1,
                 "pos": "g2",
-                "id": 4771,
+                "id": 28098,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1640,9 +1640,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-13)",
-        "updated_at": "2026-10-14T14:55:04.805Z",
-        "fetched_at": "2026-10-15T03:03:40Z"
+        "lineup_source": "Belle Fraser",
+        "updated_at": "2026-10-17T01:39:12.826Z",
+        "fetched_at": "2026-10-17T02:01:43Z"
     },
     "NYR": {
         "f1": [
@@ -2003,31 +2003,31 @@
         ],
         "f2": [
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Zach Hyman",
+                "number": 18,
                 "pos": "lw",
-                "id": 2662,
-                "ppUnit": 2,
+                "id": 2468,
+                "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             },
             {
-                "name": "Filip Hallander",
-                "number": 19,
+                "name": "Colton Dach",
+                "number": 34,
                 "pos": "c",
-                "id": 29096,
-                "ppUnit": 2,
+                "id": 32903,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             },
             {
                 "name": "Kasperi Kapanen",
                 "number": 42,
                 "pos": "rw",
                 "id": 2385,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2067,24 +2067,24 @@
         ],
         "f4": [
             {
-                "name": "Max Jones",
-                "number": 46,
+                "name": "Trent Frederic",
+                "number": 10,
                 "pos": "lw",
-                "id": 2657,
+                "id": 2662,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Josh Samanski",
-                "number": null,
+                "name": "Filip Hallander",
+                "number": 19,
                 "pos": "c",
-                "id": 38438,
-                "ppUnit": null,
+                "id": 29096,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Isaac Howard",
@@ -2143,14 +2143,14 @@
         ],
         "d3": [
             {
-                "name": "Shakir Mukhamadullin",
-                "number": 85,
+                "name": "Jake Walman",
+                "number": 96,
                 "pos": "ld",
-                "id": 33038,
+                "id": 2859,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             },
             {
                 "name": "Ty Emberson",
@@ -2243,7 +2243,7 @@
                 "number": 18,
                 "pos": "ir7",
                 "id": 2468,
-                "ppUnit": null,
+                "ppUnit": 1,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             },
@@ -2319,7 +2319,7 @@
                 "number": 42,
                 "pos": "sk2",
                 "id": 2385,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -2342,9 +2342,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-15)",
-        "updated_at": "2026-10-16T14:36:54.639Z",
-        "fetched_at": "2026-10-16T15:02:43Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-17T02:00:15.920Z",
+        "fetched_at": "2026-10-17T02:01:43Z"
     },
     "VAN": {
         "f1": [
@@ -4961,27 +4961,17 @@
                 "movement": null
             },
             {
-                "name": "David Perron",
-                "number": 57,
-                "pos": "rw",
-                "id": 1338,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "new"
-            }
-        ],
-        "f4": [
-            {
                 "name": "Joel Kiviranta",
                 "number": 94,
-                "pos": "lw",
+                "pos": "rw",
                 "id": 31187,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
+                "movement": "up"
+            }
+        ],
+        "f4": [
             {
                 "name": "Radek Faksa",
                 "number": 12,
@@ -5196,7 +5186,7 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-10-16T16:13:57.202Z",
-        "fetched_at": "2026-10-16T17:02:50Z"
+        "fetched_at": "2026-10-17T02:01:43Z"
     },
     "TBL": {
         "f1": [
@@ -5555,7 +5545,7 @@
                 "id": 33248,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             },
             {
@@ -5603,10 +5593,10 @@
         ],
         "f4": [
             {
-                "name": "Jeff Malott",
-                "number": 39,
+                "name": "A.J. Greer",
+                "number": 18,
                 "pos": "lw",
-                "id": 34555,
+                "id": 2706,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -5623,10 +5613,10 @@
                 "movement": null
             },
             {
-                "name": "A.J. Greer",
-                "number": 18,
+                "name": "Jeff Malott",
+                "number": 39,
                 "pos": "rw",
-                "id": 2706,
+                "id": 34555,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -5833,9 +5823,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Patrick Present",
-        "updated_at": "2026-10-16T17:17:31.394Z",
-        "fetched_at": "2026-10-16T18:02:37Z"
+        "lineup_source": "Zach Cavanagh",
+        "updated_at": "2026-10-17T01:38:53.070Z",
+        "fetched_at": "2026-10-17T02:01:43Z"
     },
     "NJD": {
         "f1": [
