@@ -700,14 +700,14 @@
         ],
         "f2": [
             {
-                "name": "John Tavares",
-                "number": 91,
+                "name": "Easton Cowan",
+                "number": 53,
                 "pos": "lw",
-                "id": 1016,
-                "ppUnit": 1,
+                "id": 35106,
+                "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "up"
             },
             {
                 "name": "Nick Paul",
@@ -736,7 +736,7 @@
                 "number": 92,
                 "pos": "lw",
                 "id": 37717,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -752,14 +752,14 @@
                 "movement": null
             },
             {
-                "name": "Easton Cowan",
-                "number": 53,
+                "name": "Bo Groulx",
+                "number": 29,
                 "pos": "rw",
-                "id": 35106,
+                "id": 28732,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -922,8 +922,8 @@
                 "number": 91,
                 "pos": "ir5",
                 "id": 1016,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -1003,9 +1003,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-15)",
-        "updated_at": "2026-10-16T14:01:11.429Z",
-        "fetched_at": "2026-10-17T00:54:39Z"
+        "lineup_source": "Mark Masters",
+        "updated_at": "2026-10-17T14:44:06.363Z",
+        "fetched_at": "2026-10-17T15:01:52Z"
     },
     "MTL": {
         "f1": [
@@ -3353,7 +3353,7 @@
                 "number": null,
                 "pos": "lw",
                 "id": 37366,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3373,7 +3373,7 @@
                 "number": 39,
                 "pos": "rw",
                 "id": 33997,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3613,7 +3613,7 @@
         ],
         "lineup_source": "Last Game (2026-10-15)",
         "updated_at": "2026-10-16T14:06:56.095Z",
-        "fetched_at": "2026-10-17T00:54:39Z"
+        "fetched_at": "2026-10-17T15:01:52Z"
     },
     "PIT": {
         "f1": [
