@@ -529,22 +529,22 @@
         ],
         "g": [
             {
-                "name": "Akira Schmid",
-                "number": 40,
+                "name": "Jacob Markstrom",
+                "number": 25,
                 "pos": "g1",
-                "id": 29148,
+                "id": 594,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Jacob Markstrom",
-                "number": 25,
+                "name": "Akira Schmid",
+                "number": 40,
                 "pos": "g2",
-                "id": 594,
+                "id": 29148,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             }
         ],
         "ir": [
@@ -576,10 +576,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Jacob Markstrom",
-                "number": 25,
+                "name": "Radko Gudas",
+                "number": 6,
                 "pos": "ir4",
-                "id": 594,
+                "id": 1366,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -661,9 +661,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-15)",
-        "updated_at": "2026-10-17T00:52:56.171Z",
-        "fetched_at": "2026-10-17T00:54:39Z"
+        "lineup_source": "Rob Darragh",
+        "updated_at": "2026-10-17T14:13:55.185Z",
+        "fetched_at": "2026-10-17T14:38:37Z"
     },
     "TOR": {
         "f1": [
@@ -5250,7 +5250,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f3": [
@@ -5385,19 +5385,19 @@
         ],
         "g": [
             {
-                "name": "Andrei Vasilevskiy",
-                "number": 88,
+                "name": "Dennis Hildeby",
+                "number": null,
                 "pos": "g1",
-                "id": 2413,
+                "id": 36477,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Dennis Hildeby",
-                "number": null,
+                "name": "Andrei Vasilevskiy",
+                "number": 88,
                 "pos": "g2",
-                "id": 36477,
+                "id": 2413,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5492,7 +5492,7 @@
         ],
         "lineup_source": "Benjamin Pierce",
         "updated_at": "2026-10-16T16:12:51.806Z",
-        "fetched_at": "2026-10-16T17:02:50Z"
+        "fetched_at": "2026-10-17T14:38:37Z"
     },
     "ANA": {
         "f1": [
@@ -8125,11 +8125,11 @@
     "DET": {
         "f1": [
             {
-                "name": "Nate Danielson",
-                "number": 29,
+                "name": "Viktor Arvidsson",
+                "number": 33,
                 "pos": "lw",
-                "id": 31508,
-                "ppUnit": null,
+                "id": 2453,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8145,14 +8145,14 @@
                 "movement": null
             },
             {
-                "name": "Viktor Arvidsson",
-                "number": 33,
+                "name": "Lucas Raymond",
+                "number": 23,
                 "pos": "rw",
-                "id": 2453,
+                "id": 31783,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -8209,14 +8209,14 @@
                 "movement": null
             },
             {
-                "name": "Lucas Raymond",
-                "number": 23,
+                "name": "Nate Danielson",
+                "number": 29,
                 "pos": "rw",
-                "id": 31783,
-                "ppUnit": 1,
+                "id": 31508,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -8432,9 +8432,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-15)",
-        "updated_at": "2026-10-16T14:04:52.060Z",
-        "fetched_at": "2026-10-16T15:02:43Z"
+        "lineup_source": "Ansar Khan",
+        "updated_at": "2026-10-17T14:34:18.817Z",
+        "fetched_at": "2026-10-17T14:38:37Z"
     },
     "UTA": {
         "f1": [
