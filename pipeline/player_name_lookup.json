@@ -25,7 +25,6 @@
     "joel nystrom": "8482911",
     "justin robidas": "8482785",
     "skyler brind'amour": "8480291",
-    "felix unger sorum": "8484392",
     "noah philp": "8481491",
     "seth jarvis": "8482093",
     "ronan seeley": "8482187",
@@ -101,6 +100,7 @@
     "kenny connors": "8483675",
     "anze kopitar": "8471685",
     "marcus johansson": "8475149",
+    "carson lambos": "8482781",
     "ben jones": "8480259",
     "hunter haight": "8483452",
     "robby fabbri": "8477952",
@@ -140,7 +140,6 @@
     "mathew barzal": "8478445",
     "marshall warren": "8481569",
     "liam foudy": "8480853",
-    "taylor raddysh": "8479390",
     "brendan brisson": "8482153",
     "juuso parssinen": "8481704",
     "connor mackey": "8482067",
@@ -150,6 +149,7 @@
     "urho vaakanainen": "8480001",
     "jonny brodzinski": "8477380",
     "vincent iorio": "8482861",
+    "jaroslav chmelar": "8482877",
     "conor sheary": "8477839",
     "anton blidh": "8477320",
     "olle lycksell": "8480245",
@@ -343,6 +343,7 @@
     "sean walker": "8480336",
     "william carrier": "8477478",
     "sebastian aho": "8478427",
+    "felix unger sorum": "8484392",
     "nicolas deslauriers": "8475235",
     "taylor hall": "8475791",
     "bradly nadeau": "8484203",
@@ -550,7 +551,6 @@
     "mats zuccarello": "8475692",
     "marcus foligno": "8475220",
     "yakov trenin": "8478508",
-    "carson lambos": "8482781",
     "ryan hartman": "8477451",
     "matt kiersted": "8482641",
     "nick foligno": "8473422",
@@ -650,6 +650,7 @@
     "tony deangelo": "8477950",
     "victor eklund": "8485388",
     "carson soucy": "8477369",
+    "taylor raddysh": "8479390",
     "gabe perreault": "8484210",
     "adam sykora": "8483669",
     "j.t. miller": "8476468",
@@ -659,7 +660,6 @@
     "braden schneider": "8482073",
     "mika zibanejad": "8476459",
     "adam edstrom": "8481726",
-    "jaroslav chmelar": "8482877",
     "matt rempe": "8482460",
     "will cuylle": "8482157",
     "vincent trocheck": "8476389",
@@ -1123,13 +1123,6 @@
       {
         "pid": "8480291",
         "full_name": "skyler brind'amour",
-        "team": "CAR"
-      }
-    ],
-    "sorum": [
-      {
-        "pid": "8484392",
-        "full_name": "felix unger sorum",
         "team": "CAR"
       }
     ],
@@ -1733,6 +1726,13 @@
         "team": "DET"
       }
     ],
+    "lambos": [
+      {
+        "pid": "8482781",
+        "full_name": "carson lambos",
+        "team": "MIN"
+      }
+    ],
     "jones": [
       {
         "pid": "8480259",
@@ -2036,18 +2036,6 @@
         "team": "NYI"
       }
     ],
-    "raddysh": [
-      {
-        "pid": "8479390",
-        "full_name": "taylor raddysh",
-        "team": "NYR"
-      },
-      {
-        "pid": "8478178",
-        "full_name": "darren raddysh",
-        "team": "TOR"
-      }
-    ],
     "brisson": [
       {
         "pid": "8482153",
@@ -2118,6 +2106,13 @@
       {
         "pid": "8482861",
         "full_name": "vincent iorio",
+        "team": "NYR"
+      }
+    ],
+    "chmelar": [
+      {
+        "pid": "8482877",
+        "full_name": "jaroslav chmelar",
         "team": "NYR"
       }
     ],
@@ -3501,6 +3496,13 @@
       {
         "pid": "8478427",
         "full_name": "sebastian aho",
+        "team": "CAR"
+      }
+    ],
+    "sorum": [
+      {
+        "pid": "8484392",
+        "full_name": "felix unger sorum",
         "team": "CAR"
       }
     ],
@@ -4889,13 +4891,6 @@
         "team": "MIN"
       }
     ],
-    "lambos": [
-      {
-        "pid": "8482781",
-        "full_name": "carson lambos",
-        "team": "MIN"
-      }
-    ],
     "hartman": [
       {
         "pid": "8477451",
@@ -5502,6 +5497,18 @@
         "team": "CBJ"
       }
     ],
+    "raddysh": [
+      {
+        "pid": "8479390",
+        "full_name": "taylor raddysh",
+        "team": "NYR"
+      },
+      {
+        "pid": "8478178",
+        "full_name": "darren raddysh",
+        "team": "TOR"
+      }
+    ],
     "perreault": [
       {
         "pid": "8484210",
@@ -5556,13 +5563,6 @@
         "pid": "8481726",
         "full_name": "adam edstrom",
         "team": "NSH"
-      }
-    ],
-    "chmelar": [
-      {
-        "pid": "8482877",
-        "full_name": "jaroslav chmelar",
-        "team": "NYR"
       }
     ],
     "rempe": [
