@@ -66,7 +66,6 @@
     "nathan bastian": "8479414",
     "adam erne": "8477454",
     "alexander petrovic": "8475755",
-    "david perron": "8474102",
     "john leonard": "8481077",
     "james van riemsdyk": "8474037",
     "simon edvinsson": "8482762",
@@ -95,8 +94,8 @@
     "noah gregor": "8479393",
     "donovan sebrango": "8482131",
     "jacob moverare": "8479421",
+    "jared wright": "8483756",
     "angus booth": "8483699",
-    "taylor ward": "8483406",
     "kenny connors": "8483675",
     "anze kopitar": "8471685",
     "marcus johansson": "8475149",
@@ -459,6 +458,7 @@
     "thomas harley": "8481581",
     "tyler seguin": "8475794",
     "arttu hyry": "8484938",
+    "david perron": "8474102",
     "dylan larkin": "8477946",
     "justin faulk": "8475753",
     "albert johansson": "8481607",
@@ -525,7 +525,6 @@
     "niko mikkola": "8478859",
     "alex turcotte": "8481532",
     "quinton byfield": "8482124",
-    "jared wright": "8483756",
     "drew doughty": "8474563",
     "kevin fiala": "8477942",
     "brian dumoulin": "8475208",
@@ -534,6 +533,7 @@
     "mathieu joseph": "8478472",
     "alex laferriere": "8482155",
     "jeff malott": "8482408",
+    "taylor ward": "8483406",
     "andre lee": "8481732",
     "mikey anderson": "8479998",
     "joel edmundson": "8476441",
@@ -1458,13 +1458,6 @@
         "team": "DAL"
       }
     ],
-    "perron": [
-      {
-        "pid": "8474102",
-        "full_name": "david perron",
-        "team": "DET"
-      }
-    ],
     "leonard": [
       {
         "pid": "8481077",
@@ -1686,17 +1679,22 @@
         "team": "LAK"
       }
     ],
+    "wright": [
+      {
+        "pid": "8483756",
+        "full_name": "jared wright",
+        "team": "LAK"
+      },
+      {
+        "pid": "8483524",
+        "full_name": "shane wright",
+        "team": "SEA"
+      }
+    ],
     "booth": [
       {
         "pid": "8483699",
         "full_name": "angus booth",
-        "team": "LAK"
-      }
-    ],
-    "ward": [
-      {
-        "pid": "8483406",
-        "full_name": "taylor ward",
         "team": "LAK"
       }
     ],
@@ -4263,6 +4261,13 @@
         "team": "DAL"
       }
     ],
+    "perron": [
+      {
+        "pid": "8474102",
+        "full_name": "david perron",
+        "team": "DAL"
+      }
+    ],
     "larkin": [
       {
         "pid": "8477946",
@@ -4710,18 +4715,6 @@
         "team": "LAK"
       }
     ],
-    "wright": [
-      {
-        "pid": "8483756",
-        "full_name": "jared wright",
-        "team": "LAK"
-      },
-      {
-        "pid": "8483524",
-        "full_name": "shane wright",
-        "team": "SEA"
-      }
-    ],
     "doughty": [
       {
         "pid": "8474563",
@@ -4755,6 +4748,13 @@
         "pid": "8482408",
         "full_name": "jeff malott",
         "team": "ANA"
+      }
+    ],
+    "ward": [
+      {
+        "pid": "8483406",
+        "full_name": "taylor ward",
+        "team": "LAK"
       }
     ],
     "lee": [
