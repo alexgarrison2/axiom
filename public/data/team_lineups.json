@@ -2947,9 +2947,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-15)",
-        "updated_at": "2026-10-16T14:40:34.495Z",
-        "fetched_at": "2026-10-17T03:01:48Z"
+        "lineup_source": "Sin Bin Vegas",
+        "updated_at": "2026-10-18T01:37:06.898Z",
+        "fetched_at": "2026-10-18T02:03:30Z"
     },
     "CHI": {
         "f1": [
@@ -3920,8 +3920,8 @@
             }
         ],
         "lineup_source": "@penguins",
-        "updated_at": "2026-10-17T00:32:42.418Z",
-        "fetched_at": "2026-10-17T03:01:48Z"
+        "updated_at": "2026-10-18T01:34:40.350Z",
+        "fetched_at": "2026-10-18T02:03:30Z"
     },
     "NYI": {
         "f1": [
@@ -7916,7 +7916,7 @@
                 "id": 2492,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -7949,7 +7949,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -7961,7 +7961,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Carter Yakemchuk",
@@ -7971,7 +7971,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -8011,6 +8011,15 @@
                 "id": 2009,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Thomas Chabot",
+                "number": 72,
+                "pos": "ir4",
+                "id": 2492,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             },
             {
@@ -8087,7 +8096,7 @@
                 "id": 2492,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Jordan Spence",
@@ -8100,8 +8109,8 @@
             }
         ],
         "lineup_source": "Jackson Starr",
-        "updated_at": "2026-10-17T15:37:15.403Z",
-        "fetched_at": "2026-10-17T16:01:41Z"
+        "updated_at": "2026-10-18T01:25:15.996Z",
+        "fetched_at": "2026-10-18T02:03:30Z"
     },
     "DET": {
         "f1": [
@@ -8719,9 +8728,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Cole Bagley",
-        "updated_at": "2026-10-17T17:09:10.035Z",
-        "fetched_at": "2026-10-17T17:37:47Z"
+        "lineup_source": "Utah Mammoth",
+        "updated_at": "2026-10-18T01:57:30.596Z",
+        "fetched_at": "2026-10-18T02:03:30Z"
     },
     "WPG": {
         "f1": [
