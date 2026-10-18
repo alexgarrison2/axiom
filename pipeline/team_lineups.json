@@ -9411,14 +9411,14 @@
     "STL": {
         "f1": [
             {
-                "name": "Dylan Holloway",
-                "number": 81,
+                "name": "Pavel Buchnevich",
+                "number": 89,
                 "pos": "lw",
-                "id": 32948,
-                "ppUnit": 1,
+                "id": 2673,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Robert Thomas",
@@ -9475,31 +9475,31 @@
         ],
         "f3": [
             {
-                "name": "Jake Neighbours",
-                "number": 63,
+                "name": "Dylan Holloway",
+                "number": 81,
                 "pos": "lw",
-                "id": 29498,
+                "id": 32948,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Dalibor Dvorsky",
-                "number": 15,
-                "pos": "c",
-                "id": 35010,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Pius Suter",
                 "number": 24,
-                "pos": "rw",
+                "pos": "c",
                 "id": 32940,
                 "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Jake Neighbours",
+                "number": 63,
+                "pos": "rw",
+                "id": 29498,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9507,29 +9507,19 @@
         ],
         "f4": [
             {
-                "name": "Pavel Buchnevich",
-                "number": 89,
+                "name": "Dalibor Dvorsky",
+                "number": 15,
                 "pos": "lw",
-                "id": 2673,
-                "ppUnit": null,
+                "id": 35010,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
-            },
-            {
-                "name": "Zachary Dean",
-                "number": 52,
-                "pos": "c",
-                "id": 31230,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Dylan Peterson",
                 "number": null,
-                "pos": "rw",
+                "pos": "c",
                 "id": 30799,
                 "ppUnit": null,
                 "injuryStatus": null,
@@ -9549,28 +9539,6 @@
                 "movement": null
             },
             {
-                "name": "Colton Parayko",
-                "number": 55,
-                "pos": "rd",
-                "id": 2531,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d2": [
-            {
-                "name": "Justin Barron",
-                "number": 72,
-                "pos": "ld",
-                "id": 29338,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Adam Ji\u0159\u00ed\u010dek",
                 "number": 36,
                 "pos": "rd",
@@ -9578,7 +9546,29 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d2": [
+            {
+                "name": "Theo Lindstein",
+                "number": 41,
+                "pos": "ld",
+                "id": 38097,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
+                "name": "Colton Parayko",
+                "number": 55,
+                "pos": "rd",
+                "id": 2531,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "d3": [
@@ -9746,9 +9736,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-15)",
-        "updated_at": "2026-10-16T14:33:28.803Z",
-        "fetched_at": "2026-10-17T17:01:44Z"
+        "lineup_source": "Lou Korac",
+        "updated_at": "2026-10-17T23:41:13.220Z",
+        "fetched_at": "2026-10-18T00:01:52Z"
     },
     "CGY": {
         "f1": [
