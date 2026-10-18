@@ -221,25 +221,25 @@
                 "pos": "ir1",
                 "id": 29549,
                 "ppUnit": null,
-                "injuryStatus": "out",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Alexander Nikishin",
-                "number": 21,
-                "pos": "ir2",
-                "id": 32897,
-                "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
                 "name": "Jordan Staal",
                 "number": 11,
-                "pos": "ir3",
+                "pos": "ir2",
                 "id": 1246,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Alexander Nikishin",
+                "number": 21,
+                "pos": "ir3",
+                "id": 32897,
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             },
             {
@@ -254,19 +254,19 @@
         ],
         "pk1": [
             {
-                "name": "Sebastian Aho",
-                "number": 20,
+                "name": "Logan Stankoven",
+                "number": 22,
                 "pos": "sk1",
-                "id": 2677,
-                "ppUnit": 1,
+                "id": 34617,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Jordan Martinook",
-                "number": 48,
+                "name": "Eric Robinson",
+                "number": 50,
                 "pos": "sk2",
-                "id": 2049,
+                "id": 4650,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -301,10 +301,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Eric Robinson",
-                "number": 50,
+                "name": "Jordan Martinook",
+                "number": 48,
                 "pos": "sk2",
-                "id": 4650,
+                "id": 2049,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -328,9 +328,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Walt Ruff",
-        "updated_at": "2026-10-17T19:14:45.736Z",
-        "fetched_at": "2026-10-18T12:01:32Z"
+        "lineup_source": "Last Game (2026-10-17)",
+        "updated_at": "2026-10-18T16:02:00.883Z",
+        "fetched_at": "2026-10-18T17:01:44Z"
     },
     "FLA": {
         "f1": [
@@ -7064,7 +7064,7 @@
             {
                 "name": "Isac Lundestrom",
                 "number": 21,
-                "pos": "ir2",
+                "pos": "ir1",
                 "id": 4804,
                 "ppUnit": null,
                 "injuryStatus": "ir",
@@ -7073,7 +7073,7 @@
             {
                 "name": "Ivan Provorov",
                 "number": 9,
-                "pos": "ir3",
+                "pos": "ir2",
                 "id": 2478,
                 "ppUnit": null,
                 "injuryStatus": "ir",
@@ -7082,52 +7082,14 @@
             {
                 "name": "Dante Fabbro",
                 "number": 15,
-                "pos": "ir4",
+                "pos": "ir3",
                 "id": 2651,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             }
         ],
         "pk1": [
-            {
-                "name": "Charlie Coyle",
-                "number": 3,
-                "pos": "sk1",
-                "id": 1856,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Danton Heinen",
-                "number": 58,
-                "pos": "sk2",
-                "id": 2691,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Emil Andrae",
-                "number": 55,
-                "pos": "sk3",
-                "id": 33033,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Erik Gudbranson",
-                "number": 44,
-                "pos": "sk4",
-                "id": 1710,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false
-            }
-        ],
-        "pk2": [
             {
                 "name": "Sean Monahan",
                 "number": 23,
@@ -7138,11 +7100,11 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Valeri Nichushkin",
-                "number": 43,
+                "name": "Charlie Coyle",
+                "number": 3,
                 "pos": "sk2",
-                "id": 2142,
-                "ppUnit": 2,
+                "id": 1856,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -7165,9 +7127,47 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Mark Scheig",
-        "updated_at": "2026-10-17T22:43:27.076Z",
-        "fetched_at": "2026-10-18T12:01:32Z"
+        "pk2": [
+            {
+                "name": "Cole Sillinger",
+                "number": 4,
+                "pos": "sk1",
+                "id": 34454,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Valeri Nichushkin",
+                "number": 43,
+                "pos": "sk2",
+                "id": 2142,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Jake Christiansen",
+                "number": 2,
+                "pos": "sk3",
+                "id": 25394,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Erik Gudbranson",
+                "number": 44,
+                "pos": "sk4",
+                "id": 1710,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false
+            }
+        ],
+        "lineup_source": "Last Game (2026-10-17)",
+        "updated_at": "2026-10-18T16:05:17.327Z",
+        "fetched_at": "2026-10-18T17:01:44Z"
     },
     "SJS": {
         "f1": [
@@ -9847,14 +9847,14 @@
         ],
         "f4": [
             {
-                "name": "Maxim Tsyplakov",
-                "number": 72,
+                "name": "Brennan Othmann",
+                "number": 78,
                 "pos": "lw",
-                "id": 38122,
+                "id": 30831,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jonathan Castagna",
@@ -9970,7 +9970,7 @@
                 "pos": "ir1",
                 "id": 1798,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -9979,7 +9979,7 @@
                 "pos": "ir2",
                 "id": 37733,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -10061,7 +10061,7 @@
         ],
         "lineup_source": "Pat Steinberg",
         "updated_at": "2026-10-17T17:47:54.462Z",
-        "fetched_at": "2026-10-18T12:01:32Z"
+        "fetched_at": "2026-10-18T17:01:44Z"
     },
     "NSH": {
         "f1": [
