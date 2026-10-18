@@ -3767,7 +3767,7 @@
                 "id": 2773,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -3841,6 +3841,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Samuel Girard",
+                "number": 49,
+                "pos": "ir3",
+                "id": 2773,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3869,7 +3878,7 @@
                 "id": 2773,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Kris Letang",
@@ -3920,8 +3929,8 @@
             }
         ],
         "lineup_source": "@penguins",
-        "updated_at": "2026-10-18T01:34:40.350Z",
-        "fetched_at": "2026-10-18T02:03:30Z"
+        "updated_at": "2026-10-18T04:19:01.120Z",
+        "fetched_at": "2026-10-18T08:43:07Z"
     },
     "NYI": {
         "f1": [
