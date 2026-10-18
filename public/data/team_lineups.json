@@ -1353,14 +1353,14 @@
                 "movement": null
             },
             {
-                "name": "Pavel Zacha",
-                "number": 18,
+                "name": "Fraser Minten",
+                "number": 93,
                 "pos": "c",
-                "id": 2481,
+                "id": 31575,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "up"
             },
             {
                 "name": "David Pastrnak",
@@ -1385,14 +1385,14 @@
                 "movement": null
             },
             {
-                "name": "Fraser Minten",
-                "number": 93,
+                "name": "Matthew Poitras",
+                "number": 51,
                 "pos": "c",
-                "id": 31575,
+                "id": 33196,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "JJ Peterka",
@@ -1449,14 +1449,14 @@
                 "movement": null
             },
             {
-                "name": "Matthew Poitras",
-                "number": 51,
+                "name": "Sean Kuraly",
+                "number": 7,
                 "pos": "c",
-                "id": 33196,
+                "id": 2585,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Mark Kastelic",
@@ -1493,14 +1493,14 @@
         ],
         "d2": [
             {
-                "name": "Nikita Zadorov",
-                "number": 91,
+                "name": "Jonathan Aspirot",
+                "number": 45,
                 "pos": "ld",
-                "id": 2147,
+                "id": 26475,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Will Borgen",
@@ -1561,7 +1561,7 @@
                 "number": 18,
                 "pos": "ir1",
                 "id": 2481,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -1610,24 +1610,24 @@
                 "number": 93,
                 "pos": "sk1",
                 "id": 31575,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Pavel Zacha",
-                "number": 18,
+                "name": "Sean Kuraly",
+                "number": 7,
                 "pos": "sk2",
-                "id": 2481,
-                "ppUnit": 1,
+                "id": 2585,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
-                "name": "Nikita Zadorov",
-                "number": 91,
+                "name": "Jonathan Aspirot",
+                "number": 45,
                 "pos": "sk3",
-                "id": 2147,
+                "id": 26475,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1642,9 +1642,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Belle Fraser",
-        "updated_at": "2026-10-17T15:30:36.741Z",
-        "fetched_at": "2026-10-17T16:01:41Z"
+        "lineup_source": "Boston Bruins",
+        "updated_at": "2026-10-18T00:43:31.557Z",
+        "fetched_at": "2026-10-18T01:03:23Z"
     },
     "NYR": {
         "f1": [
@@ -4606,28 +4606,18 @@
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
-            },
-            {
-                "name": "Erik Haula",
-                "number": 56,
-                "pos": "rw",
-                "id": 2135,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
             }
         ],
         "f3": [
             {
-                "name": "Joel Armia",
-                "number": 40,
+                "name": "Erik Haula",
+                "number": 56,
                 "pos": "lw",
-                "id": 1952,
-                "ppUnit": null,
+                "id": 2135,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Scott Laughton",
@@ -4640,10 +4630,10 @@
                 "movement": null
             },
             {
-                "name": "Jared Wright",
-                "number": 25,
+                "name": "Joel Armia",
+                "number": 40,
                 "pos": "rw",
-                "id": 34797,
+                "id": 1952,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4873,9 +4863,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Alexander Legget",
-        "updated_at": "2026-10-15T18:35:41.701Z",
-        "fetched_at": "2026-10-17T03:01:48Z"
+        "lineup_source": "Zach Dooley",
+        "updated_at": "2026-10-18T00:39:19.955Z",
+        "fetched_at": "2026-10-18T01:03:23Z"
     },
     "DAL": {
         "f1": [
