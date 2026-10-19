@@ -44370,5 +44370,66 @@
         "market_p": 0.3286
       }
     }
+  },
+  {
+    "gameId": 2026020136,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-18",
+    "homeTeam": "Flames",
+    "awayTeam": "Hurricanes",
+    "homeScore": 3,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 2.54,
+    "awayXg": 3.68,
+    "homeWinProb": 31.8,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Flames",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.4651,
+    "logLoss": 1.1457,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-18T23:48:00Z",
+    "startUtc": "2026-10-19T00:00:00Z",
+    "marketHomeProb": 32.6,
+    "modelHomeProb": 31.6,
+    "homeOdds": 185.0,
+    "awayOdds": -225.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 31.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.228,
+        "ll": 1.4784,
+        "naive_ll": 1.3762,
+        "market_p": 0.2654
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.555,
+        "ll": 0.5888,
+        "naive_ll": 0.5667,
+        "market_p": 0.5547
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.545,
+        "ll": 0.607,
+        "naive_ll": 0.6116,
+        "market_p": 0.5346
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.323,
+        "ll": 1.1301,
+        "naive_ll": 1.2119,
+        "market_p": null
+      }
+    }
   }
 ]
