@@ -16,6 +16,7 @@
     "riley tufte": "8479362",
     "tanner pearson": "8476871",
     "trevor kuntar": "8482479",
+    "ryan johnson": "8481564",
     "mason geertsen": "8477419",
     "joshua dunne": "8482623",
     "jason zucker": "8475722",
@@ -68,6 +69,7 @@
     "alexander petrovic": "8475755",
     "john leonard": "8481077",
     "james van riemsdyk": "8474037",
+    "jacob bernard-docker": "8480879",
     "simon edvinsson": "8482762",
     "travis hamonic": "8474612",
     "dominik shine": "8479942",
@@ -100,9 +102,7 @@
     "kenny connors": "8483675",
     "anze kopitar": "8471685",
     "marcus johansson": "8475149",
-    "carson lambos": "8482781",
     "ben jones": "8480259",
-    "hunter haight": "8483452",
     "robby fabbri": "8477952",
     "vladimir tarasenko": "8475765",
     "jeff petry": "8473507",
@@ -323,7 +323,6 @@
     "logan stanley": "8479378",
     "rasmus dahlin": "8480839",
     "tage thompson": "8479420",
-    "ryan johnson": "8481564",
     "conor timmins": "8479982",
     "zach benson": "8484145",
     "mattias samuelsson": "8480807",
@@ -471,7 +470,6 @@
     "moritz seider": "8481542",
     "nate danielson": "8484160",
     "lucas raymond": "8482078",
-    "jacob bernard-docker": "8480879",
     "sheldon dries": "8480326",
     "michael brandsegg-nyg\u00e5rd": "8484794",
     "ben chiarot": "8475279",
@@ -551,6 +549,8 @@
     "mats zuccarello": "8475692",
     "marcus foligno": "8475220",
     "yakov trenin": "8478508",
+    "carson lambos": "8482781",
+    "hunter haight": "8483452",
     "ryan hartman": "8477451",
     "matt kiersted": "8482641",
     "nick foligno": "8473422",
@@ -1058,6 +1058,18 @@
         "team": "BUF"
       }
     ],
+    "johnson": [
+      {
+        "pid": "8481564",
+        "full_name": "ryan johnson",
+        "team": "BUF"
+      },
+      {
+        "pid": "8482660",
+        "full_name": "kent johnson",
+        "team": "CBJ"
+      }
+    ],
     "geertsen": [
       {
         "pid": "8477419",
@@ -1482,6 +1494,13 @@
         "team": "PIT"
       }
     ],
+    "bernard-docker": [
+      {
+        "pid": "8480879",
+        "full_name": "jacob bernard-docker",
+        "team": "DET"
+      }
+    ],
     "edvinsson": [
       {
         "pid": "8482762",
@@ -1731,13 +1750,6 @@
         "team": "DET"
       }
     ],
-    "lambos": [
-      {
-        "pid": "8482781",
-        "full_name": "carson lambos",
-        "team": "MIN"
-      }
-    ],
     "jones": [
       {
         "pid": "8480259",
@@ -1758,13 +1770,6 @@
         "pid": "8477495",
         "full_name": "seth jones",
         "team": "FLA"
-      }
-    ],
-    "haight": [
-      {
-        "pid": "8483452",
-        "full_name": "hunter haight",
-        "team": "MIN"
       }
     ],
     "fabbri": [
@@ -3368,18 +3373,6 @@
         "team": "BUF"
       }
     ],
-    "johnson": [
-      {
-        "pid": "8481564",
-        "full_name": "ryan johnson",
-        "team": "PIT"
-      },
-      {
-        "pid": "8482660",
-        "full_name": "kent johnson",
-        "team": "CBJ"
-      }
-    ],
     "timmins": [
       {
         "pid": "8479982",
@@ -4338,13 +4331,6 @@
         "team": "DET"
       }
     ],
-    "bernard-docker": [
-      {
-        "pid": "8480879",
-        "full_name": "jacob bernard-docker",
-        "team": "DET"
-      }
-    ],
     "dries": [
       {
         "pid": "8480326",
@@ -4888,6 +4874,20 @@
       {
         "pid": "8478508",
         "full_name": "yakov trenin",
+        "team": "MIN"
+      }
+    ],
+    "lambos": [
+      {
+        "pid": "8482781",
+        "full_name": "carson lambos",
+        "team": "MIN"
+      }
+    ],
+    "haight": [
+      {
+        "pid": "8483452",
+        "full_name": "hunter haight",
         "team": "MIN"
       }
     ],

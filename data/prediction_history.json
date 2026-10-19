@@ -44309,5 +44309,66 @@
         "market_p": 0.6125
       }
     }
+  },
+  {
+    "gameId": 2026020135,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-18",
+    "homeTeam": "Wild",
+    "awayTeam": "Blue Jackets",
+    "homeScore": 2,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 3.57,
+    "awayXg": 2.55,
+    "homeWinProb": 66.4,
+    "predictedWinner": "Wild",
+    "actualWinner": "Wild",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1129,
+    "logLoss": 0.4095,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-18T21:02:00Z",
+    "startUtc": "2026-10-18T22:00:00Z",
+    "marketHomeProb": 63.9,
+    "modelHomeProb": 67.0,
+    "homeOdds": -192.0,
+    "awayOdds": 160.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 67.0,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.55,
+        "ll": 0.5978,
+        "naive_ll": 0.5482,
+        "market_p": 0.5174
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.57,
+        "ll": 0.5621,
+        "naive_ll": 0.5307,
+        "market_p": 0.5883
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.56,
+        "ll": 0.5798,
+        "naive_ll": 0.5838,
+        "market_p": 0.5278
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.319,
+        "ll": 1.1426,
+        "naive_ll": 1.1968,
+        "market_p": 0.3286
+      }
+    }
   }
 ]
