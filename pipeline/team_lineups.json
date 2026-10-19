@@ -3316,26 +3316,26 @@
                 "movement": null
             },
             {
-                "name": "Tyson Foerster",
-                "number": 71,
-                "pos": "rw",
-                "id": 29750,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
                 "name": "Porter Martone",
                 "number": null,
-                "pos": "lw",
+                "pos": "rw",
                 "id": 37366,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "up"
+            }
+        ],
+        "f2": [
+            {
+                "name": "Alex Bump",
+                "number": 20,
+                "pos": "lw",
+                "id": 34874,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Noah Cates",
@@ -3355,7 +3355,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -3367,7 +3367,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Sean Couturier",
@@ -3387,7 +3387,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -3402,24 +3402,24 @@
                 "movement": null
             },
             {
-                "name": "Jack Studnicka",
-                "number": 53,
+                "name": "Noel Acciari",
+                "number": 52,
                 "pos": "c",
-                "id": 4606,
+                "id": 2589,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Noel Acciari",
-                "number": 52,
+                "name": "Cole Knuble",
+                "number": null,
                 "pos": "rw",
-                "id": 2589,
+                "id": 33787,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -3551,7 +3551,7 @@
                 "pos": "ir5",
                 "id": 2786,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             },
             {
@@ -3568,7 +3568,7 @@
                 "number": 71,
                 "pos": "ir7",
                 "id": 29750,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -3622,13 +3622,13 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Tyson Foerster",
-                "number": 71,
+                "name": "Christian Dvorak",
+                "number": 22,
                 "pos": "sk2",
-                "id": 29750,
-                "ppUnit": 1,
+                "id": 2682,
+                "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Simon Benoit",
@@ -3649,9 +3649,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-17)",
-        "updated_at": "2026-10-19T00:20:24.747Z",
-        "fetched_at": "2026-10-19T01:03:33Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-19T18:26:45.822Z",
+        "fetched_at": "2026-10-19T19:01:50Z"
     },
     "PIT": {
         "f1": [
