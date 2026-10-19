@@ -5619,7 +5619,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mikael Granlund",
@@ -5628,8 +5628,8 @@
                 "id": 1934,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Beckett Sennecke",
@@ -5651,7 +5651,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Roger McQueen",
@@ -5671,7 +5671,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -5683,7 +5683,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Tim Washe",
@@ -5747,7 +5747,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -5769,24 +5769,24 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
             {
-                "name": "Lukas Dostal",
-                "number": 1,
+                "name": "Ville Husso",
+                "number": 33,
                 "pos": "g1",
-                "id": 29143,
+                "id": 3837,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Ville Husso",
-                "number": 33,
+                "name": "Lukas Dostal",
+                "number": 1,
                 "pos": "g2",
-                "id": 3837,
+                "id": 29143,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5818,15 +5818,6 @@
                 "id": 2792,
                 "ppUnit": null,
                 "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Mikael Granlund",
-                "number": 64,
-                "pos": "ir4",
-                "id": 1934,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -5906,9 +5897,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Zach Cavanagh",
-        "updated_at": "2026-10-17T18:28:28.552Z",
-        "fetched_at": "2026-10-17T19:52:38Z"
+        "lineup_source": "Jonny Lazarus",
+        "updated_at": "2026-10-19T17:01:06.825Z",
+        "fetched_at": "2026-10-19T17:01:44Z"
     },
     "NJD": {
         "f1": [
@@ -8732,19 +8723,19 @@
         ],
         "g": [
             {
-                "name": "Karel Vejmelka",
-                "number": 70,
+                "name": "Sebastian Cossa",
+                "number": 33,
                 "pos": "g1",
-                "id": 26614,
+                "id": 34654,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Sebastian Cossa",
-                "number": 33,
+                "name": "Karel Vejmelka",
+                "number": 70,
                 "pos": "g2",
-                "id": 34654,
+                "id": 26614,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -8839,7 +8830,7 @@
         ],
         "lineup_source": "Last Game (2026-10-17)",
         "updated_at": "2026-10-19T14:20:12.205Z",
-        "fetched_at": "2026-10-19T15:01:57Z"
+        "fetched_at": "2026-10-19T17:01:44Z"
     },
     "WPG": {
         "f1": [
