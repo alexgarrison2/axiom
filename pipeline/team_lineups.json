@@ -3695,17 +3695,17 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": true,
-                "movement": "new"
+                "movement": null
             },
             {
-                "name": "Hendrix Lapierre",
-                "number": 22,
+                "name": "Tommy Novak",
+                "number": 18,
                 "pos": "c",
-                "id": 29894,
-                "ppUnit": null,
+                "id": 26595,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "up"
             },
             {
                 "name": "Evgeni Malkin",
@@ -3740,21 +3740,31 @@
                 "movement": null
             },
             {
-                "name": "Nicholas Robertson",
-                "number": 14,
+                "name": "Ville Koivunen",
+                "number": 41,
                 "pos": "rw",
-                "id": 29254,
+                "id": 34677,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
             {
+                "name": "Connor Dewar",
+                "number": 19,
+                "pos": "lw",
+                "id": 25396,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
                 "name": "Blake Lizotte",
                 "number": 46,
-                "pos": "lw",
+                "pos": "c",
                 "id": 27482,
                 "ppUnit": null,
                 "injuryStatus": null,
@@ -3762,24 +3772,14 @@
                 "movement": null
             },
             {
-                "name": "Tommy Novak",
-                "number": 18,
-                "pos": "c",
-                "id": 26595,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "down"
-            },
-            {
-                "name": "Connor Dewar",
-                "number": 19,
+                "name": "Nicholas Robertson",
+                "number": 14,
                 "pos": "rw",
-                "id": 25396,
+                "id": 29254,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -3991,9 +3991,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Josh Getzoff",
-        "updated_at": "2026-10-19T17:38:03.514Z",
-        "fetched_at": "2026-10-19T17:57:16Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-19T20:27:28.451Z",
+        "fetched_at": "2026-10-19T21:01:42Z"
     },
     "NYI": {
         "f1": [
