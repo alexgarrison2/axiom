@@ -76,24 +76,24 @@
                 "movement": null
             },
             {
-                "name": "Mark Jankowski",
-                "number": 77,
-                "pos": "c",
-                "id": 2711,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Jordan Martinook",
                 "number": 48,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2049,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Felix Unger Sorum",
+                "number": null,
+                "pos": "rw",
+                "id": 38900,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
             }
         ],
         "f4": [
@@ -118,14 +118,14 @@
                 "movement": null
             },
             {
-                "name": "Felix Unger Sorum",
-                "number": null,
+                "name": "Nicolas Deslauriers",
+                "number": 44,
                 "pos": "rw",
-                "id": 38900,
-                "ppUnit": 2,
+                "id": 1699,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -166,7 +166,7 @@
                 "number": 26,
                 "pos": "rd",
                 "id": 4829,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -250,6 +250,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Mark Jankowski",
+                "number": 77,
+                "pos": "ir5",
+                "id": 2711,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -292,11 +301,11 @@
         ],
         "pk2": [
             {
-                "name": "Mark Jankowski",
-                "number": 77,
+                "name": "Jesperi Kotkaniemi",
+                "number": 82,
                 "pos": "sk1",
-                "id": 2711,
-                "ppUnit": 2,
+                "id": 4788,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -323,14 +332,14 @@
                 "number": 26,
                 "pos": "sk4",
                 "id": 4829,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ryan Henkel",
-        "updated_at": "2026-10-18T17:27:12.880Z",
-        "fetched_at": "2026-10-18T18:01:47Z"
+        "lineup_source": "Walt Ruff",
+        "updated_at": "2026-10-18T23:49:21.826Z",
+        "fetched_at": "2026-10-19T00:01:33Z"
     },
     "FLA": {
         "f1": [
@@ -10059,9 +10068,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Pat Steinberg",
-        "updated_at": "2026-10-18T17:25:44.209Z",
-        "fetched_at": "2026-10-18T18:01:47Z"
+        "lineup_source": "Ryan Pike",
+        "updated_at": "2026-10-18T23:48:33.118Z",
+        "fetched_at": "2026-10-19T00:01:33Z"
     },
     "NSH": {
         "f1": [
