@@ -111,12 +111,12 @@
         "homeTeamAbbrev": "TOR",
         "awayTeamAbbrev": "SJS",
         "homeGoalieConfirmed": "Sergei Bobrovsky",
-        "homeGoalieStatus": "Likely",
+        "homeGoalieStatus": "Confirmed",
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
         "awayGoalieConfirmed": "Yaroslav Askarov",
-        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieStatus": "Likely",
         "awayGoalieSource": "dailyfaceoff",
         "awayGoalieConflict": false,
         "awayGoalieAlt": null,
@@ -431,11 +431,11 @@
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": true,
         "homeGoalieAlt": "Jet Greaves",
-        "awayGoalieConfirmed": "Sergei Bobrovsky",
-        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieConfirmed": "Anthony Stolarz",
+        "awayGoalieStatus": "Confirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Anthony Stolarz",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
@@ -458,11 +458,6 @@
             },
             {
                 "network": "SN",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "SN360",
                 "market": "N",
                 "countryCode": "CA"
             }
@@ -625,10 +620,10 @@
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
         "awayGoalieConfirmed": "Daniil Tarasov",
-        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieStatus": "Confirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "John Gibson",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
