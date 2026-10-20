@@ -44567,5 +44567,73 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020139,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-19",
+    "homeTeam": "Maple Leafs",
+    "awayTeam": "Sharks",
+    "homeScore": 3,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 3.39,
+    "awayXg": 2.98,
+    "homeWinProb": 56.6,
+    "predictedWinner": "Maple Leafs",
+    "actualWinner": "Maple Leafs",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1884,
+    "logLoss": 0.5692,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-19T23:02:00Z",
+    "startUtc": "2026-10-19T23:30:00Z",
+    "marketHomeProb": 55.5,
+    "modelHomeProb": 56.8,
+    "homeOdds": -135.0,
+    "awayOdds": 114.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 56.8,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.451,
+        "ll": 0.7963,
+        "naive_ll": 0.7301,
+        "market_p": 0.4276
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.319,
+        "ll": 1.1426,
+        "naive_ll": 1.1255,
+        "market_p": 0.3323
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.515,
+        "ll": 0.6636,
+        "naive_ll": 0.6621,
+        "market_p": 0.4326
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.304,
+        "ll": 1.1907,
+        "naive_ll": 1.153,
+        "market_p": null
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.456,
+        "ll": 0.7853,
+        "naive_ll": 0.7965,
+        "market_p": null
+      }
+    }
   }
 ]
