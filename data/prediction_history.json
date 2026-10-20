@@ -44431,5 +44431,141 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020137,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-19",
+    "homeTeam": "Rangers",
+    "awayTeam": "Ducks",
+    "homeScore": 5,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 3.34,
+    "awayXg": 2.74,
+    "homeWinProb": 59.9,
+    "predictedWinner": "Rangers",
+    "actualWinner": "Rangers",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1608,
+    "logLoss": 0.5125,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-19T22:02:00Z",
+    "startUtc": "2026-10-19T23:00:00Z",
+    "marketHomeProb": 58.8,
+    "modelHomeProb": 60.2,
+    "homeOdds": -155.0,
+    "awayOdds": 130.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 60.2,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.474,
+        "ll": 0.7465,
+        "naive_ll": 0.6694,
+        "market_p": 0.46
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.351,
+        "ll": 1.047,
+        "naive_ll": 1.0549,
+        "market_p": 0.3607
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.433,
+        "ll": 0.837,
+        "naive_ll": 0.8285,
+        "market_p": 0.5
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.376,
+        "ll": 0.9782,
+        "naive_ll": 0.922,
+        "market_p": null
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.564,
+        "ll": 0.5727,
+        "naive_ll": 0.5545,
+        "market_p": null
+      }
+    }
+  },
+  {
+    "gameId": 2026020138,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-19",
+    "homeTeam": "Flyers",
+    "awayTeam": "Avalanche",
+    "homeScore": 3,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 2.31,
+    "awayXg": 3.61,
+    "homeWinProb": 28.9,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Flyers",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.5055,
+    "logLoss": 1.2413,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-19T22:02:00Z",
+    "startUtc": "2026-10-19T23:00:00Z",
+    "marketHomeProb": 31.3,
+    "modelHomeProb": 28.3,
+    "homeOdds": 195.0,
+    "awayOdds": -238.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 28.3,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.202,
+        "ll": 1.5995,
+        "naive_ll": 1.4873,
+        "market_p": 0.2541
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.537,
+        "ll": 0.6218,
+        "naive_ll": 0.6095,
+        "market_p": 0.5346
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.596,
+        "ll": 0.5175,
+        "naive_ll": 0.5221,
+        "market_p": 0.5547
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.224,
+        "ll": 1.4961,
+        "naive_ll": 1.4466,
+        "market_p": null
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.336,
+        "ll": 1.0906,
+        "naive_ll": 1.0837,
+        "market_p": null
+      }
+    }
   }
 ]

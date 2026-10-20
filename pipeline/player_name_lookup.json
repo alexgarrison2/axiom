@@ -147,7 +147,6 @@
     "brett berard": "8482132",
     "drew fortescue": "8484169",
     "urho vaakanainen": "8480001",
-    "jonny brodzinski": "8477380",
     "vincent iorio": "8482861",
     "jaroslav chmelar": "8482877",
     "conor sheary": "8477839",
@@ -162,10 +161,7 @@
     "ty murchison": "8482804",
     "rodrigo abols": "8479022",
     "lane pederson": "8478967",
-    "jacob gaucher": "8481848",
     "jett luchanko": "8484779",
-    "alex bump": "8483731",
-    "hunter mcdonald": "8483760",
     "anthony richard": "8478409",
     "luke glendening": "8476822",
     "adam ginning": "8480874",
@@ -183,7 +179,6 @@
     "kevin hayes": "8475763",
     "ryan graves": "8477435",
     "rafael harvey-pinard": "8481093",
-    "ilya solovyov": "8482470",
     "oscar fisker molgaard": "8484168",
     "john hayden": "8477401",
     "jani nyman": "8483497",
@@ -198,6 +193,7 @@
     "hugh mcging": "8481070",
     "nathan walker": "8477573",
     "jonathan drouin": "8477494",
+    "justin holl": "8475718",
     "oskar sundqvist": "8476897",
     "matt luff": "8479644",
     "jack finley": "8482090",
@@ -208,7 +204,6 @@
     "simon lundmark": "8481547",
     "boris katchouk": "8479383",
     "maxim groshev": "8482168",
-    "mitchell chaffee": "8482070",
     "dakota mermis": "8477541",
     "philippe myers": "8479026",
     "ryan tverberg": "8482525",
@@ -251,14 +246,12 @@
     "gustav nyquist": "8474679",
     "isaak phillips": "8482192",
     "ville heinola": "8481572",
-    "brayden yager": "8484242",
     "elias salomonsson": "8483510",
     "danil zhilkin": "8483526",
     "walker duehr": "8482652",
     "bogdan trineyev": "8482167",
     "sonny milano": "8477947",
     "brett leason": "8481517",
-    "rasmus sandin": "8480873",
     "david kampf": "8480144",
     "drew helleson": "8481563",
     "leo carlsson": "8484153",
@@ -655,6 +648,7 @@
     "j.t. miller": "8476468",
     "justin dowling": "8475413",
     "noah laba": "8483690",
+    "jonny brodzinski": "8477380",
     "tye kartye": "8481789",
     "braden schneider": "8482073",
     "mika zibanejad": "8476459",
@@ -695,10 +689,13 @@
     "travis sanheim": "8477948",
     "nick seeler": "8476372",
     "garrett wilson": "8475253",
+    "jacob gaucher": "8481848",
     "cam york": "8481546",
     "emil andrae": "8482126",
     "rasmus ristolainen": "8477499",
+    "alex bump": "8483731",
     "sean couturier": "8476461",
+    "hunter mcdonald": "8483760",
     "oliver bonk": "8484148",
     "travis konecny": "8478439",
     "denver barkey": "8484142",
@@ -735,6 +732,7 @@
     "jack st. ivany": "8481030",
     "elmer soderblom": "8481725",
     "connor dewar": "8480980",
+    "ilya solovyov": "8482470",
     "ryan shea": "8478854",
     "kaapo kakko": "8481554",
     "matty beniers": "8482665",
@@ -778,7 +776,6 @@
     "mario ferraro": "8479983",
     "will smith": "8484227",
     "jordan kyrou": "8479385",
-    "justin holl": "8475718",
     "pius suter": "8480459",
     "robert thomas": "8480023",
     "theo lindstein": "8484188",
@@ -817,6 +814,7 @@
     "jake guentzel": "8477404",
     "darren raddysh": "8478178",
     "charle-edouard d'astous": "8480426",
+    "mitchell chaffee": "8482070",
     "brayden point": "8478010",
     "zemgus girgensons": "8476878",
     "pontus holmberg": "8480995",
@@ -914,12 +912,14 @@
     "mark scheifele": "8476460",
     "vladislav namestnikov": "8476480",
     "morgan barron": "8480289",
+    "brayden yager": "8484242",
     "dylan demelo": "8476331",
     "adam lowry": "8476392",
     "haydn fleury": "8477938",
     "pierre-luc dubois": "8479400",
     "ryan leonard": "8484186",
     "connor mcmichael": "8481580",
+    "rasmus sandin": "8480873",
     "ilya protas": "8484999",
     "cole hutson": "8484873",
     "declan chisholm": "8480990",
@@ -2105,13 +2105,6 @@
         "team": "NYR"
       }
     ],
-    "brodzinski": [
-      {
-        "pid": "8477380",
-        "full_name": "jonny brodzinski",
-        "team": "NYR"
-      }
-    ],
     "iorio": [
       {
         "pid": "8482861",
@@ -2214,20 +2207,6 @@
       {
         "pid": "8484779",
         "full_name": "jett luchanko",
-        "team": "PHI"
-      }
-    ],
-    "bump": [
-      {
-        "pid": "8483731",
-        "full_name": "alex bump",
-        "team": "PHI"
-      }
-    ],
-    "mcdonald": [
-      {
-        "pid": "8483760",
-        "full_name": "hunter mcdonald",
         "team": "PHI"
       }
     ],
@@ -2341,13 +2320,6 @@
         "team": "PIT"
       }
     ],
-    "solovyov": [
-      {
-        "pid": "8482470",
-        "full_name": "ilya solovyov",
-        "team": "PIT"
-      }
-    ],
     "molgaard": [
       {
         "pid": "8484168",
@@ -2456,6 +2428,13 @@
         "team": "STL"
       }
     ],
+    "holl": [
+      {
+        "pid": "8475718",
+        "full_name": "justin holl",
+        "team": "STL"
+      }
+    ],
     "sundqvist": [
       {
         "pid": "8476897",
@@ -2516,13 +2495,6 @@
       {
         "pid": "8482168",
         "full_name": "maxim groshev",
-        "team": "TBL"
-      }
-    ],
-    "chaffee": [
-      {
-        "pid": "8482070",
-        "full_name": "mitchell chaffee",
         "team": "TBL"
       }
     ],
@@ -2841,13 +2813,6 @@
         "team": "WPG"
       }
     ],
-    "yager": [
-      {
-        "pid": "8484242",
-        "full_name": "brayden yager",
-        "team": "WPG"
-      }
-    ],
     "salomonsson": [
       {
         "pid": "8483510",
@@ -2887,13 +2852,6 @@
       {
         "pid": "8481517",
         "full_name": "brett leason",
-        "team": "WSH"
-      }
-    ],
-    "sandin": [
-      {
-        "pid": "8480873",
-        "full_name": "rasmus sandin",
         "team": "WSH"
       }
     ],
@@ -5530,6 +5488,13 @@
         "team": "NYR"
       }
     ],
+    "brodzinski": [
+      {
+        "pid": "8477380",
+        "full_name": "jonny brodzinski",
+        "team": "WSH"
+      }
+    ],
     "kartye": [
       {
         "pid": "8481789",
@@ -5829,10 +5794,24 @@
         "team": "PHI"
       }
     ],
+    "bump": [
+      {
+        "pid": "8483731",
+        "full_name": "alex bump",
+        "team": "PHI"
+      }
+    ],
     "couturier": [
       {
         "pid": "8476461",
         "full_name": "sean couturier",
+        "team": "PHI"
+      }
+    ],
+    "mcdonald": [
+      {
+        "pid": "8483760",
+        "full_name": "hunter mcdonald",
         "team": "PHI"
       }
     ],
@@ -6095,6 +6074,13 @@
       {
         "pid": "8480980",
         "full_name": "connor dewar",
+        "team": "PIT"
+      }
+    ],
+    "solovyov": [
+      {
+        "pid": "8482470",
+        "full_name": "ilya solovyov",
         "team": "PIT"
       }
     ],
@@ -6369,13 +6355,6 @@
         "team": "WSH"
       }
     ],
-    "holl": [
-      {
-        "pid": "8475718",
-        "full_name": "justin holl",
-        "team": "WSH"
-      }
-    ],
     "suter": [
       {
         "pid": "8480459",
@@ -6626,6 +6605,13 @@
         "pid": "8480426",
         "full_name": "charle-edouard d'astous",
         "team": "TBL"
+      }
+    ],
+    "chaffee": [
+      {
+        "pid": "8482070",
+        "full_name": "mitchell chaffee",
+        "team": "NYI"
       }
     ],
     "point": [
@@ -7261,6 +7247,13 @@
         "team": "WPG"
       }
     ],
+    "yager": [
+      {
+        "pid": "8484242",
+        "full_name": "brayden yager",
+        "team": "WPG"
+      }
+    ],
     "demelo": [
       {
         "pid": "8476331",
@@ -7287,6 +7280,13 @@
         "pid": "8481580",
         "full_name": "connor mcmichael",
         "team": "STL"
+      }
+    ],
+    "sandin": [
+      {
+        "pid": "8480873",
+        "full_name": "rasmus sandin",
+        "team": "WSH"
       }
     ],
     "protas": [
