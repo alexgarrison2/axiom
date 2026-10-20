@@ -44635,5 +44635,73 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020140,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-19",
+    "homeTeam": "Mammoth",
+    "awayTeam": "Penguins",
+    "homeScore": 5,
+    "awayScore": 4,
+    "decision": "REG",
+    "homeXg": 3.49,
+    "awayXg": 2.96,
+    "homeWinProb": 58.6,
+    "predictedWinner": "Mammoth",
+    "actualWinner": "Mammoth",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1714,
+    "logLoss": 0.5344,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-20T00:49:00Z",
+    "startUtc": "2026-10-20T01:00:00Z",
+    "marketHomeProb": 63.0,
+    "modelHomeProb": 57.5,
+    "homeOdds": -185.0,
+    "awayOdds": 154.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 57.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.468,
+        "ll": 0.7593,
+        "naive_ll": 0.689,
+        "market_p": 0.4975
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.652,
+        "ll": 0.4277,
+        "naive_ll": 0.4214,
+        "market_p": 0.5883
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.498,
+        "ll": 0.6972,
+        "naive_ll": 0.7002,
+        "market_p": 0.5547
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.384,
+        "ll": 0.9571,
+        "naive_ll": 0.925,
+        "market_p": 0.3969
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.565,
+        "ll": 0.5709,
+        "naive_ll": 0.5728,
+        "market_p": 0.6006
+      }
+    }
   }
 ]

@@ -3636,7 +3636,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sidney Crosby",
@@ -3655,7 +3655,7 @@
                 "id": 2407,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -3668,7 +3668,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Tommy Novak",
@@ -3720,7 +3720,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -3764,7 +3764,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Erik Karlsson",
@@ -3786,7 +3786,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Kaedan Korczak",
@@ -3808,7 +3808,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Kris Letang",
@@ -3877,6 +3877,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Bryan Rust",
+                "number": 17,
+                "pos": "ir5",
+                "id": 2407,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3925,7 +3934,7 @@
                 "id": 2407,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Nicholas Robertson",
@@ -3956,8 +3965,8 @@
             }
         ],
         "lineup_source": "@penguins",
-        "updated_at": "2026-10-20T00:46:47.821Z",
-        "fetched_at": "2026-10-20T00:49:03Z"
+        "updated_at": "2026-10-20T03:33:20.394Z",
+        "fetched_at": "2026-10-20T09:53:44Z"
     },
     "NYI": {
         "f1": [
@@ -4479,19 +4488,19 @@
         ],
         "g": [
             {
-                "name": "Mackenzie Blackwood",
-                "number": 39,
+                "name": "Scott Wedgewood",
+                "number": 41,
                 "pos": "g1",
-                "id": 3792,
+                "id": 1873,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Scott Wedgewood",
-                "number": 41,
+                "name": "Mackenzie Blackwood",
+                "number": 39,
                 "pos": "g2",
-                "id": 1873,
+                "id": 3792,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4604,7 +4613,7 @@
         ],
         "lineup_source": "Aarif Deen",
         "updated_at": "2026-10-19T17:57:49.463Z",
-        "fetched_at": "2026-10-19T18:02:05Z"
+        "fetched_at": "2026-10-20T09:53:44Z"
     },
     "LAK": {
         "f1": [
@@ -6052,19 +6061,19 @@
         ],
         "g": [
             {
-                "name": "Jake Allen",
-                "number": 34,
+                "name": "Nico Daws",
+                "number": 50,
                 "pos": "g1",
-                "id": 1305,
+                "id": 29186,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Nico Daws",
-                "number": 50,
+                "name": "Jake Allen",
+                "number": 34,
                 "pos": "g2",
-                "id": 29186,
+                "id": 1305,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -6186,7 +6195,7 @@
         ],
         "lineup_source": "Last Game (2026-10-17)",
         "updated_at": "2026-10-18T23:57:18.683Z",
-        "fetched_at": "2026-10-19T01:03:33Z"
+        "fetched_at": "2026-10-20T09:53:44Z"
     },
     "MIN": {
         "f1": [
@@ -7078,19 +7087,19 @@
         ],
         "g": [
             {
-                "name": "Cam Talbot",
-                "number": 33,
+                "name": "Jet Greaves",
+                "number": null,
                 "pos": "g1",
-                "id": 1059,
+                "id": 29751,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Jet Greaves",
-                "number": null,
+                "name": "Cam Talbot",
+                "number": 33,
                 "pos": "g2",
-                "id": 29751,
+                "id": 1059,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -7203,7 +7212,7 @@
         ],
         "lineup_source": "Last Game (2026-10-18)",
         "updated_at": "2026-10-19T13:59:22.123Z",
-        "fetched_at": "2026-10-19T14:01:43Z"
+        "fetched_at": "2026-10-20T09:53:44Z"
     },
     "SJS": {
         "f1": [
