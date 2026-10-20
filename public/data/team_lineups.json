@@ -7288,7 +7288,7 @@
                 "id": 2145,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -7420,6 +7420,17 @@
                 "gameTimeDecision": false
             }
         ],
+        "ir": [
+            {
+                "name": "Alexander Wennberg",
+                "number": 21,
+                "pos": "ir1",
+                "id": 2145,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            }
+        ],
         "pk1": [
             {
                 "name": "Zack Ostapchuk",
@@ -7466,7 +7477,7 @@
                 "id": 2145,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Collin Graf",
@@ -7497,8 +7508,8 @@
             }
         ],
         "lineup_source": "Sheng Peng",
-        "updated_at": "2026-10-19T23:11:10.540Z",
-        "fetched_at": "2026-10-20T00:01:42Z"
+        "updated_at": "2026-10-20T03:33:53.794Z",
+        "fetched_at": "2026-10-20T04:00:38Z"
     },
     "SEA": {
         "f1": [
