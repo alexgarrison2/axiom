@@ -4897,7 +4897,7 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-20T22:01:40Z",
+  "fetched_at": "2026-10-20T23:01:48Z",
   "three_way_tie": 310,
   "Blues_puckline": 185,
   "Blues_puckline_spread": "-1.5",
@@ -4915,9 +4915,9 @@
   "Jets_1p_ml": 100,
   "Blues_1p_ml": -130,
   "Jets_1p_three_way": 200,
-  "Blues_1p_three_way": 163,
-  "1p_three_way_tie": 172,
-  "captured_at": "2026-10-20T22:01:40Z"
+  "Blues_1p_three_way": 165,
+  "1p_three_way_tie": 173,
+  "captured_at": "2026-10-20T23:01:48Z"
  },
  "2026020147": {
   "game_id": 2026020147,
@@ -4932,7 +4932,7 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-20T22:01:40Z",
+  "fetched_at": "2026-10-20T23:01:48Z",
   "Stars_puckline": 150,
   "Stars_puckline_spread": "-1.5",
   "three_way_tie": 320,
@@ -4949,10 +4949,10 @@
   "away_ml": 142,
   "Bruins_1p_ml": 115,
   "Stars_1p_ml": -150,
-  "Bruins_1p_three_way": 215,
-  "Stars_1p_three_way": 153,
-  "1p_three_way_tie": 172,
-  "captured_at": "2026-10-20T22:01:40Z"
+  "Bruins_1p_three_way": 220,
+  "Stars_1p_three_way": 152,
+  "1p_three_way_tie": 170,
+  "captured_at": "2026-10-20T23:01:48Z"
  },
  "2026020148": {
   "game_id": 2026020148,
@@ -4967,7 +4967,7 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-20T21:01:38Z",
+  "fetched_at": "2026-10-20T23:01:48Z",
   "Oilers_three_way": 120,
   "total_over": 100,
   "total_line": "6.5",
@@ -4984,10 +4984,10 @@
   "away_ml": 114,
   "Wild_1p_ml": 100,
   "Oilers_1p_ml": -130,
-  "Wild_1p_three_way": 193,
+  "Wild_1p_three_way": 188,
   "Oilers_1p_three_way": 161,
-  "1p_three_way_tie": 180,
-  "captured_at": "2026-10-20T21:01:38Z"
+  "1p_three_way_tie": 183,
+  "captured_at": "2026-10-20T23:01:48Z"
  },
  "2026020149": {
   "game_id": 2026020149,
@@ -5037,7 +5037,7 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-20T22:01:40Z",
+  "fetched_at": "2026-10-20T23:01:48Z",
   "total_over": -105,
   "total_line": "6.5",
   "Canucks_three_way": 300,
@@ -5054,10 +5054,10 @@
   "away_ml": -298,
   "Hurricanes_1p_ml": -220,
   "Canucks_1p_ml": 165,
-  "Hurricanes_1p_three_way": 115,
-  "Canucks_1p_three_way": 270,
+  "Hurricanes_1p_three_way": 114,
+  "Canucks_1p_three_way": 275,
   "1p_three_way_tie": 190,
-  "captured_at": "2026-10-20T22:01:40Z"
+  "captured_at": "2026-10-20T23:01:48Z"
  },
  "2026020151": {
   "game_id": 2026020151,
@@ -5102,19 +5102,31 @@
   "away_team": "Flyers",
   "home_abbrev": "BUF",
   "away_abbrev": "PHI",
-  "source": "espn_draftkings",
+  "source": "bovada",
   "sources": [
-   "espn_draftkings"
+   "bovada"
   ],
-  "fetched_at": "2026-10-20T17:01:42Z",
-  "Sabres": -185,
-  "Flyers": 154,
-  "home_ml": -185,
-  "away_ml": 154,
-  "total_line": "5.5",
-  "total_over": -135,
-  "total_under": 114,
-  "captured_at": "2026-10-20T17:01:42Z"
+  "fetched_at": "2026-10-20T23:01:48Z",
+  "Flyers_puckline": -168,
+  "Flyers_puckline_spread": "+1.5",
+  "Sabres_puckline": 142,
+  "Sabres_puckline_spread": "-1.5",
+  "total_over": -108,
+  "total_line": "6.0",
+  "total_under": -112,
+  "Flyers_1p_ml": 120,
+  "Sabres_1p_ml": -160,
+  "Sabres": -183,
+  "Flyers": 158,
+  "home_ml": -183,
+  "away_ml": 158,
+  "Flyers_three_way": 225,
+  "Sabres_three_way": -113,
+  "three_way_tie": 320,
+  "Flyers_1p_three_way": 225,
+  "Sabres_1p_three_way": 145,
+  "1p_three_way_tie": 180,
+  "captured_at": "2026-10-20T23:01:48Z"
  },
  "2026020153": {
   "game_id": 2026020153,
@@ -5124,18 +5136,30 @@
   "away_team": "Panthers",
   "home_abbrev": "OTT",
   "away_abbrev": "FLA",
-  "source": "espn_draftkings",
+  "source": "bovada",
   "sources": [
-   "espn_draftkings"
+   "bovada"
   ],
-  "fetched_at": "2026-10-20T19:01:45Z",
+  "fetched_at": "2026-10-20T23:01:48Z",
+  "Panthers_puckline": 235,
+  "Panthers_puckline_spread": "-1.5",
+  "Senators_puckline": -285,
+  "Senators_puckline_spread": "+1.5",
+  "total_over": 105,
+  "total_line": "6.0",
+  "total_under": -125,
+  "Panthers_1p_ml": -115,
+  "Senators_1p_ml": -115,
   "Senators": -108,
   "Panthers": -112,
   "home_ml": -108,
   "away_ml": -112,
-  "total_line": "5.5",
-  "total_over": -125,
-  "total_under": 105,
-  "captured_at": "2026-10-20T19:01:45Z"
+  "Panthers_three_way": 141,
+  "Senators_three_way": 145,
+  "three_way_tie": 300,
+  "Panthers_1p_three_way": 180,
+  "Senators_1p_three_way": 185,
+  "1p_three_way_tie": 170,
+  "captured_at": "2026-10-20T23:01:48Z"
  }
 }
