@@ -5919,14 +5919,14 @@
                 "movement": null
             },
             {
-                "name": "Dawson Mercer",
-                "number": 91,
+                "name": "Luke Evangelista",
+                "number": 77,
                 "pos": "rw",
-                "id": 29327,
-                "ppUnit": 2,
+                "id": 29787,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f3": [
@@ -5945,20 +5945,20 @@
                 "number": 17,
                 "pos": "c",
                 "id": 2620,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Stefan Noesen",
-                "number": 11,
+                "name": "Dawson Mercer",
+                "number": 91,
                 "pos": "rw",
-                "id": 1842,
+                "id": 29327,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -6106,15 +6106,6 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Luke Evangelista",
-                "number": 77,
-                "pos": "ir4",
-                "id": 29787,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -6132,7 +6123,7 @@
                 "number": 91,
                 "pos": "sk2",
                 "id": 29327,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -6195,7 +6186,7 @@
         ],
         "lineup_source": "Last Game (2026-10-17)",
         "updated_at": "2026-10-18T23:57:18.683Z",
-        "fetched_at": "2026-10-20T09:53:44Z"
+        "fetched_at": "2026-10-20T12:01:47Z"
     },
     "MIN": {
         "f1": [
