@@ -4664,7 +4664,7 @@
                 "id": 29855,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -4846,6 +4846,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Quinton Byfield",
+                "number": 55,
+                "pos": "ir3",
+                "id": 29855,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -4925,8 +4934,8 @@
             }
         ],
         "lineup_source": "Zach Dooley",
-        "updated_at": "2026-10-20T17:22:28.318Z",
-        "fetched_at": "2026-10-20T18:01:52Z"
+        "updated_at": "2026-10-21T00:07:10.344Z",
+        "fetched_at": "2026-10-21T01:01:49Z"
     },
     "DAL": {
         "f1": [
