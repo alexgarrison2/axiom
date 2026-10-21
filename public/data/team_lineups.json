@@ -66,43 +66,11 @@
         ],
         "f3": [
             {
-                "name": "Eric Robinson",
-                "number": 50,
-                "pos": "lw",
-                "id": 4650,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Jordan Martinook",
                 "number": 48,
-                "pos": "c",
+                "pos": "lw",
                 "id": 2049,
                 "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Felix Unger Sorum",
-                "number": null,
-                "pos": "rw",
-                "id": 38900,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
-                "name": "Bradly Nadeau",
-                "number": null,
-                "pos": "lw",
-                "id": 34864,
-                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -115,7 +83,39 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            },
+            {
+                "name": "Seth Jarvis",
+                "number": 24,
+                "pos": "rw",
+                "id": 29549,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": true,
+                "movement": "new"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Eric Robinson",
+                "number": 50,
+                "pos": "lw",
+                "id": 4650,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Felix Unger Sorum",
+                "number": null,
+                "pos": "c",
+                "id": 38900,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             },
             {
                 "name": "Nicolas Deslauriers",
@@ -188,7 +188,7 @@
                 "number": 4,
                 "pos": "rd",
                 "id": 2790,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -220,7 +220,7 @@
                 "number": 24,
                 "pos": "ir1",
                 "id": 29549,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
@@ -337,9 +337,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-20)",
-        "updated_at": "2026-10-21T14:10:14.762Z",
-        "fetched_at": "2026-10-21T15:01:54Z"
+        "lineup_source": "Walt Ruff",
+        "updated_at": "2026-10-21T20:06:49.201Z",
+        "fetched_at": "2026-10-21T20:25:21Z"
     },
     "FLA": {
         "f1": [
@@ -8801,9 +8801,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-19)",
-        "updated_at": "2026-10-20T14:16:55.609Z",
-        "fetched_at": "2026-10-21T02:04:05Z"
+        "lineup_source": "Brogan Houston",
+        "updated_at": "2026-10-21T20:08:22.834Z",
+        "fetched_at": "2026-10-21T20:25:21Z"
     },
     "WPG": {
         "f1": [
@@ -8872,10 +8872,10 @@
         ],
         "f3": [
             {
-                "name": "Nino Niederreiter",
-                "number": 62,
+                "name": "Isak Rosen",
+                "number": 63,
                 "pos": "lw",
-                "id": 1553,
+                "id": 34670,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8892,26 +8892,26 @@
                 "movement": null
             },
             {
-                "name": "Isak Rosen",
-                "number": 63,
+                "name": "Brayden Yager",
+                "number": 29,
                 "pos": "rw",
-                "id": 34670,
-                "ppUnit": 2,
+                "id": 33533,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
             {
-                "name": "Cole Koepke",
-                "number": 45,
+                "name": "Nino Niederreiter",
+                "number": 62,
                 "pos": "lw",
-                "id": 29652,
-                "ppUnit": null,
+                "id": 1553,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Morgan Barron",
@@ -9125,9 +9125,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-20)",
-        "updated_at": "2026-10-21T13:56:06.152Z",
-        "fetched_at": "2026-10-21T15:01:54Z"
+        "lineup_source": "Mitchell Clinton",
+        "updated_at": "2026-10-21T20:07:55.543Z",
+        "fetched_at": "2026-10-21T20:25:21Z"
     },
     "BUF": {
         "f1": [
