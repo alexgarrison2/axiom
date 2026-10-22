@@ -1,100 +1,5 @@
 [
     {
-        "id": 2026020152,
-        "gameDate": "2026-10-21",
-        "startTimeUTC": "2026-10-21T23:30:00Z",
-        "gameType": 2,
-        "gameState": "OFF",
-        "homeTeam": "Sabres",
-        "awayTeam": "Flyers",
-        "homeTeamAbbrev": "BUF",
-        "awayTeamAbbrev": "PHI",
-        "homeGoalieConfirmed": "Ukko-Pekka Luukkonen",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Dan Vladar",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "TNT",
-        "tvDisplay": [
-            {
-                "network": "TNT",
-                "market": "N",
-                "team": null,
-                "country": "US"
-            },
-            {
-                "network": "truTV",
-                "market": "N",
-                "team": null,
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "TNT",
-                "market": "N",
-                "countryCode": "US"
-            },
-            {
-                "network": "truTV",
-                "market": "N",
-                "countryCode": "US"
-            },
-            {
-                "network": "HBO MAX",
-                "market": "N",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020153,
-        "gameDate": "2026-10-21",
-        "startTimeUTC": "2026-10-21T23:30:00Z",
-        "gameType": 2,
-        "gameState": "OFF",
-        "homeTeam": "Senators",
-        "awayTeam": "Panthers",
-        "homeTeamAbbrev": "OTT",
-        "awayTeamAbbrev": "FLA",
-        "homeGoalieConfirmed": "Linus Ullmark",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Akira Schmid",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "SCRIPPS",
-                "market": "A",
-                "team": "FLA",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "Prime",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "SCRIPPS",
-                "market": "A",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
         "id": 2026020154,
         "gameDate": "2026-10-22",
         "startTimeUTC": "2026-10-22T23:00:00Z",
@@ -701,6 +606,116 @@
                 "network": "SN",
                 "market": "N",
                 "countryCode": "CA"
+            }
+        ]
+    },
+    {
+        "id": 2026020166,
+        "gameDate": "2026-10-23",
+        "startTimeUTC": "2026-10-24T00:00:00Z",
+        "gameType": 2,
+        "gameState": "FUT",
+        "homeTeam": "Blackhawks",
+        "awayTeam": "Canadiens",
+        "homeTeamAbbrev": "CHI",
+        "awayTeamAbbrev": "MTL",
+        "homeGoalieConfirmed": "Spencer Knight",
+        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieSource": "dailyfaceoff",
+        "homeGoalieConflict": false,
+        "homeGoalieAlt": null,
+        "awayGoalieConfirmed": "Jacob Fowler",
+        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieSource": "dailyfaceoff",
+        "awayGoalieConflict": true,
+        "awayGoalieAlt": "Jakub Dobes",
+        "tvNetwork": "NHLN",
+        "tvDisplay": [
+            {
+                "network": "NHLN",
+                "market": "N",
+                "team": null,
+                "country": "US"
+            }
+        ],
+        "tvBroadcasts": [
+            {
+                "network": "NHLN",
+                "market": "N",
+                "countryCode": "US"
+            },
+            {
+                "network": "TSN2",
+                "market": "A",
+                "countryCode": "CA"
+            },
+            {
+                "network": "RDS",
+                "market": "A",
+                "countryCode": "CA"
+            },
+            {
+                "network": "CHSN",
+                "market": "H",
+                "countryCode": "US"
+            }
+        ]
+    },
+    {
+        "id": 2026020167,
+        "gameDate": "2026-10-23",
+        "startTimeUTC": "2026-10-24T01:00:00Z",
+        "gameType": 2,
+        "gameState": "FUT",
+        "homeTeam": "Avalanche",
+        "awayTeam": "Lightning",
+        "homeTeamAbbrev": "COL",
+        "awayTeamAbbrev": "TBL",
+        "homeGoalieConfirmed": "Mackenzie Blackwood",
+        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieSource": "dailyfaceoff",
+        "homeGoalieConflict": false,
+        "homeGoalieAlt": null,
+        "awayGoalieConfirmed": "Andrei Vasilevskiy",
+        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieSource": "dailyfaceoff",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
+        "tvNetwork": "",
+        "tvDisplay": [
+            {
+                "network": "The Spot",
+                "market": "A",
+                "team": "TBL",
+                "country": "US"
+            },
+            {
+                "network": "ALT",
+                "market": "H",
+                "team": "COL",
+                "country": "US"
+            }
+        ],
+        "tvBroadcasts": [
+            {
+                "network": "SN360",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "TVAS",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "The Spot",
+                "market": "A",
+                "countryCode": "US"
+            },
+            {
+                "network": "ALT",
+                "market": "H",
+                "countryCode": "US"
             }
         ]
     }
