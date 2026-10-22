@@ -10144,7 +10144,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Nils Hoglander",
@@ -10154,7 +10154,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -10166,7 +10166,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Mavrik Bourque",
@@ -10175,8 +10175,8 @@
                 "id": 29958,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Jonathan Marchessault",
@@ -10186,7 +10186,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -10262,7 +10262,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d3": [
@@ -10289,19 +10289,19 @@
         ],
         "g": [
             {
-                "name": "Juuse Saros",
-                "number": 74,
+                "name": "Justus Annunen",
+                "number": 29,
                 "pos": "g1",
-                "id": 2557,
+                "id": 29146,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Justus Annunen",
-                "number": 29,
+                "name": "Juuse Saros",
+                "number": 74,
                 "pos": "g2",
-                "id": 29146,
+                "id": 2557,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -10315,15 +10315,6 @@
                 "id": 32461,
                 "ppUnit": null,
                 "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Mavrik Bourque",
-                "number": 22,
-                "pos": "ir2",
-                "id": 29958,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -10404,7 +10395,7 @@
             }
         ],
         "lineup_source": "Nick Kieser",
-        "updated_at": "2026-10-21T15:37:04.752Z",
-        "fetched_at": "2026-10-21T16:01:56Z"
+        "updated_at": "2026-10-22T22:40:28.467Z",
+        "fetched_at": "2026-10-22T23:02:36Z"
     }
 }
