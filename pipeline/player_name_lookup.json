@@ -19,7 +19,6 @@
     "ryan johnson": "8481564",
     "mason geertsen": "8477419",
     "joshua dunne": "8482623",
-    "jason zucker": "8475722",
     "josiah slavin": "8481004",
     "domenick fensore": "8481562",
     "charles alexis legault": "8484428",
@@ -27,6 +26,7 @@
     "justin robidas": "8482785",
     "skyler brind'amour": "8480291",
     "noah philp": "8481491",
+    "bradly nadeau": "8484203",
     "seth jarvis": "8482093",
     "ronan seeley": "8482187",
     "alexander nikishin": "8482100",
@@ -97,7 +97,6 @@
     "noah gregor": "8479393",
     "donovan sebrango": "8482131",
     "jacob moverare": "8479421",
-    "jared wright": "8483756",
     "angus booth": "8483699",
     "kenny connors": "8483675",
     "anze kopitar": "8471685",
@@ -108,8 +107,10 @@
     "jeff petry": "8473507",
     "viking gustafsson nyberg": "8486166",
     "nicolas aube-kubel": "8477979",
+    "david reinbacher": "8484220",
     "patrik laine": "8479339",
     "jared davidson": "8483728",
+    "owen beck": "8483424",
     "joshua roy": "8482749",
     "samuel blais": "8478104",
     "evgenii dadonov": "8474149",
@@ -147,6 +148,7 @@
     "brett berard": "8482132",
     "drew fortescue": "8484169",
     "urho vaakanainen": "8480001",
+    "jonny brodzinski": "8477380",
     "vincent iorio": "8482861",
     "jaroslav chmelar": "8482877",
     "conor sheary": "8477839",
@@ -321,6 +323,7 @@
     "jordan greenway": "8478413",
     "josh doan": "8482659",
     "alex tuch": "8477949",
+    "jason zucker": "8475722",
     "eric robinson": "8480762",
     "jordan martinook": "8476921",
     "mark jankowski": "8476873",
@@ -337,7 +340,6 @@
     "felix unger sorum": "8484392",
     "nicolas deslauriers": "8475235",
     "taylor hall": "8475791",
-    "bradly nadeau": "8484203",
     "shayne gostisbehere": "8476906",
     "logan stankoven": "8482702",
     "jackson blake": "8482809",
@@ -515,6 +517,7 @@
     "niko mikkola": "8478859",
     "alex turcotte": "8481532",
     "quinton byfield": "8482124",
+    "jared wright": "8483756",
     "drew doughty": "8474563",
     "kevin fiala": "8477942",
     "brian dumoulin": "8475208",
@@ -561,7 +564,6 @@
     "alexandre carrier": "8478851",
     "josh anderson": "8476981",
     "brendan gallagher": "8475848",
-    "david reinbacher": "8484220",
     "oliver kapanen": "8482775",
     "florian xhekaj": "8484403",
     "adam engstrom": "8483686",
@@ -571,7 +573,6 @@
     "jake evans": "8478133",
     "arber xhekaj": "8482964",
     "jayden struble": "8481593",
-    "owen beck": "8483424",
     "ivan demidov": "8484984",
     "noah dobson": "8480865",
     "lane hutson": "8483457",
@@ -648,7 +649,6 @@
     "j.t. miller": "8476468",
     "justin dowling": "8475413",
     "noah laba": "8483690",
-    "jonny brodzinski": "8477380",
     "tye kartye": "8481789",
     "braden schneider": "8482073",
     "mika zibanejad": "8476459",
@@ -1084,13 +1084,6 @@
         "team": "BUF"
       }
     ],
-    "zucker": [
-      {
-        "pid": "8475722",
-        "full_name": "jason zucker",
-        "team": "BUF"
-      }
-    ],
     "slavin": [
       {
         "pid": "8481004",
@@ -1142,6 +1135,13 @@
       {
         "pid": "8481491",
         "full_name": "noah philp",
+        "team": "CAR"
+      }
+    ],
+    "nadeau": [
+      {
+        "pid": "8484203",
+        "full_name": "bradly nadeau",
         "team": "CAR"
       }
     ],
@@ -1705,18 +1705,6 @@
         "team": "LAK"
       }
     ],
-    "wright": [
-      {
-        "pid": "8483756",
-        "full_name": "jared wright",
-        "team": "LAK"
-      },
-      {
-        "pid": "8483524",
-        "full_name": "shane wright",
-        "team": "SEA"
-      }
-    ],
     "booth": [
       {
         "pid": "8483699",
@@ -1792,6 +1780,13 @@
         "team": "MIN"
       }
     ],
+    "reinbacher": [
+      {
+        "pid": "8484220",
+        "full_name": "david reinbacher",
+        "team": "MTL"
+      }
+    ],
     "laine": [
       {
         "pid": "8479339",
@@ -1803,6 +1798,13 @@
       {
         "pid": "8483728",
         "full_name": "jared davidson",
+        "team": "MTL"
+      }
+    ],
+    "beck": [
+      {
+        "pid": "8483424",
+        "full_name": "owen beck",
         "team": "MTL"
       }
     ],
@@ -2087,6 +2089,13 @@
       {
         "pid": "8480001",
         "full_name": "urho vaakanainen",
+        "team": "NYR"
+      }
+    ],
+    "brodzinski": [
+      {
+        "pid": "8477380",
+        "full_name": "jonny brodzinski",
         "team": "NYR"
       }
     ],
@@ -3373,6 +3382,13 @@
         "team": "WSH"
       }
     ],
+    "zucker": [
+      {
+        "pid": "8475722",
+        "full_name": "jason zucker",
+        "team": "BUF"
+      }
+    ],
     "robinson": [
       {
         "pid": "8480762",
@@ -3473,13 +3489,6 @@
       {
         "pid": "8475791",
         "full_name": "taylor hall",
-        "team": "CAR"
-      }
-    ],
-    "nadeau": [
-      {
-        "pid": "8484203",
-        "full_name": "bradly nadeau",
         "team": "CAR"
       }
     ],
@@ -4659,6 +4668,18 @@
         "team": "LAK"
       }
     ],
+    "wright": [
+      {
+        "pid": "8483756",
+        "full_name": "jared wright",
+        "team": "LAK"
+      },
+      {
+        "pid": "8483524",
+        "full_name": "shane wright",
+        "team": "SEA"
+      }
+    ],
     "doughty": [
       {
         "pid": "8474563",
@@ -4926,13 +4947,6 @@
         "team": "VAN"
       }
     ],
-    "reinbacher": [
-      {
-        "pid": "8484220",
-        "full_name": "david reinbacher",
-        "team": "MTL"
-      }
-    ],
     "xhekaj": [
       {
         "pid": "8484403",
@@ -4990,13 +5004,6 @@
         "pid": "8481593",
         "full_name": "jayden struble",
         "team": "NSH"
-      }
-    ],
-    "beck": [
-      {
-        "pid": "8483424",
-        "full_name": "owen beck",
-        "team": "MTL"
       }
     ],
     "demidov": [
@@ -5486,13 +5493,6 @@
         "pid": "8483690",
         "full_name": "noah laba",
         "team": "NYR"
-      }
-    ],
-    "brodzinski": [
-      {
-        "pid": "8477380",
-        "full_name": "jonny brodzinski",
-        "team": "WSH"
       }
     ],
     "kartye": [
