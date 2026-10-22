@@ -538,19 +538,19 @@
         ],
         "g": [
             {
-                "name": "Akira Schmid",
-                "number": 40,
+                "name": "Cooper Black",
+                "number": null,
                 "pos": "g1",
-                "id": 29148,
+                "id": 33884,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Cooper Black",
-                "number": null,
+                "name": "Akira Schmid",
+                "number": 40,
                 "pos": "g2",
-                "id": 33884,
+                "id": 29148,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -672,7 +672,7 @@
         ],
         "lineup_source": "Jameson Olive",
         "updated_at": "2026-10-20T15:15:40.011Z",
-        "fetched_at": "2026-10-21T18:01:56Z"
+        "fetched_at": "2026-10-22T03:49:55Z"
     },
     "TOR": {
         "f1": [
@@ -871,19 +871,19 @@
         ],
         "g": [
             {
-                "name": "Anthony Stolarz",
-                "number": 41,
+                "name": "Sergei Bobrovsky",
+                "number": 72,
                 "pos": "g1",
-                "id": 2432,
+                "id": 1117,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Artur Akhtyamov",
-                "number": null,
+                "name": "Anthony Stolarz",
+                "number": 41,
                 "pos": "g2",
-                "id": 38626,
+                "id": 2432,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1023,7 +1023,7 @@
         ],
         "lineup_source": "Last Game (2026-10-20)",
         "updated_at": "2026-10-21T13:53:31.174Z",
-        "fetched_at": "2026-10-21T14:01:59Z"
+        "fetched_at": "2026-10-22T03:49:55Z"
     },
     "MTL": {
         "f1": [
@@ -2849,19 +2849,19 @@
         ],
         "g": [
             {
-                "name": "Carter Hart",
-                "number": 79,
+                "name": "Adin Hill",
+                "number": 33,
                 "pos": "g1",
-                "id": 3874,
+                "id": 2906,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Adin Hill",
-                "number": 33,
+                "name": "Carter Hart",
+                "number": 79,
                 "pos": "g2",
-                "id": 2906,
+                "id": 3874,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -2965,7 +2965,7 @@
         ],
         "lineup_source": "Last Game (2026-10-20)",
         "updated_at": "2026-10-21T14:12:53.489Z",
-        "fetched_at": "2026-10-21T20:01:54Z"
+        "fetched_at": "2026-10-22T03:49:55Z"
     },
     "CHI": {
         "f1": [
@@ -3701,14 +3701,14 @@
                 "movement": null
             },
             {
-                "name": "Ben Kindel",
-                "number": 81,
+                "name": "Hendrix Lapierre",
+                "number": 22,
                 "pos": "c",
-                "id": 37573,
+                "id": 29894,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Rickard Rakell",
@@ -3821,19 +3821,19 @@
         ],
         "g": [
             {
-                "name": "Arturs Silovs",
-                "number": null,
+                "name": "Sergei Murashov",
+                "number": 1,
                 "pos": "g1",
-                "id": 31270,
+                "id": 36361,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Sergei Murashov",
-                "number": 1,
+                "name": "Arturs Silovs",
+                "number": null,
                 "pos": "g2",
-                "id": 36361,
+                "id": 31270,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -3890,8 +3890,8 @@
                 "number": 81,
                 "pos": "ir6",
                 "id": 37573,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -3973,7 +3973,7 @@
         ],
         "lineup_source": "Last Game (2026-10-19)",
         "updated_at": "2026-10-20T14:15:06.858Z",
-        "fetched_at": "2026-10-21T02:04:05Z"
+        "fetched_at": "2026-10-22T03:49:55Z"
     },
     "NYI": {
         "f1": [
@@ -4819,19 +4819,19 @@
         ],
         "g": [
             {
-                "name": "Darcy Kuemper",
-                "number": 35,
+                "name": "Anton Forsberg",
+                "number": 31,
                 "pos": "g1",
-                "id": 1692,
+                "id": 2394,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Anton Forsberg",
-                "number": 31,
+                "name": "Darcy Kuemper",
+                "number": 35,
                 "pos": "g2",
-                "id": 2394,
+                "id": 1692,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4944,7 +4944,7 @@
         ],
         "lineup_source": "Last Game (2026-10-20)",
         "updated_at": "2026-10-21T13:47:50.024Z",
-        "fetched_at": "2026-10-21T14:01:59Z"
+        "fetched_at": "2026-10-22T03:49:55Z"
     },
     "DAL": {
         "f1": [
@@ -6105,19 +6105,19 @@
         ],
         "g": [
             {
-                "name": "Jake Allen",
-                "number": 34,
+                "name": "Nico Daws",
+                "number": 50,
                 "pos": "g1",
-                "id": 1305,
+                "id": 29186,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Nico Daws",
-                "number": 50,
+                "name": "Jake Allen",
+                "number": 34,
                 "pos": "g2",
-                "id": 29186,
+                "id": 1305,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -6221,7 +6221,7 @@
         ],
         "lineup_source": "Last Game (2026-10-20)",
         "updated_at": "2026-10-21T13:44:56.791Z",
-        "fetched_at": "2026-10-21T14:01:59Z"
+        "fetched_at": "2026-10-22T03:49:55Z"
     },
     "MIN": {
         "f1": [
@@ -7725,19 +7725,19 @@
         ],
         "g": [
             {
-                "name": "Philipp Grubauer",
-                "number": 31,
+                "name": "Joey Daccord",
+                "number": 35,
                 "pos": "g1",
-                "id": 2065,
+                "id": 23589,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Joey Daccord",
-                "number": 35,
+                "name": "Philipp Grubauer",
+                "number": 31,
                 "pos": "g2",
-                "id": 23589,
+                "id": 2065,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -7841,7 +7841,7 @@
         ],
         "lineup_source": "Last Game (2026-10-20)",
         "updated_at": "2026-10-21T14:09:05.100Z",
-        "fetched_at": "2026-10-21T15:01:54Z"
+        "fetched_at": "2026-10-22T03:49:55Z"
     },
     "OTT": {
         "f1": [
@@ -8003,7 +8003,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jordan Spence",
@@ -8025,7 +8025,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Carter Yakemchuk",
@@ -8035,27 +8035,27 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
             {
-                "name": "Linus Ullmark",
-                "number": 35,
+                "name": "Samuel Ersson",
+                "number": 33,
                 "pos": "g1",
-                "id": 2534,
+                "id": 29149,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Samuel Ersson",
-                "number": 33,
+                "name": "Linus Ullmark",
+                "number": 35,
                 "pos": "g2",
-                "id": 29149,
+                "id": 2534,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "ir": [
@@ -8084,6 +8084,15 @@
                 "id": 2492,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Linus Ullmark",
+                "number": 35,
+                "pos": "ir4",
+                "id": 2534,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -8164,8 +8173,8 @@
             }
         ],
         "lineup_source": "Alex Adams",
-        "updated_at": "2026-10-21T15:15:34.176Z",
-        "fetched_at": "2026-10-21T16:01:56Z"
+        "updated_at": "2026-10-22T03:37:19.280Z",
+        "fetched_at": "2026-10-22T03:49:55Z"
     },
     "DET": {
         "f1": [
