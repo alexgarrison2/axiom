@@ -1993,7 +1993,7 @@
                 "number": 92,
                 "pos": "lw",
                 "id": 30606,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2021,31 +2021,31 @@
         ],
         "f2": [
             {
-                "name": "Kasperi Kapanen",
-                "number": 42,
-                "pos": "lw",
-                "id": 2385,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Colton Dach",
-                "number": 34,
-                "pos": "c",
-                "id": 32903,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Zach Hyman",
                 "number": 18,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 2468,
                 "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Ryan Nugent-Hopkins",
+                "number": 93,
+                "pos": "c",
+                "id": 1733,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
+                "name": "Kasperi Kapanen",
+                "number": 42,
+                "pos": "rw",
+                "id": 2385,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2085,24 +2085,24 @@
         ],
         "f4": [
             {
-                "name": "Filip Hallander",
-                "number": 19,
+                "name": "Trent Frederic",
+                "number": 10,
                 "pos": "lw",
-                "id": 29096,
+                "id": 2662,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Colton Dach",
+                "number": 34,
                 "pos": "c",
-                "id": 2662,
+                "id": 32903,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Isaac Howard",
@@ -2121,7 +2121,7 @@
                 "number": 14,
                 "pos": "ld",
                 "id": 1675,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2143,7 +2143,7 @@
                 "number": 6,
                 "pos": "ld",
                 "id": 26606,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2165,7 +2165,7 @@
                 "number": 96,
                 "pos": "ld",
                 "id": 2859,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2239,15 +2239,6 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Ryan Nugent-Hopkins",
-                "number": 93,
-                "pos": "ir5",
-                "id": 1733,
-                "ppUnit": null,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Jason Dickinson",
                 "number": 16,
                 "pos": "ir6",
@@ -2272,7 +2263,7 @@
                 "number": 42,
                 "pos": "sk2",
                 "id": 2385,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -2281,7 +2272,7 @@
                 "number": 6,
                 "pos": "sk3",
                 "id": 26606,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -2319,7 +2310,7 @@
                 "number": 14,
                 "pos": "sk3",
                 "id": 1675,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -2333,9 +2324,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-20)",
-        "updated_at": "2026-10-21T14:04:27.653Z",
-        "fetched_at": "2026-10-21T15:01:54Z"
+        "lineup_source": "Jason Gregor",
+        "updated_at": "2026-10-22T16:57:05.812Z",
+        "fetched_at": "2026-10-22T17:02:39Z"
     },
     "VAN": {
         "f1": [
@@ -3034,10 +3025,10 @@
         ],
         "f3": [
             {
-                "name": "Ryan Donato",
-                "number": 8,
+                "name": "Oliver Moore",
+                "number": 11,
                 "pos": "lw",
-                "id": 4635,
+                "id": 33143,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -3054,10 +3045,10 @@
                 "movement": null
             },
             {
-                "name": "Oliver Moore",
-                "number": 11,
+                "name": "Ryan Donato",
+                "number": 8,
                 "pos": "rw",
-                "id": 33143,
+                "id": 4635,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -3134,7 +3125,7 @@
                 "number": 55,
                 "pos": "rd",
                 "id": 38138,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3156,7 +3147,7 @@
                 "number": 6,
                 "pos": "rd",
                 "id": 34789,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3273,14 +3264,14 @@
                 "number": 55,
                 "pos": "sk4",
                 "id": 38138,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Kalen Lumpkins",
-        "updated_at": "2026-10-20T17:16:03.044Z",
-        "fetched_at": "2026-10-21T02:04:05Z"
+        "lineup_source": "Ben Pope",
+        "updated_at": "2026-10-22T16:55:34.203Z",
+        "fetched_at": "2026-10-22T17:02:39Z"
     },
     "PHI": {
         "f1": [
