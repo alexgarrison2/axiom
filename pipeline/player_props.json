@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-23T20:02:23Z",
+  "fetched_at": "2026-10-23T20:09:26Z",
   "source": "bovada",
   "games": {
     "2026020166": {
@@ -1032,29 +1032,31 @@
         "Yakov Trenin": {
           "tag": "MIN",
           "atg": 575,
-          "g2": 10000
+          "g2": 8000
         },
         "Michael McCarron": {
           "tag": "MIN",
-          "atg": 700,
+          "atg": 725,
           "g2": 10000
         },
         "Jonas Brodin": {
           "tag": "MIN",
-          "atg": 800
+          "atg": 775
         },
         "Ville Ottavainen": {
           "tag": "SEA",
-          "atg": 2300
+          "atg": 2200
         },
         "Brandon Montour": {
           "tag": "SEA",
           "atg": 525,
-          "g2": 7000
+          "g2": 7000,
+          "a1": 168,
+          "a2": 1000
         },
         "Nico Sturm": {
           "tag": "MIN",
-          "atg": 575,
+          "atg": 625,
           "g2": 8000
         },
         "Joshua Mahura": {
@@ -1063,73 +1065,82 @@
         },
         "Jordan Eberle": {
           "tag": "SEA",
-          "atg": 260,
-          "g2": 2200
+          "atg": 265,
+          "g2": 2200,
+          "a1": 185,
+          "a2": 1100
         },
         "Mackie Samoskevich": {
           "tag": "SEA",
-          "atg": 380,
-          "g2": 4500
+          "atg": 365,
+          "g2": 4000
         },
         "Matty Beniers": {
           "tag": "SEA",
-          "atg": 340,
-          "g2": 3500
+          "atg": 355,
+          "g2": 3500,
+          "a1": 195,
+          "a2": 1100
         },
         "Quinn Hughes": {
           "tag": "MIN",
           "atg": 375,
           "g2": 4000,
-          "a1": -179,
-          "a2": 280
+          "a1": -213,
+          "a2": 230
         },
         "Daemon Hunt": {
           "tag": "MIN",
-          "atg": 1500
+          "atg": 900
         },
         "Blake Coleman": {
           "tag": "MIN",
-          "atg": 265,
+          "atg": 280,
           "g2": 2500,
-          "a1": 240,
+          "a1": 285,
           "a2": 1400
         },
         "Berkly Catton": {
           "tag": "SEA",
           "atg": 475,
-          "g2": 5500
+          "g2": 5000
         },
         "Danila Yurov": {
           "tag": "MIN",
-          "atg": 425,
-          "g2": 5000
+          "atg": 410,
+          "g2": 4500,
+          "a1": 285
         },
         "Ryan Hartman": {
           "tag": "MIN",
           "atg": 370,
-          "g2": 4000,
-          "a1": 240,
-          "a2": 1400
+          "g2": 4500,
+          "a1": 230,
+          "a2": 1300
         },
         "Vince Dunn": {
           "tag": "SEA",
-          "atg": 475,
-          "g2": 7500
+          "atg": 500,
+          "g2": 8000,
+          "a1": 126,
+          "a2": 675
         },
         "Chandler Stephenson": {
           "tag": "SEA",
           "atg": 420,
-          "g2": 4500
+          "g2": 4500,
+          "a1": 148,
+          "a2": 825
         },
         "Ryan Winterton": {
           "tag": "SEA",
-          "atg": 700,
+          "atg": 675,
           "g2": 10000
         },
         "Shane Wright": {
           "tag": "SEA",
-          "atg": 475,
-          "g2": 6500
+          "atg": 500,
+          "g2": 7000
         },
         "Olli M\u00e4\u00e4tt\u00e4": {
           "tag": "MIN",
@@ -1137,12 +1148,8 @@
         },
         "Kaapo Kakko": {
           "tag": "SEA",
-          "atg": 460,
-          "g2": 6000
-        },
-        "Zach Bogosian": {
-          "tag": "MIN",
-          "atg": 2000
+          "atg": 425,
+          "g2": 6500
         },
         "Tyler Pitlick": {
           "tag": "MIN",
@@ -1160,7 +1167,9 @@
         "Jared McCann": {
           "tag": "SEA",
           "atg": 250,
-          "g2": 2200
+          "g2": 2200,
+          "a1": 152,
+          "a2": 850
         },
         "Fr\u00e9d\u00e9rick Gaudreau": {
           "tag": "SEA",
@@ -1172,7 +1181,7 @@
           "atg": 135,
           "g2": 900,
           "a1": 102,
-          "a2": 550
+          "a2": 500
         },
         "Jared Spurgeon": {
           "tag": "MIN",
@@ -1181,19 +1190,21 @@
         "Bobby McMann": {
           "tag": "SEA",
           "atg": 250,
-          "g2": 2000
+          "g2": 2000,
+          "a1": 230,
+          "a2": 1300
         },
         "Joel Eriksson Ek": {
           "tag": "MIN",
           "atg": 205,
-          "g2": 1700,
-          "a1": 116,
+          "g2": 1600,
+          "a1": 112,
           "a2": 600
         },
         "Bobby Brink": {
           "tag": "MIN",
-          "atg": 460,
-          "g2": 5500
+          "atg": 500,
+          "g2": 6500
         },
         "Ben Meyers": {
           "tag": "SEA",
@@ -1202,10 +1213,10 @@
         },
         "Kirill Kaprizov": {
           "tag": "MIN",
-          "atg": -108,
-          "g2": 550,
-          "a1": -121,
-          "a2": 440
+          "atg": -115,
+          "g2": 500,
+          "a1": -103,
+          "a2": 500
         }
       }
     }
