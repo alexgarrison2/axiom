@@ -10,15 +10,15 @@
         "homeTeamAbbrev": "CHI",
         "awayTeamAbbrev": "MTL",
         "homeGoalieConfirmed": "Spencer Knight",
-        "homeGoalieStatus": "Likely",
+        "homeGoalieStatus": "Confirmed",
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
         "awayGoalieConfirmed": "Jacob Fowler",
-        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieStatus": "Confirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Jakub Dobes",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "NHLN",
         "tvDisplay": [
             {
@@ -67,7 +67,7 @@
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
         "awayGoalieConfirmed": "Andrei Vasilevskiy",
-        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieStatus": "Confirmed",
         "awayGoalieSource": "dailyfaceoff",
         "awayGoalieConflict": false,
         "awayGoalieAlt": null,
@@ -209,6 +209,11 @@
             },
             {
                 "network": "SN",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "SN1",
                 "market": "N",
                 "countryCode": "CA"
             },
