@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-23T03:04:15Z",
+  "fetched_at": "2026-10-23T03:54:06Z",
   "source": "bovada",
   "games": {
     "2026020166": {
@@ -11,13 +11,17 @@
       "players": {
         "Patrick Kane": {
           "tag": "CHI",
-          "atg": 245,
-          "g2": 2200
+          "atg": 255,
+          "g2": 2200,
+          "a1": 142,
+          "a2": 800
         },
         "Roman Kantserov": {
           "tag": "CHI",
           "atg": 240,
-          "g2": 2000
+          "g2": 2200,
+          "a1": 172,
+          "a2": 1000
         },
         "Alexandre Carrier": {
           "tag": "MTL",
@@ -25,12 +29,12 @@
         },
         "Frank Nazar": {
           "tag": "CHI",
-          "atg": 350,
+          "atg": 345,
           "g2": 3500
         },
         "Cole Smith": {
           "tag": "CHI",
-          "atg": 850
+          "atg": 825
         },
         "Sam Rinzel": {
           "tag": "CHI",
@@ -38,21 +42,23 @@
         },
         "Chris Kreider": {
           "tag": "MTL",
-          "atg": 230,
-          "g2": 2000
+          "atg": 235,
+          "g2": 2000,
+          "a1": 200,
+          "a2": 1100
         },
         "Arber Xhekaj": {
           "tag": "MTL",
-          "atg": 1500
+          "atg": 1800
         },
         "Zachary Bolduc": {
           "tag": "MTL",
           "atg": 330,
-          "g2": 3300
+          "g2": 3500
         },
         "Ryan Donato": {
           "tag": "CHI",
-          "atg": 445,
+          "atg": 440,
           "g2": 5500
         },
         "Artyom Levshunov": {
@@ -62,7 +68,9 @@
         "Anton Frondell": {
           "tag": "CHI",
           "atg": 315,
-          "g2": 3000
+          "g2": 3000,
+          "a1": 142,
+          "a2": 825
         },
         "Wyatt Kaiser": {
           "tag": "CHI",
@@ -70,8 +78,8 @@
         },
         "Kirby Dach": {
           "tag": "MTL",
-          "atg": 525,
-          "g2": 8000
+          "atg": 500,
+          "g2": 7500
         },
         "Ryan Greene": {
           "tag": "CHI",
@@ -81,56 +89,64 @@
         "Oliver Moore": {
           "tag": "CHI",
           "atg": 450,
-          "g2": 5500
+          "g2": 8000
         },
         "Josh Anderson": {
           "tag": "MTL",
-          "atg": 370,
-          "g2": 4500
+          "atg": 400,
+          "g2": 5000
         },
         "Adam Engstr\u00f6m": {
           "tag": "MTL",
-          "atg": 725
+          "atg": 675
         },
         "Alex Newhook": {
           "tag": "MTL",
-          "atg": 335,
-          "g2": 3500
+          "atg": 345,
+          "g2": 4000
         },
         "Oliver Kapanen": {
           "tag": "MTL",
-          "atg": 290,
-          "g2": 2500
+          "atg": 275,
+          "g2": 2500,
+          "a1": 154,
+          "a2": 850
         },
         "Tyler Bertuzzi": {
           "tag": "CHI",
-          "atg": 230,
-          "g2": 1800
+          "atg": 245,
+          "g2": 2200,
+          "a1": 190,
+          "a2": 1100
         },
         "Phillip Danault": {
           "tag": "MTL",
-          "atg": 600,
-          "g2": 10000
+          "atg": 575,
+          "g2": 8000
         },
         "Juraj Slafkovsky": {
           "tag": "MTL",
-          "atg": 188,
-          "g2": 1500
+          "atg": 185,
+          "g2": 1500,
+          "a1": 136,
+          "a2": 750
         },
         "Connor Bedard": {
           "tag": "CHI",
-          "atg": 151,
-          "g2": 1000
+          "atg": 154,
+          "g2": 1000,
+          "a1": -113,
+          "a2": 450
         },
         "Alexandre Texier": {
           "tag": "MTL",
           "atg": 410,
-          "g2": 6000
+          "g2": 4500
         },
         "Teuvo Teravainen": {
           "tag": "CHI",
-          "atg": 360,
-          "g2": 3500
+          "atg": 365,
+          "g2": 4500
         },
         "Alex Vlasic": {
           "tag": "CHI",
@@ -138,17 +154,17 @@
         },
         "Jake Evans": {
           "tag": "MTL",
-          "atg": 575,
+          "atg": 550,
           "g2": 8000
         },
         "Florian Xhekaj": {
           "tag": "MTL",
-          "atg": 750
+          "atg": 725
         },
         "Noah Dobson": {
           "tag": "MTL",
           "atg": 500,
-          "g2": 8000
+          "g2": 7000
         },
         "Kaiden Guhle": {
           "tag": "MTL",
@@ -156,16 +172,18 @@
         },
         "Jordan Greenway": {
           "tag": "CHI",
-          "atg": 1000
+          "atg": 825
         },
         "Ethan Del Mastro": {
           "tag": "CHI",
-          "atg": 1200
+          "atg": 1300
         },
         "Lane Hutson": {
           "tag": "MTL",
           "atg": 450,
-          "g2": 6000
+          "g2": 6500,
+          "a1": -154,
+          "a2": 340
         },
         "Ian Cole": {
           "tag": "CHI",
@@ -173,8 +191,10 @@
         },
         "Cole Caufield": {
           "tag": "MTL",
-          "atg": 111,
-          "g2": 650
+          "atg": 107,
+          "g2": 700,
+          "a1": 120,
+          "a2": 625
         }
       }
     },
@@ -194,7 +214,7 @@
           "atg": 220,
           "g2": 1800,
           "a1": 140,
-          "a2": 825
+          "a2": 800
         },
         "Pontus Holmberg": {
           "tag": "TB",
@@ -210,7 +230,7 @@
         },
         "Nikita Kucherov": {
           "tag": "TB",
-          "atg": 171,
+          "atg": 165,
           "g2": 1200,
           "a1": -162,
           "a2": 300
@@ -246,8 +266,8 @@
         "Martin Necas": {
           "tag": "COL",
           "atg": 195,
-          "g2": 1400,
-          "a1": -130,
+          "g2": 1500,
+          "a1": -125,
           "a2": 430
         },
         "Zemgus Girgensons": {
@@ -266,7 +286,7 @@
         },
         "Nathan MacKinnon": {
           "tag": "COL",
-          "atg": 118,
+          "atg": 122,
           "g2": 750,
           "a1": -190,
           "a2": 265
@@ -284,8 +304,8 @@
         },
         "Nazem Kadri": {
           "tag": "COL",
-          "atg": 275,
-          "g2": 2500
+          "atg": 270,
+          "g2": 2200
         },
         "Scott Sabourin": {
           "tag": "TB",
@@ -294,7 +314,7 @@
         "Artturi Lehkonen": {
           "tag": "COL",
           "atg": 230,
-          "g2": 2000,
+          "g2": 1900,
           "a1": 172,
           "a2": 1100
         },
@@ -325,7 +345,7 @@
         },
         "Ilya Mikheyev": {
           "tag": "TB",
-          "atg": 475,
+          "atg": 500,
           "g2": 7000
         },
         "Gage Goncalves": {
@@ -335,7 +355,7 @@
         },
         "Janis Moser": {
           "tag": "TB",
-          "atg": 1000
+          "atg": 875
         },
         "Brent Burns": {
           "tag": "COL",
