@@ -7,30 +7,18 @@
         "away_team": "Canadiens",
         "home_abbrev": "CHI",
         "away_abbrev": "MTL",
-        "source": "bovada",
+        "source": "espn_draftkings",
         "sources": [
-            "bovada"
+            "espn_draftkings"
         ],
-        "fetched_at": "2026-10-23T13:02:27Z",
-        "Canadiens_puckline": 165,
-        "Canadiens_puckline_spread": "-1.5",
-        "Blackhawks_puckline": -195,
-        "Blackhawks_puckline_spread": "+1.5",
-        "total_over": 102,
+        "fetched_at": "2026-10-23T14:02:33Z",
+        "Blackhawks": 124,
+        "Canadiens": -148,
+        "home_ml": 124,
+        "away_ml": -148,
         "total_line": "6.5",
-        "total_under": -122,
-        "Canadiens_1p_ml": -145,
-        "Blackhawks_1p_ml": 110,
-        "Blackhawks": 130,
-        "Canadiens": -150,
-        "home_ml": 130,
-        "away_ml": -150,
-        "Canadiens_three_way": 103,
-        "Blackhawks_three_way": 188,
-        "three_way_tie": 325,
-        "Canadiens_1p_three_way": 160,
-        "Blackhawks_1p_three_way": 195,
-        "1p_three_way_tie": 180
+        "total_over": 102,
+        "total_under": -122
     },
     "2026020167": {
         "game_id": 2026020167,
@@ -40,29 +28,17 @@
         "away_team": "Lightning",
         "home_abbrev": "COL",
         "away_abbrev": "TBL",
-        "source": "bovada",
+        "source": "espn_draftkings",
         "sources": [
-            "bovada"
+            "espn_draftkings"
         ],
-        "fetched_at": "2026-10-23T13:02:27Z",
-        "Lightning_puckline": -240,
-        "Lightning_puckline_spread": "+1.5",
-        "Avalanche_puckline": 200,
-        "Avalanche_puckline_spread": "-1.5",
-        "total_over": 102,
-        "total_line": "6.5",
-        "total_under": -122,
-        "Lightning_1p_ml": -105,
-        "Avalanche_1p_ml": -125,
+        "fetched_at": "2026-10-23T14:02:33Z",
         "Avalanche": -125,
         "Lightning": 105,
         "home_ml": -125,
         "away_ml": 105,
-        "Lightning_three_way": 162,
-        "Avalanche_three_way": 124,
-        "three_way_tie": 310,
-        "Lightning_1p_three_way": 190,
-        "Avalanche_1p_three_way": 168,
-        "1p_three_way_tie": 176
+        "total_line": "6.5",
+        "total_over": 102,
+        "total_under": -122
     }
 }
