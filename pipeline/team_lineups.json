@@ -2092,7 +2092,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Colton Dach",
@@ -2112,7 +2112,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -2124,7 +2124,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Evan Bouchard",
@@ -2190,6 +2190,15 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Matt Tomkins",
+                "number": null,
+                "pos": "g2",
+                "id": 22713,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false
             }
         ],
         "ir": [
@@ -2239,21 +2248,21 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Mattias Ekholm",
-                "number": 14,
+                "name": "Devon Levi",
+                "number": 27,
                 "pos": "ir6",
-                "id": 1675,
+                "id": 33010,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
-                "name": "Devon Levi",
-                "number": 27,
+                "name": "Mattias Ekholm",
+                "number": 14,
                 "pos": "ir7",
-                "id": 33010,
+                "id": 1675,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -2335,7 +2344,7 @@
         ],
         "lineup_source": "Bob Stauffer",
         "updated_at": "2026-10-23T19:03:30.410Z",
-        "fetched_at": "2026-10-23T20:02:26Z"
+        "fetched_at": "2026-10-23T23:02:37Z"
     },
     "VAN": {
         "f1": [
