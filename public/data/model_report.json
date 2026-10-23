@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-23T03:05:46.616560+00:00",
+ "generated_at": "2026-10-23T09:15:34.886255+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -4223,20 +4223,20 @@
   },
   "2026-27": {
    "all": {
-    "n": 159,
+    "n": 163,
     "n_retro_excluded": 0,
     "n_legacy": 3,
-    "n_picks": 143,
-    "n_no_lean": 16,
+    "n_picks": 146,
+    "n_no_lean": 17,
     "by_model": {
      "current": {
-      "n": 156,
-      "n_picks": 141,
-      "correct": 90,
-      "accuracy": 0.6383,
-      "accuracy_all": 0.625,
-      "brier": 0.2225,
-      "log_loss": 0.6349
+      "n": 160,
+      "n_picks": 144,
+      "correct": 91,
+      "accuracy": 0.6319,
+      "accuracy_all": 0.6188,
+      "brier": 0.2246,
+      "log_loss": 0.6394
      },
      "legacy": {
       "n": 3,
@@ -4248,38 +4248,38 @@
       "log_loss": 0.7476
      }
     },
-    "accuracy": 0.6364,
+    "accuracy": 0.6301,
     "accuracy_ci": [
-     0.5549,
-     0.7107
+     0.5494,
+     0.7042
     ],
-    "correct": 91,
-    "accuracy_all": 0.6226,
-    "brier": 0.2235,
-    "log_loss": 0.637,
-    "mean_pred_home": 0.5441,
-    "actual_home": 0.5912,
+    "correct": 92,
+    "accuracy_all": 0.6166,
+    "brier": 0.2255,
+    "log_loss": 0.6414,
+    "mean_pred_home": 0.5404,
+    "actual_home": 0.5951,
     "first_date": "2026-09-29",
     "last_date": "2026-10-22",
     "baselines": {
      "home_rate": {
       "rate": 0.5362,
       "source": "2022-2025 home win rate",
-      "n": 159,
-      "log_loss": 0.6825,
-      "brier": 0.2447,
-      "accuracy": 0.5912
+      "n": 163,
+      "log_loss": 0.682,
+      "brier": 0.2444,
+      "accuracy": 0.5951
      },
      "market": {
-      "n": 159,
+      "n": 163,
       "source": "odds_closing",
       "devig": "power",
-      "log_loss": 0.6461,
-      "brier": 0.2274,
-      "accuracy": 0.6258,
-      "model_log_loss_same_games": 0.637,
-      "model_brier_same_games": 0.2235,
-      "model_accuracy_same_games": 0.6226
+      "log_loss": 0.651,
+      "brier": 0.2297,
+      "accuracy": 0.6166,
+      "model_log_loss_same_games": 0.6414,
+      "model_brier_same_games": 0.2255,
+      "model_accuracy_same_games": 0.6166
      }
     },
     "reliability": [
@@ -4303,33 +4303,33 @@
       "bin": 2,
       "lo": 0.2,
       "hi": 0.3,
-      "n": 5,
-      "mean_pred": 0.2546,
-      "actual": 0.2
+      "n": 6,
+      "mean_pred": 0.2615,
+      "actual": 0.3333
      },
      {
       "bin": 3,
       "lo": 0.3,
       "hi": 0.4,
-      "n": 11,
-      "mean_pred": 0.3479,
-      "actual": 0.3636
+      "n": 12,
+      "mean_pred": 0.3496,
+      "actual": 0.3333
      },
      {
       "bin": 4,
       "lo": 0.4,
       "hi": 0.5,
-      "n": 35,
-      "mean_pred": 0.4558,
-      "actual": 0.5143
+      "n": 36,
+      "mean_pred": 0.4545,
+      "actual": 0.5278
      },
      {
       "bin": 5,
       "lo": 0.5,
       "hi": 0.6,
-      "n": 60,
-      "mean_pred": 0.5465,
-      "actual": 0.6
+      "n": 61,
+      "mean_pred": 0.5458,
+      "actual": 0.6066
      },
      {
       "bin": 6,
@@ -4378,34 +4378,34 @@
      },
      {
       "tier": "55-60",
-      "n": 45,
+      "n": 46,
       "correct": 29,
-      "accuracy": 0.6444,
+      "accuracy": 0.6304,
       "accuracy_ci": [
-       0.4984,
-       0.7678
+       0.486,
+       0.7548
       ],
-      "mean_confidence": 0.5737
+      "mean_confidence": 0.574
      },
      {
       "tier": "60-65",
-      "n": 21,
-      "correct": 14,
-      "accuracy": 0.6667,
+      "n": 22,
+      "correct": 15,
+      "accuracy": 0.6818,
       "accuracy_ci": [
-       0.4537,
-       0.8281
+       0.4732,
+       0.8364
       ],
       "mean_confidence": 0.6325
      },
      {
       "tier": "65+",
-      "n": 43,
+      "n": 44,
       "correct": 32,
-      "accuracy": 0.7442,
+      "accuracy": 0.7273,
       "accuracy_ci": [
-       0.5976,
-       0.8507
+       0.5815,
+       0.8365
       ],
       "mean_confidence": 0.7043
      }
@@ -4770,6 +4770,30 @@
       "date": "2026-10-22",
       "model": 0.6324,
       "market": 0.6432
+     },
+     {
+      "i": 160,
+      "date": "2026-10-22",
+      "model": 0.6404,
+      "market": 0.6496
+     },
+     {
+      "i": 161,
+      "date": "2026-10-22",
+      "model": 0.6369,
+      "market": 0.6486
+     },
+     {
+      "i": 162,
+      "date": "2026-10-22",
+      "model": 0.6425,
+      "market": 0.6546
+     },
+     {
+      "i": 163,
+      "date": "2026-10-22",
+      "model": 0.6435,
+      "market": 0.6546
      }
     ],
     "best_calls": [
@@ -4880,6 +4904,19 @@
       "legacy": false
      },
      {
+      "gameId": 2026020162,
+      "date": "2026-10-22",
+      "homeTeam": "Flames",
+      "awayTeam": "Wild",
+      "pick": "Wild",
+      "confidence": 70.4,
+      "homeScore": 2,
+      "awayScore": 1,
+      "decision": "REG",
+      "correct": false,
+      "legacy": false
+     },
+     {
       "gameId": 2026020136,
       "date": "2026-10-18",
       "homeTeam": "Flames",
@@ -4888,19 +4925,6 @@
       "confidence": 68.2,
       "homeScore": 3,
       "awayScore": 2,
-      "decision": "REG",
-      "correct": false,
-      "legacy": false
-     },
-     {
-      "gameId": 2026020103,
-      "date": "2026-10-13",
-      "homeTeam": "Ducks",
-      "awayTeam": "Flames",
-      "pick": "Ducks",
-      "confidence": 67.3,
-      "homeScore": 2,
-      "awayScore": 4,
       "decision": "REG",
       "correct": false,
       "legacy": false
@@ -4908,20 +4932,20 @@
     ]
    },
    "regular": {
-    "n": 159,
+    "n": 163,
     "n_retro_excluded": 0,
     "n_legacy": 3,
-    "n_picks": 143,
-    "n_no_lean": 16,
+    "n_picks": 146,
+    "n_no_lean": 17,
     "by_model": {
      "current": {
-      "n": 156,
-      "n_picks": 141,
-      "correct": 90,
-      "accuracy": 0.6383,
-      "accuracy_all": 0.625,
-      "brier": 0.2225,
-      "log_loss": 0.6349
+      "n": 160,
+      "n_picks": 144,
+      "correct": 91,
+      "accuracy": 0.6319,
+      "accuracy_all": 0.6188,
+      "brier": 0.2246,
+      "log_loss": 0.6394
      },
      "legacy": {
       "n": 3,
@@ -4933,38 +4957,38 @@
       "log_loss": 0.7476
      }
     },
-    "accuracy": 0.6364,
+    "accuracy": 0.6301,
     "accuracy_ci": [
-     0.5549,
-     0.7107
+     0.5494,
+     0.7042
     ],
-    "correct": 91,
-    "accuracy_all": 0.6226,
-    "brier": 0.2235,
-    "log_loss": 0.637,
-    "mean_pred_home": 0.5441,
-    "actual_home": 0.5912,
+    "correct": 92,
+    "accuracy_all": 0.6166,
+    "brier": 0.2255,
+    "log_loss": 0.6414,
+    "mean_pred_home": 0.5404,
+    "actual_home": 0.5951,
     "first_date": "2026-09-29",
     "last_date": "2026-10-22",
     "baselines": {
      "home_rate": {
       "rate": 0.5362,
       "source": "2022-2025 home win rate",
-      "n": 159,
-      "log_loss": 0.6825,
-      "brier": 0.2447,
-      "accuracy": 0.5912
+      "n": 163,
+      "log_loss": 0.682,
+      "brier": 0.2444,
+      "accuracy": 0.5951
      },
      "market": {
-      "n": 159,
+      "n": 163,
       "source": "odds_closing",
       "devig": "power",
-      "log_loss": 0.6461,
-      "brier": 0.2274,
-      "accuracy": 0.6258,
-      "model_log_loss_same_games": 0.637,
-      "model_brier_same_games": 0.2235,
-      "model_accuracy_same_games": 0.6226
+      "log_loss": 0.651,
+      "brier": 0.2297,
+      "accuracy": 0.6166,
+      "model_log_loss_same_games": 0.6414,
+      "model_brier_same_games": 0.2255,
+      "model_accuracy_same_games": 0.6166
      }
     },
     "reliability": [
@@ -4988,33 +5012,33 @@
       "bin": 2,
       "lo": 0.2,
       "hi": 0.3,
-      "n": 5,
-      "mean_pred": 0.2546,
-      "actual": 0.2
+      "n": 6,
+      "mean_pred": 0.2615,
+      "actual": 0.3333
      },
      {
       "bin": 3,
       "lo": 0.3,
       "hi": 0.4,
-      "n": 11,
-      "mean_pred": 0.3479,
-      "actual": 0.3636
+      "n": 12,
+      "mean_pred": 0.3496,
+      "actual": 0.3333
      },
      {
       "bin": 4,
       "lo": 0.4,
       "hi": 0.5,
-      "n": 35,
-      "mean_pred": 0.4558,
-      "actual": 0.5143
+      "n": 36,
+      "mean_pred": 0.4545,
+      "actual": 0.5278
      },
      {
       "bin": 5,
       "lo": 0.5,
       "hi": 0.6,
-      "n": 60,
-      "mean_pred": 0.5465,
-      "actual": 0.6
+      "n": 61,
+      "mean_pred": 0.5458,
+      "actual": 0.6066
      },
      {
       "bin": 6,
@@ -5063,34 +5087,34 @@
      },
      {
       "tier": "55-60",
-      "n": 45,
+      "n": 46,
       "correct": 29,
-      "accuracy": 0.6444,
+      "accuracy": 0.6304,
       "accuracy_ci": [
-       0.4984,
-       0.7678
+       0.486,
+       0.7548
       ],
-      "mean_confidence": 0.5737
+      "mean_confidence": 0.574
      },
      {
       "tier": "60-65",
-      "n": 21,
-      "correct": 14,
-      "accuracy": 0.6667,
+      "n": 22,
+      "correct": 15,
+      "accuracy": 0.6818,
       "accuracy_ci": [
-       0.4537,
-       0.8281
+       0.4732,
+       0.8364
       ],
       "mean_confidence": 0.6325
      },
      {
       "tier": "65+",
-      "n": 43,
+      "n": 44,
       "correct": 32,
-      "accuracy": 0.7442,
+      "accuracy": 0.7273,
       "accuracy_ci": [
-       0.5976,
-       0.8507
+       0.5815,
+       0.8365
       ],
       "mean_confidence": 0.7043
      }
@@ -5455,6 +5479,30 @@
       "date": "2026-10-22",
       "model": 0.6324,
       "market": 0.6432
+     },
+     {
+      "i": 160,
+      "date": "2026-10-22",
+      "model": 0.6404,
+      "market": 0.6496
+     },
+     {
+      "i": 161,
+      "date": "2026-10-22",
+      "model": 0.6369,
+      "market": 0.6486
+     },
+     {
+      "i": 162,
+      "date": "2026-10-22",
+      "model": 0.6425,
+      "market": 0.6546
+     },
+     {
+      "i": 163,
+      "date": "2026-10-22",
+      "model": 0.6435,
+      "market": 0.6546
      }
     ],
     "best_calls": [
@@ -5565,6 +5613,19 @@
       "legacy": false
      },
      {
+      "gameId": 2026020162,
+      "date": "2026-10-22",
+      "homeTeam": "Flames",
+      "awayTeam": "Wild",
+      "pick": "Wild",
+      "confidence": 70.4,
+      "homeScore": 2,
+      "awayScore": 1,
+      "decision": "REG",
+      "correct": false,
+      "legacy": false
+     },
+     {
       "gameId": 2026020136,
       "date": "2026-10-18",
       "homeTeam": "Flames",
@@ -5573,19 +5634,6 @@
       "confidence": 68.2,
       "homeScore": 3,
       "awayScore": 2,
-      "decision": "REG",
-      "correct": false,
-      "legacy": false
-     },
-     {
-      "gameId": 2026020103,
-      "date": "2026-10-13",
-      "homeTeam": "Ducks",
-      "awayTeam": "Flames",
-      "pick": "Ducks",
-      "confidence": 67.3,
-      "homeScore": 2,
-      "awayScore": 4,
       "decision": "REG",
       "correct": false,
       "legacy": false
@@ -5691,9 +5739,9 @@
   "reasons": [
    "Backtest ROI 95% CI lower bound -9.5% is not above -2%.",
    "Backtest closing-line value -5.20% is not positive.",
-   "Only 141 graded games with market odds were predicted by the current model (sim-m5) so far (159 graded in 2026-27 in all); need 200 to compare it with the market."
+   "Only 145 graded games with market odds were predicted by the current model (sim-m5) so far (163 graded in 2026-27 in all); need 200 to compare it with the market."
   ],
-  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Only 141 graded games with market odds were predicted by the current model (sim-m5) so far (159 graded in 2026-27 in all); need 200 to compare it with the market.",
+  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Only 145 graded games with market odds were predicted by the current model (sim-m5) so far (163 graded in 2026-27 in all); need 200 to compare it with the market.",
   "backtest": {
    "n": 64,
    "roi": 0.1399,
@@ -5702,11 +5750,11 @@
    "clv_mean": -0.052
   },
   "rolling": {
-   "n": 141,
+   "n": 145,
    "window": 200,
    "model_family": "sim-m5",
-   "model_log_loss": 0.6283,
-   "market_log_loss": 0.6391
+   "model_log_loss": 0.6332,
+   "market_log_loss": 0.6448
   },
   "rule": {
    "min_ev": 0.03,

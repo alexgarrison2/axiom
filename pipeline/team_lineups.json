@@ -2114,7 +2114,7 @@
                 "id": 1675,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -2237,6 +2237,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Mattias Ekholm",
+                "number": 14,
+                "pos": "ir7",
+                "id": 1675,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -2303,7 +2312,7 @@
                 "id": 1675,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Connor Murphy",
@@ -2316,8 +2325,8 @@
             }
         ],
         "lineup_source": "Jason Gregor",
-        "updated_at": "2026-10-22T16:57:05.812Z",
-        "fetched_at": "2026-10-22T22:02:42Z"
+        "updated_at": "2026-10-23T04:56:28.828Z",
+        "fetched_at": "2026-10-23T09:13:24Z"
     },
     "VAN": {
         "f1": [
@@ -8197,7 +8206,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -8209,7 +8218,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Dylan Larkin",
@@ -8261,7 +8270,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -8273,7 +8282,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Nate Danielson",
@@ -8283,7 +8292,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Keegan Kolesar",
@@ -8327,7 +8336,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Justin Faulk",
@@ -8349,7 +8358,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Anton Johansson",
@@ -8370,7 +8379,7 @@
                 "id": 1870,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Michal Postava",
@@ -8415,6 +8424,15 @@
                 "number": 80,
                 "pos": "ir5",
                 "id": 28133,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "John Gibson",
+                "number": 36,
+                "pos": "ir6",
+                "id": 1870,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -8497,8 +8515,8 @@
             }
         ],
         "lineup_source": "@DetroitRedWings",
-        "updated_at": "2026-10-23T02:11:58.534Z",
-        "fetched_at": "2026-10-23T03:04:00Z"
+        "updated_at": "2026-10-23T04:57:06.557Z",
+        "fetched_at": "2026-10-23T09:13:24Z"
     },
     "UTA": {
         "f1": [
