@@ -2021,11 +2021,11 @@
         ],
         "f2": [
             {
-                "name": "Zach Hyman",
-                "number": 18,
+                "name": "Kasperi Kapanen",
+                "number": 42,
                 "pos": "lw",
-                "id": 2468,
-                "ppUnit": 1,
+                "id": 2385,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2041,11 +2041,11 @@
                 "movement": null
             },
             {
-                "name": "Kasperi Kapanen",
-                "number": 42,
+                "name": "Zach Hyman",
+                "number": 18,
                 "pos": "rw",
-                "id": 2385,
-                "ppUnit": 2,
+                "id": 2468,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2085,14 +2085,14 @@
         ],
         "f4": [
             {
-                "name": "Trent Frederic",
-                "number": 10,
+                "name": "Max Jones",
+                "number": 46,
                 "pos": "lw",
-                "id": 2662,
+                "id": 2657,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Colton Dach",
@@ -2105,26 +2105,26 @@
                 "movement": null
             },
             {
-                "name": "Isaac Howard",
-                "number": 53,
+                "name": "Filip Hallander",
+                "number": 19,
                 "pos": "rw",
-                "id": 33270,
-                "ppUnit": 2,
+                "id": 29096,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
             {
-                "name": "Mattias Ekholm",
-                "number": 14,
+                "name": "Shakir Mukhamadullin",
+                "number": 85,
                 "pos": "ld",
-                "id": 1675,
+                "id": 33038,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Evan Bouchard",
@@ -2165,7 +2165,7 @@
                 "number": 96,
                 "pos": "ld",
                 "id": 2859,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2190,15 +2190,6 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Devon Levi",
-                "number": 27,
-                "pos": "g2",
-                "id": 33010,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": true
             }
         ],
         "ir": [
@@ -2241,7 +2232,7 @@
             {
                 "name": "Jason Dickinson",
                 "number": 16,
-                "pos": "ir6",
+                "pos": "ir5",
                 "id": 2160,
                 "ppUnit": null,
                 "injuryStatus": "ir",
@@ -2250,16 +2241,16 @@
             {
                 "name": "Mattias Ekholm",
                 "number": 14,
-                "pos": "ir7",
+                "pos": "ir6",
                 "id": 1675,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             },
             {
                 "name": "Devon Levi",
                 "number": 27,
-                "pos": "ir8",
+                "pos": "ir7",
                 "id": 33010,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
@@ -2295,11 +2286,11 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Evan Bouchard",
-                "number": 2,
+                "name": "Connor Murphy",
+                "number": 5,
                 "pos": "sk4",
-                "id": 4792,
-                "ppUnit": 1,
+                "id": 1772,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -2324,27 +2315,27 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Mattias Ekholm",
-                "number": 14,
+                "name": "Jake Walman",
+                "number": 96,
                 "pos": "sk3",
-                "id": 1675,
-                "ppUnit": null,
+                "id": 2859,
+                "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
-                "name": "Connor Murphy",
-                "number": 5,
+                "name": "Evan Bouchard",
+                "number": 2,
                 "pos": "sk4",
-                "id": 1772,
-                "ppUnit": null,
+                "id": 4792,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-22)",
-        "updated_at": "2026-10-23T14:07:18.977Z",
-        "fetched_at": "2026-10-23T19:02:48Z"
+        "lineup_source": "Bob Stauffer",
+        "updated_at": "2026-10-23T19:03:30.410Z",
+        "fetched_at": "2026-10-23T20:02:26Z"
     },
     "VAN": {
         "f1": [
@@ -3296,9 +3287,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ben Pope",
-        "updated_at": "2026-10-22T16:55:34.203Z",
-        "fetched_at": "2026-10-22T17:02:39Z"
+        "lineup_source": "Vinnie Parise",
+        "updated_at": "2026-10-23T19:05:42.357Z",
+        "fetched_at": "2026-10-23T20:02:26Z"
     },
     "PHI": {
         "f1": [
