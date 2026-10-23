@@ -6575,7 +6575,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Pierre-Luc Dubois",
@@ -6585,7 +6585,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": true,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Tom Wilson",
@@ -6595,7 +6595,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -6607,7 +6607,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Dylan Strome",
@@ -6617,7 +6617,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jordan Kyrou",
@@ -6627,7 +6627,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -6659,7 +6659,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -6671,7 +6671,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Justin Sourdif",
@@ -6681,7 +6681,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": true,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Ryan Leonard",
@@ -6735,7 +6735,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -6757,7 +6757,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -6791,12 +6791,12 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Pierre-Luc Dubois",
-                "number": 80,
+                "name": "Vincent Desharnais",
+                "number": 73,
                 "pos": "ir2",
-                "id": 2636,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
+                "id": 25716,
+                "ppUnit": null,
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -6805,6 +6805,15 @@
                 "pos": "ir3",
                 "id": 29606,
                 "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Pierre-Luc Dubois",
+                "number": 80,
+                "pos": "ir4",
+                "id": 2636,
+                "ppUnit": 2,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -6887,7 +6896,7 @@
         ],
         "lineup_source": "Tarik El-Bashir",
         "updated_at": "2026-10-23T16:50:32.423Z",
-        "fetched_at": "2026-10-23T17:02:30Z"
+        "fetched_at": "2026-10-23T22:02:34Z"
     },
     "CBJ": {
         "f1": [
