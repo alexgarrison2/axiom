@@ -46326,5 +46326,66 @@
         "market_p": 0.5833
       }
     }
+  },
+  {
+    "gameId": 2026020166,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-23",
+    "homeTeam": "Blackhawks",
+    "awayTeam": "Canadiens",
+    "homeScore": 1,
+    "awayScore": 4,
+    "decision": "REG",
+    "homeXg": 2.74,
+    "awayXg": 3.45,
+    "homeWinProb": 38.4,
+    "predictedWinner": "Canadiens",
+    "actualWinner": "Canadiens",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1475,
+    "logLoss": 0.4845,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-23T23:40:00Z",
+    "startUtc": "2026-10-24T00:00:00Z",
+    "marketHomeProb": 39.0,
+    "modelHomeProb": 38.3,
+    "homeOdds": 142.0,
+    "awayOdds": -170.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 38.3,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.5,
+        "ll": 0.6931,
+        "naive_ll": 0.635,
+        "market_p": 0.46
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.375,
+        "ll": 0.9808,
+        "naive_ll": 1.0037,
+        "market_p": 0.376
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.547,
+        "ll": 0.6033,
+        "naive_ll": 0.6081,
+        "market_p": 0.5116
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.325,
+        "ll": 1.1239,
+        "naive_ll": 1.194,
+        "market_p": 0.326
+      }
+    }
   }
 ]

@@ -31,7 +31,6 @@
     "zachary aston-reese": "8479944",
     "mikael pyyhtia": "8482451",
     "isac lundestrom": "8480806",
-    "damon severson": "8476923",
     "luca pinelli": "8484214",
     "brendan smith": "8474090",
     "brendan gaunce": "8476867",
@@ -62,7 +61,6 @@
     "alex barre-boulet": "8479718",
     "ivan ivan": "8483930",
     "keaton middleton": "8479387",
-    "taylor makar": "8482953",
     "cameron hughes": "8478888",
     "nathan bastian": "8479414",
     "adam erne": "8477454",
@@ -136,7 +134,6 @@
     "joakim kemell": "8483465",
     "travis mitchell": "8484262",
     "adam boqvist": "8480871",
-    "cole mcward": "8484287",
     "isaiah george": "8483448",
     "mathew barzal": "8478445",
     "marshall warren": "8481569",
@@ -145,6 +142,7 @@
     "juuso parssinen": "8481704",
     "connor mackey": "8482067",
     "matthew robertson": "8481525",
+    "justin dowling": "8475413",
     "brett berard": "8482132",
     "drew fortescue": "8484169",
     "urho vaakanainen": "8480001",
@@ -165,7 +163,6 @@
     "lane pederson": "8478967",
     "jett luchanko": "8484779",
     "anthony richard": "8478409",
-    "luke glendening": "8476822",
     "adam ginning": "8480874",
     "joona koppanen": "8479533",
     "owen pickering": "8483503",
@@ -206,7 +203,6 @@
     "simon lundmark": "8481547",
     "boris katchouk": "8479383",
     "maxim groshev": "8482168",
-    "dakota mermis": "8477541",
     "philippe myers": "8479026",
     "ryan tverberg": "8482525",
     "jacob quillan": "8484901",
@@ -246,6 +242,7 @@
     "parker ford": "8484135",
     "gustav nyquist": "8474679",
     "isaak phillips": "8482192",
+    "brayden yager": "8484242",
     "elias salomonsson": "8483510",
     "danil zhilkin": "8483526",
     "walker duehr": "8482652",
@@ -353,6 +350,7 @@
     "sean monahan": "8477497",
     "dante fabbro": "8479371",
     "cole sillinger": "8482705",
+    "damon severson": "8476923",
     "boone jenner": "8476432",
     "denton mateychuk": "8483485",
     "luca del bel belluz": "8483432",
@@ -425,6 +423,7 @@
     "valeri nichushkin": "8477501",
     "nazem kadri": "8475172",
     "gabriel landeskog": "8476455",
+    "taylor makar": "8482953",
     "jack drury": "8480835",
     "brock nelson": "8475754",
     "ilya lyubushkin": "8480950",
@@ -623,6 +622,7 @@
     "maxim shabanov": "8485702",
     "simon holmstrom": "8481601",
     "anthony duclair": "8477407",
+    "cole mcward": "8484287",
     "ondrej palat": "8476292",
     "bo horvat": "8477500",
     "anders lee": "8475314",
@@ -645,7 +645,6 @@
     "gabe perreault": "8484210",
     "adam sykora": "8483669",
     "j.t. miller": "8476468",
-    "justin dowling": "8475413",
     "noah laba": "8483690",
     "tye kartye": "8481789",
     "braden schneider": "8482073",
@@ -707,6 +706,7 @@
     "owen tippett": "8480015",
     "garnet hathaway": "8477903",
     "david jiricek": "8483460",
+    "luke glendening": "8476822",
     "jamie drysdale": "8482142",
     "bokondji imama": "8478147",
     "noel acciari": "8478569",
@@ -820,6 +820,7 @@
     "oliver ekman-larsson": "8475171",
     "auston matthews": "8479318",
     "simon benoit": "8481122",
+    "dakota mermis": "8477541",
     "brandon carlo": "8478443",
     "jake mccabe": "8476931",
     "easton cowan": "8484158",
@@ -912,7 +913,6 @@
     "vladislav namestnikov": "8476480",
     "morgan barron": "8480289",
     "ville heinola": "8481572",
-    "brayden yager": "8484242",
     "dylan demelo": "8476331",
     "adam lowry": "8476392",
     "haydn fleury": "8477938",
@@ -1173,13 +1173,6 @@
         "team": "CBJ"
       }
     ],
-    "severson": [
-      {
-        "pid": "8476923",
-        "full_name": "damon severson",
-        "team": "CBJ"
-      }
-    ],
     "pinelli": [
       {
         "pid": "8484214",
@@ -1413,18 +1406,6 @@
         "pid": "8478136",
         "full_name": "jake middleton",
         "team": "CGY"
-      }
-    ],
-    "makar": [
-      {
-        "pid": "8482953",
-        "full_name": "taylor makar",
-        "team": "COL"
-      },
-      {
-        "pid": "8480069",
-        "full_name": "cale makar",
-        "team": "COL"
       }
     ],
     "hughes": [
@@ -1998,13 +1979,6 @@
         "team": "NJD"
       }
     ],
-    "mcward": [
-      {
-        "pid": "8484287",
-        "full_name": "cole mcward",
-        "team": "NYI"
-      }
-    ],
     "george": [
       {
         "pid": "8483448",
@@ -2069,6 +2043,13 @@
         "pid": "8481582",
         "full_name": "nick robertson",
         "team": "PIT"
+      }
+    ],
+    "dowling": [
+      {
+        "pid": "8475413",
+        "full_name": "justin dowling",
+        "team": "NYR"
       }
     ],
     "berard": [
@@ -2208,13 +2189,6 @@
       {
         "pid": "8478409",
         "full_name": "anthony richard",
-        "team": "PHI"
-      }
-    ],
-    "glendening": [
-      {
-        "pid": "8476822",
-        "full_name": "luke glendening",
         "team": "PHI"
       }
     ],
@@ -2514,13 +2488,6 @@
         "team": "TBL"
       }
     ],
-    "mermis": [
-      {
-        "pid": "8477541",
-        "full_name": "dakota mermis",
-        "team": "TOR"
-      }
-    ],
     "myers": [
       {
         "pid": "8479026",
@@ -2812,6 +2779,13 @@
       {
         "pid": "8482192",
         "full_name": "isaak phillips",
+        "team": "WPG"
+      }
+    ],
+    "yager": [
+      {
+        "pid": "8484242",
+        "full_name": "brayden yager",
         "team": "WPG"
       }
     ],
@@ -3581,6 +3555,13 @@
         "team": "CBJ"
       }
     ],
+    "severson": [
+      {
+        "pid": "8476923",
+        "full_name": "damon severson",
+        "team": "CBJ"
+      }
+    ],
     "jenner": [
       {
         "pid": "8476432",
@@ -3962,6 +3943,18 @@
         "pid": "8482072",
         "full_name": "jack ahcan",
         "team": "NSH"
+      }
+    ],
+    "makar": [
+      {
+        "pid": "8480069",
+        "full_name": "cale makar",
+        "team": "COL"
+      },
+      {
+        "pid": "8482953",
+        "full_name": "taylor makar",
+        "team": "COL"
       }
     ],
     "kulak": [
@@ -5087,7 +5080,7 @@
       {
         "pid": "8482110",
         "full_name": "dawson mercer",
-        "team": "NJD"
+        "team": "WPG"
       }
     ],
     "macewen": [
@@ -5331,6 +5324,13 @@
         "team": "NYI"
       }
     ],
+    "mcward": [
+      {
+        "pid": "8484287",
+        "full_name": "cole mcward",
+        "team": "TOR"
+      }
+    ],
     "palat": [
       {
         "pid": "8476292",
@@ -5464,13 +5464,6 @@
       {
         "pid": "8483669",
         "full_name": "adam sykora",
-        "team": "NYR"
-      }
-    ],
-    "dowling": [
-      {
-        "pid": "8475413",
-        "full_name": "justin dowling",
         "team": "NYR"
       }
     ],
@@ -5890,6 +5883,13 @@
         "pid": "8483460",
         "full_name": "david jiricek",
         "team": "PHI"
+      }
+    ],
+    "glendening": [
+      {
+        "pid": "8476822",
+        "full_name": "luke glendening",
+        "team": "NYR"
       }
     ],
     "drysdale": [
@@ -6649,6 +6649,13 @@
         "team": "PHI"
       }
     ],
+    "mermis": [
+      {
+        "pid": "8477541",
+        "full_name": "dakota mermis",
+        "team": "TOR"
+      }
+    ],
     "carlo": [
       {
         "pid": "8478443",
@@ -7245,13 +7252,6 @@
         "pid": "8481572",
         "full_name": "ville heinola",
         "team": "VGK"
-      }
-    ],
-    "yager": [
-      {
-        "pid": "8484242",
-        "full_name": "brayden yager",
-        "team": "WPG"
       }
     ],
     "demelo": [
