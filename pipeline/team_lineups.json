@@ -847,7 +847,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Oliver Ekman-Larsson",
@@ -862,19 +862,19 @@
         ],
         "g": [
             {
-                "name": "Sergei Bobrovsky",
-                "number": 72,
+                "name": "Anthony Stolarz",
+                "number": 41,
                 "pos": "g1",
-                "id": 1117,
+                "id": 2432,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Anthony Stolarz",
-                "number": 41,
+                "name": "Sergei Bobrovsky",
+                "number": 72,
                 "pos": "g2",
-                "id": 2432,
+                "id": 1117,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1014,7 +1014,7 @@
         ],
         "lineup_source": "Mark Masters",
         "updated_at": "2026-10-23T16:52:06.999Z",
-        "fetched_at": "2026-10-23T17:02:30Z"
+        "fetched_at": "2026-10-24T01:02:34Z"
     },
     "MTL": {
         "f1": [
@@ -3727,7 +3727,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -3830,19 +3830,19 @@
         ],
         "g": [
             {
-                "name": "Sergei Murashov",
-                "number": 1,
+                "name": "Arturs Silovs",
+                "number": null,
                 "pos": "g1",
-                "id": 36361,
+                "id": 31270,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Arturs Silovs",
-                "number": null,
+                "name": "Sergei Murashov",
+                "number": 1,
                 "pos": "g2",
-                "id": 31270,
+                "id": 36361,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -3991,7 +3991,7 @@
         ],
         "lineup_source": "Last Game (2026-10-22)",
         "updated_at": "2026-10-23T13:52:24.274Z",
-        "fetched_at": "2026-10-23T14:02:41Z"
+        "fetched_at": "2026-10-24T01:02:34Z"
     },
     "NYI": {
         "f1": [
@@ -4425,20 +4425,30 @@
         ],
         "f4": [
             {
-                "name": "Logan O'Connor",
-                "number": 25,
+                "name": "Taylor Makar",
+                "number": 16,
                 "pos": "lw",
-                "id": 24994,
+                "id": 38433,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Parker Kelly",
                 "number": 17,
                 "pos": "c",
                 "id": 4600,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Logan O'Connor",
+                "number": 25,
+                "pos": "rw",
+                "id": 24994,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4533,15 +4543,6 @@
         ],
         "ir": [
             {
-                "name": "Logan O'Connor",
-                "number": 25,
-                "pos": "ir1",
-                "id": 24994,
-                "ppUnit": null,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Nicolas Roy",
                 "number": 10,
                 "pos": "ir2",
@@ -4577,7 +4578,7 @@
                 "id": 24994,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Devon Toews",
@@ -4636,9 +4637,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Bailey Curtis",
-        "updated_at": "2026-10-22T17:33:02.593Z",
-        "fetched_at": "2026-10-22T19:02:51Z"
+        "lineup_source": "t",
+        "updated_at": "2026-10-24T00:39:08.716Z",
+        "fetched_at": "2026-10-24T01:02:34Z"
     },
     "LAK": {
         "f1": [
@@ -5307,7 +5308,7 @@
                 "id": 3842,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             },
             {
@@ -5387,24 +5388,24 @@
         ],
         "f4": [
             {
-                "name": "Jeffrey Viel",
-                "number": 28,
-                "pos": "lw",
-                "id": 24312,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Conor Geekie",
                 "number": 14,
-                "pos": "c",
+                "pos": "lw",
                 "id": 31505,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Dominic James",
+                "number": 17,
+                "pos": "c",
+                "id": 32816,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -5463,14 +5464,14 @@
                 "movement": null
             },
             {
-                "name": "Emil Lilleberg",
-                "number": null,
+                "name": "Maxwell Crozier",
+                "number": 24,
                 "pos": "rd",
-                "id": 37940,
+                "id": 28863,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -5502,15 +5503,6 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Anthony Cirelli",
-                "number": 71,
-                "pos": "ir2",
-                "id": 3842,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -5521,7 +5513,7 @@
                 "id": 3842,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Brandon Hagel",
@@ -5590,8 +5582,8 @@
             }
         ],
         "lineup_source": "Gabby Shirley",
-        "updated_at": "2026-10-22T18:13:31.663Z",
-        "fetched_at": "2026-10-22T19:02:51Z"
+        "updated_at": "2026-10-24T00:36:33.986Z",
+        "fetched_at": "2026-10-24T01:02:34Z"
     },
     "ANA": {
         "f1": [
