@@ -46523,5 +46523,66 @@
         "market_p": 0.5224
       }
     }
+  },
+  {
+    "gameId": 2026020169,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-24",
+    "homeTeam": "Devils",
+    "awayTeam": "Kings",
+    "homeScore": 3,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 3.43,
+    "awayXg": 2.64,
+    "homeWinProb": 62.9,
+    "predictedWinner": "Devils",
+    "actualWinner": "Devils",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1376,
+    "logLoss": 0.4636,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-24T19:04:00Z",
+    "startUtc": "2026-10-24T19:30:00Z",
+    "marketHomeProb": 65.4,
+    "modelHomeProb": 62.3,
+    "homeOdds": -205.0,
+    "awayOdds": 170.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 62.3,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.514,
+        "ll": 0.6655,
+        "naive_ll": 0.6127,
+        "market_p": 0.4994
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.393,
+        "ll": 0.9339,
+        "naive_ll": 0.9781,
+        "market_p": 0.4007
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.459,
+        "ll": 0.7787,
+        "naive_ll": 0.7917,
+        "market_p": 0.4768
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.33,
+        "ll": 1.1087,
+        "naive_ll": 1.183,
+        "market_p": null
+      }
+    }
   }
 ]
