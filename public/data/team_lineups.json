@@ -6021,7 +6021,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -6033,7 +6033,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Cody Glass",
@@ -6102,14 +6102,14 @@
         ],
         "d3": [
             {
-                "name": "Declan Chisholm",
-                "number": 47,
+                "name": "Brenden Dillon",
+                "number": 5,
                 "pos": "ld",
-                "id": 28803,
+                "id": 1575,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Johnathan Kovacevic",
@@ -6133,10 +6133,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Connor Hellebuyck",
-                "number": 37,
+                "name": "Remi Poirier",
+                "number": 31,
                 "pos": "g2",
-                "id": 2465,
+                "id": 29913,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -6151,6 +6151,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Connor Hellebuyck",
+                "number": 37,
+                "pos": "ir2",
+                "id": 2465,
+                "ppUnit": null,
+                "injuryStatus": "out",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -6160,6 +6169,15 @@
                 "pos": "sk1",
                 "id": 2781,
                 "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Evan Rodrigues",
+                "number": 17,
+                "pos": "sk2",
+                "id": 2620,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -6222,7 +6240,7 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-10-23T17:21:23.273Z",
-        "fetched_at": "2026-10-23T18:02:42Z"
+        "fetched_at": "2026-10-24T18:02:28Z"
     },
     "MIN": {
         "f1": [
@@ -7532,14 +7550,14 @@
     "SEA": {
         "f1": [
             {
-                "name": "Jared McCann",
-                "number": 19,
+                "name": "Kaapo Kakko",
+                "number": 84,
                 "pos": "lw",
-                "id": 2488,
-                "ppUnit": 1,
+                "id": 30605,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Matty Beniers",
@@ -7596,21 +7614,21 @@
         ],
         "f3": [
             {
-                "name": "Kaapo Kakko",
-                "number": 84,
+                "name": "Ryan Winterton",
+                "number": 26,
                 "pos": "lw",
-                "id": 30605,
-                "ppUnit": 2,
+                "id": 30837,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Berkly Catton",
                 "number": 27,
                 "pos": "c",
                 "id": 36542,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7620,7 +7638,7 @@
                 "number": 51,
                 "pos": "rw",
                 "id": 30830,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7648,14 +7666,14 @@
                 "movement": null
             },
             {
-                "name": "Ryan Winterton",
-                "number": 26,
+                "name": "Curtis Douglas",
+                "number": 42,
                 "pos": "rw",
-                "id": 30837,
+                "id": 27811,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -7762,6 +7780,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Jared McCann",
+                "number": 19,
+                "pos": "ir4",
+                "id": 2488,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -7840,9 +7867,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-22)",
-        "updated_at": "2026-10-23T14:10:15.035Z",
-        "fetched_at": "2026-10-23T15:02:36Z"
+        "lineup_source": "Mike Benton",
+        "updated_at": "2026-10-24T17:36:53.894Z",
+        "fetched_at": "2026-10-24T18:02:28Z"
     },
     "OTT": {
         "f1": [
