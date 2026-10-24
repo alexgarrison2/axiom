@@ -4754,14 +4754,14 @@
         ],
         "d1": [
             {
-                "name": "Erik Gustafsson",
-                "number": 64,
+                "name": "Joel Edmundson",
+                "number": 6,
                 "pos": "ld",
-                "id": 2550,
-                "ppUnit": 2,
+                "id": 2532,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Brandt Clarke",
@@ -4776,14 +4776,14 @@
         ],
         "d2": [
             {
-                "name": "Joel Edmundson",
-                "number": 6,
+                "name": "Erik Gustafsson",
+                "number": 64,
                 "pos": "ld",
-                "id": 2532,
-                "ppUnit": null,
+                "id": 2550,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Drew Doughty",
@@ -4943,9 +4943,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-22)",
-        "updated_at": "2026-10-23T13:54:24.825Z",
-        "fetched_at": "2026-10-23T14:02:41Z"
+        "lineup_source": "Zach Dooley",
+        "updated_at": "2026-10-24T19:11:35.221Z",
+        "fetched_at": "2026-10-24T20:04:20Z"
     },
     "DAL": {
         "f1": [
@@ -6014,14 +6014,14 @@
                 "movement": null
             },
             {
-                "name": "Connor Brown",
-                "number": 16,
+                "name": "Jesper Boqvist",
+                "number": 70,
                 "pos": "rw",
-                "id": 2181,
-                "ppUnit": 2,
+                "id": 28107,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -6046,14 +6046,14 @@
                 "movement": null
             },
             {
-                "name": "Jesper Boqvist",
-                "number": 70,
+                "name": "Connor Brown",
+                "number": 16,
                 "pos": "rw",
-                "id": 28107,
-                "ppUnit": null,
+                "id": 2181,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -6109,7 +6109,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Johnathan Kovacevic",
@@ -6238,9 +6238,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-10-23T17:21:23.273Z",
-        "fetched_at": "2026-10-24T18:02:28Z"
+        "lineup_source": "New Jersey Devils",
+        "updated_at": "2026-10-24T19:16:54.471Z",
+        "fetched_at": "2026-10-24T20:04:20Z"
     },
     "MIN": {
         "f1": [
@@ -6390,19 +6390,19 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
             {
-                "name": "Daemon Hunt",
-                "number": 48,
+                "name": "Matt Kiersted",
+                "number": 26,
                 "pos": "ld",
-                "id": 29543,
+                "id": 34534,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": "new"
             },
             {
                 "name": "Jared Spurgeon",
@@ -6412,7 +6412,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -6424,7 +6424,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Zach Bogosian",
@@ -6582,7 +6582,7 @@
         ],
         "lineup_source": "Last Game (2026-10-22)",
         "updated_at": "2026-10-23T14:03:23.118Z",
-        "fetched_at": "2026-10-23T15:02:36Z"
+        "fetched_at": "2026-10-24T20:04:20Z"
     },
     "WSH": {
         "f1": [

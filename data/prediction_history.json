@@ -46455,5 +46455,73 @@
         "market_p": 0.5224
       }
     }
+  },
+  {
+    "gameId": 2026020168,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-24",
+    "homeTeam": "Flyers",
+    "awayTeam": "Ducks",
+    "homeScore": 4,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.09,
+    "awayXg": 2.77,
+    "homeWinProb": 55.5,
+    "predictedWinner": "Flyers",
+    "actualWinner": "Ducks",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.308,
+    "logLoss": 0.8097,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-24T16:03:00Z",
+    "startUtc": "2026-10-24T17:00:00Z",
+    "marketHomeProb": 52.8,
+    "modelHomeProb": 56.1,
+    "homeOdds": -122.0,
+    "awayOdds": 102.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 56.1,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.336,
+        "ll": 1.0906,
+        "naive_ll": 1.0116,
+        "market_p": 0.3658
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.683,
+        "ll": 0.3813,
+        "naive_ll": 0.3635,
+        "market_p": 0.7034
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.502,
+        "ll": 0.6892,
+        "naive_ll": 0.6694,
+        "market_p": 0.5346
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.353,
+        "ll": 1.0413,
+        "naive_ll": 0.9937,
+        "market_p": 0.3374
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.539,
+        "ll": 0.618,
+        "naive_ll": 0.6136,
+        "market_p": 0.5224
+      }
+    }
   }
 ]
