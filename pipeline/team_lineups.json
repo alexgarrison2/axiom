@@ -10152,14 +10152,14 @@
                 "movement": null
             },
             {
-                "name": "Matthew Wood",
-                "number": 71,
+                "name": "Vitali Pinchuk",
+                "number": 51,
                 "pos": "rw",
-                "id": 33571,
-                "ppUnit": 2,
+                "id": 31775,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -10174,14 +10174,46 @@
                 "movement": null
             },
             {
+                "name": "Alex Kerfoot",
+                "number": 14,
+                "pos": "c",
+                "id": 2833,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
                 "name": "Mavrik Bourque",
                 "number": 22,
-                "pos": "c",
+                "pos": "rw",
                 "id": 29958,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            }
+        ],
+        "f3": [
+            {
+                "name": "Nils Hoglander",
+                "number": 21,
+                "pos": "lw",
+                "id": 30614,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Matthew Wood",
+                "number": 71,
+                "pos": "c",
+                "id": 33571,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             },
             {
                 "name": "Jonathan Marchessault",
@@ -10191,39 +10223,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Vitali Pinchuk",
-                "number": 51,
-                "pos": "lw",
-                "id": 31775,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Alex Kerfoot",
-                "number": 14,
-                "pos": "c",
-                "id": 2833,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Nils Hoglander",
-                "number": 21,
-                "pos": "rw",
-                "id": 30614,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -10431,8 +10431,8 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-24)",
-        "updated_at": "2026-10-25T14:32:32.549Z",
-        "fetched_at": "2026-10-25T15:02:33Z"
+        "lineup_source": "Brooks Bratten",
+        "updated_at": "2026-10-25T23:39:17.063Z",
+        "fetched_at": "2026-10-25T23:41:07Z"
     }
 }
