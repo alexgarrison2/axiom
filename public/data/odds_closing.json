@@ -6015,10 +6015,10 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-25T16:02:20Z",
+  "fetched_at": "2026-10-25T17:02:28Z",
   "total_over": 105,
   "total_line": "6.5",
-  "Blackhawks_three_way": 205,
+  "Blackhawks_three_way": 210,
   "three_way_tie": 330,
   "Blackhawks_puckline": -162,
   "Blackhawks_puckline_spread": "+1.5",
@@ -6033,9 +6033,9 @@
   "Panthers_1p_ml": -160,
   "Blackhawks_1p_ml": 120,
   "Panthers_1p_three_way": 143,
-  "Blackhawks_1p_three_way": 220,
-  "1p_three_way_tie": 183,
-  "captured_at": "2026-10-25T16:02:20Z"
+  "Blackhawks_1p_three_way": 225,
+  "1p_three_way_tie": 180,
+  "captured_at": "2026-10-25T17:02:28Z"
  },
  "2026020181": {
   "game_id": 2026020181,
@@ -6050,7 +6050,7 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-25T16:02:20Z",
+  "fetched_at": "2026-10-25T17:02:28Z",
   "Stars_puckline": 140,
   "Stars_puckline_spread": "-1.5",
   "three_way_tie": 310,
@@ -6068,9 +6068,9 @@
   "Islanders_1p_ml": 125,
   "Stars_1p_ml": -165,
   "Islanders_1p_three_way": 245,
-  "Stars_1p_three_way": 143,
-  "1p_three_way_tie": 170,
-  "captured_at": "2026-10-25T16:02:20Z"
+  "Stars_1p_three_way": 145,
+  "1p_three_way_tie": 167,
+  "captured_at": "2026-10-25T17:02:28Z"
  },
  "2026020182": {
   "game_id": 2026020182,
@@ -6120,7 +6120,7 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-25T16:02:20Z",
+  "fetched_at": "2026-10-25T17:02:28Z",
   "Predators_puckline": -125,
   "Predators_puckline_spread": "+1.5",
   "total_over": -115,
@@ -6137,10 +6137,10 @@
   "away_ml": -230,
   "Avalanche_1p_ml": -190,
   "Predators_1p_ml": 145,
-  "Avalanche_1p_three_way": 127,
+  "Avalanche_1p_three_way": 125,
   "Predators_1p_three_way": 245,
-  "1p_three_way_tie": 188,
-  "captured_at": "2026-10-25T16:02:20Z"
+  "1p_three_way_tie": 190,
+  "captured_at": "2026-10-25T17:02:28Z"
  },
  "2026020184": {
   "game_id": 2026020184,
@@ -6155,7 +6155,7 @@
    "nhl_partner_draftkings",
    "bovada"
   ],
-  "fetched_at": "2026-10-25T16:02:20Z",
+  "fetched_at": "2026-10-25T17:02:28Z",
   "Canucks_puckline": -148,
   "Canucks_puckline_spread": "+1.5",
   "total_over": -105,
@@ -6165,7 +6165,7 @@
   "Wild_puckline": 124,
   "Wild_puckline_spread": "-1.5",
   "total_under": -115,
-  "Wild_three_way": -120,
+  "Wild_three_way": -115,
   "Canucks": 160,
   "Wild": -192,
   "home_ml": 160,
@@ -6175,6 +6175,72 @@
   "Wild_1p_three_way": 138,
   "Canucks_1p_three_way": 230,
   "1p_three_way_tie": 185,
-  "captured_at": "2026-10-25T16:02:20Z"
+  "captured_at": "2026-10-25T17:02:28Z"
+ },
+ "2026020185": {
+  "game_id": 2026020185,
+  "game_date": "2026-10-26",
+  "start_time_utc": "2026-10-26T23:00:00Z",
+  "home_team": "Rangers",
+  "away_team": "Kings",
+  "home_abbrev": "NYR",
+  "away_abbrev": "LAK",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-25T17:02:28Z",
+  "Rangers": -135,
+  "Kings": 114,
+  "home_ml": -135,
+  "away_ml": 114,
+  "total_line": "5.5",
+  "total_over": -125,
+  "total_under": 105,
+  "captured_at": "2026-10-25T17:02:28Z"
+ },
+ "2026020186": {
+  "game_id": 2026020186,
+  "game_date": "2026-10-26",
+  "start_time_utc": "2026-10-27T00:30:00Z",
+  "home_team": "Flames",
+  "away_team": "Maple Leafs",
+  "home_abbrev": "CGY",
+  "away_abbrev": "TOR",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-25T17:02:28Z",
+  "Flames": 120,
+  "Maple Leafs": -142,
+  "home_ml": 120,
+  "away_ml": -142,
+  "total_line": "6.5",
+  "total_over": -115,
+  "total_under": -105,
+  "captured_at": "2026-10-25T17:02:28Z"
+ },
+ "2026020187": {
+  "game_id": 2026020187,
+  "game_date": "2026-10-26",
+  "start_time_utc": "2026-10-27T01:30:00Z",
+  "home_team": "Oilers",
+  "away_team": "Red Wings",
+  "home_abbrev": "EDM",
+  "away_abbrev": "DET",
+  "source": "espn_draftkings",
+  "sources": [
+   "espn_draftkings"
+  ],
+  "fetched_at": "2026-10-25T17:02:28Z",
+  "Oilers": -185,
+  "Red Wings": 154,
+  "home_ml": -185,
+  "away_ml": 154,
+  "total_line": "6.5",
+  "total_over": -112,
+  "total_under": -108,
+  "captured_at": "2026-10-25T17:02:28Z"
  }
 }
