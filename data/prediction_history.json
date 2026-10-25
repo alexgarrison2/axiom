@@ -47236,5 +47236,73 @@
         "market_p": 0.3301
       }
     }
+  },
+  {
+    "gameId": 2026020180,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-25",
+    "homeTeam": "Blackhawks",
+    "awayTeam": "Panthers",
+    "homeScore": 2,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 2.69,
+    "awayXg": 3.45,
+    "homeWinProb": 37.5,
+    "predictedWinner": "Panthers",
+    "actualWinner": "Panthers",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1406,
+    "logLoss": 0.47,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-25T18:37:00Z",
+    "startUtc": "2026-10-25T19:00:00Z",
+    "marketHomeProb": 37.0,
+    "modelHomeProb": 37.6,
+    "homeOdds": 154.0,
+    "awayOdds": -185.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 37.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.507,
+        "ll": 0.6792,
+        "naive_ll": 0.619,
+        "market_p": 0.4977
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.616,
+        "ll": 0.4845,
+        "naive_ll": 0.468,
+        "market_p": 0.5993
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.556,
+        "ll": 0.587,
+        "naive_ll": 0.5898,
+        "market_p": 0.5346
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.396,
+        "ll": 0.9263,
+        "naive_ll": 0.8839,
+        "market_p": 0.3871
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.596,
+        "ll": 0.5175,
+        "naive_ll": 0.5209,
+        "market_p": 0.5922
+      }
+    }
   }
 ]
