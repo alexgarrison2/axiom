@@ -47039,5 +47039,202 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020177,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-24",
+    "homeTeam": "Mammoth",
+    "awayTeam": "Lightning",
+    "homeScore": 5,
+    "awayScore": 4,
+    "decision": "OT",
+    "homeXg": 3.27,
+    "awayXg": 3.08,
+    "homeWinProb": 53.1,
+    "predictedWinner": "Mammoth",
+    "actualWinner": "Mammoth",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.22,
+    "logLoss": 0.633,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-24T23:52:00Z",
+    "startUtc": "2026-10-25T01:00:00Z",
+    "marketHomeProb": 57.7,
+    "modelHomeProb": 52.0,
+    "homeOdds": -148.0,
+    "awayOdds": 124.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 52.0,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.225,
+        "ll": 1.4917,
+        "naive_ll": 1.8147,
+        "market_p": 0.2134
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.701,
+        "ll": 0.3552,
+        "naive_ll": 0.3483,
+        "market_p": 0.6459
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.476,
+        "ll": 0.7423,
+        "naive_ll": 0.7308,
+        "market_p": 0.5116
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.331,
+        "ll": 1.1056,
+        "naive_ll": 1.0987,
+        "market_p": 0.3112
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.49,
+        "ll": 0.7133,
+        "naive_ll": 0.7403,
+        "market_p": 0.4553
+      }
+    }
+  },
+  {
+    "gameId": 2026020178,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-24",
+    "homeTeam": "Flames",
+    "awayTeam": "Red Wings",
+    "homeScore": 4,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 2.78,
+    "awayXg": 3.24,
+    "homeWinProb": 42.3,
+    "predictedWinner": "Red Wings",
+    "actualWinner": "Flames",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3329,
+    "logLoss": 0.8604,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-25T01:03:00Z",
+    "startUtc": "2026-10-25T02:00:00Z",
+    "marketHomeProb": 45.5,
+    "modelHomeProb": 41.5,
+    "homeOdds": 110.0,
+    "awayOdds": -130.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 41.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.316,
+        "ll": 1.152,
+        "naive_ll": 1.0649,
+        "market_p": 0.3609
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.661,
+        "ll": 0.414,
+        "naive_ll": 0.3966,
+        "market_p": 0.6797
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.468,
+        "ll": 0.7593,
+        "naive_ll": 0.7773,
+        "market_p": 0.4453
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.292,
+        "ll": 1.231,
+        "naive_ll": 1.187,
+        "market_p": 0.3124
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.44,
+        "ll": 0.821,
+        "naive_ll": 0.816,
+        "market_p": 0.4663
+      }
+    }
+  },
+  {
+    "gameId": 2026020179,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-24",
+    "homeTeam": "Kraken",
+    "awayTeam": "Wild",
+    "homeScore": 1,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 2.72,
+    "awayXg": 3.53,
+    "homeWinProb": 37.0,
+    "predictedWinner": "Wild",
+    "actualWinner": "Wild",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1369,
+    "logLoss": 0.462,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-25T01:03:00Z",
+    "startUtc": "2026-10-25T02:00:00Z",
+    "marketHomeProb": 37.0,
+    "modelHomeProb": 37.0,
+    "homeOdds": 154.0,
+    "awayOdds": -185.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 37.0,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.514,
+        "ll": 0.6655,
+        "naive_ll": 0.6081,
+        "market_p": 0.4824
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.393,
+        "ll": 0.9339,
+        "naive_ll": 0.9652,
+        "market_p": 0.3834
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.541,
+        "ll": 0.6143,
+        "naive_ll": 0.6221,
+        "market_p": 0.5454
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.326,
+        "ll": 1.1209,
+        "naive_ll": 1.2016,
+        "market_p": 0.3301
+      }
+    }
   }
 ]
