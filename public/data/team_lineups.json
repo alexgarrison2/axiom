@@ -66,31 +66,31 @@
         ],
         "f3": [
             {
-                "name": "Jordan Martinook",
-                "number": 48,
+                "name": "Taylor Hall",
+                "number": 71,
                 "pos": "lw",
-                "id": 2049,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Jesperi Kotkaniemi",
-                "number": 82,
-                "pos": "c",
-                "id": 4788,
+                "id": 537,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             },
             {
                 "name": "Seth Jarvis",
                 "number": 24,
-                "pos": "rw",
+                "pos": "c",
                 "id": 29549,
                 "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Jordan Martinook",
+                "number": 48,
+                "pos": "rw",
+                "id": 2049,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -108,20 +108,20 @@
                 "movement": null
             },
             {
-                "name": "Skyler Brind'Amour",
-                "number": null,
+                "name": "Jesperi Kotkaniemi",
+                "number": 82,
                 "pos": "c",
-                "id": 28163,
-                "ppUnit": null,
+                "id": 4788,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Nicolas Deslauriers",
-                "number": 44,
+                "name": "Skyler Brind'Amour",
+                "number": null,
                 "pos": "rw",
-                "id": 1699,
+                "id": 28163,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -188,7 +188,7 @@
                 "number": 4,
                 "pos": "rd",
                 "id": 2790,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -229,7 +229,7 @@
                 "number": 71,
                 "pos": "ir3",
                 "id": 537,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
@@ -328,9 +328,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-24)",
-        "updated_at": "2026-10-25T14:51:48.112Z",
-        "fetched_at": "2026-10-25T22:04:05Z"
+        "lineup_source": "Ryan Henkel",
+        "updated_at": "2026-10-26T15:57:55.880Z",
+        "fetched_at": "2026-10-26T16:02:23Z"
     },
     "FLA": {
         "f1": [
@@ -1725,11 +1725,11 @@
         ],
         "f4": [
             {
-                "name": "Eeli Tolvanen",
-                "number": 17,
+                "name": "Taylor Raddysh",
+                "number": 14,
                 "pos": "lw",
-                "id": 2787,
-                "ppUnit": 2,
+                "id": 3922,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1745,11 +1745,11 @@
                 "movement": null
             },
             {
-                "name": "Taylor Raddysh",
-                "number": 14,
+                "name": "Eeli Tolvanen",
+                "number": 17,
                 "pos": "rw",
-                "id": 3922,
-                "ppUnit": null,
+                "id": 2787,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1955,9 +1955,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-24)",
-        "updated_at": "2026-10-25T14:24:21.435Z",
-        "fetched_at": "2026-10-26T15:02:11Z"
+        "lineup_source": "Vince Mercogliano",
+        "updated_at": "2026-10-26T15:58:31.457Z",
+        "fetched_at": "2026-10-26T16:02:23Z"
     },
     "EDM": {
         "f1": [
@@ -6220,9 +6220,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-24)",
-        "updated_at": "2026-10-25T14:14:40.879Z",
-        "fetched_at": "2026-10-25T22:04:05Z"
+        "lineup_source": "Amanda Stein",
+        "updated_at": "2026-10-26T15:56:27.240Z",
+        "fetched_at": "2026-10-26T16:02:23Z"
     },
     "MIN": {
         "f1": [
