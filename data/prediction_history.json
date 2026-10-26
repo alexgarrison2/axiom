@@ -47433,5 +47433,73 @@
         "market_p": 0.3415
       }
     }
+  },
+  {
+    "gameId": 2026020183,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-25",
+    "homeTeam": "Predators",
+    "awayTeam": "Avalanche",
+    "homeScore": 6,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 2.45,
+    "awayXg": 3.74,
+    "homeWinProb": 29.6,
+    "predictedWinner": "Avalanche",
+    "actualWinner": "Predators",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.4956,
+    "logLoss": 1.2174,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-25T23:41:00Z",
+    "startUtc": "2026-10-26T00:00:00Z",
+    "marketHomeProb": 31.3,
+    "modelHomeProb": 29.1,
+    "homeOdds": 195.0,
+    "awayOdds": -238.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 29.1,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.21,
+        "ll": 1.5606,
+        "naive_ll": 1.4553,
+        "market_p": 0.2525
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.537,
+        "ll": 0.6218,
+        "naive_ll": 0.6075,
+        "market_p": 0.5346
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.452,
+        "ll": 0.7941,
+        "naive_ll": 0.7956,
+        "market_p": 0.5
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.23,
+        "ll": 1.4697,
+        "naive_ll": 1.4161,
+        "market_p": 0.2604
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.338,
+        "ll": 1.0847,
+        "naive_ll": 1.0644,
+        "market_p": 0.3621
+      }
+    }
   }
 ]
