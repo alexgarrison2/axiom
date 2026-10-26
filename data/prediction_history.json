@@ -47372,5 +47372,66 @@
         "market_p": 0.5922
       }
     }
+  },
+  {
+    "gameId": 2026020182,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-25",
+    "homeTeam": "Jets",
+    "awayTeam": "Canadiens",
+    "homeScore": 1,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 3.01,
+    "awayXg": 3.06,
+    "homeWinProb": 49.0,
+    "predictedWinner": "Canadiens",
+    "actualWinner": "Canadiens",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2401,
+    "logLoss": 0.6733,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-25T22:06:00Z",
+    "startUtc": "2026-10-25T23:00:00Z",
+    "marketHomeProb": 48.1,
+    "modelHomeProb": 49.3,
+    "homeOdds": -102.0,
+    "awayOdds": -118.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 49.3,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.396,
+        "ll": 0.9263,
+        "naive_ll": 0.8538,
+        "market_p": 0.3903
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.712,
+        "ll": 0.3397,
+        "naive_ll": 0.3171,
+        "market_p": 0.7131
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.464,
+        "ll": 0.7679,
+        "naive_ll": 0.7917,
+        "market_p": 0.4546
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.33,
+        "ll": 1.1087,
+        "naive_ll": 1.1714,
+        "market_p": 0.3415
+      }
+    }
   }
 ]
