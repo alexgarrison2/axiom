@@ -47304,5 +47304,73 @@
         "market_p": 0.5922
       }
     }
+  },
+  {
+    "gameId": 2026020181,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-25",
+    "homeTeam": "Stars",
+    "awayTeam": "Islanders",
+    "homeScore": 6,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 3.23,
+    "awayXg": 2.46,
+    "homeWinProb": 63.1,
+    "predictedWinner": "Stars",
+    "actualWinner": "Stars",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1362,
+    "logLoss": 0.4604,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-25T21:19:00Z",
+    "startUtc": "2026-10-25T22:00:00Z",
+    "marketHomeProb": 63.0,
+    "modelHomeProb": 63.1,
+    "homeOdds": -185.0,
+    "awayOdds": 154.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 63.1,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.511,
+        "ll": 0.6714,
+        "naive_ll": 0.6152,
+        "market_p": 0.497
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.384,
+        "ll": 0.9571,
+        "naive_ll": 0.9968,
+        "market_p": 0.3943
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.47,
+        "ll": 0.755,
+        "naive_ll": 0.7277,
+        "market_p": 0.4546
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.393,
+        "ll": 0.9339,
+        "naive_ll": 0.8956,
+        "market_p": 0.3795
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.605,
+        "ll": 0.5025,
+        "naive_ll": 0.5113,
+        "market_p": 0.5922
+      }
+    }
   }
 ]
