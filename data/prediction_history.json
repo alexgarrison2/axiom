@@ -47501,5 +47501,73 @@
         "market_p": 0.3621
       }
     }
+  },
+  {
+    "gameId": 2026020184,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-25",
+    "homeTeam": "Canucks",
+    "awayTeam": "Wild",
+    "homeScore": 2,
+    "awayScore": 4,
+    "decision": "REG",
+    "homeXg": 2.51,
+    "awayXg": 3.87,
+    "homeWinProb": 28.9,
+    "predictedWinner": "Wild",
+    "actualWinner": "Wild",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.0835,
+    "logLoss": 0.3411,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-26T01:05:00Z",
+    "startUtc": "2026-10-26T02:00:00Z",
+    "marketHomeProb": 34.6,
+    "modelHomeProb": 27.6,
+    "homeOdds": 170.0,
+    "awayOdds": -205.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 27.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.6,
+        "ll": 0.5108,
+        "naive_ll": 0.4632,
+        "market_p": 0.5087
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.473,
+        "ll": 0.7487,
+        "naive_ll": 0.7604,
+        "market_p": 0.4232
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.514,
+        "ll": 0.6655,
+        "naive_ll": 0.66,
+        "market_p": 0.4884
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.452,
+        "ll": 0.7941,
+        "naive_ll": 0.758,
+        "market_p": 0.3965
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.655,
+        "ll": 0.4231,
+        "naive_ll": 0.4157,
+        "market_p": 0.5922
+      }
+    }
   }
 ]
