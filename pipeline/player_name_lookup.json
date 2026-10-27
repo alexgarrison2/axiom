@@ -24,11 +24,11 @@
     "charles alexis legault": "8484428",
     "joel nystrom": "8482911",
     "justin robidas": "8482785",
+    "skyler brind'amour": "8480291",
     "felix unger sorum": "8484392",
     "noah philp": "8481491",
     "bradly nadeau": "8484203",
     "ronan seeley": "8482187",
-    "alexander nikishin": "8482100",
     "zachary aston-reese": "8479944",
     "mikael pyyhtia": "8482451",
     "isac lundestrom": "8480806",
@@ -63,6 +63,7 @@
     "alex barre-boulet": "8479718",
     "ivan ivan": "8483930",
     "keaton middleton": "8479387",
+    "taylor makar": "8482953",
     "cameron hughes": "8478888",
     "nathan bastian": "8479414",
     "adam erne": "8477454",
@@ -143,6 +144,7 @@
     "brendan brisson": "8482153",
     "juuso parssinen": "8481704",
     "connor mackey": "8482067",
+    "matthew robertson": "8481525",
     "justin dowling": "8475413",
     "brett berard": "8482132",
     "drew fortescue": "8484169",
@@ -230,10 +232,10 @@
     "kirill kudryavtsev": "8483467",
     "braeden cootes": "8485385",
     "reilly smith": "8475191",
-    "jonas rondbjerg": "8480007",
     "ben hutton": "8477018",
     "tanner laczynski": "8479550",
     "jaycob megna": "8477034",
+    "alexander holtz": "8482125",
     "brandon saad": "8476438",
     "kai uchacz": "8485251",
     "nikita chibrikov": "8482787",
@@ -329,7 +331,6 @@
     "jordan staal": "8473533",
     "jesperi kotkaniemi": "8480829",
     "mike reilly": "8476422",
-    "skyler brind'amour": "8480291",
     "sean walker": "8480336",
     "william carrier": "8477478",
     "sebastian aho": "8478427",
@@ -338,6 +339,7 @@
     "seth jarvis": "8482093",
     "shayne gostisbehere": "8476906",
     "logan stankoven": "8482702",
+    "alexander nikishin": "8482100",
     "jackson blake": "8482809",
     "k'andre miller": "8480817",
     "conor garland": "8478856",
@@ -421,7 +423,6 @@
     "valeri nichushkin": "8477501",
     "nazem kadri": "8475172",
     "gabriel landeskog": "8476455",
-    "taylor makar": "8482953",
     "jack drury": "8480835",
     "brock nelson": "8475754",
     "ilya lyubushkin": "8480950",
@@ -642,7 +643,6 @@
     "taylor raddysh": "8479390",
     "gabe perreault": "8484210",
     "adam sykora": "8483669",
-    "matthew robertson": "8481525",
     "j.t. miller": "8476468",
     "noah laba": "8483690",
     "tye kartye": "8481789",
@@ -726,7 +726,7 @@
     "connor clifton": "8477365",
     "bryan rust": "8475810",
     "rickard rakell": "8476483",
-    "john st. ivany": "8481030",
+    "jack st. ivany": "8481030",
     "elmer soderblom": "8481725",
     "connor dewar": "8480980",
     "ilya solovyov": "8482470",
@@ -876,6 +876,7 @@
     "zeev buium": "8484798",
     "filip hronek": "8479425",
     "shea theodore": "8477447",
+    "jonas rondbjerg": "8480007",
     "mitch marner": "8478483",
     "cole smith": "8482062",
     "brett howden": "8479353",
@@ -891,7 +892,6 @@
     "ivan barbashev": "8477964",
     "jack eichel": "8478403",
     "nic dowd": "8475343",
-    "alexander holtz": "8482125",
     "brayden mcnabb": "8475188",
     "keegan kolesar": "8478434",
     "braeden bowman": "8483890",
@@ -1124,6 +1124,13 @@
         "team": "CAR"
       }
     ],
+    "brind'amour": [
+      {
+        "pid": "8480291",
+        "full_name": "skyler brind'amour",
+        "team": "CAR"
+      }
+    ],
     "sorum": [
       {
         "pid": "8484392",
@@ -1149,13 +1156,6 @@
       {
         "pid": "8482187",
         "full_name": "ronan seeley",
-        "team": "CAR"
-      }
-    ],
-    "nikishin": [
-      {
-        "pid": "8482100",
-        "full_name": "alexander nikishin",
         "team": "CAR"
       }
     ],
@@ -1420,6 +1420,18 @@
         "pid": "8478136",
         "full_name": "jake middleton",
         "team": "CGY"
+      }
+    ],
+    "makar": [
+      {
+        "pid": "8482953",
+        "full_name": "taylor makar",
+        "team": "COL"
+      },
+      {
+        "pid": "8480069",
+        "full_name": "cale makar",
+        "team": "COL"
       }
     ],
     "hughes": [
@@ -2040,6 +2052,23 @@
         "pid": "8482067",
         "full_name": "connor mackey",
         "team": "NYR"
+      }
+    ],
+    "robertson": [
+      {
+        "pid": "8481525",
+        "full_name": "matthew robertson",
+        "team": "NYR"
+      },
+      {
+        "pid": "8480027",
+        "full_name": "jason robertson",
+        "team": "DAL"
+      },
+      {
+        "pid": "8481582",
+        "full_name": "nick robertson",
+        "team": "PIT"
       }
     ],
     "dowling": [
@@ -2678,13 +2707,6 @@
         "team": "VAN"
       }
     ],
-    "rondbjerg": [
-      {
-        "pid": "8480007",
-        "full_name": "jonas rondbjerg",
-        "team": "VGK"
-      }
-    ],
     "hutton": [
       {
         "pid": "8477018",
@@ -2703,6 +2725,13 @@
       {
         "pid": "8477034",
         "full_name": "jaycob megna",
+        "team": "VGK"
+      }
+    ],
+    "holtz": [
+      {
+        "pid": "8482125",
+        "full_name": "alexander holtz",
         "team": "VGK"
       }
     ],
@@ -3407,13 +3436,6 @@
         "team": "CAR"
       }
     ],
-    "brind'amour": [
-      {
-        "pid": "8480291",
-        "full_name": "skyler brind'amour",
-        "team": "CAR"
-      }
-    ],
     "carrier": [
       {
         "pid": "8477478",
@@ -3465,6 +3487,13 @@
       {
         "pid": "8482702",
         "full_name": "logan stankoven",
+        "team": "CAR"
+      }
+    ],
+    "nikishin": [
+      {
+        "pid": "8482100",
+        "full_name": "alexander nikishin",
         "team": "CAR"
       }
     ],
@@ -3926,18 +3955,6 @@
         "team": "COL"
       }
     ],
-    "makar": [
-      {
-        "pid": "8480069",
-        "full_name": "cale makar",
-        "team": "COL"
-      },
-      {
-        "pid": "8482953",
-        "full_name": "taylor makar",
-        "team": "COL"
-      }
-    ],
     "kulak": [
       {
         "pid": "8476967",
@@ -4137,23 +4154,6 @@
         "pid": "8478476",
         "full_name": "kyle capobianco",
         "team": "DAL"
-      }
-    ],
-    "robertson": [
-      {
-        "pid": "8480027",
-        "full_name": "jason robertson",
-        "team": "DAL"
-      },
-      {
-        "pid": "8481525",
-        "full_name": "matthew robertson",
-        "team": "NYR"
-      },
-      {
-        "pid": "8481582",
-        "full_name": "nick robertson",
-        "team": "PIT"
       }
     ],
     "bourque": [
@@ -6038,7 +6038,7 @@
     "ivany": [
       {
         "pid": "8481030",
-        "full_name": "john st. ivany",
+        "full_name": "jack st. ivany",
         "team": "WSH"
       }
     ],
@@ -7016,6 +7016,13 @@
         "team": "VGK"
       }
     ],
+    "rondbjerg": [
+      {
+        "pid": "8480007",
+        "full_name": "jonas rondbjerg",
+        "team": "VGK"
+      }
+    ],
     "marner": [
       {
         "pid": "8478483",
@@ -7104,13 +7111,6 @@
       {
         "pid": "8475343",
         "full_name": "nic dowd",
-        "team": "VGK"
-      }
-    ],
-    "holtz": [
-      {
-        "pid": "8482125",
-        "full_name": "alexander holtz",
         "team": "VGK"
       }
     ],
