@@ -16,30 +16,8 @@ function Tag({ children }: { children: React.ReactNode }) {
     return <span className="rounded-chip border border-warn/50 px-1 text-micro font-bold uppercase leading-4 text-warn">{children}</span>;
 }
 
-/** Per-player goal / assist totals so far in this game, in event order. */
-function useRunningCounts(events: GameEvent[]) {
-    return React.useMemo(() => {
-        const g = new Map<number, number>();
-        const a = new Map<number, number>();
-        const out = new Map<number, { g: number; a: number[] }>();
-        for (const e of events) {
-            if (e.type !== 'goal') continue;
-            const gs = e.player != null ? (g.get(e.player) ?? 0) + 1 : 0;
-            if (e.player != null) g.set(e.player, gs);
-            const as = e.assists.map(id => {
-                const n = (a.get(id) ?? 0) + 1;
-                a.set(id, n);
-                return n;
-            });
-            out.set(e.id, { g: gs, a: as });
-        }
-        return out;
-    }, [events]);
-}
-
 function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: number }) {
     const { m, colors, byId, selected, select } = useGame();
-    const counts = useRunningCounts(m.events).get(e.id);
     const p = e.player != null ? byId.get(e.player) : undefined;
     const side = e.side;
     const away = side === 'away';
@@ -82,7 +60,7 @@ function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: n
                     ) : (
                         <span className="font-bold text-fg-1">{playerName(p)}</span>
                     )}
-                    {counts?.g ? <span className="text-micro text-fg-3">({counts.g})</span> : null}
+                    {e.totals?.g ? <span className="text-micro text-fg-3">({e.totals.g})</span> : null}
                     {e.strength === 'pp' ? <Tag>PP</Tag> : e.strength === 'sh' ? <Tag>SH</Tag> : null}
                     {e.emptyNet ? <Tag>EN</Tag> : null}
                     {!(side === 'away' ? e.situation.awayGoalie : e.situation.homeGoalie) ? (
@@ -93,7 +71,7 @@ function GoalCard({ e, before, after }: { e: GameEvent; before: number; after: n
                 </div>
                 <p className="text-caption text-fg-2 sm:truncate">
                     {e.assists.length
-                        ? e.assists.map((id, i) => `${shortName(byId.get(id))} (${counts?.a[i] ?? 1})`).join(', ')
+                        ? e.assists.map((id, i) => `${shortName(byId.get(id))}${e.totals?.a[i] ? ` (${e.totals.a[i]})` : ''}`).join(', ')
                         : 'Unassisted'}
                 </p>
                 <p className={cn('flex flex-wrap items-center gap-x-3 gap-y-1 text-micro uppercase tracking-label text-fg-3', !away && 'md:justify-end')}>

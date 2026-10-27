@@ -126,12 +126,20 @@ export function buildGame(
         let otherId: number | null = null;
         let side: Side | null = null;
         const assists: number[] = [];
+        let totals: GameEvent['totals'] = null;
         switch (type) {
             case 'goal':
                 player = d.scoringPlayerId ?? null;
                 otherId = d.goalieInNetId ?? null;
-                if (d.assist1PlayerId) assists.push(d.assist1PlayerId);
-                if (d.assist2PlayerId) assists.push(d.assist2PlayerId);
+                totals = { g: d.scoringPlayerTotal ?? null, a: [] };
+                if (d.assist1PlayerId) {
+                    assists.push(d.assist1PlayerId);
+                    totals.a.push(d.assist1PlayerTotal ?? null);
+                }
+                if (d.assist2PlayerId) {
+                    assists.push(d.assist2PlayerId);
+                    totals.a.push(d.assist2PlayerTotal ?? null);
+                }
                 break;
             case 'shot':
             case 'miss':
@@ -193,6 +201,7 @@ export function buildGame(
             player,
             other: otherId,
             assists,
+            totals,
             x,
             y,
             shotType: d.shotType ?? null,

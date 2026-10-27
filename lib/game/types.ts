@@ -65,6 +65,8 @@ export interface GameEvent {
     /** Goalie in net (shots), faceoff loser, hittee, blocker (blocked shots), player who drew the penalty. */
     other: number | null;
     assists: number[];
+    /** Goals: season totals through this goal for the scorer and each assist (NHL feed), null when missing. */
+    totals: { g: number | null; a: (number | null)[] } | null;
     x: number | null;
     y: number | null;
     shotType: string | null;
