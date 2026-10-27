@@ -411,15 +411,15 @@
         "homeTeamAbbrev": "VGK",
         "awayTeamAbbrev": "OTT",
         "homeGoalieConfirmed": "Adin Hill",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Confirmed",
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": true,
         "homeGoalieAlt": "Carter Hart",
         "awayGoalieConfirmed": "Jonas Johansson",
         "awayGoalieStatus": "Confirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Samuel Ersson",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
@@ -612,8 +612,8 @@
         "awayGoalieConfirmed": "Devin Cooley",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Dustin Wolf",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {

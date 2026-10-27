@@ -2846,7 +2846,7 @@
                 "id": 3874,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "ir": [
@@ -2866,6 +2866,15 @@
                 "id": 4718,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Carter Hart",
+                "number": 79,
+                "pos": "ir3",
+                "id": 3874,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -2946,8 +2955,8 @@
             }
         ],
         "lineup_source": "Danny Webster",
-        "updated_at": "2026-10-26T18:09:15.316Z",
-        "fetched_at": "2026-10-27T12:02:04Z"
+        "updated_at": "2026-10-27T18:52:37.414Z",
+        "fetched_at": "2026-10-27T19:02:08Z"
     },
     "CHI": {
         "f1": [
@@ -4056,16 +4065,6 @@
         ],
         "f4": [
             {
-                "name": "Kyle MacLean",
-                "number": 32,
-                "pos": "lw",
-                "id": 27755,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Casey Cizikas",
                 "number": 53,
                 "pos": "c",
@@ -4288,7 +4287,7 @@
         ],
         "lineup_source": "Andrew Gross",
         "updated_at": "2026-10-26T18:06:11.133Z",
-        "fetched_at": "2026-10-26T19:02:05Z"
+        "fetched_at": "2026-10-27T19:02:08Z"
     },
     "COL": {
         "f1": [
@@ -8165,9 +8164,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jackson Starr",
-        "updated_at": "2026-10-26T22:29:12.024Z",
-        "fetched_at": "2026-10-27T18:02:12Z"
+        "lineup_source": "@Senators",
+        "updated_at": "2026-10-27T18:24:39.008Z",
+        "fetched_at": "2026-10-27T19:02:08Z"
     },
     "DET": {
         "f1": [
