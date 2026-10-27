@@ -47637,5 +47637,73 @@
         "market_p": 0.4553
       }
     }
+  },
+  {
+    "gameId": 2026020186,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-26",
+    "homeTeam": "Flames",
+    "awayTeam": "Maple Leafs",
+    "homeScore": 5,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 2.99,
+    "awayXg": 3.33,
+    "homeWinProb": 44.5,
+    "predictedWinner": "Maple Leafs",
+    "actualWinner": "Flames",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.308,
+    "logLoss": 0.8097,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-27T00:02:00Z",
+    "startUtc": "2026-10-27T00:30:00Z",
+    "marketHomeProb": 44.5,
+    "modelHomeProb": 44.5,
+    "homeOdds": 114.0,
+    "awayOdds": -135.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 44.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.338,
+        "ll": 1.0847,
+        "naive_ll": 1.0029,
+        "market_p": 0.341
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.673,
+        "ll": 0.396,
+        "naive_ll": 0.3768,
+        "market_p": 0.6459
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.473,
+        "ll": 0.7487,
+        "naive_ll": 0.7414,
+        "market_p": 0.5232
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.312,
+        "ll": 1.1648,
+        "naive_ll": 1.1376,
+        "market_p": 0.3142
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.459,
+        "ll": 0.7787,
+        "naive_ll": 0.7786,
+        "market_p": 0.4663
+      }
+    }
   }
 ]
