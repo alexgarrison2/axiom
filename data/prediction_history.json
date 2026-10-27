@@ -47705,5 +47705,73 @@
         "market_p": 0.4663
       }
     }
+  },
+  {
+    "gameId": 2026020187,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-26",
+    "homeTeam": "Oilers",
+    "awayTeam": "Red Wings",
+    "homeScore": 3,
+    "awayScore": 4,
+    "decision": "SO",
+    "homeXg": 3.58,
+    "awayXg": 2.8,
+    "homeWinProb": 62.5,
+    "predictedWinner": "Oilers",
+    "actualWinner": "Red Wings",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3906,
+    "logLoss": 0.9808,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-27T01:02:00Z",
+    "startUtc": "2026-10-27T01:30:00Z",
+    "marketHomeProb": 62.4,
+    "modelHomeProb": 62.5,
+    "homeOdds": -180.0,
+    "awayOdds": 150.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 62.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.211,
+        "ll": 1.5559,
+        "naive_ll": 1.858,
+        "market_p": 0.1988
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.611,
+        "ll": 0.4927,
+        "naive_ll": 0.4762,
+        "market_p": 0.5993
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.484,
+        "ll": 0.7257,
+        "naive_ll": 0.7252,
+        "market_p": 0.5346
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.4,
+        "ll": 0.9163,
+        "naive_ll": 0.8744,
+        "market_p": null
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.588,
+        "ll": 0.531,
+        "naive_ll": 0.5218,
+        "market_p": null
+      }
+    }
   }
 ]

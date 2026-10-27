@@ -2020,7 +2020,7 @@
                 "id": 2468,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -2065,7 +2065,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Colton Dach",
@@ -2085,7 +2085,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -2097,7 +2097,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Evan Bouchard",
@@ -2119,7 +2119,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Connor Murphy",
@@ -2141,7 +2141,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ty Emberson",
@@ -2237,6 +2237,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Zach Hyman",
+                "number": 18,
+                "pos": "ir8",
+                "id": 2468,
+                "ppUnit": 1,
+                "injuryStatus": "none",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -2316,8 +2325,8 @@
             }
         ],
         "lineup_source": "Bob Stauffer",
-        "updated_at": "2026-10-26T16:49:48.376Z",
-        "fetched_at": "2026-10-26T17:01:58Z"
+        "updated_at": "2026-10-27T05:02:55.112Z",
+        "fetched_at": "2026-10-27T10:18:44Z"
     },
     "VAN": {
         "f1": [
