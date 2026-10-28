@@ -1992,7 +1992,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Ryan Nugent-Hopkins",
@@ -2044,7 +2044,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -2056,7 +2056,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jason Dickinson",
@@ -2066,7 +2066,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": true,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Isaac Howard",
@@ -2088,7 +2088,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": true,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Evan Bouchard",
@@ -2132,7 +2132,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ty Emberson",
@@ -2221,21 +2221,21 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Mattias Ekholm",
-                "number": 14,
+                "name": "Zach Hyman",
+                "number": 18,
                 "pos": "ir7",
-                "id": 1675,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
+                "id": 2468,
+                "ppUnit": null,
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
-                "name": "Zach Hyman",
-                "number": 18,
+                "name": "Mattias Ekholm",
+                "number": 14,
                 "pos": "ir8",
-                "id": 2468,
-                "ppUnit": null,
-                "injuryStatus": "out",
+                "id": 1675,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -2317,7 +2317,7 @@
         ],
         "lineup_source": "Bob Stauffer",
         "updated_at": "2026-10-27T19:23:59.585Z",
-        "fetched_at": "2026-10-27T20:02:05Z"
+        "fetched_at": "2026-10-28T17:02:05Z"
     },
     "VAN": {
         "f1": [
@@ -6896,8 +6896,8 @@
             }
         ],
         "lineup_source": "Sammi Silber",
-        "updated_at": "2026-10-28T02:25:58.788Z",
-        "fetched_at": "2026-10-28T03:03:26Z"
+        "updated_at": "2026-10-28T16:52:46.337Z",
+        "fetched_at": "2026-10-28T17:02:05Z"
     },
     "CBJ": {
         "f1": [
@@ -7436,7 +7436,7 @@
                 "pos": "ir1",
                 "id": 2145,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -7445,7 +7445,7 @@
                 "pos": "ir2",
                 "id": 38146,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             }
         ],
@@ -7527,7 +7527,7 @@
         ],
         "lineup_source": "Last Game (2026-10-27)",
         "updated_at": "2026-10-28T14:53:20.585Z",
-        "fetched_at": "2026-10-28T15:01:59Z"
+        "fetched_at": "2026-10-28T17:02:05Z"
     },
     "SEA": {
         "f1": [
