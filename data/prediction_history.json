@@ -47773,5 +47773,73 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020188,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-27",
+    "homeTeam": "Flyers",
+    "awayTeam": "Blue Jackets",
+    "homeScore": 3,
+    "awayScore": 4,
+    "decision": "OT",
+    "homeXg": 2.99,
+    "awayXg": 2.76,
+    "homeWinProb": 53.9,
+    "predictedWinner": "Flyers",
+    "actualWinner": "Blue Jackets",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.2905,
+    "logLoss": 0.7744,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-27T21:36:00Z",
+    "startUtc": "2026-10-27T23:00:00Z",
+    "marketHomeProb": 47.7,
+    "modelHomeProb": 55.5,
+    "homeOdds": 100.0,
+    "awayOdds": -120.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 55.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.227,
+        "ll": 1.4828,
+        "naive_ll": 1.7624,
+        "market_p": 0.2231
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.757,
+        "ll": 0.2784,
+        "naive_ll": 0.2588,
+        "market_p": 0.7034
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.486,
+        "ll": 0.7215,
+        "naive_ll": 0.7066,
+        "market_p": 0.5116
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.308,
+        "ll": 1.1777,
+        "naive_ll": 1.1399,
+        "market_p": null
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.467,
+        "ll": 0.7614,
+        "naive_ll": 0.7538,
+        "market_p": null
+      }
+    }
   }
 ]
