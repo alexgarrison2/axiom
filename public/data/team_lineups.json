@@ -5118,7 +5118,7 @@
                 "id": 2921,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -5194,6 +5194,15 @@
                 "number": 18,
                 "pos": "ir5",
                 "id": 2663,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Kyle Capobianco",
+                "number": 20,
+                "pos": "ir6",
+                "id": 2921,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -5277,7 +5286,7 @@
         ],
         "lineup_source": "Robert Tiffin",
         "updated_at": "2026-10-27T23:38:33.570Z",
-        "fetched_at": "2026-10-28T00:02:03Z"
+        "fetched_at": "2026-10-28T04:44:43Z"
     },
     "TBL": {
         "f1": [

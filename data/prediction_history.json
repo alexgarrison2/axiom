@@ -48235,5 +48235,127 @@
         "market_p": 0.5224
       }
     }
+  },
+  {
+    "gameId": 2026020195,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-27",
+    "homeTeam": "Mammoth",
+    "awayTeam": "Wild",
+    "homeScore": 1,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 3.14,
+    "awayXg": 3.21,
+    "homeWinProb": 49.0,
+    "predictedWinner": "Wild",
+    "actualWinner": "Wild",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2401,
+    "logLoss": 0.6733,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-28T00:02:00Z",
+    "startUtc": "2026-10-28T01:00:00Z",
+    "marketHomeProb": 52.8,
+    "modelHomeProb": 48.0,
+    "homeOdds": -122.0,
+    "awayOdds": 102.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 48.0,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.401,
+        "ll": 0.9138,
+        "naive_ll": 0.849,
+        "market_p": 0.3795
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.724,
+        "ll": 0.323,
+        "naive_ll": 0.3022,
+        "market_p": 0.6973
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.522,
+        "ll": 0.6501,
+        "naive_ll": 0.6571,
+        "market_p": 0.5186
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.324,
+        "ll": 1.127,
+        "naive_ll": 1.1994,
+        "market_p": 0.3289
+      }
+    }
+  },
+  {
+    "gameId": 2026020196,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-27",
+    "homeTeam": "Golden Knights",
+    "awayTeam": "Senators",
+    "homeScore": 4,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 3.5,
+    "awayXg": 2.63,
+    "homeWinProb": 64.1,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Golden Knights",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1289,
+    "logLoss": 0.4447,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-28T01:02:00Z",
+    "startUtc": "2026-10-28T02:00:00Z",
+    "marketHomeProb": 59.9,
+    "modelHomeProb": 65.1,
+    "homeOdds": -162.0,
+    "awayOdds": 136.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 65.1,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.526,
+        "ll": 0.6425,
+        "naive_ll": 0.5896,
+        "market_p": 0.4721
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.399,
+        "ll": 0.9188,
+        "naive_ll": 0.9443,
+        "market_p": 0.376
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.562,
+        "ll": 0.5763,
+        "naive_ll": 0.5857,
+        "market_p": 0.5046
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.33,
+        "ll": 1.1087,
+        "naive_ll": 1.1916,
+        "market_p": null
+      }
+    }
   }
 ]
