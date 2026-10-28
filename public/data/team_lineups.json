@@ -650,14 +650,14 @@
     "TOR": {
         "f1": [
             {
-                "name": "Easton Cowan",
-                "number": 53,
+                "name": "Gavin McKenna",
+                "number": 92,
                 "pos": "lw",
-                "id": 35106,
-                "ppUnit": 2,
+                "id": 37717,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Auston Matthews",
@@ -674,7 +674,7 @@
                 "number": 96,
                 "pos": "rw",
                 "id": 2499,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -682,14 +682,14 @@
         ],
         "f2": [
             {
-                "name": "Kirill Marchenko",
-                "number": 86,
+                "name": "Easton Cowan",
+                "number": 53,
                 "pos": "lw",
-                "id": 29119,
-                "ppUnit": 1,
+                "id": 35106,
+                "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "down"
             },
             {
                 "name": "Nick Paul",
@@ -714,21 +714,21 @@
         ],
         "f3": [
             {
-                "name": "Gavin McKenna",
-                "number": 92,
+                "name": "Bo Groulx",
+                "number": 29,
                 "pos": "lw",
-                "id": 37717,
-                "ppUnit": 1,
+                "id": 28732,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Colton Sissons",
                 "number": 10,
                 "pos": "c",
                 "id": 2030,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -844,19 +844,19 @@
         ],
         "g": [
             {
-                "name": "Anthony Stolarz",
-                "number": 41,
+                "name": "Sergei Bobrovsky",
+                "number": 72,
                 "pos": "g1",
-                "id": 2432,
+                "id": 1117,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Sergei Bobrovsky",
-                "number": 72,
+                "name": "Anthony Stolarz",
+                "number": 41,
                 "pos": "g2",
-                "id": 1117,
+                "id": 2432,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -922,8 +922,8 @@
                 "number": 86,
                 "pos": "ir7",
                 "id": 29119,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -942,7 +942,7 @@
                 "number": 10,
                 "pos": "sk2",
                 "id": 2030,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -1003,9 +1003,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-26)",
-        "updated_at": "2026-10-27T14:18:55.601Z",
-        "fetched_at": "2026-10-28T03:03:26Z"
+        "lineup_source": "David Alter",
+        "updated_at": "2026-10-28T18:40:53.123Z",
+        "fetched_at": "2026-10-28T19:02:05Z"
     },
     "MTL": {
         "f1": [
