@@ -1,7 +1,7 @@
 'use client';
 
 import type { Prediction } from '@/types/prediction';
-import PlayerNewsList, { listedNews } from '@/components/PlayerNewsList';
+import PlayerNewsList from '@/components/PlayerNewsList';
 import { Crest } from '@/components/ui/crest';
 import { DetailsLoading, type DetailsState } from './DetailsLoading';
 
@@ -13,7 +13,7 @@ export function NewsPanel({ p, state }: { p: Prediction; state: DetailsState }) 
                 <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-5 cq-lg:grid-cols-2">
                     {(['away', 'home'] as const).map(sd => {
                         const tri = p[sd].team.triCode;
-                        const count = listedNews(d[sd].news).length;
+                        const count = d[sd].news.length;
                         return (
                             <section key={sd} aria-label={`${p[sd].team.commonName} news`} className="flex min-w-0 flex-col gap-2">
                                 <div className="flex items-center gap-2 border-b border-line pb-1.5">

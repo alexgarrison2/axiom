@@ -9,17 +9,8 @@ interface PlayerNewsListProps {
     teamTriCode: string;
 }
 
-/** The items the list shows: goalie-start news is shown elsewhere. Callers count with this too. */
-export function listedNews(news: PlayerNewsItem[] | null | undefined): PlayerNewsItem[] {
-    return (news ?? []).filter(n => {
-        const cat = n.category?.toLowerCase() || '';
-        return !(cat.includes('goalie') && cat.includes('start'));
-    });
-}
-
-/** Compact player-news list for a matchup card (goalie-start items are shown elsewhere). */
-export default function PlayerNewsList({ news, teamTriCode }: PlayerNewsListProps) {
-    const items = listedNews(news);
+/** Compact player-news list for a matchup card (the server trims it: see matchupNews). */
+export default function PlayerNewsList({ news: items, teamTriCode }: PlayerNewsListProps) {
     if (items.length === 0) return null;
 
     return (
