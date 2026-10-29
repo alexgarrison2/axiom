@@ -2603,9 +2603,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-27)",
-        "updated_at": "2026-10-28T14:51:09.749Z",
-        "fetched_at": "2026-10-28T15:01:59Z"
+        "lineup_source": "Dan Murphy",
+        "updated_at": "2026-10-29T18:37:00.643Z",
+        "fetched_at": "2026-10-29T19:01:55Z"
     },
     "VGK": {
         "f1": [
@@ -4706,10 +4706,10 @@
                 "movement": null
             },
             {
-                "name": "Martin Chromiak",
-                "number": null,
+                "name": "Corey Perry",
+                "number": 90,
                 "pos": "rw",
-                "id": 31734,
+                "id": 36,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4740,6 +4740,28 @@
         ],
         "d2": [
             {
+                "name": "Joel Edmundson",
+                "number": 6,
+                "pos": "ld",
+                "id": 2532,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Drew Doughty",
+                "number": 8,
+                "pos": "rd",
+                "id": 744,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            }
+        ],
+        "d3": [
+            {
                 "name": "Mikey Anderson",
                 "number": 44,
                 "pos": "ld",
@@ -4747,7 +4769,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Brian Dumoulin",
@@ -4757,29 +4779,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Joel Edmundson",
-                "number": 6,
-                "pos": "ld",
-                "id": 2532,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Cody Ceci",
-                "number": 44,
-                "pos": "rd",
-                "id": 2052,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -4829,24 +4829,6 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Drew Doughty",
-                "number": 8,
-                "pos": "ir4",
-                "id": 744,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Corey Perry",
-                "number": 90,
-                "pos": "ir5",
-                "id": 36,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -4878,10 +4860,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Brian Dumoulin",
-                "number": 2,
+                "name": "Drew Doughty",
+                "number": 8,
                 "pos": "sk4",
-                "id": 1928,
+                "id": 744,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4916,10 +4898,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Cody Ceci",
-                "number": 44,
+                "name": "Brian Dumoulin",
+                "number": 2,
                 "pos": "sk4",
-                "id": 2052,
+                "id": 1928,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4927,7 +4909,7 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-10-29T17:42:21.259Z",
-        "fetched_at": "2026-10-29T17:46:54Z"
+        "fetched_at": "2026-10-29T19:01:55Z"
     },
     "DAL": {
         "f1": [
@@ -6356,36 +6338,36 @@
                 "movement": null
             },
             {
-                "name": "Jared Spurgeon",
-                "number": 46,
-                "pos": "rd",
-                "id": 1557,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d2": [
-            {
                 "name": "Jonas Brodin",
                 "number": 25,
-                "pos": "ld",
+                "pos": "rd",
                 "id": 1740,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
+                "movement": "up"
+            }
+        ],
+        "d2": [
             {
                 "name": "Olli Maatta",
                 "number": 3,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 1792,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Zach Bogosian",
+                "number": 24,
+                "pos": "rd",
+                "id": 53,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
             }
         ],
         "d3": [
@@ -6400,14 +6382,14 @@
                 "movement": null
             },
             {
-                "name": "Zach Bogosian",
-                "number": 24,
+                "name": "David Spacek",
+                "number": null,
                 "pos": "rd",
-                "id": 53,
+                "id": 34724,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -6466,6 +6448,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Jared Spurgeon",
+                "number": 46,
+                "pos": "ir5",
+                "id": 1557,
+                "ppUnit": null,
+                "injuryStatus": "out",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -6497,11 +6488,11 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Zach Bogosian",
-                "number": 24,
+                "name": "Jonas Brodin",
+                "number": 25,
                 "pos": "sk4",
-                "id": 53,
-                "ppUnit": null,
+                "id": 1740,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -6526,27 +6517,27 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Jared Spurgeon",
-                "number": 46,
+                "name": "David Spacek",
+                "number": null,
                 "pos": "sk3",
-                "id": 1557,
+                "id": 34724,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Jonas Brodin",
-                "number": 25,
+                "name": "Zach Bogosian",
+                "number": 24,
                 "pos": "sk4",
-                "id": 1740,
-                "ppUnit": 2,
+                "id": 53,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-27)",
-        "updated_at": "2026-10-28T14:47:36.277Z",
-        "fetched_at": "2026-10-28T15:01:59Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-29T18:36:15.797Z",
+        "fetched_at": "2026-10-29T19:01:55Z"
     },
     "WSH": {
         "f1": [
@@ -7852,14 +7843,14 @@
         ],
         "f2": [
             {
-                "name": "Warren Foegele",
-                "number": 37,
+                "name": "Andre Burakovsky",
+                "number": 28,
                 "pos": "lw",
-                "id": 3911,
-                "ppUnit": null,
+                "id": 2154,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Dylan Cozens",
@@ -7916,14 +7907,14 @@
         ],
         "f4": [
             {
-                "name": "Nick Cousins",
-                "number": 21,
+                "name": "Hayden Hodgson",
+                "number": 42,
                 "pos": "lw",
-                "id": 1893,
+                "id": 23173,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Stephen Halliday",
@@ -7936,11 +7927,11 @@
                 "movement": null
             },
             {
-                "name": "Andre Burakovsky",
-                "number": 28,
+                "name": "Nick Cousins",
+                "number": 21,
                 "pos": "rw",
-                "id": 2154,
-                "ppUnit": 2,
+                "id": 1893,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7977,7 +7968,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jordan Spence",
@@ -7999,17 +7990,17 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
-                "name": "Carter Yakemchuk",
-                "number": 26,
+                "name": "Nikolas Matinpalo",
+                "number": 33,
                 "pos": "rd",
-                "id": 33595,
+                "id": 37937,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -8049,6 +8040,15 @@
                 "id": 2534,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Warren Foegele",
+                "number": 37,
+                "pos": "ir3",
+                "id": 3911,
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -8128,9 +8128,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-10-29T17:40:35.141Z",
-        "fetched_at": "2026-10-29T17:46:54Z"
+        "lineup_source": "Jackson Starr",
+        "updated_at": "2026-10-29T18:37:40.022Z",
+        "fetched_at": "2026-10-29T19:01:55Z"
     },
     "DET": {
         "f1": [
@@ -9090,9 +9090,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Mike McIntyre",
-        "updated_at": "2026-10-29T15:55:08.711Z",
-        "fetched_at": "2026-10-29T18:02:22Z"
+        "lineup_source": "@NHLJets",
+        "updated_at": "2026-10-29T18:34:10.674Z",
+        "fetched_at": "2026-10-29T19:01:55Z"
     },
     "BUF": {
         "f1": [
