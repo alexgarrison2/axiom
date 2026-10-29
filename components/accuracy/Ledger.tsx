@@ -9,10 +9,9 @@ import { shortDate } from '@/components/views/format';
 import { GlossLink } from '@/components/ui/gloss-link';
 import { cn } from '@/lib/utils';
 import { UnitsChart } from './charts';
-import { cumulativeUnits, fmtAmerican, gradePending, parseLedgerBets, teamFirstScore, tidyReason } from './ledger-data';
+import { cumulativeUnits, fmtAmerican, parseLedgerBets, teamFirstScore } from './ledger-data';
 import { teamTriFromName } from './names';
-import type { GateInfo } from './report';
-import type { BetFinal, LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
+import type { LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
 import { useDataEpoch } from '@/lib/fresh';
 import { fmtInt } from '@/components/views/format';
 
@@ -31,9 +30,9 @@ let betsEpoch = 0;
 function loadBets(epoch = 0): Promise<LedgerBet[]> {
     if (!betsPromise || betsEpoch !== epoch) {
         betsEpoch = epoch;
-        const p: Promise<LedgerBet[]> = fetch('/data/bet_ledger.json', epoch ? { cache: 'no-cache' } : undefined)
+        const p: Promise<LedgerBet[]> = fetch('/data/pick_ledger.json', epoch ? { cache: 'no-cache' } : undefined)
             .then(r => {
-                if (!r.ok) throw new Error(`bet ledger: HTTP ${r.status}`);
+                if (!r.ok) throw new Error(`pick ledger: HTTP ${r.status}`);
                 return r.json();
             })
             .then(parseLedgerBets)
@@ -92,24 +91,20 @@ function combine(list: LedgerSummary[]): LedgerSummary | null {
     };
 }
 
+/** Every graded pick, bet to win 1u at the price it was published with (pick_ledger.json). */
 export function Ledger({
     ledger,
-    gate,
     season,
     seasons,
-    finals = {},
     title,
     currentSeason,
 }: {
     ledger: LedgerData;
-    gate: GateInfo | null;
     season: string;
     seasons: string[];
     /** Bets from this season on with no model version get a LEGACY tag. */
     currentSeason?: string;
-    /** Finals for bets the ledger file still lists as pending. */
-    finals?: Record<number, BetFinal>;
-    /** Section heading, rendered on the gate status row. */
+    /** Section heading. */
     title?: React.ReactNode;
 }) {
     const labels = React.useMemo(() => (season === 'all' ? seasons : [season]), [season, seasons]);
@@ -129,7 +124,7 @@ export function Ledger({
     const ref = React.useRef<HTMLDivElement>(null);
     const searchId = React.useId();
 
-    // The full bet list (~170KB) loads only when the ledger scrolls into view.
+    // The full pick list (~350KB) loads only when the ledger scrolls into view.
     React.useEffect(() => {
         const el = ref.current;
         if (!el || bets) return;
@@ -160,7 +155,7 @@ export function Ledger({
 
     React.useEffect(() => setShown(PAGE), [season, query]);
 
-    const inSeason = React.useMemo(() => (bets ?? []).filter(b => labels.includes(b.season)).map(b => gradePending(b, finals[b.gameId])), [bets, labels, finals]);
+    const inSeason = React.useMemo(() => (bets ?? []).filter(b => labels.includes(b.season)), [bets, labels]);
     const curve = React.useMemo(() => cumulativeUnits(inSeason), [inSeason]);
     const filtered = React.useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -171,23 +166,15 @@ export function Ledger({
         );
     }, [inSeason, query]);
 
-    const gateOpen = gate?.open ?? ledger.gate?.open ?? false;
-    const reasons = (gate?.reasons?.length ? gate.reasons : (ledger.gate?.reasons ?? [])).map(tidyReason);
-    const gateWhy = [gate?.summary ? tidyReason(gate.summary) : null, ...reasons].filter(Boolean).join(' · ');
     const nGraded = summary?.nGraded ?? 0;
     const showRoi = nGraded >= LEDGER_ROI_MIN;
     const tone = (v: number) => (nGraded < LEDGER_COLOR_MIN ? 'text-fg-1' : v > 0 ? 'text-pos' : v < 0 ? 'text-neg' : 'text-fg-1');
 
     return (
         <div ref={ref} className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 {title}
-                <p role="status" className={cn('label inline-flex items-center gap-2', gateOpen ? 'text-pos' : 'text-warn')}>
-                    <span aria-hidden="true" className={cn('inline-block h-1.5 w-1.5 rounded-full', gateOpen ? 'bg-pos' : 'bg-warn')} />
-                    <GlossLink href="/methodology#edge" desc={gateWhy || undefined}>
-                        {gateOpen ? 'Gate open' : 'Gate closed'}
-                    </GlossLink>
-                </p>
+                <p className="label">To win 1u</p>
             </div>
 
             {!summary || summary.nGraded === 0 ? (
@@ -343,9 +330,7 @@ export function Ledger({
                                                     <td className={cn('text-right font-bold sm:hidden', tone(b.profit))}>{units(b.profit)}</td>
                                                     <td className="text-right text-fg-2">{fmtAmerican(b.price)}</td>
                                                     <td className="text-right text-fg-2">{b.evAtBet != null ? pctSigned(b.evAtBet, 0) : '—'}</td>
-                                                    <td className="text-right text-fg-2">
-                                                        {gateOpen || b.result !== 'pending' ? `${b.stake.toFixed(1)}u` : <span aria-label="hidden while the gate is closed">—</span>}
-                                                    </td>
+                                                    <td className="text-right text-fg-2">{b.stake.toFixed(2)}u</td>
                                                     <td className="max-sm:hidden">{result}</td>
                                                     <td className={cn('text-right font-bold max-sm:hidden', tone(b.profit))}>{units(b.profit)}</td>
                                                 </tr>

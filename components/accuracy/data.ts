@@ -4,7 +4,7 @@ import path from 'node:path';
 import { teamTriFromName } from './names';
 import { deriveExcluded, parseAccuracyReport, type AccuracyReport } from './report';
 import { parseLedger } from './ledger-data';
-import type { BetFinal, ExcludedGame, GradedGame, LedgerData } from './types';
+import type { ExcludedGame, GradedGame, LedgerData } from './types';
 export { tallyByType, tallySeason } from './report';
 
 // Literal, statically scoped paths so the tracer includes only these files.
@@ -21,7 +21,7 @@ export function loadReport(): AccuracyReport {
 }
 
 export function loadLedger(): LedgerData {
-    return parseLedger(readJson(path.join(process.cwd(), 'public', 'data', 'bet_ledger.json')));
+    return parseLedger(readJson(path.join(process.cwd(), 'public', 'data', 'pick_ledger.json')));
 }
 
 const teamTri = teamTriFromName;
@@ -101,26 +101,4 @@ export function loadExcludedGames(season: string, graded: GradedGame[]): Exclude
         csv = '';
     }
     return deriveExcluded(readJson(path.join(process.cwd(), 'data', 'prediction_history.json')), csv, season, graded, teamTri);
-}
-
-/** Finals for ledger bets the ledger file still lists as pending. */
-export function pendingBetFinals(ledgerRaw: unknown, games: GradedGame[]): Record<number, BetFinal> {
-    const byId = new Map(games.map(g => [g.id, g]));
-    const out: Record<number, BetFinal> = {};
-    const seasons = (ledgerRaw as Obj | null)?.seasons;
-    if (!seasons || typeof seasons !== 'object') return out;
-    for (const s of Object.values(seasons as Obj)) {
-        const bets = (s as Obj | null)?.bets;
-        if (!Array.isArray(bets)) continue;
-        for (const b of bets as Obj[]) {
-            if (b?.result !== 'pending' && b?.result != null) continue;
-            const g = byId.get(num(b.gameId) ?? -1);
-            if (g) out[g.id] = { homeScore: g.homeScore, awayScore: g.awayScore, decision: g.decision };
-        }
-    }
-    return out;
-}
-
-export function loadLedgerRaw(): unknown {
-    return readJson(path.join(process.cwd(), 'public', 'data', 'bet_ledger.json'));
 }

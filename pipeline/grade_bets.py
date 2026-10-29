@@ -35,6 +35,7 @@ import market  # noqa: E402
 import site_history as S  # noqa: E402
 
 OUT_PATH = os.path.join(ROOT, 'public', 'data', 'bet_ledger.json')
+PICK_OUT_PATH = os.path.join(ROOT, 'public', 'data', 'pick_ledger.json')
 ODDS_CLOSING_PATH = os.path.join(ROOT, 'public', 'data', 'odds_closing.json')
 SCHEMA_VERSION = 1
 EV_BUCKETS = [(-1e9, 0.0, '<0%'), (0.0, 0.05, '0-5%'), (0.05, 0.10, '5-10%'),
@@ -204,6 +205,84 @@ def build_ledger(allow_fetch=True, now=None):
     return ledger
 
 
+def build_pick_ledger(history=None, now=None):
+    """Every graded pick as a bet to win 1u at the price the pick was published with.
+
+    Same shape as the bet ledger. A pick is the side the published forecast favoured
+    (coin flips within 1 pt of 50% are not picks, as on the report card); back-filled
+    rows and games without a real line (a -110/-110 placeholder) are left out.
+    Stake = 1 / (decimal - 1): -120 risks 1.2u, +150 risks 0.67u; a win is always +1u.
+    """
+    if history is None:
+        with open(GH.HISTORY_PATH) as f:
+            history = json.load(f)
+    closing = load_closing_prices()
+    now = now or datetime.now(timezone.utc)
+    bets = []
+    for g in history:
+        gid = g.get('gameId')
+        if (not isinstance(gid, int) or g.get('retro') or g.get('excluded') or not g.get('isLean')
+                or str(g.get('gameType') or str(gid)[4:6]) not in ('02', '03')):
+            continue
+        h, a = g.get('homeOdds'), g.get('awayOdds')
+        if h is None or a is None or (h == -110 and a == -110) or g.get('predictedWinner') is None:
+            continue
+        side = 'home' if g['predictedWinner'] == g['homeTeam'] else 'away'
+        price = float(h if side == 'home' else a)
+        dec = market.to_decimal(price)
+        if not dec or dec <= 1:
+            continue
+        stake = 1 / (dec - 1)
+        won = g.get('actualWinner') == g['predictedWinner']
+        p = float(g['homeWinProb']) / 100
+        model_prob = p if side == 'home' else 1 - p
+        ev = model_prob * dec - 1
+        clv, close_price = None, None
+        if gid in closing:
+            q = market.devig(list(closing[gid]))
+            if q:
+                close_price = closing[gid][0 if side == 'home' else 1]
+                clv = (q[0] if side == 'home' else q[1]) * dec - 1
+        bets.append({
+            'gameId': gid, 'season': g['season'], 'gameType': str(gid)[4:6], 'date': g['date'],
+            'startUtc': g.get('startUtc'), 'snapshotUtc': g.get('snapshotUtc'),
+            'team': g['homeTeam'] if side == 'home' else g['awayTeam'],
+            'opponent': g['awayTeam'] if side == 'home' else g['homeTeam'], 'side': side,
+            'stake_units': stake, 'price': price, 'decimal_price': dec,
+            'ev_at_bet': ev, 'ev_bucket': _bucket(ev, EV_BUCKETS), 'stake_bucket': _bucket(stake, STAKE_BUCKETS),
+            'model_prob': model_prob, 'result': 'win' if won else 'loss', 'profit_units': 1.0 if won else -stake,
+            'final': f"{g['awayScore']}-{g['homeScore']}", 'decision': g.get('decision'),
+            'closing_price': close_price, 'clv': clv, 'model_version': g.get('modelVersion') or None,
+        })
+    bets.sort(key=lambda b: (b['date'], b['gameId']))
+    seasons = {}
+    for b in bets:
+        seasons.setdefault(b['season'], []).append(b)
+    from season import SEASON_LABEL
+    seasons.setdefault(SEASON_LABEL, [])
+    return {
+        'schema_version': SCHEMA_VERSION,
+        'generated_at': now.isoformat(),
+        'unit': 'Every pick bet to win 1 unit: a -120 favourite risks 1.2u, a +150 underdog risks 0.67u',
+        'disclaimer': 'For information and entertainment only. Past results do not predict future results.',
+        'source': 'graded live picks in prediction_history.json at the price shown when the pick was published',
+        'clv_note': None,
+        'gate': None,
+        'seasons': {s: {'summary': summarize(v), 'bets': v} for s, v in sorted(seasons.items())},
+    }
+
+
+def write_pick_ledger(path=PICK_OUT_PATH, **kw):
+    from model_report import round_floats, write_if_changed
+    led = round_floats(build_pick_ledger(**kw))
+    if not write_if_changed(path, led, indent=1):
+        print("[pick_ledger] unchanged except generated_at - not rewritten")
+    for s, v in led['seasons'].items():
+        sm = v['summary']
+        print(f"[pick_ledger] {s}: {sm['n_bets']} picks, record {sm['record']}, profit {sm['units_profit']}u, ROI {sm['roi']}")
+    return led
+
+
 def write_ledger(path=OUT_PATH, **kw):
     from model_report import round_floats, write_if_changed
     led = round_floats(build_ledger(**kw))
@@ -219,3 +298,4 @@ def write_ledger(path=OUT_PATH, **kw):
 
 if __name__ == '__main__':
     write_ledger()
+    write_pick_ledger()

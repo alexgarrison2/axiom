@@ -14,7 +14,7 @@ import { ReliabilityChart, RollingChart, TierBars } from './charts';
 import { GameList } from './GameList';
 import { Ledger } from './Ledger';
 import { blockVerdict, CI_MIN_N, compareLogLoss, deltaText, modelLabelOf, SIGNAL_N, type Verdict, type VerdictWord } from './verdict';
-import type { BetFinal, LedgerData, SeasonTally } from './types';
+import type { LedgerData, SeasonTally } from './types';
 import type { DayShape } from './summary';
 import { fmtInt } from '@/components/views/format';
 
@@ -28,8 +28,6 @@ export interface AccuracyViewProps {
     initialSeason?: string;
     /** Record straight from the graded list, per season and game type (reconciles a stale report). */
     tallies?: Record<string, Partial<Record<GameTypeKey, SeasonTally>>>;
-    /** Finals for ledger bets still listed as pending. */
-    finals?: Record<number, BetFinal>;
     /** Per season and game type: days with a live pick and picks on the newest day (sizes the pick list placeholder). */
     shapes?: Record<string, Partial<Record<GameTypeKey, DayShape>>>;
 }
@@ -46,7 +44,7 @@ const dec4 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(4)
 /** Calibration and confidence tiers need at least this many games to show anything but noise. */
 const CHART_N = 30;
 
-export function AccuracyView({ report, ledger, seasons, currentSeason, initialSeason, tallies = {}, finals = {}, shapes }: AccuracyViewProps) {
+export function AccuracyView({ report, ledger, seasons, currentSeason, initialSeason, tallies = {}, shapes }: AccuracyViewProps) {
     const [season, setSeason] = React.useState<string>(initialSeason ?? currentSeason);
     const [type, setType] = React.useState<GameTypeKey>('all');
 
@@ -155,14 +153,12 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, initialSe
             <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-3 max-lg:scroll-mt-0">
                 <Ledger
                     ledger={ledger}
-                    gate={report.gate}
                     season={season}
                     seasons={seasons}
                     currentSeason={currentSeason}
-                    finals={finals}
                     title={
                         <h2 id="ledger-title" className="heading-section">
-                            Recommended bets
+                            Every pick
                         </h2>
                     }
                 />

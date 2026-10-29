@@ -658,7 +658,9 @@ def stage_bet_ledger():
     import grade_bets
     importlib.reload(grade_bets)
     led = grade_bets.write_ledger()
-    return {"status": "ok", "rows_written": sum(len(v.get("bets") or []) for v in (led.get("seasons") or {}).values())}
+    picks = grade_bets.write_pick_ledger()
+    rows = sum(len(v.get("bets") or []) for d in (led, picks) for v in (d.get("seasons") or {}).values())
+    return {"status": "ok", "rows_written": rows}
 
 
 def grading_stages(r):
@@ -666,7 +668,7 @@ def grading_stages(r):
     and SiteHistory, so they are rebuilt on every run right after the graded record
     (validate_outputs.py 'reports' fails when they fall behind it)."""
     r.run("model_report", stage_model_report, required=True, title="Model report card")
-    r.run("bet_ledger", stage_bet_ledger, required=True, title="Graded bet ledger")
+    r.run("bet_ledger", stage_bet_ledger, required=True, title="Graded bet and pick ledgers")
 
 
 def run_lite(r, phase):

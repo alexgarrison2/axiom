@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { SEASON_START_YEAR } from '@/lib/season';
-import { loadExcludedGames, loadGradedGames, loadLedger, loadLedgerRaw, loadReport, pendingBetFinals, tallyByType } from '@/components/accuracy/data';
-import { reconcileLedger } from '@/components/accuracy/ledger-data';
+import { loadExcludedGames, loadGradedGames, loadLedger, loadReport, tallyByType } from '@/components/accuracy/data';
 import type { SeasonTally } from '@/components/accuracy/types';
 import type { GameTypeKey } from '@/components/accuracy/report';
 import { dayShape, type DayShape } from '@/components/accuracy/summary';
@@ -15,16 +14,14 @@ const CURRENT = `${SEASON_START_YEAR}-${String(SEASON_START_YEAR + 1).slice(2)}`
 export const metadata: Metadata = {
     title: 'Accuracy & bet ledger',
     description:
-        'How every pregame Pony xG pick has graded out: accuracy, Brier score and log loss next to the betting market and a home-team baseline, calibration, and a public bet ledger.',
+        'How every pregame Pony xG pick has graded out: accuracy, Brier score and log loss next to the betting market and a home-team baseline, calibration, and every pick graded as a bet to win 1 unit.',
     alternates: { canonical: '/accuracy' },
 };
 
 export default function AccuracyPage() {
     const report = loadReport();
     const graded = loadGradedGames();
-    const ledgerRaw = loadLedgerRaw();
-    const finals = pendingBetFinals(ledgerRaw, graded);
-    const ledger = reconcileLedger(loadLedger(), ledgerRaw, finals);
+    const ledger = loadLedger();
     const seasons = [...new Set([CURRENT, ...Object.keys(report.seasons), ...Object.keys(ledger.seasons)])]
         .filter(s => /^\d{4}-\d{2}$/.test(s))
         .sort()
@@ -45,7 +42,7 @@ export default function AccuracyPage() {
     return (
         <main className="pb-tabbar">
             <div className="page py-5 md:py-7">
-                <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} finals={finals} shapes={shapes} />
+                <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} shapes={shapes} />
             </div>
         </main>
     );

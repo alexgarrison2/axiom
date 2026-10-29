@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CALL_MIN_CONF, combineBlocks, deriveExcluded, parseAccuracyReport, reportLags, tallyByType, tallySeason } from './report';
-import { cumulativeUnits, gradePending, parseLedger, parseLedgerBets, reconcileLedger, teamFirstScore, tidyReason } from './ledger-data';
+import { cumulativeUnits, parseLedger, parseLedgerBets, teamFirstScore, tidyReason } from './ledger-data';
 import { isCorrect, pickOf, pickProb, type GradedGame } from './types';
 import { teamTriFromName } from './names';
 import { blockVerdict, compareLogLoss, deltaText, modelLabelOf, SIGNAL_N } from './verdict';
@@ -59,8 +59,8 @@ describe('model_report.json → report card', () => {
     });
 });
 
-describe('bet_ledger.json', () => {
-    const raw = read('public', 'data', 'bet_ledger.json');
+describe('pick_ledger.json', () => {
+    const raw = read('public', 'data', 'pick_ledger.json');
     const ledger = parseLedger(raw);
     const bets = parseLedgerBets(raw);
 
@@ -75,6 +75,14 @@ describe('bet_ledger.json', () => {
         const season = bets.filter(b => b.season === '2025-26');
         const curve = cumulativeUnits(season);
         expect(curve[curve.length - 1].units).toBeCloseTo(ledger.seasons['2025-26'].unitsProfit, 2);
+    });
+
+    it('bets every pick to win 1u', () => {
+        for (const b of bets) {
+            const dec = b.price > 0 ? 1 + b.price / 100 : 1 + 100 / -b.price;
+            expect(b.stake).toBeCloseTo(1 / (dec - 1), 3);
+            expect(b.profit).toBeCloseTo(b.result === 'win' ? 1 : -b.stake, 3);
+        }
     });
 
     it('shows scores from the bet side', () => {
@@ -128,25 +136,6 @@ describe('stale report vs graded list', () => {
     it('ignores back-filled rows and other seasons', () => {
         const t = tallySeason([...games, mk(9, 60, 1, 0, { retro: true }), mk(10, 60, 1, 0, { season: '2029-30' })], '2030-31');
         expect(t.n).toBe(3);
-    });
-
-    it('grades a pending ledger bet against the final and updates the summary', () => {
-        const raw = {
-            seasons: {
-                '2030-31': {
-                    summary: { n_bets: 1, n_graded: 0, n_pending: 1, record: '0-0', units_staked: 0, units_profit: 0, roi: null, by_ev_bucket: [], by_stake: [] },
-                    bets: [{ gameId: 5, season: '2030-31', date: '2030-10-01', team: 'Golden Knights', opponent: 'Blackhawks', side: 'home', stake_units: 0.4, price: -275, result: 'pending', profit_units: 0 }],
-                },
-            },
-        };
-        const finals = { 5: { homeScore: 5, awayScore: 2, decision: 'REG' } };
-        const bet = gradePending(parseLedgerBets(raw)[0], finals[5]);
-        expect(bet.result).toBe('win');
-        expect(bet.profit).toBeCloseTo(0.4 * (100 / 275), 3);
-        expect(bet.final).toBe('2-5'); // away-home, like the ledger file
-        const led = reconcileLedger(parseLedger(raw), raw, finals);
-        expect(led.seasons['2030-31'].record).toBe('1-0');
-        expect(led.seasons['2030-31'].nPending).toBe(0);
     });
 
     it('flags a report that lags the graded list, and only then', () => {
@@ -241,7 +230,7 @@ describe('fix round 3: verdicts, legacy labels, small samples', () => {
     });
 
     it('tags ledger bets without a model version as legacy', () => {
-        const bets = parseLedgerBets(read('public', 'data', 'bet_ledger.json'));
+        const bets = parseLedgerBets(read('public', 'data', 'pick_ledger.json'));
         const vgk = bets.find(b => b.gameId === 2026020005);
         if (vgk) expect(vgk.legacy).toBe(true);
     });

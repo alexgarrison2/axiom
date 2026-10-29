@@ -101,7 +101,7 @@ export const GLOSSARY = {
         label: 'Units',
         title: 'Suggested stake (units)',
         short: 'A suggested bet size in units, where 1 unit (1u) = 1% of bankroll. Shown only for +3% EV bets of 0.5u or more; marked unofficial while the bet gate is closed.',
-        detail: 'Sized with quarter-Kelly and capped at 5u. Every suggestion is recorded in the public bet ledger on the Accuracy page, with its stake and result.',
+        detail: 'Sized with quarter-Kelly and capped at 5u. The Accuracy page grades every pick as a flat bet to win 1u instead, so the record does not depend on stake sizing.',
         anchor: 'edge',
         aliases: ['u', 'stake', 'kelly'],
     },

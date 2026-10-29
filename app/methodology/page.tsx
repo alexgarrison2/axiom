@@ -369,8 +369,8 @@ export default function MethodologyPage() {
                                 <strong>Edge</strong> (EV) is the expected profit per unit staked: <strong>EV = forecast probability × decimal odds − 1</strong>,
                                 using the published, market-blended forecast. Edges are only highlighted, and <strong>units</strong> only suggested, when the
                                 model has shown over a meaningful sample that its disagreements with the market carry real information. Until that{' '}
-                                <strong>bet gate</strong> opens, new edges and stakes are hidden; the ledger on the Accuracy page still grades every stake the
-                                site ever suggested.
+                                <strong>bet gate</strong> opens, new edges and stakes are hidden. The ledger on the Accuracy page grades every pick as a flat
+                                bet to win 1u at the price shown when the pick was published: a −120 favourite risks 1.2u, a +150 underdog 0.67u.
                             </p>
                             <p>
                                 <strong>1 unit (1u) = 1% of bankroll.</strong> Stakes are quarter-Kelly, capped at 5u.
