@@ -28,7 +28,7 @@ export interface AccuracyViewProps {
     initialSeason?: string;
     /** Record straight from the graded list, per season and game type (reconciles a stale report). */
     tallies?: Record<string, Partial<Record<GameTypeKey, SeasonTally>>>;
-    /** Per season and game type: days with a live pick and picks on the newest day (sizes the pick list placeholder). */
+    /** Per season and game type: days with a live pick (sizes the pick list placeholder). */
     shapes?: Record<string, Partial<Record<GameTypeKey, DayShape>>>;
 }
 
@@ -85,9 +85,9 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, initialSe
     const shape = React.useMemo<DayShape | undefined>(() => {
         if (!shapes) return undefined;
         if (season !== 'all') return shapes[season]?.[type];
-        // Seasons never share a date: days add up, and the newest day is the newest season's.
+        // Seasons never share a date: days add up.
         const list = seasons.map(s => shapes[s]?.[type]).filter((x): x is DayShape => !!x);
-        return { days: list.reduce((a, x) => a + x.days, 0), lastDay: list.find(x => x.days > 0)?.lastDay ?? 0 };
+        return { days: list.reduce((a, x) => a + x.days, 0) };
     }, [shapes, season, seasons, type]);
 
     const controls = (mobile: boolean) => (

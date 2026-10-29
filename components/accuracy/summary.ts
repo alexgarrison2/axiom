@@ -94,13 +94,12 @@ export function vsMarket(s: SpanSummary): number | null {
     return s.marketN > 0 && s.modelLogLossSame != null && s.marketLogLoss != null ? s.modelLogLossSame - s.marketLogLoss : null;
 }
 
-/** Days with a pick, and picks on the newest of them: sizes the day list's loading placeholder. */
+/** Days with a pick: sizes the day list's loading placeholder. */
 export interface DayShape {
     days: number;
-    lastDay: number;
 }
 
 export function dayShape(games: GradedGame[]): DayShape {
     const days = groupByDay(games);
-    return { days: days.length, lastDay: days[0]?.picks.length ?? 0 };
+    return { days: days.length };
 }
