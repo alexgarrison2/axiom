@@ -9901,7 +9901,7 @@
                 "id": 30831,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -9956,7 +9956,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Zayne Parekh",
@@ -9966,7 +9966,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -9978,7 +9978,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Zach Whitecloud",
@@ -9988,7 +9988,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -9999,7 +9999,7 @@
                 "id": 32944,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Dustin Wolf",
@@ -10028,6 +10028,24 @@
                 "id": 37733,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Brennan Othmann",
+                "number": 78,
+                "pos": "ir3",
+                "id": 30831,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Devin Cooley",
+                "number": null,
+                "pos": "ir4",
+                "id": 32944,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -10108,8 +10126,8 @@
             }
         ],
         "lineup_source": "Derek Wills",
-        "updated_at": "2026-10-28T17:54:39.332Z",
-        "fetched_at": "2026-10-28T18:02:15Z"
+        "updated_at": "2026-10-29T03:03:39.173Z",
+        "fetched_at": "2026-10-29T04:56:48Z"
     },
     "NSH": {
         "f1": [
