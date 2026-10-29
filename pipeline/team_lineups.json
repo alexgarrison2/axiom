@@ -4038,6 +4038,16 @@
         ],
         "f4": [
             {
+                "name": "Kyle MacLean",
+                "number": 32,
+                "pos": "lw",
+                "id": 27755,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Casey Cizikas",
                 "number": 53,
                 "pos": "c",
@@ -4104,21 +4114,21 @@
         ],
         "d3": [
             {
-                "name": "Scott Mayfield",
-                "number": 24,
-                "pos": "ld",
-                "id": 2350,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "new"
-            },
-            {
                 "name": "Tony DeAngelo",
                 "number": 77,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 2664,
                 "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Scott Mayfield",
+                "number": 24,
+                "pos": "rd",
+                "id": 2350,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4211,10 +4221,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Matthew Kessel",
-                "number": null,
+                "name": "Ryan Pulock",
+                "number": 6,
                 "pos": "sk4",
-                "id": 30737,
+                "id": 2146,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4249,18 +4259,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Ryan Pulock",
-                "number": 6,
+                "name": "Scott Mayfield",
+                "number": 24,
                 "pos": "sk4",
-                "id": 2146,
+                "id": 2350,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-27)",
-        "updated_at": "2026-10-28T14:37:01.429Z",
-        "fetched_at": "2026-10-28T16:02:13Z"
+        "lineup_source": "Andrew Gross",
+        "updated_at": "2026-10-29T17:47:06.105Z",
+        "fetched_at": "2026-10-29T18:02:22Z"
     },
     "COL": {
         "f1": [
@@ -8627,17 +8637,17 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
-                "name": "Nick DeSimone",
-                "number": 57,
+                "name": "Dmitri Simashev",
+                "number": 26,
                 "pos": "rd",
-                "id": 2886,
+                "id": 38458,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -8758,7 +8768,7 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-10-29T17:36:54.090Z",
-        "fetched_at": "2026-10-29T17:46:54Z"
+        "fetched_at": "2026-10-29T18:02:22Z"
     },
     "WPG": {
         "f1": [
@@ -8905,7 +8915,7 @@
                 "number": 4,
                 "pos": "rd",
                 "id": 4545,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8920,7 +8930,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Dylan DeMelo",
@@ -8942,17 +8952,17 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Elias Salomonsson",
                 "number": 57,
                 "pos": "rd",
                 "id": 36380,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -9037,7 +9047,7 @@
                 "number": 4,
                 "pos": "sk4",
                 "id": 4545,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -9082,7 +9092,7 @@
         ],
         "lineup_source": "Mike McIntyre",
         "updated_at": "2026-10-29T15:55:08.711Z",
-        "fetched_at": "2026-10-29T16:02:14Z"
+        "fetched_at": "2026-10-29T18:02:22Z"
     },
     "BUF": {
         "f1": [
