@@ -196,6 +196,7 @@ export function getMatchupDetails(): MatchupDetailsPayload {
 
     const games: Record<string, MatchupDetails> = {};
     for (const row of rows) {
+        const start = str(row.start_time_utc) ?? (str(row.game_date) ? `${str(row.game_date)}T23:00:00Z` : null);
         const id = str(row.nhl_game_id);
         if (!id) continue;
         const sideDetails = (s: 'home' | 'away'): SideDetails => {
@@ -217,11 +218,36 @@ export function getMatchupDetails(): MatchupDetailsPayload {
                 injuries: injuriesFor(injuries, tri, lineupNames, impact),
                 goalies: tandem.map(n => goalieView(n, n === starter)),
                 recent: parseRecent(row[`${s}_l7_games`]),
-                news: Array.isArray(news) ? news.filter(n => n && typeof n.news === 'string') : [],
+                news: matchupNews(Array.isArray(news) ? news : [], start),
             };
         };
         games[id] = { home: sideDetails('home'), away: sideDetails('away'), impactSeason };
     }
     const teams = [...new Set(rows.flatMap(r => [str(r.home_abbrev), str(r.away_abbrev)]).filter((t): t is string => !!t))];
     return { generatedAt: new Date().toISOString(), games, picks: pickSummaries(readJson<RawHistory[]>('history') ?? [], teams) };
+}
+
+/** Days of team news a matchup's News tab covers, back from puck drop. */
+export const NEWS_DAYS = 7;
+
+/**
+ * A matchup's player news: the newest note per player from the NEWS_DAYS before puck drop (or now
+ * without a start time), newest first. Goalie-start notes are left out: the goalie panels show starters.
+ */
+export function matchupNews(items: SideDetails['news'], startIso: string | null, now = Date.now()): SideDetails['news'] {
+    const ref = startIso ? Date.parse(startIso) : now;
+    const from = (Number.isFinite(ref) ? ref : now) - NEWS_DAYS * 86_400_000;
+    const at = (n: SideDetails['news'][number]) => Date.parse(n.timestamp ?? `${n.date}T12:00:00Z`);
+    const seen = new Set<string>();
+    return items
+        .filter(n => n && typeof n.news === 'string' && typeof n.player === 'string')
+        .filter(n => !/goalie/i.test(n.category ?? '') || !/start/i.test(n.category ?? ''))
+        .filter(n => at(n) >= from)
+        .sort((a, b) => at(b) - at(a))
+        .filter(n => {
+            const k = n.player.toLowerCase();
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+        });
 }
