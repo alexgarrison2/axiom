@@ -176,6 +176,7 @@
     "jake livanavage": "8486169",
     "mathew dumba": "8476856",
     "tristan broz": "8482698",
+    "avery hayes": "8482993",
     "harrison brunicke": "8484839",
     "kevin hayes": "8475763",
     "ryan graves": "8477435",
@@ -183,6 +184,7 @@
     "oscar fisker molgaard": "8484168",
     "john hayden": "8477401",
     "ethan cardwell": "8482206",
+    "luca cagnoni": "8484152",
     "jeff skinner": "8475784",
     "john klingberg": "8475906",
     "pavol regenda": "8483630",
@@ -213,7 +215,6 @@
     "henry thrun": "8481567",
     "matthew benning": "8476988",
     "michael pezzetta": "8479543",
-    "dakota joshua": "8478057",
     "max domi": "8477503",
     "steven lorentz": "8478904",
     "calle jarnkrok": "8475714",
@@ -720,7 +721,6 @@
     "blake lizotte": "8481481",
     "egor chinakhov": "8482475",
     "rutger mcgroarty": "8483487",
-    "avery hayes": "8482993",
     "sidney crosby": "8471675",
     "justin brazeau": "8479638",
     "parker wotherspoon": "8478450",
@@ -755,7 +755,6 @@
     "frederick gaudreau": "8477919",
     "eeli tolvanen": "8480009",
     "jared mccann": "8477955",
-    "luca cagnoni": "8484152",
     "collin graf": "8484911",
     "dmitry orlov": "8475200",
     "zack ostapchuk": "8482859",
@@ -832,6 +831,7 @@
     "bo groulx": "8480870",
     "john tavares": "8475166",
     "chris tanev": "8475690",
+    "dakota joshua": "8478057",
     "troy stecher": "8479442",
     "william nylander": "8477939",
     "barrett hayton": "8480849",
@@ -2308,22 +2308,22 @@
         "team": "PIT"
       }
     ],
-    "brunicke": [
-      {
-        "pid": "8484839",
-        "full_name": "harrison brunicke",
-        "team": "PIT"
-      }
-    ],
     "hayes": [
+      {
+        "pid": "8482993",
+        "full_name": "avery hayes",
+        "team": "PIT"
+      },
       {
         "pid": "8475763",
         "full_name": "kevin hayes",
         "team": "PIT"
-      },
+      }
+    ],
+    "brunicke": [
       {
-        "pid": "8482993",
-        "full_name": "avery hayes",
+        "pid": "8484839",
+        "full_name": "harrison brunicke",
         "team": "PIT"
       }
     ],
@@ -2359,6 +2359,13 @@
       {
         "pid": "8482206",
         "full_name": "ethan cardwell",
+        "team": "SJS"
+      }
+    ],
+    "cagnoni": [
+      {
+        "pid": "8484152",
+        "full_name": "luca cagnoni",
         "team": "SJS"
       }
     ],
@@ -2570,13 +2577,6 @@
       {
         "pid": "8479543",
         "full_name": "michael pezzetta",
-        "team": "TOR"
-      }
-    ],
-    "joshua": [
-      {
-        "pid": "8478057",
-        "full_name": "dakota joshua",
         "team": "TOR"
       }
     ],
@@ -6229,13 +6229,6 @@
         "team": "SEA"
       }
     ],
-    "cagnoni": [
-      {
-        "pid": "8484152",
-        "full_name": "luca cagnoni",
-        "team": "SJS"
-      }
-    ],
     "graf": [
       {
         "pid": "8484911",
@@ -6716,6 +6709,13 @@
       {
         "pid": "8475166",
         "full_name": "john tavares",
+        "team": "TOR"
+      }
+    ],
+    "joshua": [
+      {
+        "pid": "8478057",
+        "full_name": "dakota joshua",
         "team": "TOR"
       }
     ],

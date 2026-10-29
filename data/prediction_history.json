@@ -48486,5 +48486,73 @@
         "market_p": 0.3186
       }
     }
+  },
+  {
+    "gameId": 2026020199,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-28",
+    "homeTeam": "Capitals",
+    "awayTeam": "Flyers",
+    "homeScore": 5,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 3.53,
+    "awayXg": 2.42,
+    "homeWinProb": 68.2,
+    "predictedWinner": "Capitals",
+    "actualWinner": "Capitals",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1011,
+    "logLoss": 0.3827,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-28T23:03:00Z",
+    "startUtc": "2026-10-28T23:30:00Z",
+    "marketHomeProb": 69.3,
+    "modelHomeProb": 67.9,
+    "homeOdds": -245.0,
+    "awayOdds": 200.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 67.9,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.564,
+        "ll": 0.5727,
+        "naive_ll": 0.519,
+        "market_p": 0.5745
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.436,
+        "ll": 0.8301,
+        "naive_ll": 0.8527,
+        "market_p": 0.4654
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.521,
+        "ll": 0.652,
+        "naive_ll": 0.6372,
+        "market_p": 0.5454
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.429,
+        "ll": 0.8463,
+        "naive_ll": 0.814,
+        "market_p": 0.4165
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.64,
+        "ll": 0.4463,
+        "naive_ll": 0.4485,
+        "market_p": 0.6275
+      }
+    }
   }
 ]
