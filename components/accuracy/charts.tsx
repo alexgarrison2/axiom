@@ -11,6 +11,8 @@ const GRID = 'rgb(var(--line-rgb))';
 const TICK = 'rgb(var(--text-3-rgb))';
 const MODEL = 'rgb(var(--brand-rgb))';
 const MARKET = 'rgb(var(--text-1-rgb))';
+const POS = 'rgb(var(--pos-rgb))';
+const NEG = 'rgb(var(--neg-rgb))';
 const FONT = { fontSize: 11, fontFamily: 'var(--font-body)', letterSpacing: '0.04em' } as const;
 
 /** Render SVG charts at their real pixel width so 11px text stays 11px on phones. */
@@ -318,6 +320,13 @@ export function RollingChart({ points }: { points: RollingPoint[] }) {
     const x = (i: number) => pad.l + (i / (points.length - 1)) * (w - pad.l - pad.r);
     const y = (v: number) => pad.t + (1 - (v - lo) / (hi - lo)) * (h - pad.t - pad.b);
     const line = (k: 'model' | 'market') => points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p[k]).toFixed(1)}`).join('');
+    // Gap shading: the band between the lines, clipped to below the market line (model lower = better, green)
+    // or above it (worse, red). Clipping splits the band exactly where the lines cross.
+    const marketBack = points.map((p, i) => [x(i), y(p.market)] as const).reverse().map(([px, py]) => `L${px.toFixed(1)},${py.toFixed(1)}`).join('');
+    const band = `${line('model')}${marketBack}Z`;
+    const x0 = pad.l, x1 = w - pad.r;
+    const below = `${line('market')}L${x1},${h - pad.b}L${x0},${h - pad.b}Z`;
+    const above = `${line('market')}L${x1},${pad.t}L${x0},${pad.t}Z`;
     const ticks = [lo + 0.005, (lo + hi) / 2, hi - 0.005];
     const last = points[points.length - 1];
     const hp = hover != null ? points[hover] : null;
@@ -334,6 +343,16 @@ export function RollingChart({ points }: { points: RollingPoint[] }) {
                             </text>
                         </g>
                     ))}
+                    <defs>
+                        <clipPath id={`${glow}-b`}>
+                            <path d={below} />
+                        </clipPath>
+                        <clipPath id={`${glow}-a`}>
+                            <path d={above} />
+                        </clipPath>
+                    </defs>
+                    <path d={band} fill={POS} fillOpacity="0.25" clipPath={`url(#${glow}-b)`} />
+                    <path d={band} fill={NEG} fillOpacity="0.25" clipPath={`url(#${glow}-a)`} />
                     <path d={line('market')} fill="none" stroke={MARKET} strokeOpacity="0.7" strokeWidth="1.25" strokeDasharray="4 4" />
                     <path d={line('model')} fill="none" stroke={MODEL} strokeWidth="2" filter={`url(#${glow})`} />
                     <text x={pad.l} y={h - 5} fill={TICK} {...FONT}>
