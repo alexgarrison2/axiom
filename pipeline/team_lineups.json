@@ -1497,24 +1497,24 @@
         ],
         "d3": [
             {
-                "name": "Frederic Brunet",
-                "number": 42,
-                "pos": "ld",
-                "id": 31316,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Mason Lohrei",
                 "number": 6,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 37934,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Connor Clifton",
+                "number": 75,
+                "pos": "rd",
+                "id": 4833,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "g": [
@@ -1613,9 +1613,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-27)",
-        "updated_at": "2026-10-28T14:23:54.922Z",
-        "fetched_at": "2026-10-28T15:01:59Z"
+        "lineup_source": "Belle Fraser",
+        "updated_at": "2026-10-29T17:01:50.317Z",
+        "fetched_at": "2026-10-29T17:02:12Z"
     },
     "NYR": {
         "f1": [
@@ -6952,14 +6952,14 @@
         ],
         "f4": [
             {
-                "name": "Dmitri Voronkov",
-                "number": 10,
+                "name": "Danton Heinen",
+                "number": 58,
                 "pos": "lw",
-                "id": 31266,
+                "id": 2691,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Luca Del Bel Belluz",
@@ -6988,7 +6988,7 @@
                 "number": 8,
                 "pos": "ld",
                 "id": 2479,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7020,7 +7020,7 @@
                 "number": 5,
                 "pos": "rd",
                 "id": 31514,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7112,7 +7112,7 @@
                 "number": 5,
                 "pos": "sk3",
                 "id": 31514,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -7150,7 +7150,7 @@
                 "number": 8,
                 "pos": "sk3",
                 "id": 2479,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -7164,9 +7164,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-27)",
-        "updated_at": "2026-10-28T14:21:56.952Z",
-        "fetched_at": "2026-10-28T15:01:59Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-29T16:19:36.169Z",
+        "fetched_at": "2026-10-29T17:02:12Z"
     },
     "SJS": {
         "f1": [
@@ -8148,7 +8148,7 @@
                 "number": null,
                 "pos": "c",
                 "id": 33612,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8176,14 +8176,14 @@
                 "movement": null
             },
             {
-                "name": "Dylan Larkin",
-                "number": 71,
+                "name": "Andrew Copp",
+                "number": 18,
                 "pos": "c",
-                "id": 2522,
-                "ppUnit": 1,
+                "id": 2457,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Lucas Raymond",
@@ -8208,24 +8208,24 @@
                 "movement": null
             },
             {
-                "name": "Andrew Copp",
-                "number": 18,
-                "pos": "c",
-                "id": 2457,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "J.T. Compher",
                 "number": 37,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2751,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Nate Danielson",
+                "number": 29,
+                "pos": "rw",
+                "id": 31508,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
             }
         ],
         "f4": [
@@ -8234,16 +8234,6 @@
                 "number": 43,
                 "pos": "lw",
                 "id": 34532,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "new"
-            },
-            {
-                "name": "Nate Danielson",
-                "number": 29,
-                "pos": "c",
-                "id": 31508,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8313,7 +8303,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Anton Johansson",
@@ -8337,10 +8327,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Michal Postava",
-                "number": 35,
+                "name": "Daniil Tarasov",
+                "number": 80,
                 "pos": "g2",
-                "id": 38462,
+                "id": 28133,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -8371,16 +8361,16 @@
                 "pos": "ir4",
                 "id": 34667,
                 "ppUnit": null,
-                "injuryStatus": "ir",
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             },
             {
-                "name": "Daniil Tarasov",
-                "number": 80,
+                "name": "Dylan Larkin",
+                "number": 71,
                 "pos": "ir5",
-                "id": 28133,
+                "id": 2522,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -8399,7 +8389,7 @@
                 "number": null,
                 "pos": "sk2",
                 "id": 33612,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -8460,9 +8450,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-26)",
-        "updated_at": "2026-10-27T14:21:32.199Z",
-        "fetched_at": "2026-10-28T02:03:29Z"
+        "lineup_source": "Ansar Khan",
+        "updated_at": "2026-10-29T16:22:36.547Z",
+        "fetched_at": "2026-10-29T17:02:12Z"
     },
     "UTA": {
         "f1": [
