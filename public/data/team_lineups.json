@@ -4696,14 +4696,14 @@
                 "movement": null
             },
             {
-                "name": "Jared Wright",
-                "number": 25,
+                "name": "Martin Chromiak",
+                "number": null,
                 "pos": "rw",
-                "id": 34797,
+                "id": 31734,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -4915,9 +4915,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-27)",
-        "updated_at": "2026-10-28T14:25:39.336Z",
-        "fetched_at": "2026-10-28T15:01:59Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-29T17:42:21.259Z",
+        "fetched_at": "2026-10-29T17:46:54Z"
     },
     "DAL": {
         "f1": [
@@ -7960,14 +7960,14 @@
         ],
         "d2": [
             {
-                "name": "Tyler Kleven",
-                "number": 43,
+                "name": "Thomas Chabot",
+                "number": 72,
                 "pos": "ld",
-                "id": 30802,
-                "ppUnit": null,
+                "id": 2492,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jordan Spence",
@@ -7982,21 +7982,21 @@
         ],
         "d3": [
             {
-                "name": "Nikolas Matinpalo",
-                "number": 33,
+                "name": "Tyler Kleven",
+                "number": 43,
                 "pos": "ld",
-                "id": 37937,
+                "id": 30802,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Carter Yakemchuk",
                 "number": 26,
                 "pos": "rd",
                 "id": 33595,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8033,18 +8033,9 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Thomas Chabot",
-                "number": 72,
-                "pos": "ir3",
-                "id": 2492,
-                "ppUnit": null,
-                "injuryStatus": "out",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Linus Ullmark",
                 "number": 35,
-                "pos": "ir4",
+                "pos": "ir2",
                 "id": 2534,
                 "ppUnit": null,
                 "injuryStatus": "ir",
@@ -8118,18 +8109,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Nikolas Matinpalo",
-                "number": 33,
+                "name": "Thomas Chabot",
+                "number": 72,
                 "pos": "sk4",
-                "id": 37937,
-                "ppUnit": null,
+                "id": 2492,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-27)",
-        "updated_at": "2026-10-28T14:49:22.935Z",
-        "fetched_at": "2026-10-29T14:02:07Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-29T17:40:35.141Z",
+        "fetched_at": "2026-10-29T17:46:54Z"
     },
     "DET": {
         "f1": [
@@ -8629,14 +8620,14 @@
         ],
         "d3": [
             {
-                "name": "Dmitri Simashev",
-                "number": 26,
+                "name": "Artem Duda",
+                "number": null,
                 "pos": "ld",
-                "id": 38458,
+                "id": 36382,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Nick DeSimone",
@@ -8765,9 +8756,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-27)",
-        "updated_at": "2026-10-28T14:48:18.343Z",
-        "fetched_at": "2026-10-28T15:01:59Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-29T17:36:54.090Z",
+        "fetched_at": "2026-10-29T17:46:54Z"
     },
     "WPG": {
         "f1": [
@@ -9436,7 +9427,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Robert Thomas",
@@ -9468,7 +9459,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mason McTavish",
@@ -9500,7 +9491,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Dalibor Dvorsky",
@@ -9520,7 +9511,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -9755,9 +9746,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Lou Korac",
-        "updated_at": "2026-10-28T17:55:59.060Z",
-        "fetched_at": "2026-10-28T18:02:15Z"
+        "lineup_source": "Jeremy Rutherford",
+        "updated_at": "2026-10-29T17:46:03.449Z",
+        "fetched_at": "2026-10-29T17:46:54Z"
     },
     "CGY": {
         "f1": [
