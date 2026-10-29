@@ -9,7 +9,7 @@ import { shortDate } from '@/components/views/format';
 import { GlossLink } from '@/components/ui/gloss-link';
 import { cn } from '@/lib/utils';
 import { UnitsChart } from './charts';
-import { cumulativeUnits, fmtAmerican, parseLedgerBets, teamFirstScore } from './ledger-data';
+import { cumulativeUnits, fmtAmerican, fmtUnits, parseLedgerBets, teamFirstScore } from './ledger-data';
 import { teamTriFromName } from './names';
 import type { LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
 import { useDataEpoch } from '@/lib/fresh';
@@ -45,7 +45,6 @@ function loadBets(epoch = 0): Promise<LedgerBet[]> {
     return betsPromise;
 }
 
-const units = (v: number, digits = 2) => `${v > 0 ? '+' : v < 0 ? '−' : '±'}${Math.abs(v).toFixed(digits)}u`;
 const pctSigned = (v: number | null | undefined, digits = 1) => (v == null ? '—' : `${v > 0 ? '+' : v < 0 ? '−' : '±'}${Math.abs(v * 100).toFixed(digits)}%`);
 
 function mergeBuckets(lists: LedgerBucket[][]): LedgerBucket[] {
@@ -188,7 +187,7 @@ export function Ledger({
                         <KpiTile label="Record" value={groupRecord(summary.record)} sub={`n=${fmtInt(summary.nGraded)}${summary.nPending ? ` · ${fmtInt(summary.nPending)} pending` : ''}`} />
                         <KpiTile
                             label="Profit"
-                            value={<span className={tone(summary.unitsProfit)}>{units(summary.unitsProfit)}</span>}
+                            value={<span className={tone(summary.unitsProfit)}>{fmtUnits(summary.unitsProfit)}</span>}
                             sub={`${summary.unitsStaked.toFixed(1)}u staked`}
                         />
                         <KpiTile
@@ -327,12 +326,12 @@ export function Ledger({
                                                         </span>
                                                     </td>
                                                     <td className="sm:hidden">{result}</td>
-                                                    <td className={cn('text-right font-bold sm:hidden', tone(b.profit))}>{units(b.profit)}</td>
+                                                    <td className={cn('text-right font-bold sm:hidden', tone(b.profit))}>{fmtUnits(b.profit)}</td>
                                                     <td className="text-right text-fg-2">{fmtAmerican(b.price)}</td>
                                                     <td className="text-right text-fg-2">{b.evAtBet != null ? pctSigned(b.evAtBet, 0) : '—'}</td>
                                                     <td className="text-right text-fg-2">{b.stake.toFixed(2)}u</td>
                                                     <td className="max-sm:hidden">{result}</td>
-                                                    <td className={cn('text-right font-bold max-sm:hidden', tone(b.profit))}>{units(b.profit)}</td>
+                                                    <td className={cn('text-right font-bold max-sm:hidden', tone(b.profit))}>{fmtUnits(b.profit)}</td>
                                                 </tr>
                                             );
                                         })}
@@ -406,7 +405,7 @@ function BucketTable({ title, buckets, tone }: { title: string; buckets: LedgerB
                             </th>
                             <td className="text-right text-fg-2">{fmtInt(b.n)}</td>
                             <td className="text-right text-fg-2">{groupRecord(b.record)}</td>
-                            <td className={cn('text-right font-bold', tone(b.unitsProfit))}>{units(b.unitsProfit)}</td>
+                            <td className={cn('text-right font-bold', tone(b.unitsProfit))}>{fmtUnits(b.unitsProfit)}</td>
                             <td className="text-right text-fg-1">{pctSigned(b.roi)}</td>
                         </tr>
                     ))}

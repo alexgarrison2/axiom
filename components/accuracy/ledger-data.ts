@@ -107,6 +107,11 @@ export function teamFirstScore(final: string | null, side: 'home' | 'away'): str
     return side === 'home' ? `${m[2]}-${m[1]}` : final;
 }
 
+/** "+1.00u" / "−1.48u" / "±0.00u". */
+export function fmtUnits(v: number, digits = 2): string {
+    return `${v > 0 ? '+' : v < 0 ? '−' : '±'}${Math.abs(v).toFixed(digits)}u`;
+}
+
 export function fmtAmerican(price: number): string {
     return price > 0 ? `+${Math.round(price)}` : `${Math.round(price)}`.replace('-', '−');
 }

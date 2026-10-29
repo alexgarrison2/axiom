@@ -1,4 +1,4 @@
-import { isCorrect, isNoLean, pickProb, type GradedGame } from './types';
+import { isCorrect, isNoLean, pickProb, pickUnits, type GradedGame } from './types';
 
 /** KPIs for a filtered span of graded games. */
 export interface SpanSummary {
@@ -20,6 +20,10 @@ export interface SpanSummary {
     /** Games with xG on both sides, and the mean absolute error of projected total goals. */
     scoreN: number;
     totalGoalsMae: number | null;
+    /** Picks with a real published price, bet to win 1u each: their net units and the units risked. */
+    unitsN: number;
+    units: number | null;
+    risked: number;
 }
 
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
@@ -36,6 +40,7 @@ export function summarize(games: GradedGame[]): SpanSummary {
     const priced = games.filter(g => g.marketProb != null && !g.placeholderOdds);
     const scored = games.filter(g => g.homeXg != null && g.awayXg != null);
     const finite = (x: number) => Number.isFinite(x);
+    const bets = lean.map(pickUnits).filter((b): b is { units: number; risked: number } => b != null);
     return {
         n: games.length,
         picks: lean.length,
@@ -49,6 +54,9 @@ export function summarize(games: GradedGame[]): SpanSummary {
         marketLogLoss: mean(priced.map(g => llOf(g.marketProb as number, g.homeScore > g.awayScore))),
         scoreN: scored.length,
         totalGoalsMae: mean(scored.map(g => Math.abs((g.homeXg as number) + (g.awayXg as number) - (g.homeScore + g.awayScore)))),
+        unitsN: bets.length,
+        units: bets.length ? bets.reduce((a, b) => a + b.units, 0) : null,
+        risked: bets.reduce((a, b) => a + b.risked, 0),
     };
 }
 

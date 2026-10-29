@@ -29,6 +29,8 @@ export interface GradedGame {
     legacy?: boolean;
     /** Market price was a −110/−110 placeholder, not a real line; excluded from market comparisons. */
     placeholderOdds?: boolean;
+    /** American price of the picked side when the pick was published; null without a real line. */
+    pickPrice?: number | null;
 }
 
 /** A final game that was deliberately left out of grading. */
@@ -80,6 +82,18 @@ export function isNoLean(g: GradedGame): boolean {
 /** A right pick. Always false for a no-lean game (see isNoLean). */
 export function isCorrect(g: GradedGame): boolean {
     return !isNoLean(g) && pickOf(g) === winnerOf(g);
+}
+
+/**
+ * Units on the pick bet to win 1u at its published price (pick_ledger.json's rule): +1 on a win,
+ * minus the stake (1 / (decimal − 1)) on a loss. Null for a coin flip, a back-filled row or no real line.
+ */
+export function pickUnits(g: GradedGame): { units: number; risked: number } | null {
+    if (isNoLean(g) || g.retro || g.pickPrice == null) return null;
+    const dec = g.pickPrice > 0 ? 1 + g.pickPrice / 100 : 1 + 100 / -g.pickPrice;
+    if (!(dec > 1)) return null;
+    const risked = 1 / (dec - 1);
+    return { units: isCorrect(g) ? 1 : -risked, risked };
 }
 
 /** A wrong pick. Always false for a no-lean game. */

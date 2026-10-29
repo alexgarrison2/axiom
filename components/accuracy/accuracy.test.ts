@@ -5,6 +5,8 @@ import { CALL_MIN_CONF, combineBlocks, deriveExcluded, parseAccuracyReport, repo
 import { cumulativeUnits, parseLedger, parseLedgerBets, teamFirstScore, tidyReason } from './ledger-data';
 import { isCorrect, pickOf, pickProb, type GradedGame } from './types';
 import { teamTriFromName } from './names';
+import { parseGradedGames } from './data';
+import { summarize } from './summary';
 import { blockVerdict, compareLogLoss, deltaText, modelLabelOf, SIGNAL_N } from './verdict';
 
 const read = (...p: string[]) => JSON.parse(fs.readFileSync(path.join(process.cwd(), ...p), 'utf8'));
@@ -82,6 +84,15 @@ describe('pick_ledger.json', () => {
             const dec = b.price > 0 ? 1 + b.price / 100 : 1 + 100 / -b.price;
             expect(b.stake).toBeCloseTo(1 / (dec - 1), 3);
             expect(b.profit).toBeCloseTo(b.result === 'win' ? 1 : -b.stake, 3);
+        }
+    });
+
+    it('matches the pick list: per-season units and picks agree with the graded games', () => {
+        const games = parseGradedGames(read('data', 'prediction_history.json'));
+        for (const [label, sm] of Object.entries(ledger.seasons)) {
+            const s = summarize(games.filter(g => g.season === label));
+            expect(s.unitsN).toBe(sm.nGraded);
+            expect(s.units ?? 0).toBeCloseTo(sm.unitsProfit, 2);
         }
     });
 
