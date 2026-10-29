@@ -78,6 +78,7 @@ export function parseGradedGames(raw: unknown): GradedGame[] {
             snapshotUtc: typeof r.snapshotUtc === 'string' ? r.snapshotUtc : null,
             legacy: r.modelVersion == null || r.modelVersion === '',
             placeholderOdds: isPlaceholderOdds(r.homeOdds, r.awayOdds),
+            pickPrice: isPlaceholderOdds(r.homeOdds, r.awayOdds) ? null : num(hp >= 50 ? r.homeOdds : r.awayOdds),
         });
     }
     return out.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);

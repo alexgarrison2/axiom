@@ -10,7 +10,8 @@ import { Crest } from '@/components/ui/crest';
 import { shortDate, signed } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { GlossLink } from '@/components/ui/gloss-link';
-import { isCorrect, isNoLean, isWrong, pickOf, pickProb, type ExcludedGame, type GradedGame } from './types';
+import { isCorrect, isNoLean, isWrong, pickOf, pickProb, pickUnits, type ExcludedGame, type GradedGame } from './types';
+import { fmtUnits } from './ledger-data';
 import type { GameTypeKey } from './report';
 import { groupByDay, summarize, vsMarket, type DayGroup, type DayShape, type SpanSummary } from './summary';
 import { useDataEpoch } from '@/lib/fresh';
@@ -27,10 +28,11 @@ const DAY_LI = 'border-t border-line first:border-t-0';
 const DAY_H = 'min-h-14';
 const STRIP = 'rounded-card border border-dashed border-line-strong px-3 py-2';
 const LIST_UL = 'panel flex flex-col overflow-hidden';
-/** One grid for the header and every row so the columns line up: result, date, final, predicted, pick, how sure, chevron. */
+/** One grid for the header and every row so the columns line up: result, date, final, predicted, pick, how sure, units, chevron. */
 const COLS =
     // Tablet (md to lg) gives the final more room so the team, score and OT/PO tags never run into the projected score.
-    'md:max-lg:grid-cols-[2rem_3.5rem_minmax(0,2fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_1.25rem] lg:grid-cols-[2rem_4.5rem_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_1.25rem]';
+    // Pick is a fixed 7rem (the day row's vs-mkt fits) so the confidence bar sits right after the picked team.
+    'md:max-lg:grid-cols-[2rem_3.5rem_minmax(0,2fr)_minmax(0,0.9fr)_7rem_minmax(0,0.9fr)_4.5rem_1.25rem] lg:grid-cols-[2rem_4.5rem_minmax(0,1.5fr)_minmax(0,1fr)_7rem_minmax(0,1fr)_4.5rem_1.25rem]';
 const SELECT = 'h-8 rounded-control border border-line-strong bg-surface-1 px-2 text-base uppercase tracking-[0.08em] text-fg-1 md:text-caption coarse:h-11';
 
 type ResultFilter = 'all' | 'hit' | 'miss';
@@ -329,6 +331,7 @@ export function GameList({
                         <span className="text-center">Predicted</span>
                         <span>Pick</span>
                         <span>Confidence</span>
+                        <span className="text-right">Units</span>
                         <span />
                     </li>
                     {pageDays.map(d => (
@@ -361,9 +364,16 @@ export function GameList({
 function KpiStrip({ s }: { s: SpanSummary }) {
     const pct = (v: number | null) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
     const vsMkt = s.marketN >= 5 && s.modelLogLossSame != null && s.marketLogLoss != null ? s.modelLogLossSame - s.marketLogLoss : null;
+    const roi = s.units != null && s.risked ? s.units / s.risked : 0;
     return (
-        <div role="group" aria-label="Summary of the games shown" className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        <div role="group" aria-label="Summary of the games shown" className="grid grid-cols-2 gap-2 lg:grid-cols-5">
             <Kpi label="Picks right" value={pct(s.accuracy)} sub={`${fmtInt(s.hits)}-${fmtInt(s.picks - s.hits)} · ${fmtInt(s.n)} graded`} />
+            <Kpi
+                label="Units"
+                value={s.units == null ? '—' : fmtUnits(s.units)}
+                sub={s.units == null ? 'no priced picks' : `ROI ${roi >= 0 ? '+' : '−'}${Math.abs(roi * 100).toFixed(1)}% · ${s.risked.toFixed(1)}u risked`}
+                tone={s.units == null ? undefined : s.units >= 0 ? 'pos' : 'neg'}
+            />
             <Kpi label="Avg confidence" value={s.avgConfidence == null ? '—' : `${s.avgConfidence.toFixed(1)}%`} sub={s.accuracy != null && s.avgConfidence != null ? `hit rate ${(s.accuracy * 100 - s.avgConfidence >= 0 ? '+' : '−')}${Math.abs(s.accuracy * 100 - s.avgConfidence).toFixed(1)} pts vs confidence` : undefined} />
             <Kpi
                 label="Log loss"
@@ -372,14 +382,19 @@ function KpiStrip({ s }: { s: SpanSummary }) {
                 sub={vsMkt == null ? 'coin 0.693' : `${vsMkt <= 0 ? '▼' : '▲'} ${Math.abs(vsMkt).toFixed(3)} vs market`}
                 tone={vsMkt == null ? undefined : vsMkt <= 0 ? 'pos' : 'neg'}
             />
-            <Kpi label="Goals error" value={s.totalGoalsMae == null ? '—' : s.totalGoalsMae.toFixed(2)} sub={s.scoreN ? `avg miss on total goals · ${fmtInt(s.scoreN)} games` : 'no projected scores'} />
+            <Kpi
+                label="Goals error"
+                value={s.totalGoalsMae == null ? '—' : s.totalGoalsMae.toFixed(2)}
+                sub={s.scoreN ? `avg miss on total goals · ${fmtInt(s.scoreN)} games` : 'no projected scores'}
+                className="max-lg:col-span-2"
+            />
         </div>
     );
 }
 
-function Kpi({ label, term, value, sub, tone }: { label: string; term?: string; value: string; sub?: string; tone?: 'pos' | 'neg' }) {
+function Kpi({ label, term, value, sub, tone, className }: { label: string; term?: string; value: string; sub?: string; tone?: 'pos' | 'neg'; className?: string }) {
     return (
-        <div className="panel flex min-w-0 flex-col gap-1.5 px-3 py-2.5 md:px-4 md:py-3">
+        <div className={cn('panel flex min-w-0 flex-col gap-1.5 px-3 py-2.5 md:px-4 md:py-3', className)}>
             {term ? (
                 <GlossLink term={term} className="label self-start">
                     {label}
@@ -402,6 +417,19 @@ function ConfBar({ prob, ok, bar = 'max-w-24' }: { prob: number; ok: boolean; ba
                 <span className={cn('absolute inset-y-0 left-0 rounded-full', ok ? 'bg-pos/80' : 'bg-neg/80')} style={{ width: `${Math.max(w, 4)}%` }} />
             </span>
             <span className={cn('w-10 shrink-0 text-right text-body font-bold tabular-nums', ok ? 'text-fg-1' : 'text-fg-2')}>{prob.toFixed(0)}%</span>
+        </span>
+    );
+}
+
+/** Units won or lost betting to win 1u (see pickUnits), toned by sign. */
+function UnitsCell({ units, bold }: { units: number | null; bold?: boolean }) {
+    if (units == null) return <span className="text-body text-fg-3">—</span>;
+    const shown = fmtUnits(units);
+    const tone = shown.startsWith('±') ? 'text-fg-2' : units > 0 ? 'text-pos' : 'text-neg';
+    return (
+        <span className={cn('whitespace-nowrap text-body tabular-nums', bold && 'font-bold', tone)}>
+            <span className="sr-only">units </span>
+            {shown}
         </span>
     );
 }
@@ -504,6 +532,9 @@ function DayItem({ day, open, onToggle, children }: { day: DayGroup; open: boole
                         </>
                     )}
                 </span>
+                <span className="hidden justify-self-end md:block">
+                    <UnitsCell units={s.units} bold />
+                </span>
                 <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-2 transition-transform', open && 'rotate-180')}>
                     <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -522,6 +553,7 @@ function DayItem({ day, open, onToggle, children }: { day: DayGroup; open: boole
 function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame; open: boolean; onToggle: () => void; showLegacy?: boolean }) {
     const pick = pickOf(g);
     const ok = isCorrect(g);
+    const bet = pickUnits(g);
     const homeWon = g.homeScore > g.awayScore;
     const detailId = `pick-${g.id}`;
     const hasXg = g.homeXg != null && g.awayXg != null;
@@ -602,6 +634,7 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
                             <Crest tri={pick} size={22} className="drop-shadow-none" />
                             <span className="font-bold text-fg-1">{pick}</span>
                             <ConfBar prob={pickProb(g)} ok={ok} bar="w-12" />
+                            {bet ? <UnitsCell units={bet.units} /> : null}
                         </span>
                     </span>
                 </span>
@@ -615,6 +648,9 @@ function GameRowItem({ game: g, open, onToggle, showLegacy }: { game: GradedGame
                 <span className="hidden md:block">
                     <ConfBar prob={pickProb(g)} ok={ok} />
                     <span className="sr-only">{ok ? '— right' : '— wrong'}. Details for {g.away} at {g.home}, {shortDate(g.date)}</span>
+                </span>
+                <span className="hidden justify-self-end md:block">
+                    <UnitsCell units={bet?.units ?? null} />
                 </span>
                 <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-3 transition-transform', open && 'rotate-180')}>
                     <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
