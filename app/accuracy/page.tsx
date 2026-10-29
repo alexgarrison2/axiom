@@ -28,7 +28,7 @@ export default function AccuracyPage() {
         .reverse();
     // The current season is reconciled against the graded list so a report that lags a refresh never contradicts it.
     const tallies: Record<string, Record<GameTypeKey, SeasonTally>> = { [CURRENT]: tallyByType(graded, CURRENT, loadExcludedGames(CURRENT, graded)) };
-    // Day count and newest-day picks per view (live picks), so the day list's placeholder matches it exactly.
+    // Day count per view (live picks), so the day list's placeholder matches it exactly.
     const shapes: Record<string, Record<GameTypeKey, DayShape>> = {};
     for (const s of seasons) {
         const live = graded.filter(g => g.season === s && !g.retro);

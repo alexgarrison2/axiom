@@ -101,8 +101,8 @@ describe('groupByDay', () => {
         expect(vsMarket(oct1.summary)).toBeNull();
     });
 
-    it('sizes the day list: days with a pick and picks on the newest day', () => {
-        expect(dayShape(games)).toEqual({ days: 2, lastDay: 2 });
-        expect(dayShape([])).toEqual({ days: 0, lastDay: 0 });
+    it('sizes the day list: days with a pick', () => {
+        expect(dayShape(games)).toEqual({ days: 2 });
+        expect(dayShape([])).toEqual({ days: 0 });
     });
 });

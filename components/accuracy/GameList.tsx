@@ -80,7 +80,7 @@ export function GameList({
     currentSeason?: string;
     /** Live graded picks the report counts for this view; sizes the loading placeholder so nothing shifts. */
     expected?: number;
-    /** Days with a pick and picks on the newest day for this view (live picks); sizes the placeholder exactly. */
+    /** Days with a pick for this view (live picks); sizes the placeholder exactly. */
     shape?: DayShape;
     /** Coin flips (no lean) the report counts for this view; reserves the no-lean strip while loading. */
     expectedNoLean?: number;
@@ -95,13 +95,13 @@ export function GameList({
     const [shown, setShown] = React.useState(PAGE);
     const [range, setRange] = React.useState<[number, number] | null>(null);
     const [open, setOpen] = React.useState<number | null>(null);
-    /** Expanded days; null until the reader toggles one, which means "the newest day only". */
-    const [openDays, setOpenDays] = React.useState<ReadonlySet<string> | null>(null);
+    /** Expanded days. Every day starts collapsed and only the reader opens one. */
+    const [openDays, setOpenDays] = React.useState<ReadonlySet<string>>(() => new Set());
     const teamId = React.useId();
-    /** A filter changed: back to the first page with only the newest day open. */
+    /** A filter changed: back to the first page with every day collapsed. */
     const refilter = () => {
         setShown(PAGE);
-        setOpenDays(null);
+        setOpenDays(new Set());
     };
 
     const epoch = useDataEpoch();
@@ -124,7 +124,7 @@ export function GameList({
         setShown(PAGE);
         setRange(null);
         setOpen(null);
-        setOpenDays(null);
+        setOpenDays(new Set());
     }, [season, type, includeRetro]);
 
     const loading = !games || games.key !== key;
@@ -149,10 +149,9 @@ export function GameList({
     // Days summarise exactly the filtered games: with All, a day's coin flips count toward its log loss as in the KPIs.
     const days = React.useMemo(() => groupByDay(result === 'all' ? inWindow : rows), [inWindow, rows, result]);
     const pageDays = days.slice(0, shown);
-    const openSet = openDays ?? new Set(days.length ? [days[0].date] : []);
-    const allOpen = pageDays.every(d => openSet.has(d.date));
+    const allOpen = pageDays.every(d => openDays.has(d.date));
     const toggleDay = (date: string) => {
-        const next = new Set(openSet);
+        const next = new Set(openDays);
         if (next.has(date)) next.delete(date);
         else next.add(date);
         setOpenDays(next);
@@ -173,7 +172,6 @@ export function GameList({
             <ListSkeleton
                 // Without a known shape, assume ~7 picks a day.
                 days={Math.min(PAGE, shape?.days ?? Math.ceil(expected / 7))}
-                openRows={shape?.lastDay ?? Math.min(expected, 7)}
                 more={(shape?.days ?? Math.ceil(expected / 7)) > PAGE}
                 after={
                     <>
@@ -335,7 +333,7 @@ export function GameList({
                         <span />
                     </li>
                     {pageDays.map(d => (
-                        <DayItem key={d.date} day={d} open={openSet.has(d.date)} onToggle={() => toggleDay(d.date)}>
+                        <DayItem key={d.date} day={d} open={openDays.has(d.date)} onToggle={() => toggleDay(d.date)}>
                             {d.picks.map(g => (
                                 <GameRowItem
                                     key={g.id}
@@ -789,7 +787,7 @@ function StripPlaceholder() {
  * row, one phone/desktop-height row per expected pick up to a page, the More button), so the rows
  * replace it without moving anything below.
  */
-function ListSkeleton({ days, openRows, more, after }: { days: number; openRows: number; more: boolean; after: React.ReactNode }) {
+function ListSkeleton({ days, more, after }: { days: number; more: boolean; after: React.ReactNode }) {
     if (!days) {
         return (
             <div aria-busy="true" className="flex flex-col gap-2">
@@ -812,15 +810,6 @@ function ListSkeleton({ days, openRows, more, after }: { days: number; openRows:
                 {Array.from({ length: days }, (_, i) => (
                     <li key={i} className={DAY_LI}>
                         <div className={DAY_H} />
-                        {i === 0 && openRows ? (
-                            <ul className="border-t border-line/60">
-                                {Array.from({ length: openRows }, (_, j) => (
-                                    <li key={j} className={ROW_LI}>
-                                        <div className="min-h-[6.9rem] md:min-h-[3.6rem]" />
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : null}
                     </li>
                 ))}
             </ul>
