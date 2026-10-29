@@ -61,13 +61,6 @@ export interface SeasonTally {
     excluded: ExcludedGame[];
 }
 
-/** Final score for a ledger bet that the ledger file still lists as pending. */
-export interface BetFinal {
-    homeScore: number;
-    awayScore: number;
-    decision: string;
-}
-
 export function pickOf(g: GradedGame): string {
     return g.homeProb >= 50 ? g.home : g.away;
 }
@@ -151,7 +144,6 @@ export interface LedgerData {
     disclaimer: string | null;
     clvNote: string | null;
     source: string | null;
-    gate: { open: boolean; reasons: string[] } | null;
     /** season label → summary */
     seasons: Record<string, LedgerSummary>;
     generatedAt: string | null;
