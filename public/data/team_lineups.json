@@ -4613,7 +4613,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -4625,7 +4625,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Scott Laughton",
@@ -4657,7 +4657,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Samuel Helenius",
@@ -4677,7 +4677,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -4698,7 +4698,7 @@
                 "id": 30833,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -4793,6 +4793,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Brandt Clarke",
+                "number": 92,
+                "pos": "ir4",
+                "id": 30833,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -4872,8 +4881,8 @@
             }
         ],
         "lineup_source": "Zach Dooley",
-        "updated_at": "2026-10-30T01:39:41.283Z",
-        "fetched_at": "2026-10-30T02:03:44Z"
+        "updated_at": "2026-10-30T04:16:50.488Z",
+        "fetched_at": "2026-10-30T04:57:02Z"
     },
     "DAL": {
         "f1": [
