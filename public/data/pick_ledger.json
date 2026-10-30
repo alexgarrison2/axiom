@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-29T18:16:07.225247+00:00",
+ "generated_at": "2026-10-30T02:05:50.069000+00:00",
  "unit": "Every pick bet to win 1 unit: a -120 favourite risks 1.2u, a +150 underdog risks 0.67u",
  "disclaimer": "For information and entertainment only. Past results do not predict future results.",
  "source": "graded live picks in prediction_history.json at the price shown when the pick was published",
@@ -9456,45 +9456,45 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 179,
-    "n_graded": 179,
+    "n_bets": 182,
+    "n_graded": 182,
     "n_pending": 0,
-    "record": "113-66",
-    "wins": 113,
-    "losses": 66,
-    "units_staked": 299.5103,
-    "units_profit": 10.9096,
-    "roi": 0.0364,
+    "record": "115-67",
+    "wins": 115,
+    "losses": 67,
+    "units_staked": 305.1475,
+    "units_profit": 12.0324,
+    "roi": 0.0394,
     "roi_ci": [
-     -0.0733,
-     0.1446
+     -0.0667,
+     0.1473
     ],
     "clv_mean": -0.0328,
-    "clv_n": 179,
+    "clv_n": 182,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
-      "n": 102,
-      "record": "63-39",
-      "units_staked": 168.75,
-      "units_profit": 0.61,
-      "roi": 0.0036
+      "n": 103,
+      "record": "64-39",
+      "units_staked": 171.33,
+      "units_profit": 1.61,
+      "roi": 0.0094
      },
      {
       "bucket": "0-5%",
-      "n": 51,
-      "record": "32-19",
-      "units_staked": 83.9108,
-      "units_profit": 3.4796,
-      "roi": 0.0415
+      "n": 52,
+      "record": "33-19",
+      "units_staked": 86.0908,
+      "units_profit": 4.4796,
+      "roi": 0.052
      },
      {
       "bucket": "5-10%",
-      "n": 22,
-      "record": "14-8",
-      "units_staked": 41.7995,
-      "units_profit": 2.82,
-      "roi": 0.0675
+      "n": 23,
+      "record": "14-9",
+      "units_staked": 42.6767,
+      "units_profit": 1.9428,
+      "roi": 0.0455
      },
      {
       "bucket": "10-20%",
@@ -9522,11 +9522,11 @@
      },
      {
       "bucket": "0.6-1u",
-      "n": 8,
-      "record": "5-3",
-      "units_staked": 7.9103,
-      "units_profit": 1.9996,
-      "roi": 0.2528
+      "n": 9,
+      "record": "5-4",
+      "units_staked": 8.7875,
+      "units_profit": 1.1224,
+      "roi": 0.1277
      },
      {
       "bucket": "1.1-2u",
@@ -9538,11 +9538,11 @@
      },
      {
       "bucket": "2u+",
-      "n": 44,
-      "record": "33-11",
-      "units_staked": 106.01,
-      "units_profit": 7.56,
-      "roi": 0.0713
+      "n": 46,
+      "record": "35-11",
+      "units_staked": 110.77,
+      "units_profit": 9.56,
+      "roi": 0.0863
      }
     ]
    },
@@ -14020,6 +14020,81 @@
      "decision": "REG",
      "closing_price": 110.0,
      "clv": -0.0453,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020204,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-10-29",
+     "startUtc": "2026-10-29T23:00:00Z",
+     "snapshotUtc": "2026-10-29T20:03:00Z",
+     "team": "Lightning",
+     "opponent": "Jets",
+     "side": "home",
+     "stake_units": 2.18,
+     "price": -218.0,
+     "decimal_price": 1.4587,
+     "ev_at_bet": 0.0357,
+     "ev_bucket": "0-5%",
+     "stake_bucket": "2u+",
+     "model_prob": 0.71,
+     "result": "win",
+     "profit_units": 1.0,
+     "final": "4-6",
+     "decision": "REG",
+     "closing_price": -218.0,
+     "clv": -0.0261,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020205,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-10-29",
+     "startUtc": "2026-10-29T23:00:00Z",
+     "snapshotUtc": "2026-10-29T22:03:00Z",
+     "team": "Penguins",
+     "opponent": "Mammoth",
+     "side": "home",
+     "stake_units": 0.8772,
+     "price": 114.0,
+     "decimal_price": 2.14,
+     "ev_at_bet": 0.0914,
+     "ev_bucket": "5-10%",
+     "stake_bucket": "0.6-1u",
+     "model_prob": 0.51,
+     "result": "loss",
+     "profit_units": -0.8772,
+     "final": "4-3",
+     "decision": "OT",
+     "closing_price": 114.0,
+     "clv": -0.047,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020206,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-10-29",
+     "startUtc": "2026-10-29T23:00:00Z",
+     "snapshotUtc": "2026-10-29T21:03:00Z",
+     "team": "Hurricanes",
+     "opponent": "Blue Jackets",
+     "side": "home",
+     "stake_units": 2.58,
+     "price": -258.0,
+     "decimal_price": 1.3876,
+     "ev_at_bet": -0.0467,
+     "ev_bucket": "<0%",
+     "stake_bucket": "2u+",
+     "model_prob": 0.687,
+     "result": "win",
+     "profit_units": 1.0,
+     "final": "2-3",
+     "decision": "REG",
+     "closing_price": -258.0,
+     "clv": -0.024,
      "model_version": "sim-m5-v4_st-20261003"
     }
    ]

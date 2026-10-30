@@ -2,7 +2,6 @@
   "by_full_name": {
     "jansen harkins": "8478424",
     "nathan gaucher": "8483444",
-    "troy terry": "8478873",
     "lukas reichel": "8482117",
     "vladislav kolyachonok": "8481609",
     "alex steeves": "8482634",
@@ -68,10 +67,10 @@
     "nathan bastian": "8479414",
     "adam erne": "8477454",
     "alexander petrovic": "8475755",
+    "dylan larkin": "8477946",
     "john leonard": "8481077",
     "james van riemsdyk": "8474037",
     "jacob bernard-docker": "8480879",
-    "sheldon dries": "8480326",
     "simon edvinsson": "8482762",
     "travis hamonic": "8474612",
     "dominik shine": "8479942",
@@ -97,11 +96,11 @@
     "noah gregor": "8479393",
     "donovan sebrango": "8482131",
     "jacob moverare": "8479421",
+    "jared wright": "8483756",
     "angus booth": "8483699",
     "kenny connors": "8483675",
     "anze kopitar": "8471685",
     "marcus johansson": "8475149",
-    "carson lambos": "8482781",
     "hunter haight": "8483452",
     "robby fabbri": "8477952",
     "vladimir tarasenko": "8475765",
@@ -135,12 +134,12 @@
     "ryan ufko": "8482715",
     "brady martin": "8485405",
     "joakim kemell": "8483465",
-    "travis mitchell": "8484262",
     "adam boqvist": "8480871",
     "isaiah george": "8483448",
     "mathew barzal": "8478445",
     "marshall warren": "8481569",
     "liam foudy": "8480853",
+    "carson soucy": "8477369",
     "brendan brisson": "8482153",
     "juuso parssinen": "8481704",
     "connor mackey": "8482067",
@@ -165,6 +164,7 @@
     "garrett wilson": "8475253",
     "rodrigo abols": "8479022",
     "lane pederson": "8478967",
+    "jacob gaucher": "8481848",
     "jett luchanko": "8484779",
     "anthony richard": "8478409",
     "adam ginning": "8480874",
@@ -276,6 +276,7 @@
     "jacob trouba": "8476885",
     "ian moore": "8482178",
     "chris kreider": "8475184",
+    "troy terry": "8478873",
     "tim washe": "8485512",
     "mark kastelic": "8480355",
     "tanner jeannot": "8479661",
@@ -450,7 +451,6 @@
     "tyler seguin": "8475794",
     "arttu hyry": "8484938",
     "david perron": "8474102",
-    "dylan larkin": "8477946",
     "justin faulk": "8475753",
     "albert johansson": "8481607",
     "andrew copp": "8477429",
@@ -461,6 +461,7 @@
     "moritz seider": "8481542",
     "nate danielson": "8484160",
     "lucas raymond": "8482078",
+    "sheldon dries": "8480326",
     "michael brandsegg-nyg\u00e5rd": "8484794",
     "ben chiarot": "8475279",
     "mason appleton": "8478891",
@@ -515,7 +516,6 @@
     "niko mikkola": "8478859",
     "alex turcotte": "8481532",
     "quinton byfield": "8482124",
-    "jared wright": "8483756",
     "drew doughty": "8474563",
     "kevin fiala": "8477942",
     "brian dumoulin": "8475208",
@@ -542,6 +542,7 @@
     "mats zuccarello": "8475692",
     "marcus foligno": "8475220",
     "yakov trenin": "8478508",
+    "carson lambos": "8482781",
     "ben jones": "8480259",
     "ryan hartman": "8477451",
     "matt kiersted": "8482641",
@@ -618,6 +619,7 @@
     "nick perbix": "8480246",
     "justin barron": "8482111",
     "erik haula": "8475287",
+    "travis mitchell": "8484262",
     "adam pelech": "8476917",
     "maxim shabanov": "8485702",
     "simon holmstrom": "8481601",
@@ -640,7 +642,6 @@
     "jean-gabriel pageau": "8476419",
     "tony deangelo": "8477950",
     "victor eklund": "8485388",
-    "carson soucy": "8477369",
     "taylor raddysh": "8479390",
     "gabe perreault": "8484210",
     "adam sykora": "8483669",
@@ -685,7 +686,6 @@
     "christian dvorak": "8477989",
     "travis sanheim": "8477948",
     "nick seeler": "8476372",
-    "jacob gaucher": "8481848",
     "cam york": "8481546",
     "emil andrae": "8482126",
     "rasmus ristolainen": "8477499",
@@ -958,13 +958,6 @@
         "pid": "8481848",
         "full_name": "jacob gaucher",
         "team": "PHI"
-      }
-    ],
-    "terry": [
-      {
-        "pid": "8478873",
-        "full_name": "troy terry",
-        "team": "ANA"
       }
     ],
     "reichel": [
@@ -1477,6 +1470,13 @@
         "team": "DAL"
       }
     ],
+    "larkin": [
+      {
+        "pid": "8477946",
+        "full_name": "dylan larkin",
+        "team": "DET"
+      }
+    ],
     "leonard": [
       {
         "pid": "8481077",
@@ -1505,13 +1505,6 @@
       {
         "pid": "8480879",
         "full_name": "jacob bernard-docker",
-        "team": "DET"
-      }
-    ],
-    "dries": [
-      {
-        "pid": "8480326",
-        "full_name": "sheldon dries",
         "team": "DET"
       }
     ],
@@ -1705,6 +1698,18 @@
         "team": "LAK"
       }
     ],
+    "wright": [
+      {
+        "pid": "8483756",
+        "full_name": "jared wright",
+        "team": "LAK"
+      },
+      {
+        "pid": "8483524",
+        "full_name": "shane wright",
+        "team": "SEA"
+      }
+    ],
     "booth": [
       {
         "pid": "8483699",
@@ -1736,13 +1741,6 @@
         "pid": "8481607",
         "full_name": "albert johansson",
         "team": "DET"
-      }
-    ],
-    "lambos": [
-      {
-        "pid": "8482781",
-        "full_name": "carson lambos",
-        "team": "MIN"
       }
     ],
     "haight": [
@@ -1986,13 +1984,6 @@
         "team": "NSH"
       }
     ],
-    "mitchell": [
-      {
-        "pid": "8484262",
-        "full_name": "travis mitchell",
-        "team": "NYI"
-      }
-    ],
     "boqvist": [
       {
         "pid": "8480871",
@@ -2030,6 +2021,13 @@
       {
         "pid": "8480853",
         "full_name": "liam foudy",
+        "team": "NYI"
+      }
+    ],
+    "soucy": [
+      {
+        "pid": "8477369",
+        "full_name": "carson soucy",
         "team": "NYI"
       }
     ],
@@ -3043,6 +3041,13 @@
         "pid": "8475184",
         "full_name": "chris kreider",
         "team": "MTL"
+      }
+    ],
+    "terry": [
+      {
+        "pid": "8478873",
+        "full_name": "troy terry",
+        "team": "ANA"
       }
     ],
     "washe": [
@@ -4219,13 +4224,6 @@
         "team": "DAL"
       }
     ],
-    "larkin": [
-      {
-        "pid": "8477946",
-        "full_name": "dylan larkin",
-        "team": "DET"
-      }
-    ],
     "faulk": [
       {
         "pid": "8475753",
@@ -4279,6 +4277,13 @@
       {
         "pid": "8482078",
         "full_name": "lucas raymond",
+        "team": "DET"
+      }
+    ],
+    "dries": [
+      {
+        "pid": "8480326",
+        "full_name": "sheldon dries",
         "team": "DET"
       }
     ],
@@ -4659,18 +4664,6 @@
         "team": "LAK"
       }
     ],
-    "wright": [
-      {
-        "pid": "8483756",
-        "full_name": "jared wright",
-        "team": "LAK"
-      },
-      {
-        "pid": "8483524",
-        "full_name": "shane wright",
-        "team": "SEA"
-      }
-    ],
     "doughty": [
       {
         "pid": "8474563",
@@ -4844,6 +4837,13 @@
       {
         "pid": "8478508",
         "full_name": "yakov trenin",
+        "team": "MIN"
+      }
+    ],
+    "lambos": [
+      {
+        "pid": "8482781",
+        "full_name": "carson lambos",
         "team": "MIN"
       }
     ],
@@ -5301,6 +5301,13 @@
         "team": "LAK"
       }
     ],
+    "mitchell": [
+      {
+        "pid": "8484262",
+        "full_name": "travis mitchell",
+        "team": "ANA"
+      }
+    ],
     "pelech": [
       {
         "pid": "8476917",
@@ -5437,13 +5444,6 @@
         "pid": "8482667",
         "full_name": "william eklund",
         "team": "OTT"
-      }
-    ],
-    "soucy": [
-      {
-        "pid": "8477369",
-        "full_name": "carson soucy",
-        "team": "CBJ"
       }
     ],
     "raddysh": [
@@ -5665,7 +5665,7 @@
       {
         "pid": "8480075",
         "full_name": "cameron crotty",
-        "team": "OTT"
+        "team": "MIN"
       }
     ],
     "gilbert": [

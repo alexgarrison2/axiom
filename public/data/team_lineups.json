@@ -4606,33 +4606,33 @@
                 "movement": null
             },
             {
-                "name": "Taylor Ward",
-                "number": 17,
+                "name": "Corey Perry",
+                "number": 90,
                 "pos": "rw",
-                "id": 36257,
-                "ppUnit": 2,
+                "id": 36,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Scott Laughton",
-                "number": 21,
+                "name": "Andre Lee",
+                "number": null,
                 "pos": "lw",
-                "id": 2018,
-                "ppUnit": null,
+                "id": 30215,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Erik Haula",
-                "number": 56,
+                "name": "Scott Laughton",
+                "number": 21,
                 "pos": "c",
-                "id": 2135,
-                "ppUnit": 2,
+                "id": 2018,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4650,14 +4650,14 @@
         ],
         "f4": [
             {
-                "name": "Andre Lee",
-                "number": null,
+                "name": "Erik Haula",
+                "number": 56,
                 "pos": "lw",
-                "id": 30215,
+                "id": 2135,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Samuel Helenius",
@@ -4670,14 +4670,14 @@
                 "movement": null
             },
             {
-                "name": "Corey Perry",
-                "number": 90,
+                "name": "Taylor Ward",
+                "number": 17,
                 "pos": "rw",
-                "id": 36,
-                "ppUnit": null,
+                "id": 36257,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "down"
             }
         ],
         "d1": [
@@ -4711,7 +4711,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Drew Doughty",
@@ -4721,7 +4721,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d3": [
@@ -4733,7 +4733,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Brian Dumoulin",
@@ -4743,7 +4743,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -4871,9 +4871,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-10-29T17:42:21.259Z",
-        "fetched_at": "2026-10-29T19:01:55Z"
+        "lineup_source": "Zach Dooley",
+        "updated_at": "2026-10-30T01:39:41.283Z",
+        "fetched_at": "2026-10-30T02:03:44Z"
     },
     "DAL": {
         "f1": [
@@ -8148,7 +8148,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Lucas Raymond",
@@ -8190,7 +8190,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -8203,6 +8203,16 @@
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Sheldon Dries",
+                "number": 15,
+                "pos": "c",
+                "id": 4826,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Keegan Kolesar",
@@ -8415,9 +8425,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ansar Khan",
-        "updated_at": "2026-10-29T16:22:36.547Z",
-        "fetched_at": "2026-10-29T17:02:12Z"
+        "lineup_source": "@DetroitRedWings",
+        "updated_at": "2026-10-30T01:33:59.684Z",
+        "fetched_at": "2026-10-30T02:03:44Z"
     },
     "UTA": {
         "f1": [
