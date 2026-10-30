@@ -19,21 +19,22 @@
         "awayGoalieSource": "dailyfaceoff",
         "awayGoalieConflict": false,
         "awayGoalieAlt": null,
-        "tvNetwork": "NHLN",
+        "tvNetwork": "",
         "tvDisplay": [
             {
-                "network": "NHLN",
-                "market": "N",
-                "team": null,
+                "network": "MSGSN",
+                "market": "A",
+                "team": "NJD",
+                "country": "US"
+            },
+            {
+                "network": "SCRIPPS",
+                "market": "H",
+                "team": "VGK",
                 "country": "US"
             }
         ],
         "tvBroadcasts": [
-            {
-                "network": "NHLN",
-                "market": "N",
-                "countryCode": "US"
-            },
             {
                 "network": "SN+",
                 "market": "N",
@@ -109,7 +110,7 @@
         "homeTeamAbbrev": "CGY",
         "awayTeamAbbrev": "SEA",
         "homeGoalieConfirmed": "Dustin Wolf",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Confirmed",
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
@@ -168,8 +169,8 @@
         "awayGoalieConfirmed": "Spencer Knight",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
+        "awayGoalieConflict": true,
+        "awayGoalieAlt": "Arvid Soderblom",
         "tvNetwork": "",
         "tvDisplay": [
             {
@@ -607,7 +608,7 @@
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
         "awayGoalieConflict": true,
-        "awayGoalieAlt": "Devin Cooley",
+        "awayGoalieAlt": "Arsenii Sergeev",
         "tvNetwork": "",
         "tvDisplay": [
             {
