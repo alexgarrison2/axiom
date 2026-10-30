@@ -3732,28 +3732,6 @@
         ],
         "d2": [
             {
-                "name": "Declan Carlile",
-                "number": 72,
-                "pos": "ld",
-                "id": 30124,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Kris Letang",
-                "number": 58,
-                "pos": "rd",
-                "id": 1233,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Samuel Girard",
                 "number": 49,
                 "pos": "ld",
@@ -3761,7 +3739,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Kaedan Korczak",
@@ -3771,7 +3749,29 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Declan Carlile",
+                "number": 72,
+                "pos": "ld",
+                "id": 30124,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Kris Letang",
+                "number": 58,
+                "pos": "rd",
+                "id": 1233,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "g": [
@@ -3899,9 +3899,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-29)",
-        "updated_at": "2026-10-30T13:55:05.311Z",
-        "fetched_at": "2026-10-30T14:01:52Z"
+        "lineup_source": "@PensInsideScoop",
+        "updated_at": "2026-10-30T17:27:10.618Z",
+        "fetched_at": "2026-10-30T18:02:02Z"
     },
     "NYI": {
         "f1": [
@@ -9606,7 +9606,7 @@
                 "id": 2531,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -9688,6 +9688,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Colton Parayko",
+                "number": 55,
+                "pos": "ir6",
+                "id": 2531,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -9725,7 +9734,7 @@
                 "id": 2531,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -9767,8 +9776,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-10-29)",
-        "updated_at": "2026-10-30T13:59:01.355Z",
-        "fetched_at": "2026-10-30T14:01:52Z"
+        "updated_at": "2026-10-30T17:59:20.530Z",
+        "fetched_at": "2026-10-30T18:02:02Z"
     },
     "CGY": {
         "f1": [
@@ -9876,7 +9885,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jonathan Castagna",
@@ -9923,28 +9932,6 @@
         ],
         "d2": [
             {
-                "name": "Yan Kuznetsov",
-                "number": 37,
-                "pos": "ld",
-                "id": 30745,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Zayne Parekh",
-                "number": 19,
-                "pos": "rd",
-                "id": 36725,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Jacob Middleton",
                 "number": 5,
                 "pos": "ld",
@@ -9952,7 +9939,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Zach Whitecloud",
@@ -9962,7 +9949,29 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Yan Kuznetsov",
+                "number": 37,
+                "pos": "ld",
+                "id": 30745,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Zayne Parekh",
+                "number": 19,
+                "pos": "rd",
+                "id": 36725,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "g": [
@@ -10100,8 +10109,8 @@
             }
         ],
         "lineup_source": "Pat Steinberg",
-        "updated_at": "2026-10-30T16:20:21.814Z",
-        "fetched_at": "2026-10-30T17:02:04Z"
+        "updated_at": "2026-10-30T17:29:52.645Z",
+        "fetched_at": "2026-10-30T18:02:02Z"
     },
     "NSH": {
         "f1": [
