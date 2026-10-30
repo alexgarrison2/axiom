@@ -234,19 +234,6 @@
   "fetched_at": "2026-10-28T15:01:50Z"
  },
  {
-  "playerId": 8481568,
-  "name": "Alex Vlasic",
-  "team": "CHI",
-  "position": "D",
-  "status": "Day-To-Day",
-  "type": "Illness",
-  "returnDate": "2026-10-29",
-  "comment": "day-to-day",
-  "date": "2026-10-29T16:27Z",
-  "espn_id": "597702",
-  "fetched_at": "2026-10-29T17:01:55Z"
- },
- {
   "playerId": 8481524,
   "name": "Bowen Byram",
   "team": "CHI",
@@ -667,13 +654,13 @@
   "name": "Jared Spurgeon",
   "team": "MIN",
   "position": "D",
-  "status": "Out",
+  "status": "Injured Reserve",
   "type": "Undisclosed",
   "returnDate": "2026-11-06",
-  "comment": "out",
-  "date": "2026-10-29T15:56Z",
-  "espn_id": "597693",
-  "fetched_at": "2026-10-29T17:01:55Z"
+  "comment": "ir",
+  "date": "2026-10-29T23:51Z",
+  "espn_id": "597745",
+  "fetched_at": "2026-10-30T00:01:48Z"
  },
  {
   "playerId": 8475220,
@@ -682,11 +669,11 @@
   "position": "LW",
   "status": "Injured Reserve",
   "type": "Lower Body",
-  "returnDate": "2026-10-29",
+  "returnDate": "2026-11-03",
   "comment": "ir",
   "date": "2026-10-12T22:12Z",
   "espn_id": "595638",
-  "fetched_at": "2026-10-19T15:01:45Z"
+  "fetched_at": "2026-10-30T00:01:48Z"
  },
  {
   "playerId": 8473422,
@@ -695,11 +682,11 @@
   "position": "LW",
   "status": "Injured Reserve",
   "type": "Upper Body",
-  "returnDate": "2026-10-29",
+  "returnDate": "2026-11-03",
   "comment": "ir",
   "date": "2026-10-09T15:50Z",
   "espn_id": "595206",
-  "fetched_at": "2026-10-19T15:01:45Z"
+  "fetched_at": "2026-10-30T00:01:48Z"
  },
  {
   "playerId": 8485218,
@@ -739,6 +726,19 @@
   "date": "2026-09-29T16:38Z",
   "espn_id": "594183",
   "fetched_at": "2026-10-10T15:02:22Z"
+ },
+ {
+  "playerId": 8476875,
+  "name": "Mike Matheson",
+  "team": "MTL",
+  "position": "D",
+  "status": "Out",
+  "type": "Lower Body",
+  "returnDate": "2026-10-31",
+  "comment": "out",
+  "date": "2026-10-29T23:36Z",
+  "espn_id": "597744",
+  "fetched_at": "2026-10-30T00:01:48Z"
  },
  {
   "playerId": 8480018,
@@ -1202,11 +1202,11 @@
   "position": "LW",
   "status": "Injured Reserve",
   "type": "Lower Body",
-  "returnDate": "2026-10-29",
+  "returnDate": "2026-10-31",
   "comment": "ir",
   "date": "2026-10-19T02:33Z",
   "espn_id": "596489",
-  "fetched_at": "2026-10-27T19:01:51Z"
+  "fetched_at": "2026-10-30T00:01:48Z"
  },
  {
   "playerId": 8476792,

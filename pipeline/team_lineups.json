@@ -1170,32 +1170,32 @@
                 "movement": null
             },
             {
-                "name": "Mike Matheson",
-                "number": 8,
-                "pos": "rd",
-                "id": 2583,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Adam Engstrom",
-                "number": 42,
-                "pos": "ld",
-                "id": 36434,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Alexandre Carrier",
                 "number": 45,
                 "pos": "rd",
                 "id": 2732,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Arber Xhekaj",
+                "number": 72,
+                "pos": "ld",
+                "id": 29784,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
+                "name": "Adam Engstrom",
+                "number": 42,
+                "pos": "rd",
+                "id": 36434,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -1204,19 +1204,19 @@
         ],
         "g": [
             {
-                "name": "Jacob Fowler",
-                "number": 32,
+                "name": "Jakub Dobes",
+                "number": 75,
                 "pos": "g1",
-                "id": 38444,
+                "id": 31895,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Jakub Dobes",
-                "number": 75,
+                "name": "Jacob Fowler",
+                "number": 32,
                 "pos": "g2",
-                "id": 31895,
+                "id": 38444,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1240,6 +1240,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Mike Matheson",
+                "number": 8,
+                "pos": "ir4",
+                "id": 2583,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -1262,10 +1271,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Mike Matheson",
-                "number": 8,
+                "name": "Kaiden Guhle",
+                "number": 21,
                 "pos": "sk3",
-                "id": 2583,
+                "id": 32947,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1300,10 +1309,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Kaiden Guhle",
-                "number": 21,
+                "name": "Adam Engstrom",
+                "number": 42,
                 "pos": "sk3",
-                "id": 32947,
+                "id": 36434,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1320,7 +1329,7 @@
         ],
         "lineup_source": "Anthony Martineau",
         "updated_at": "2026-10-28T17:55:19.664Z",
-        "fetched_at": "2026-10-28T21:02:03Z"
+        "fetched_at": "2026-10-30T00:02:03Z"
     },
     "BOS": {
         "f1": [
@@ -10078,16 +10087,6 @@
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
-            },
-            {
-                "name": "Mavrik Bourque",
-                "number": 22,
-                "pos": "rw",
-                "id": 29958,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
             }
         ],
         "f2": [
@@ -10112,14 +10111,14 @@
                 "movement": null
             },
             {
-                "name": "Vitali Pinchuk",
-                "number": 51,
+                "name": "Mavrik Bourque",
+                "number": 22,
                 "pos": "rw",
-                "id": 31775,
-                "ppUnit": null,
+                "id": 29958,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "down"
             }
         ],
         "f3": [
@@ -10151,7 +10150,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -10210,28 +10209,6 @@
         ],
         "d2": [
             {
-                "name": "Nicolas Hague",
-                "number": 41,
-                "pos": "ld",
-                "id": 2799,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Jayden Struble",
-                "number": 3,
-                "pos": "rd",
-                "id": 30435,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Brady Skjei",
                 "number": 76,
                 "pos": "ld",
@@ -10239,7 +10216,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Nick Perbix",
@@ -10249,7 +10226,29 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Nicolas Hague",
+                "number": 41,
+                "pos": "ld",
+                "id": 2799,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Jayden Struble",
+                "number": 3,
+                "pos": "rd",
+                "id": 30435,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "g": [
@@ -10360,7 +10359,7 @@
             }
         ],
         "lineup_source": "Max Herz",
-        "updated_at": "2026-10-29T15:54:44.018Z",
-        "fetched_at": "2026-10-29T16:02:14Z"
+        "updated_at": "2026-10-29T23:37:56.946Z",
+        "fetched_at": "2026-10-30T00:02:03Z"
     }
 }
