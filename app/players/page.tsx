@@ -4,7 +4,7 @@ import { PlayersTabs } from '@/components/players/PlayersTabs';
 import SkaterStatsTable from '@/components/SkaterStatsTable';
 import { compactSkaters, DEFAULT_FILTER, filterSkaters, headlineKey, sortSkaters } from '@/components/players/model';
 import { readBio, readRatingsDoc } from '@/lib/players/server';
-import { statLines } from '@/lib/players/stats-server';
+import { ponyForm, statLines } from '@/lib/players/stats-server';
 import { asOfLabel, parseRatings } from '@/lib/players/ratings';
 import { SEASON_ID, SEASON_START_YEAR } from '@/lib/season';
 
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function PlayersPage() {
     const doc = readRatingsDoc();
-    const all = compactSkaters(doc, statLines(), readBio());
+    const all = compactSkaters(doc, statLines(), readBio(), ponyForm());
     // IMPACT (goals per 82) best first; a v2 file without it opens on NET per 60.
     const defaults = sortSkaters(filterSkaters(all, DEFAULT_FILTER), headlineKey(all), 'desc');
     // First screen only (the full list loads right after); 50 rows put the HTML over its 400 KB budget.

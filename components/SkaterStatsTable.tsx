@@ -79,6 +79,13 @@ function Rating({ v, p, strong, digits = 2, muted = false }: { v: number | null 
     );
 }
 
+/** Form (Pony Score per game over the window): green or red past the top / bottom tenth. */
+function Form({ v }: { v: number | null }) {
+    if (v == null) return <span className="text-fg-3">—</span>;
+    const t = v >= STRONG.form ? 'pos' : v <= -STRONG.form ? 'neg' : null;
+    return <span className={cn('font-semibold', t ? TONE[t] : 'text-fg-1')}>{signed(v)}</span>;
+}
+
 const lowPp = (p: Skater) => p.ppGp != null && p.ppGp < SPECIAL_TEAMS_MIN_GP;
 const lowPk = (p: Skater) => p.pkGp != null && p.pkGp < SPECIAL_TEAMS_MIN_GP;
 
@@ -93,6 +100,14 @@ const COLUMNS: Column[] = [
     { key: 'pk', label: 'PK', title: 'Penalty-kill xG against per 60 prevented, vs his position average (grey: under 0:30 PK a game)', group: 'rate', sets: ['rates'], render: p => <Rating v={p.pk} p={p} strong={STRONG.pk} muted={lowPk(p)} /> },
     { key: 'fin', label: 'FIN', title: 'Finishing: EV goals above xG per 60 on his own shots, shrunk', group: 'rate', sets: ['rates'], render: p => <Rating v={p.fin} p={p} strong={STRONG.fin} /> },
     { key: 'evMin', label: 'EV MIN', title: 'Even-strength minutes behind the rating (last three seasons + this one)', group: 'rate', sets: ['rates'], render: p => <span className={p.evMin < COLOR_MIN_EV ? 'text-fg-3' : undefined}>{thousands(p.evMin)}</span> },
+    {
+        key: 'form',
+        label: 'FORM',
+        title: 'Form: Pony Score per game over his last games (goals above an average player at his position). Only with L5, L10 or L20',
+        group: 'count',
+        sets: ['impact', 'rates', 'scoring'],
+        render: (p, s) => <Form v={valueOf(p, 'form', s)} />,
+    },
     { key: 'gp', label: 'GP', title: 'Games played', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'gp', s) ?? 0 },
     { key: 'g', label: 'G', title: 'Goals', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'g', s) ?? '—' },
     { key: 'a', label: 'A', title: 'Assists', group: 'count', sets: ['scoring'], render: (p, s) => valueOf(p, 'a', s) ?? '—' },
@@ -105,7 +120,7 @@ const COLUMNS: Column[] = [
 const OPEN_BG = 'group-data-[open]:!bg-surface-3';
 
 /** The first column of each group after the headline gets a divider on wide screens (PROD, a separate measure, sits between two). */
-const GROUP_START = new Set<SortKey>(['prod', 'offImp', 'evOff', 'gp']);
+const GROUP_START = new Set<SortKey>(['prod', 'offImp', 'evOff', 'form', 'gp']);
 
 export interface SkaterStatsTableProps {
     /** Server-rendered first page of the default view (headline, best first), so the table paints without every skater in the HTML. */
@@ -169,7 +184,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
         if (span && SPANS.includes(span) && (!windowGames(span) || defaultSeason === 'cur')) {
             setSeason(span);
             // As when the window is picked (the sort itself is not in the URL).
-            if (windowGames(span)) setSort({ key: 'pts', dir: 'desc' });
+            if (windowGames(span)) setSort({ key: 'form', dir: 'desc' });
         }
         setFromUrl(true);
         try {
@@ -232,8 +247,18 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
     const list = players ?? preview?.rows;
     const headline = headlineKey(list ?? []);
     // A v2 file (no impact column) opens on NET per 60; the impact-only columns are hidden.
-    const sortKey: SortKey = sort.key === 'impact' && headline === 'net' ? 'net' : sort.key;
-    const columns = React.useMemo(() => COLUMNS.filter(c => c.group === 'count' || (list ?? []).some(p => valueOf(p, c.key, 'cur') != null)), [list]);
+    const win = windowGames(season);
+    // FORM exists only over a last-N window; a season view sorted by it falls back to the headline.
+    const sortKey: SortKey = (sort.key === 'impact' && headline === 'net') || (sort.key === 'form' && !win) ? headline : sort.key;
+    const columns = React.useMemo(
+        () =>
+            COLUMNS.filter(c =>
+                c.key === 'form'
+                    ? win != null && (list ?? []).some(p => p.form != null)
+                    : c.group === 'count' || (list ?? []).some(p => valueOf(p, c.key, 'cur') != null),
+            ),
+        [list, win],
+    );
     const setOptions = (Object.keys(SET_LABELS) as ColumnSet[]).filter(s => s !== 'impact' || columns.some(c => c.sets.includes('impact')));
     const set: ColumnSet = setOptions.includes(chosenSet) ? chosenSet : setOptions[0];
 
@@ -242,7 +267,6 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
     const pages = Math.max(1, Math.ceil(rows.length / PAGE));
     const current = Math.min(page, pages - 1);
     const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
-    const win = windowGames(season);
     const seasonLabel = win ? `Last ${win} · ${short(seasons.cur)}` : seasons[season as 'cur' | 'prev'];
 
     const update = (patch: Partial<SkaterFilter>) => {
@@ -250,7 +274,8 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
         setPage(0);
     };
     const onSort = (key: SortKey) => {
-        setSort(s => ((s.key === 'impact' && headline === 'net' ? 'net' : s.key) === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: FIRST_DIR[key] ?? 'desc' }));
+        // Against the effective sort (a v2 file's NET, or the headline a season view falls back to from FORM).
+        setSort(s => (sortKey === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: FIRST_DIR[key] ?? 'desc' }));
         setPage(0);
     };
     const toggle = (id: string) =>
@@ -268,7 +293,9 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
         setPage(p);
         tableTop.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     };
-    const colClass = (c: Column) => cn(c.sets.includes(set) ? 'table-cell' : 'hidden md:table-cell', GROUP_START.has(c.key) && 'md:border-l md:border-l-line');
+    // The count group's divider sits on its first column (FORM when it shows, else GP).
+    const divided = (c: Column) => GROUP_START.has(c.key) && !(c.key === 'gp' && columns.some(x => x.key === 'form'));
+    const colClass = (c: Column) => cn(c.sets.includes(set) ? 'table-cell' : 'hidden md:table-cell', divided(c) && 'md:border-l md:border-l-line');
     /**
      * Tabbing to the table region scrolls it under the sticky filter bar; nudge it so the header row shows.
      * Keyboard focus only: a mouse press on a name focuses the region too (Safari, and Chrome on a link), and
@@ -379,8 +406,8 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
                         onChange={v => {
                             setSeason(v);
                             setPage(0);
-                            // A last-N window is about form: a ranking by a rating would not move, so it ranks by points.
-                            if (windowGames(v) && !COLUMNS.some(c => c.key === sortKey && c.group === 'count')) setSort({ key: 'pts', dir: 'desc' });
+                            // A last-N window is about form: a ranking by a rating would not move, so it ranks by FORM.
+                            if (windowGames(v) && !COLUMNS.some(c => c.key === sortKey && c.group === 'count')) setSort({ key: 'form', dir: 'desc' });
                         }}
                         options={SPANS.map(s => {
                             const n = windowGames(s);
@@ -420,7 +447,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
                             Skaters sorted by {sortName}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}. Ratings as of {asOf ?? 'the latest refresh'}
                             {headline === 'impact' ? ': impact, offence, defence and penalties in goals per 82 games' : ''}
                             {headline === 'impact' && hasProd ? ', production in Game Score per 82 games' : ''}
-                            {headline === 'impact' ? ', rates per 60 minutes' : ''}; counting stats {win ? `${seasons.cur}, each skater's last ${win} games` : `${seasonLabel} regular season`}. Select
+                            {headline === 'impact' ? ', rates per 60 minutes' : ''}; counting stats {win ? `${seasons.cur}, each skater's last ${win} games, with form (Pony Score per game over them)` : `${seasonLabel} regular season`}. Select
                             a row to show his form.
                         </caption>
                         <thead className="scroll-mt-filterbar bg-bg">
@@ -443,7 +470,13 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
                                     </th>
                                 ) : null}
                                 <th scope="colgroup" colSpan={nCount} className="border-b border-l border-line px-2 pb-0.5 pt-1.5 text-right text-micro font-medium uppercase tracking-label text-fg-3">
-                                    {seasonLabel}
+                                    {win ? (
+                                        <Link href={glossaryHref('player-form')} className="inline-flex min-h-6 items-center hover:text-brand focus-visible:text-brand">
+                                            {seasonLabel}
+                                        </Link>
+                                    ) : (
+                                        seasonLabel
+                                    )}
                                 </th>
                             </tr>
                             <tr>

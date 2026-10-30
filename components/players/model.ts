@@ -66,6 +66,8 @@ export interface Skater {
     l5: StatLine | null;
     l10: StatLine | null;
     l20: StatLine | null;
+    /** Form: Pony Score per game over this season's last 5 / 10 / 20 games; null without a game. */
+    form: Record<StatWindow, number> | null;
 }
 
 /** Last-N windows of this season's games, for the counting stats. */
@@ -94,6 +96,7 @@ export type SortKey =
     | 'pts'
     | 'toi'
     | 'sogPg'
+    | 'form'
     | 'name';
 
 /** Sort direction a column starts with (every rating is higher = better, so only the name starts ascending). */
@@ -127,6 +130,7 @@ export function compactSkaters(
     ratingsDoc: unknown,
     lines: { cur: Map<string, StatLine>; prev: Map<string, StatLine> } & Partial<Record<StatWindow, Map<string, StatLine>>>,
     bio: unknown,
+    form: Map<string, Record<StatWindow, number>> = new Map(),
 ): Skater[] {
     const bios = (bio && typeof bio === 'object' ? bio : {}) as Record<string, { isRookie?: unknown }>;
     const ratings = parseRatings(ratingsDoc);
@@ -167,6 +171,7 @@ export function compactSkaters(
             l5: lines.l5?.get(id) ?? null,
             l10: lines.l10?.get(id) ?? null,
             l20: lines.l20?.get(id) ?? null,
+            form: form.get(id) ?? null,
         });
     }
     return out;
@@ -193,6 +198,8 @@ export function valueOf(p: Skater, key: Exclude<SortKey, 'name'>, season: StatSe
         case 'net':
         case 'evMin':
             return p[key] ?? null;
+        case 'form':
+            return season === 'cur' || season === 'prev' ? null : (p.form?.[season] ?? null);
         default: {
             const l = p[season] ?? (windowGames(season) ? p.cur : null);
             if (!l || !l.gp) return key === 'gp' ? 0 : null;
@@ -253,4 +260,6 @@ export const STRONG = {
     pk: 0.16,
     fin: 0.05,
     net: 0.25,
+    /** Pony Score per game over a last-N window (top / bottom tenth of the last 5 and 10). */
+    form: 0.25,
 } as const;

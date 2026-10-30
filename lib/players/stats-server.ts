@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Papa from 'papaparse';
-import { SEASON_START_YEAR, seasonFile } from '../season';
+import { SEASON_ID, SEASON_START_YEAR, seasonFile } from '../season';
+import { loadPonySeason } from '../pony/data';
 import { WINDOWS, type StatLine, type StatWindow } from '../../components/players/model';
 
 /*
@@ -84,4 +85,26 @@ export function statLines(): { cur: Map<string, StatLine>; prev: Map<string, Sta
         prev: lines(prev),
         ...(Object.fromEntries(WINDOWS.map(n => [`l${n}`, lines(cur, n)])) as Record<StatWindow, Map<string, StatLine>>),
     };
+}
+
+/**
+ * Form: each skater's (NHL id) Pony Score per game over this season's last
+ * 5 / 10 / 20 games he played (all of them when he has fewer), from the Pony
+ * Score season file. Build time only, like the counting lines.
+ */
+export function ponyForm(): Map<string, Record<StatWindow, number>> {
+    const out = new Map<string, Record<StatWindow, number>>();
+    const data = loadPonySeason(SEASON_ID);
+    if (!data) return out;
+    const by = new Map<number, { key: string; ps: number }[]>();
+    for (const r of data.skaters) by.set(r.player, [...(by.get(r.player) ?? []), { key: `${r.date}|${r.game}`, ps: r.ps }]);
+    for (const [id, games] of by) {
+        games.sort((a, b) => a.key.localeCompare(b.key));
+        const avg = (n: number) => {
+            const last = games.slice(-n);
+            return Math.round((last.reduce((a, g) => a + g.ps, 0) / last.length) * 1000) / 1000;
+        };
+        out.set(String(id), Object.fromEntries(WINDOWS.map(n => [`l${n}`, avg(n)])) as Record<StatWindow, number>);
+    }
+    return out;
 }
