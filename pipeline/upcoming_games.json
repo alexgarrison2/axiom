@@ -62,7 +62,7 @@
         "homeTeamAbbrev": "FLA",
         "awayTeamAbbrev": "WPG",
         "homeGoalieConfirmed": "Akira Schmid",
-        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieStatus": "Confirmed",
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
@@ -361,11 +361,11 @@
         "homeGoalieSource": "dailyfaceoff",
         "homeGoalieConflict": false,
         "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Colten Ellis",
+        "awayGoalieConfirmed": "Ukko-Pekka Luukkonen",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
+        "awayGoalieConflict": true,
+        "awayGoalieAlt": "Colten Ellis",
         "tvNetwork": "",
         "tvDisplay": [
             {
