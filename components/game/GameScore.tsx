@@ -13,6 +13,7 @@ import { TipFace } from './HoverTip';
 import { JerseyNumber } from './Jersey';
 import { useWidth } from './Pulse';
 import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
+import { fmtRating, ponyRating, ponyTier } from '@/lib/pony/rating';
 import { TeamToggle } from '@/components/ui/team-toggle';
 import { fmtInt } from '@/components/views/format';
 
@@ -78,6 +79,21 @@ function MiniStack({ parts, d }: { parts: Record<GsPart, number>; d: number }) {
     );
 }
 
+/** The card's headline: the 0-10 rating and its tier, with the score in goals under it. */
+function Rating({ score, pos, unit }: { score: number; pos: string; unit: string }) {
+    const r = ponyRating(score, pos);
+    const t = ponyTier(r);
+    return (
+        <span className="text-right leading-none">
+            <span className={cn('block font-display text-title font-bold tabular-nums', t.className)}>{fmtRating(r)}</span>
+            <span className={cn('block text-micro uppercase tracking-label', t.className)}>{t.label}</span>
+            <span className="mt-0.5 block text-micro tabular-nums text-fg-3">
+                {signed(score)} {unit}
+            </span>
+        </span>
+    );
+}
+
 function SkaterCard({ r, d, rank }: { r: GameScoreRow; d: number; rank: string }) {
     const { m, colors } = useGame();
     const col = (keys: GsPart[], title: string) => (
@@ -107,10 +123,7 @@ function SkaterCard({ r, d, rank }: { r: GameScoreRow; d: number; rank: string }
                         #{r.player.num ?? '–'} · {r.player.pos} · {m.teams[r.player.side].tri} · {clockOf(r.raw.toi)} · {rank}
                     </span>
                 </span>
-                <span className="text-right leading-none">
-                    <span className={cn('block font-display text-title font-bold tabular-nums', r.total < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.total)}</span>
-                    <span className="text-micro uppercase tracking-label text-fg-3">Pony score · goals</span>
-                </span>
+                <Rating score={r.total} pos={r.player.pos} unit="goals" />
             </div>
             <MiniStack parts={r.parts} d={d} />
             {col(['oProd', 'oDrive', 'oSpecial', 'oUsage'], 'Offence')}
@@ -134,10 +147,7 @@ function GoalieCard({ g }: { g: GoalieScoreRow }) {
                         #{g.player.num ?? '–'} · G · {m.teams[g.player.side].tri} · {clockOf(g.toi)}
                     </span>
                 </span>
-                <span className="text-right leading-none">
-                    <span className={cn('block font-display text-title font-bold tabular-nums', g.total < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(g.total)}</span>
-                    <span className="text-micro uppercase tracking-label text-fg-3">GSAx</span>
-                </span>
+                <Rating score={g.total} pos="G" unit="GSAx" />
             </div>
             <div className="grid grid-cols-4 gap-2 text-center tabular-nums">
                 {[
@@ -285,7 +295,7 @@ export function GameScore() {
 
     let rowIndex = 0;
     // A plain render function (not a component) so rows keep their identity across hovers and the grow plays once.
-    const row = ({ rowKey, children, name, total, bar, card, label }: { rowKey: string; children?: React.ReactNode; name: React.ReactNode; total: number; bar: React.ReactNode; card: React.ReactNode; label: string }) => {
+    const row = ({ rowKey, children, name, rating, bar, card, label }: { rowKey: string; children?: React.ReactNode; name: React.ReactNode; rating: number; bar: React.ReactNode; card: React.ReactNode; label: string }) => {
         const i = rowIndex++;
         const active = tip?.key === rowKey;
         const faded = tip != null && !active;
@@ -307,7 +317,7 @@ export function GameScore() {
             >
                 <span className="flex min-w-0 items-center gap-2 pl-1">
                     {name}
-                    <span className={cn('ml-auto w-10 text-right text-caption font-semibold tabular-nums min-[360px]:w-11', total < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(total)}</span>
+                    <span className={cn('ml-auto w-10 text-right text-caption font-semibold tabular-nums min-[360px]:w-11', ponyTier(rating).className)}>{fmtRating(rating)}</span>
                 </span>
                 <svg viewBox={`0 0 ${VB} ${ROW_H}`} preserveAspectRatio="none" className="block h-full w-full overflow-visible" aria-hidden="true">
                     {ticks.map(t => (
@@ -340,10 +350,11 @@ export function GameScore() {
         const rank = `${i + 1} of ${list.length} ${group}`;
         const segs = stack(r.parts, x);
         const y0 = (ROW_H - BAR_H) / 2;
+        const rating = ponyRating(r.total, r.player.pos);
         return row({
             rowKey: `s${r.player.id}`,
-            label: `${r.player.first} ${r.player.last}, Pony Score ${signed(r.total)}. Press Enter for the breakdown.`,
-            total: r.total,
+            label: `${r.player.first} ${r.player.last}, Pony Rating ${fmtRating(rating)}, ${ponyTier(rating).label}, ${signed(r.total)} goals. Press Enter for the breakdown.`,
+            rating,
             card: <SkaterCard r={r} d={d} rank={rank} />,
             name: (
                 <>
@@ -420,10 +431,11 @@ export function GameScore() {
                               goalies.map(g => {
                                   const y0 = (ROW_H - BAR_H) / 2;
                                   const a = Math.min(x(0), x(g.total));
+                                  const rating = ponyRating(g.total, 'G');
                                   return row({
                                       rowKey: `g${g.player.id}`,
-                                      label: `${g.player.first} ${g.player.last}, goals saved above expected ${signed(g.total)}. Press Enter for the breakdown.`,
-                                      total: g.total,
+                                      label: `${g.player.first} ${g.player.last}, Pony Rating ${fmtRating(rating)}, ${ponyTier(rating).label}, goals saved above expected ${signed(g.total)}. Press Enter for the breakdown.`,
+                                      rating,
                                       card: <GoalieCard g={g} />,
                                       name: (
                                           <>

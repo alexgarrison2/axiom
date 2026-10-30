@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { teamPalette } from '@/components/ui/team-color';
-import { cn } from '@/lib/utils';
 import type { GsPart } from '@/lib/game/analytics';
-import { ORDER, PARTS, signed, stack } from '@/lib/pony/parts';
+import { ORDER, PARTS, stack } from '@/lib/pony/parts';
+import { RatingFigure } from '@/components/pony/RatingFigure';
 
 /**
  * One player's game in a nightly list (the Pony night under a slate and the
@@ -20,6 +20,8 @@ export interface NightEntry {
     team: string;
     opp: string;
     ps: number;
+    /** Position code (C, L, R, D, G): the rating's pool. */
+    pos: string;
     /** Skaters; null for a goalie (GSAx only). */
     parts: Record<GsPart, number> | null;
     /** Added to the game line when the list spans several nights ("Oct 8"). */
@@ -97,7 +99,7 @@ export function NightRow({ r, rank, reach }: { r: NightEntry; rank: number; reac
                 )}
                 <line x1={x(0)} x2={x(0)} y1={0} y2={10} className="stroke-fg-3" vectorEffect="non-scaling-stroke" />
             </svg>
-            <span className={cn('text-right font-display text-body font-bold tabular-nums', r.ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(r.ps)}</span>
+            <RatingFigure score={r.ps} pos={r.pos} unit={r.parts ? 'goals' : 'GSAx'} />
         </li>
     );
 }

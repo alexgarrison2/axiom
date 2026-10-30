@@ -3,9 +3,9 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Breakdown } from '@/components/pony/LeaderTable';
-import { cn } from '@/lib/utils';
 import type { GsPart } from '@/lib/game/analytics';
 import { IDEAS, PARTS, signed } from '@/lib/pony/parts';
+import { RatingFigure } from '@/components/pony/RatingFigure';
 import { PonyTrend, rollingAverage, type TrendGame } from './PonyTrend';
 
 /**
@@ -72,7 +72,7 @@ export function PonyGames({
                                 {day(g.date)} · {g.home ? 'vs' : '@'} {g.opp} · <span className={g.result === 'W' ? 'text-fg-1' : undefined}>{g.result}</span>
                             </span>
                             <span className="flex shrink-0 items-baseline gap-3 tabular-nums">
-                                <span className={cn('font-display text-body font-bold normal-case tracking-normal', g.ps < 0 ? 'text-fg-2' : 'text-fg-1')}>{signed(g.ps)}</span>
+                                <RatingFigure score={g.ps} pos={group} unit={goalie ? 'GSAx' : 'goals'} className="normal-case tracking-normal" />
                                 <span className="text-model">
                                     <span className="max-sm:hidden">5-game </span>
                                     {signed(roll[pick!])}
@@ -106,7 +106,7 @@ export function PonyGames({
                         <>
                             <Breakdown row={{ parts: null, goalie: null, avg: value }} reach={reach} className="h-4" />
                             <p className="text-caption tabular-nums text-fg-2">
-                                <span className="font-bold text-fg-1">{signed(g.ps)}</span> GSAx · {g.line}
+                                <RatingFigure score={g.ps} pos="G" unit="GSAx" className="text-caption" /> · {signed(g.ps)} GSAx · {g.line}
                             </p>
                         </>
                     ) : (

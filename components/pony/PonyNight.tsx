@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { NightRow, reachOf, type NightEntry } from '@/components/pony/NightRow';
 import type { GsPart } from '@/lib/game/analytics';
 import { ORDER, signed } from '@/lib/pony/parts';
+import { RatingFigure } from '@/components/pony/RatingFigure';
 import { useDataEpoch } from '@/lib/fresh';
 
 /**
@@ -52,6 +53,7 @@ function entry(r: (string | number)[], players: Record<string, Player>): NightEn
         team,
         opp,
         ps,
+        pos: p?.[2] ?? 'F',
         parts: Object.fromEntries(ORDER.map((k, i) => [k, Number(r[5 + i])])) as Record<GsPart, number>,
     };
 }
@@ -106,8 +108,9 @@ export function PonyNight({ date }: { date: string }) {
                     <Link href={`/games/${g[0]}`} className="text-fg-3 hover:text-fg-1 coarse:relative coarse:after:absolute coarse:after:-inset-y-2.5 coarse:after:inset-x-0 coarse:after:content-['']">
                         {g[2]} vs {g[3]} · {Number(g[5]) - Number(g[6])} saves on {g[5]}
                     </Link>
-                    <span className="ml-auto font-display text-body font-bold tabular-nums text-fg-1">
-                        {signed(Number(g[4]))} <span className="text-micro font-normal uppercase tracking-label text-fg-3">GSAx</span>
+                    <span className="ml-auto flex items-baseline gap-2">
+                        <span className="text-micro tabular-nums text-fg-3">{signed(Number(g[4]))} GSAx</span>
+                        <RatingFigure score={Number(g[4])} pos="G" unit="GSAx" />
                     </span>
                 </p>
             ) : null}

@@ -580,6 +580,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeas
                                                     <SkaterForm
                                                         id={p.id}
                                                         team={p.team}
+                                                        pos={p.pos}
                                                         season={ponySeasons[season === 'prev' ? 'prev' : 'cur']}
                                                         tag={season === 'prev' ? short(seasons.prev) : null}
                                                         win={win}

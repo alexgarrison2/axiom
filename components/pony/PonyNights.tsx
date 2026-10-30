@@ -31,6 +31,7 @@ function entry({ row, player }: NightGame, oneNight: boolean): NightEntry {
         team: row.team,
         opp: row.opp,
         ps: row.ps,
+        pos: 'sa' in row ? 'G' : player.pos,
         parts: 'parts' in row ? row.parts : null,
         when: oneNight ? undefined : shortDate(row.date),
         note: g ? `${g.sa - g.ga} saves on ${g.sa}` : undefined,

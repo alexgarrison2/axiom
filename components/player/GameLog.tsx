@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
 import { signed } from '@/lib/pony/parts';
+import { fmtRating, ponyRating, ponyTier } from '@/lib/pony/rating';
 import type { GoalieGame, PonyGame, SkaterGame } from '@/lib/pony/data';
 import { bigSaves, goalieFoot, mmss, notable, scoreLine, share, shutout, skaterFoot, svPct, takesDraws, type GoalieFoot, type SkaterFoot } from '@/lib/players/gamelog';
 import { fmtInt } from '@/components/views/format';
@@ -190,13 +191,12 @@ function td(c: Cell, inst: { vis: string; edge: boolean; col: { left?: boolean }
 export function GameLog({ rows, goalie, games, color }: { rows: SkaterGame[] | GoalieGame[]; goalie: boolean; games: Map<number, PonyGame>; color: string }) {
     const newest = [...rows].reverse() as (SkaterGame | GoalieGame)[];
     const reach = Math.max(1, ...rows.map(x => Math.abs(x.ps)));
-    const scoreHead = goalie ? 'GSAx' : 'Pony';
     if (goalie) {
         const g = rows as GoalieGame[];
-        return <Table insts={layout(goalieCols(games))} newest={newest as GoalieGame[]} foot={n => goalieFoot(g.slice(-n))} total={rows.length} reach={reach} color={color} scoreHead={scoreHead} />;
+        return <Table insts={layout(goalieCols(games))} newest={newest as GoalieGame[]} foot={n => goalieFoot(g.slice(-n))} total={rows.length} reach={reach} color={color} rate={r => ponyRating(r.ps, 'G')} unit="GSAx" />;
     }
     const s = rows as SkaterGame[];
-    return <Table insts={layout(skaterCols(games, takesDraws(s)))} newest={newest as SkaterGame[]} foot={n => skaterFoot(s.slice(-n))} total={rows.length} reach={reach} color={color} scoreHead={scoreHead} />;
+    return <Table insts={layout(skaterCols(games, takesDraws(s)))} newest={newest as SkaterGame[]} foot={n => skaterFoot(s.slice(-n))} total={rows.length} reach={reach} color={color} rate={r => ponyRating(r.ps, r.pos)} unit="goals" />;
 }
 
 function Table<R extends SkaterGame | GoalieGame, F extends { ps: number } | { sum: { ps: number }; per: { ps: number } }>({
@@ -206,7 +206,8 @@ function Table<R extends SkaterGame | GoalieGame, F extends { ps: number } | { s
     total,
     reach,
     color,
-    scoreHead,
+    rate,
+    unit,
 }: {
     insts: Inst<R, F>[];
     newest: R[];
@@ -214,7 +215,10 @@ function Table<R extends SkaterGame | GoalieGame, F extends { ps: number } | { s
     total: number;
     reach: number;
     color: string;
-    scoreHead: string;
+    /** The game's 0-10 Pony Rating (lib/pony/rating.ts). */
+    rate: (r: R) => number;
+    /** What the score is counted in, for the cell's title. */
+    unit: string;
 }) {
     // Group header spans (desktop order; the phone-only lead copies are hidden there).
     const spans: { group: string; n: number }[] = [];
@@ -224,16 +228,27 @@ function Table<R extends SkaterGame | GoalieGame, F extends { ps: number } | { s
         if (last && last.group === i.col.group) last.n += 1;
         else spans.push({ group: i.col.group, n: 1 });
     }
-    const psTotal = (f: F) => ('sum' in f ? f.sum.ps : f.ps);
-    const psPer = (f: F, gp: number) => ('per' in f ? f.per.ps : f.ps / Math.max(1, gp));
     const more = total > LATEST;
-    const scoreCls = (v: number) => cn('whitespace-nowrap px-3 text-right font-bold', v < 0 ? 'text-fg-2' : 'text-fg-1');
+    const scoreCls = (r: number | null) => cn('whitespace-nowrap px-3 text-right font-bold', r == null ? 'text-fg-3' : ponyTier(r).className);
+    // A game's rating, with its score in goals (or GSAx) on hover.
+    const scoreCell = (r: R, cls: string) => {
+        const v = rate(r);
+        return (
+            <td className={cn(scoreCls(v), cls)} title={`${ponyTier(v).label} · ${signed(r.ps)} ${unit}`}>
+                {fmtRating(v)}
+            </td>
+        );
+    };
+    // The window's average game rating; the Total row leaves it blank (ratings do not add up).
+    const avgRating = (n: number) => {
+        const w = newest.slice(0, n);
+        return w.length ? Math.round((w.reduce((a, r) => a + rate(r), 0) / w.length) * 10) / 10 : null;
+    };
     const head = 'whitespace-nowrap px-1.5 py-2 font-semibold';
 
     const footRows = (n: number, cls: string) => {
         const f = foot(n);
-        const gp = Math.min(n, total);
-        const fr = (label: string, pick: 'total' | 'per', ps = pick === 'total' ? psTotal(f) : psPer(f, gp)) => (
+        const fr = (label: string, pick: 'total' | 'per', v = pick === 'per' ? avgRating(n) : null) => (
             <tr key={`${label}-${n}`} className={cn('group text-fg-2', cls, pick === 'total' && 'border-t border-line-strong')}>
                 <th scope="row" className={cn('whitespace-nowrap px-3 py-1.5 text-left text-micro font-semibold uppercase tracking-label text-fg-3', PIN, PIN_EDGE)}>
                     {label}
@@ -245,11 +260,11 @@ function Table<R extends SkaterGame | GoalieGame, F extends { ps: number } | { s
                             <td className={td(c, i, c ? '' : 'text-fg-3')} title={c?.title}>
                                 {c ? c.v : ''}
                             </td>
-                            {k === 0 ? <td className={cn(scoreCls(ps), 'md:hidden')}>{signed(ps)}</td> : null}
+                            {k === 0 ? <td className={cn(scoreCls(v), 'md:hidden')}>{v == null ? '' : fmtRating(v)}</td> : null}
                         </React.Fragment>
                     );
                 })}
-                <td className={cn(scoreCls(ps), 'border-l border-line/70 max-md:hidden')}>{signed(ps)}</td>
+                <td className={cn(scoreCls(v), 'border-l border-line/70 max-md:hidden')}>{v == null ? '' : fmtRating(v)}</td>
                 <td className="px-3" />
             </tr>
         );
@@ -282,13 +297,13 @@ function Table<R extends SkaterGame | GoalieGame, F extends { ps: number } | { s
                                     </th>
                                     {k === 0 ? (
                                         <th scope="col" className={cn(head, 'px-3 text-right text-fg-1 md:hidden')}>
-                                            {scoreHead}
+                                            Rating
                                         </th>
                                     ) : null}
                                 </React.Fragment>
                             ))}
                             <th scope="col" className={cn(head, 'border-l border-line/70 px-3 text-right text-fg-1 max-md:hidden')}>
-                                {scoreHead}
+                                Rating
                             </th>
                             <th className="w-24 px-3 py-2" aria-hidden="true" />
                         </tr>
@@ -309,11 +324,11 @@ function Table<R extends SkaterGame | GoalieGame, F extends { ps: number } | { s
                                                 {c ? c.v : '—'}
                                             </td>
                                             {/* Phones: the score follows the opponent. */}
-                                            {k === 0 ? <td className={cn(scoreCls(r.ps), 'md:hidden')}>{signed(r.ps)}</td> : null}
+                                            {k === 0 ? scoreCell(r, 'md:hidden') : null}
                                         </React.Fragment>
                                     );
                                 })}
-                                <td className={cn(scoreCls(r.ps), 'border-l border-line/70 max-md:hidden')}>{signed(r.ps)}</td>
+                                {scoreCell(r, 'border-l border-line/70 max-md:hidden')}
                                 <td className="px-3">
                                     <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="block h-2.5 w-full min-w-16" aria-hidden="true">
                                         <rect x={0} y={0} width={100} height={10} fill="var(--track)" />

@@ -8,6 +8,7 @@ import { teamColor } from '@/components/ui/team-color';
 import { TeamLogo } from '@/components/views/TeamLogo';
 import { split, trend, type Form, type FormGame, type Split, type SplitKey } from '@/lib/players/form';
 import { signed } from '@/lib/players/ratings';
+import { fmtRating, ponyRating, ponyTier } from '@/lib/pony/rating';
 import { cn } from '@/lib/utils';
 import { WINDOWS } from './model';
 
@@ -48,6 +49,8 @@ const BODY_H = 'min-h-[236px]';
 export interface SkaterFormProps {
     id: string;
     team: string;
+    /** Position code: the pool his game ratings are read against. */
+    pos: string;
     /** Pony season id, e.g. "20262027". */
     season: string;
     /** Prior-season tag ("25-26"); null for this season. */
@@ -56,7 +59,7 @@ export interface SkaterFormProps {
     win: number | null;
 }
 
-export function SkaterForm({ id, team, season, tag, win }: SkaterFormProps) {
+export function SkaterForm({ id, team, pos, season, tag, win }: SkaterFormProps) {
     const [state, setState] = React.useState<{ key: string; form: Form | null; failed: boolean }>({ key: '', form: null, failed: false });
     const [attempt, setAttempt] = React.useState(0);
     const key = `${id}|${season}`;
@@ -89,20 +92,20 @@ export function SkaterForm({ id, team, season, tag, win }: SkaterFormProps) {
                     No games yet
                 </p>
             ) : (
-                <FormBody games={form.games} team={team} tag={tag} win={win} />
+                <FormBody games={form.games} team={team} pos={pos} tag={tag} win={win} />
             )}
         </div>
     );
 }
 
-function FormBody({ games, team, tag, win }: { games: FormGame[]; team: string; tag: string | null; win: number | null }) {
+function FormBody({ games, team, pos, tag, win }: { games: FormGame[]; team: string; pos: string; tag: string | null; win: number | null }) {
     // Index of the picked game; the readout shows the latest at rest.
     const [hover, setHover] = React.useState<number | null>(null);
     const at = hover ?? games.length - 1;
     return (
         <div className={cn(BODY_H, 'grid gap-x-8 gap-y-4 px-3 pb-3 pt-2.5 md:px-4 cq-2xl:grid-cols-[minmax(0,1fr)_auto]')}>
             <div className="flex min-w-0 flex-col gap-2">
-                <Readout g={games[at]} n={at + 1} tag={tag} />
+                <Readout g={games[at]} n={at + 1} pos={pos} tag={tag} />
                 <Tape games={games} team={team} win={win} hover={hover} onHover={setHover} />
                 <Legend />
             </div>
@@ -112,7 +115,7 @@ function FormBody({ games, team, tag, win }: { games: FormGame[]; team: string; 
 }
 
 /** The picked game's line (the latest at rest), in a fixed spot: nothing floats over the tape. */
-function Readout({ g, n, tag }: { g: FormGame; n: number; tag: string | null }) {
+function Readout({ g, n, pos, tag }: { g: FormGame; n: number; pos: string; tag: string | null }) {
     const v = (x: React.ReactNode, cls = 'text-fg-1') => <b className={cn('font-semibold tracking-normal', cls)}>{x}</b>;
     return (
         <p className="flex min-h-7 flex-wrap items-center gap-x-3 gap-y-1 text-micro font-medium uppercase tracking-label text-fg-3">
@@ -134,7 +137,7 @@ function Readout({ g, n, tag }: { g: FormGame; n: number; tag: string | null }) 
             <span>{v(g.sog)} SOG</span>
             <span>{v(g.ixg.toFixed(2), 'text-model')} IXG</span>
             <span>{v(mmss(g.toi))} TOI</span>
-            <span>{v(signed(g.ps), g.ps < 0 ? 'text-fg-2' : 'text-fg-1')} PONY</span>
+            <span>{v(fmtRating(ponyRating(g.ps, pos)), ponyTier(ponyRating(g.ps, pos)).className)} PONY</span>
         </p>
     );
 }

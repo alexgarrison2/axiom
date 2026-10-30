@@ -13,6 +13,7 @@ import { fmtInt } from '@/components/views/format';
 import { GS_PARTS, type GsPart } from '@/lib/game/analytics';
 import { leaderboard, loadPonySeason, playerGames, ponySeasons, DEFAULT_FILTERS, type GoalieGame, type SkaterGame } from '@/lib/pony/data';
 import { signed } from '@/lib/pony/parts';
+import { RatingFigure } from '@/components/pony/RatingFigure';
 import { ageOn, playerProfile, type SeasonLine } from '@/lib/players/landing';
 import { readRatingsDoc } from '@/lib/players/server';
 import { Wowy } from '@/components/player/Wowy';
@@ -342,14 +343,14 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
                                         <Link href={`/games/${best.game}`} className="group">
                                             <p className="text-micro uppercase tracking-label text-fg-3">Best</p>
                                             <p className="text-fg-1 group-hover:text-brand">
-                                                <span className="font-bold tabular-nums">{signed(best.ps)}</span> {best.home ? 'vs' : '@'} {best.opp}
+                                                <RatingFigure score={best.ps} pos={'pos' in best ? best.pos : 'G'} unit={goalie ? 'GSAx' : 'goals'} className="text-caption" /> {best.home ? 'vs' : '@'} {best.opp}
                                             </p>
                                             <p className="text-micro text-fg-3">{best.date}</p>
                                         </Link>
                                         <Link href={`/games/${worst.game}`} className="group">
                                             <p className="text-micro uppercase tracking-label text-fg-3">Toughest</p>
                                             <p className="text-fg-1 group-hover:text-brand">
-                                                <span className="font-bold tabular-nums">{signed(worst.ps)}</span> {worst.home ? 'vs' : '@'} {worst.opp}
+                                                <RatingFigure score={worst.ps} pos={'pos' in worst ? worst.pos : 'G'} unit={goalie ? 'GSAx' : 'goals'} className="text-caption" /> {worst.home ? 'vs' : '@'} {worst.opp}
                                             </p>
                                             <p className="text-micro text-fg-3">{worst.date}</p>
                                         </Link>

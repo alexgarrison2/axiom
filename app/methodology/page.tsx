@@ -621,6 +621,14 @@ export default function MethodologyPage() {
                                 Goalies score goals saved above expected. One game is a small sample: the score describes the night, it does not
                                 rate the player.
                             </p>
+                            <p>
+                                A single game is shown as its <strong>Pony Rating</strong>, 0 to 10, read against games at his position (forwards,
+                                defencemen and goalies apart, last season&apos;s games): the median game is 5.0, the 90th percentile 7.5, the 99th
+                                9.0 and the top 0.1% 10.0, linear between. Bands: <strong>Incredible</strong> 9.0+ (about 1% of games),{' '}
+                                <strong>Great</strong> 7.5, <strong>Good</strong> 6.0, <strong>Average</strong> 4.0, <strong>Below avg</strong>{' '}
+                                2.5, <strong>Horrible</strong> under 2.5 (about 5%). Season totals and the leaderboard stay in goals (a game
+                                log&apos;s Per GP row averages its games&apos; ratings); the goals behind any rating show on hover.
+                            </p>
                         </Section>
 
                         <Section id="milestones" index={++i} title="Milestones">

@@ -33,6 +33,8 @@ Measured:
                  seasons as the ratings window (60+ games), each divided by the
                  fitted weight of one goal of the player's own xG (so all of
                  them sit on the shooting credit's scale)
+  rating         Pony Rating anchors: the last season's Pony Score percentiles by position (F, D, G)
+                 that read 0, 1.5, 2.5, 4, 5, 6, 7.5, 9 and 10 on the 0-10 scale
 
 Usage (from pipeline/):  python tools/pony_score_calibrate.py
 """
@@ -58,6 +60,9 @@ OUT = os.path.join(ROOT, 'public', 'data', 'pony_score.json')
 SEASONS = ['20232024', '20242025', '20252026']
 FO_WINDOW = 20.0
 BANDS = [0, 10, 20, 30, 40, 50, 60, 1000]
+# Pony Rating anchors: the percentile of a position's games -> the rating it reads (median 5.0, top 0.1% 10.0).
+RATING_PCT = [0.1, 1, 5, 30, 50, 70, 90, 99, 99.9]
+RATING_VALUE = [0, 1.5, 2.5, 4, 5, 6, 7.5, 9, 10]
 
 EV_COLS = ['game_id', 'event_id', 'sort_order', 'period', 'game_seconds', 'type_desc', 'event_team_id', 'zone_code',
            'pen_duration', 'pen_committed_by_id', 'pen_drawn_by_id', 'scorer_id', 'assist1_id', 'assist2_id', 'shooter_id',
@@ -93,6 +98,19 @@ def strength_time(e: pd.DataFrame) -> pd.DataFrame:
     g['dt'] = g.groupby(['game_id', 'period']).game_seconds.shift(-1) - g.game_seconds
     g = g[g.dt > 0]
     return g
+
+
+def rating_anchors(doc: dict) -> dict:
+    """The 0-10 Pony Rating: Pony Score percentiles of one season's games by position (F, D, G),
+    each tied to a rating; lib/pony/rating.ts interpolates linearly between them and clamps to 0-10."""
+    ix = {c: i for i, c in enumerate(doc['skater_cols'])}
+    gi = {c: i for i, c in enumerate(doc['goalie_cols'])}
+    pools = {p: [r[ix['ps']] for r in doc['skaters'] if r[ix['pos']] == p] for p in ('F', 'D')}
+    pools['G'] = [r[gi['ps']] for r in doc['goalies']]
+    out = {'pct': RATING_PCT, 'value': RATING_VALUE}
+    for p, x in pools.items():
+        out[p] = [round(float(v), 4) for v in np.percentile(np.array(x, dtype=float), RATING_PCT)]
+    return out
 
 
 def main() -> None:
@@ -246,8 +264,11 @@ def main() -> None:
             }
         out['prod_mean60'] = means
         out['prod_mean_source'] = f'public/data/pony/{SEASONS[-1]}.json'
+        out['rating'] = rating_anchors(doc)
     elif old_mean:
         out['prod_mean60'] = old_mean
+    if 'rating' not in out and old.get('rating'):
+        out['rating'] = old['rating']
     with open(OUT, 'w') as fh:
         json.dump(out, fh, indent=1)
     print(json.dumps(out, indent=1))

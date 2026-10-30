@@ -7,6 +7,7 @@ import { fmtInt } from '@/components/views/format';
 import { SortLink } from '@/components/pony/SortLink';
 import type { LeaderRow, SortKey } from '@/lib/pony/data';
 import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
+import { RatingFigure } from '@/components/pony/RatingFigure';
 import type { GsPart } from '@/lib/game/analytics';
 
 /**
@@ -263,7 +264,7 @@ const PIN_EDGE = "max-lg:after:pointer-events-none max-lg:after:absolute max-lg:
                                 <td className="px-2 text-left">
                                     {r.best ? (
                                         <Link href={`/games/${r.best.game}`} className="whitespace-nowrap text-fg-2 coarse:py-3 underline-offset-4 hover:text-fg-1 hover:underline">
-                                            <span className="font-semibold text-fg-1">{signed(r.best.ps)}</span> vs {r.best.opp}
+                                            <RatingFigure score={r.best.ps} pos={r.pos} unit={r.pos === 'G' ? 'GSAx' : 'goals'} className="text-caption font-semibold" /> vs {r.best.opp}
                                             <span className="ml-1 text-micro text-fg-3">{r.best.date.slice(5).replace('-', '/')}</span>
                                         </Link>
                                     ) : null}
