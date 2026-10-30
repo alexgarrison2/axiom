@@ -49330,6 +49330,67 @@
     }
   },
   {
+    "gameId": 2026020212,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-29",
+    "homeTeam": "Kings",
+    "awayTeam": "Senators",
+    "homeScore": 6,
+    "awayScore": 5,
+    "decision": "OT",
+    "homeXg": 3.06,
+    "awayXg": 2.89,
+    "homeWinProb": 52.9,
+    "predictedWinner": "Kings",
+    "actualWinner": "Kings",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2218,
+    "logLoss": 0.6368,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-30T01:02:00Z",
+    "startUtc": "2026-10-30T02:00:00Z",
+    "marketHomeProb": 47.2,
+    "modelHomeProb": 54.3,
+    "homeOdds": 102.0,
+    "awayOdds": -122.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 54.3,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.229,
+        "ll": 1.474,
+        "naive_ll": 1.7783,
+        "market_p": 0.219
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.747,
+        "ll": 0.2917,
+        "naive_ll": 0.2731,
+        "market_p": 0.7034
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.515,
+        "ll": 0.6636,
+        "naive_ll": 0.6435,
+        "market_p": 0.5346
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.343,
+        "ll": 1.07,
+        "naive_ll": 1.1584,
+        "market_p": 0.3452
+      }
+    }
+  },
+  {
     "gameId": 2026020213,
     "season": "2026-27",
     "gameType": "02",

@@ -7822,8 +7822,8 @@
                 "id": 2154,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "up"
+                "gameTimeDecision": true,
+                "movement": null
             },
             {
                 "name": "Dylan Cozens",
@@ -7887,7 +7887,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Stephen Halliday",
@@ -7973,7 +7973,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -8022,6 +8022,15 @@
                 "id": 3911,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Andre Burakovsky",
+                "number": 28,
+                "pos": "ir4",
+                "id": 2154,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -8102,8 +8111,8 @@
             }
         ],
         "lineup_source": "Jackson Starr",
-        "updated_at": "2026-10-29T18:37:40.022Z",
-        "fetched_at": "2026-10-29T19:01:55Z"
+        "updated_at": "2026-10-30T06:19:28.739Z",
+        "fetched_at": "2026-10-30T11:16:04Z"
     },
     "DET": {
         "f1": [
