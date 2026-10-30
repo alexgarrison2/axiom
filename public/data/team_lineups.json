@@ -2660,14 +2660,14 @@
         ],
         "f2": [
             {
-                "name": "Brett Howden",
-                "number": 21,
+                "name": "Trevor Connelly",
+                "number": 24,
                 "pos": "lw",
-                "id": 2660,
-                "ppUnit": null,
+                "id": 36773,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "William Karlsson",
@@ -2692,14 +2692,14 @@
         ],
         "f3": [
             {
-                "name": "Trevor Connelly",
-                "number": 24,
+                "name": "Brett Howden",
+                "number": 21,
                 "pos": "lw",
-                "id": 36773,
-                "ppUnit": 1,
+                "id": 2660,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Tomas Hertl",
@@ -2731,7 +2731,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Nic Dowd",
@@ -2837,7 +2837,7 @@
                 "id": 3874,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             }
         ],
         "ir": [
@@ -2857,15 +2857,6 @@
                 "id": 4718,
                 "ppUnit": null,
                 "injuryStatus": "out",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Carter Hart",
-                "number": 79,
-                "pos": "ir3",
-                "id": 3874,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -2945,9 +2936,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-10-30T20:13:38.595Z",
-        "fetched_at": "2026-10-30T21:01:48Z"
+        "lineup_source": "@SinBinVegas",
+        "updated_at": "2026-10-30T21:44:01.794Z",
+        "fetched_at": "2026-10-30T21:47:50Z"
     },
     "CHI": {
         "f1": [
@@ -5981,6 +5972,16 @@
         ],
         "f4": [
             {
+                "name": "Amadeus Lombardi",
+                "number": 93,
+                "pos": "lw",
+                "id": 31074,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Cody Glass",
                 "number": 12,
                 "pos": "c",
@@ -6047,14 +6048,14 @@
         ],
         "d3": [
             {
-                "name": "Brenden Dillon",
-                "number": 5,
+                "name": "Declan Chisholm",
+                "number": 47,
                 "pos": "ld",
-                "id": 1575,
+                "id": 28803,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Johnathan Kovacevic",
@@ -6064,7 +6065,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -6174,9 +6175,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-10-30T20:13:03.458Z",
-        "fetched_at": "2026-10-30T21:01:48Z"
+        "lineup_source": "Matthew Blittner",
+        "updated_at": "2026-10-30T21:42:36.078Z",
+        "fetched_at": "2026-10-30T21:47:50Z"
     },
     "MIN": {
         "f1": [
