@@ -6,7 +6,7 @@ import { compactSkaters, DEFAULT_FILTER, filterSkaters, headlineKey, sortSkaters
 import { readBio, readRatingsDoc } from '@/lib/players/server';
 import { statLines } from '@/lib/players/stats-server';
 import { asOfLabel, parseRatings } from '@/lib/players/ratings';
-import { SEASON_START_YEAR } from '@/lib/season';
+import { SEASON_ID, SEASON_START_YEAR } from '@/lib/season';
 
 // Static: every pipeline commit redeploys, and the full list is a static JSON route.
 export const dynamic = 'force-static';
@@ -39,6 +39,7 @@ export default function PlayersPage() {
                     src="/players/skaters"
                     asOf={asOfLabel(meta.asOf)}
                     seasons={{ cur: label(SEASON_START_YEAR), prev: label(SEASON_START_YEAR - 1) }}
+                    ponySeasons={{ cur: SEASON_ID, prev: `${SEASON_START_YEAR - 1}${SEASON_START_YEAR}` }}
                     defaultSeason={curStarted ? 'cur' : 'prev'}
                 />
             </div>

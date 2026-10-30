@@ -62,9 +62,18 @@ export interface Skater {
     evGp: number;
     cur: StatLine | null;
     prev: StatLine | null;
+    /** This season's last 5 / 10 / 20 games he played; null when that is his whole season (see `cur`). */
+    l5: StatLine | null;
+    l10: StatLine | null;
+    l20: StatLine | null;
 }
 
-export type StatSeason = 'cur' | 'prev';
+/** Last-N windows of this season's games, for the counting stats. */
+export const WINDOWS = [5, 10, 20] as const;
+export type StatWindow = `l${(typeof WINDOWS)[number]}`;
+/** What the counting columns cover: a whole season, or this season's last N games. */
+export type StatSeason = 'cur' | 'prev' | StatWindow;
+export const windowGames = (s: StatSeason): number | null => (s === 'cur' || s === 'prev' ? null : Number(s.slice(1)));
 
 export type SortKey =
     | 'impact'
@@ -116,7 +125,7 @@ const r2 = (v: number | undefined) => (v == null ? null : round(v, 2));
  */
 export function compactSkaters(
     ratingsDoc: unknown,
-    lines: { cur: Map<string, StatLine>; prev: Map<string, StatLine> },
+    lines: { cur: Map<string, StatLine>; prev: Map<string, StatLine> } & Partial<Record<StatWindow, Map<string, StatLine>>>,
     bio: unknown,
 ): Skater[] {
     const bios = (bio && typeof bio === 'object' ? bio : {}) as Record<string, { isRookie?: unknown }>;
@@ -155,6 +164,9 @@ export function compactSkaters(
             evGp: p.gp,
             cur: lines.cur.get(id) ?? null,
             prev: lines.prev.get(id) ?? null,
+            l5: lines.l5?.get(id) ?? null,
+            l10: lines.l10?.get(id) ?? null,
+            l20: lines.l20?.get(id) ?? null,
         });
     }
     return out;
@@ -182,7 +194,7 @@ export function valueOf(p: Skater, key: Exclude<SortKey, 'name'>, season: StatSe
         case 'evMin':
             return p[key] ?? null;
         default: {
-            const l = p[season];
+            const l = p[season] ?? (windowGames(season) ? p.cur : null);
             if (!l || !l.gp) return key === 'gp' ? 0 : null;
             if (key === 'sogPg') return l.sog / l.gp;
             return l[key];

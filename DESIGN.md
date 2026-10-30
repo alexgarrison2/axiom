@@ -369,6 +369,13 @@ A rink scoreboard counting down: how many to go, and which night.
 - **Milestone row:** grouped by projected date under rink-black day headers inside one panel; 60px rows on lg (crest, who, what, count, projected game, next game), folding to three columns on phones. A flush 52px (60px lg) crest over a 20% club wash; the projected game ("G12 · Fri, Oct 16") in magenta with the pace in dim text; amber tags only for injury and thin pace (dashed `n=`); a bordered HOF tag on passed names. The next-game chip (vs/@, 20px crest, tri, day, local time) links to the matchup and turns cyan on hover.
 - **Just reached:** a strip of full-pill links with a flush 44px crest, the milestone in green, and the day.
 
+### Form drawer (signature, `/players`)
+A click on a skater's row (anywhere but the name, which opens his page) or on the chevron and rank opens a drawer under it on the inset well; the row takes the raised fill, its name turns cyan and the chevron turns 90°. Every row starts closed and several can be open. The drawer is pinned to the table region's visible width.
+- **Tape:** one column per game, oldest from the left (at least 12 columns wide, so an early season does not stretch; on phones the oldest games that do not fit drop off). Lanes: PTS as stacked LED pips (goals lit ink, assists grey at 50%, a 2px stub for none), PONY as signed bars in the team colour (grey below zero) on a half-goal scale with the five-game average as a 1.75px magenta line, TOI as even-strength (secondary at 40%) / PP (`--pp`) / PK (`--pk`) stacks on a 30:00 scale. Dashed hairline seams mark where the last 5 / 10 / 20 begin; the table's window seam and its stretch of the axis are cyan and games outside it drop to 28%. Marks grow from their baseline once (520ms expo-out, 12ms per game) and the average draws in after; nothing moves under reduced motion.
+- **Readout:** a fixed line above the tape, the latest game at rest and the hovered or tapped game otherwise: game number, date, opponent crest, result, G A, SOG, magenta ixG, TOI, Pony Score. A click (a second tap on touch) opens the game.
+- **Splits:** per game over the season and each window shorter than it (GP, PTS, SOG, IXG, 5v5 XG%, TOI, PP TOI, PONY); pony xG values magenta; the table's window is the cyan column on a 7% cyan wash. A drawn green or red triangle marks a window well off the season (thresholds on `/methodology`).
+- **Window control:** the counting-stats segmented runs newest first, `L5 · L10 · L20 · 26-27 · 25-26`; a window re-ranks by points when the sort was a rating, and the group header reads "Last 10 · 26-27".
+
 ## Do's and Don'ts
 
 ### Do:

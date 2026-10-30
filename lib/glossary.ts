@@ -274,6 +274,14 @@ export const GLOSSARY = {
         anchor: 'players',
         aliases: ['finishing', 'shooting talent', 'goals above expected', 'GAx/60'],
     },
+    'player-form': {
+        label: 'L5 / L10 / L20',
+        title: 'Recent form (last 5, 10 and 20 games)',
+        short: 'L5, L10 and L20 put the counting stats (GP, G, A, PTS, TOI, SOG/GP) on each skater’s last 5, 10 or 20 games this season and rank by points; the ratings do not change. Select a row for his season game by game (points, Pony Score with its five-game average, ice time by situation) beside his per-game splits.',
+        detail: 'A green or red arrow marks a window well off his season: 0.3 points, 0.75 shots, 0.12 ixG, 1:00 of ice time, 0:45 on the power play, 6 points of 5v5 xG share or 0.15 Pony Score per game.',
+        anchor: 'players',
+        aliases: ['last 5', 'last 10', 'last 20', 'L5', 'L10', 'L20', 'form', 'trend', 'hot streak'],
+    },
     'player-net': {
         label: 'NET',
         title: 'Even-strength net rating (RAPM)',

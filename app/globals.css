@@ -811,3 +811,36 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* --------------------------------------------------------------------------
+ * /players row drawer (components/players/SkaterForm.tsx): the tape's marks
+ * grow from their baseline once, oldest game first, and the five-game
+ * average draws in after them. Under prefers-reduced-motion nothing moves.
+ * ------------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .form-grow {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: form-grow 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .form-grow-down {
+    transform-origin: 50% 0%;
+  }
+  .form-draw {
+    stroke-dasharray: 1;
+    animation: form-draw 700ms cubic-bezier(0.16, 1, 0.3, 1) 240ms both;
+  }
+}
+@keyframes form-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes form-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}

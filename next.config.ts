@@ -171,6 +171,8 @@ const nextConfig: NextConfig = {
     "/players/pony": ["public/data/pony/*.json"],
     "/players/goalies": ["public/data/pony/*.json", "public/data/goalie_ratings.json"],
     "/players/[id]": ["public/data/pony/*.json", "public/data/player_ratings.json", "public/data/player_bio.json", "public/data/goalie_ratings.json"],
+    // The /players row drawer: one skater's games of a season.
+    "/players/skaters/[id]": ["public/data/pony/2*.json"],
     "/api/game-pack/[id]": [
       "public/data/player_ratings.json",
       "public/data/game_xg/*.json",

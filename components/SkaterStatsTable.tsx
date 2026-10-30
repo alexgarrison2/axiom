@@ -15,6 +15,7 @@ import { scrollBehavior } from '@/lib/scroll';
 import { glossaryHref } from '@/lib/glossary-href';
 import { signed } from '@/lib/players/ratings';
 import { CELL_BG } from '@/components/teams-table/table-style';
+import { SkaterForm } from '@/components/players/SkaterForm';
 import {
     COLOR_MIN_EV,
     DEFAULT_FILTER,
@@ -22,11 +23,13 @@ import {
     MIN_EV_OPTIONS,
     SPECIAL_TEAMS_MIN_GP,
     STRONG,
+    WINDOWS,
     filterSkaters,
     headlineKey,
     ratingTone,
     sortSkaters,
     valueOf,
+    windowGames,
     type Skater,
     type SkaterFilter,
     type SortKey,
@@ -98,6 +101,9 @@ const COLUMNS: Column[] = [
     { key: 'sogPg', label: 'SOG/GP', title: 'Shots on goal per game', group: 'count', sets: ['scoring'], render: (p, s) => dec(valueOf(p, 'sogPg', s)) },
 ];
 
+/** A row with its drawer open sits on the raised fill (over the zebra and hover). */
+const OPEN_BG = 'group-data-[open]:!bg-surface-3';
+
 /** The first column of each group after the headline gets a divider on wide screens (PROD, a separate measure, sits between two). */
 const GROUP_START = new Set<SortKey>(['prod', 'offImp', 'evOff', 'gp']);
 
@@ -109,13 +115,18 @@ export interface SkaterStatsTableProps {
     /** "SEP 30": games through this date are in the ratings. */
     asOf?: string | null;
     /** Counting-stat season labels, e.g. { cur: '2026-27', prev: '2025-26' }. */
-    seasons: Record<StatSeason, string>;
-    defaultSeason?: StatSeason;
+    seasons: Record<'cur' | 'prev', string>;
+    /** Pony season ids behind the row drawer, e.g. { cur: '20262027', prev: '20252026' }. */
+    ponySeasons: Record<'cur' | 'prev', string>;
+    defaultSeason?: 'cur' | 'prev';
 }
 
 const short = (label: string) => label.replace(/^\d{2}(\d{2})-(\d{2})$/, '$1-$2');
 
-export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultSeason = 'cur' }: SkaterStatsTableProps) {
+/** What the counting columns cover, newest first: this season's last 5 / 10 / 20, this season, last season. */
+const SPANS: StatSeason[] = [...WINDOWS.map(n => `l${n}` as StatSeason), 'cur', 'prev'];
+
+export default function SkaterStatsTable({ preview, src, asOf, seasons, ponySeasons, defaultSeason = 'cur' }: SkaterStatsTableProps) {
     const [players, setPlayers] = React.useState<Skater[] | null>(null);
     const [filter, setFilter] = React.useState<SkaterFilter>(DEFAULT_FILTER);
     const firstHeadline = headlineKey(preview?.rows ?? []);
@@ -123,8 +134,22 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
     const [season, setSeason] = React.useState<StatSeason>(defaultSeason);
     const [page, setPage] = React.useState(0);
     const [chosenSet, setSet] = React.useState<ColumnSet>(firstHeadline === 'impact' ? 'impact' : 'rates');
-    const ids = { search: React.useId(), team: React.useId(), ev: React.useId(), cols: React.useId() };
+    /** Rows whose form drawer is open (by id); every row starts closed. */
+    const [open, setOpen] = React.useState<ReadonlySet<string>>(() => new Set());
+    const ids = { search: React.useId(), team: React.useId(), ev: React.useId(), cols: React.useId(), form: React.useId() };
     const tableTop = React.useRef<HTMLDivElement>(null);
+    // The table region's visible width: an open drawer is pinned to it.
+    const [regionW, setRegionW] = React.useState(0);
+    const observer = React.useRef<ResizeObserver | null>(null);
+    const regionRef = React.useCallback((el: HTMLDivElement | null) => {
+        observer.current?.disconnect();
+        observer.current = null;
+        if (!el || typeof ResizeObserver === 'undefined') return;
+        const read = () => setRegionW(el.clientWidth);
+        read();
+        observer.current = new ResizeObserver(read);
+        observer.current.observe(el);
+    }, []);
     const filterBar = React.useRef<HTMLDivElement>(null);
     const defaultSet: ColumnSet = firstHeadline === 'impact' ? 'impact' : 'rates';
 
@@ -139,6 +164,13 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
         if (Number.isInteger(pg) && pg > 1) setPage(pg - 1);
         const cols = q.get('cols');
         if (cols && cols in SET_LABELS) setSet(cols as ColumnSet);
+        const span = q.get('stats') as StatSeason | null;
+        // A last-N window needs this season's games.
+        if (span && SPANS.includes(span) && (!windowGames(span) || defaultSeason === 'cur')) {
+            setSeason(span);
+            // As when the window is picked (the sort itself is not in the URL).
+            if (windowGames(span)) setSort({ key: 'pts', dir: 'desc' });
+        }
         setFromUrl(true);
         try {
             const saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) ?? 'null') as { url: string; y: number } | null;
@@ -155,7 +187,7 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
         };
         window.addEventListener('click', save, true);
         return () => window.removeEventListener('click', save, true);
-    }, []);
+    }, [defaultSeason]);
     React.useEffect(() => {
         const y = restoreY.current;
         if (!players || y == null) return;
@@ -171,9 +203,10 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
         put('pos', filter.pos === 'all' ? null : filter.pos);
         put('page', page > 0 ? String(page + 1) : null);
         put('cols', chosenSet === defaultSet ? null : chosenSet);
+        put('stats', season === defaultSeason ? null : season);
         const next = `${window.location.pathname}${q.size ? `?${q}` : ''}${window.location.hash}`;
         if (next !== `${window.location.pathname}${window.location.search}${window.location.hash}`) window.history.replaceState(null, '', next);
-    }, [fromUrl, filter.pos, page, chosenSet, defaultSet]);
+    }, [fromUrl, filter.pos, page, chosenSet, defaultSet, season, defaultSeason]);
 
     // The full list; on failure the preview stays up (players null) with a retry.
     const [failed, setFailed] = React.useState(false);
@@ -209,7 +242,8 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
     const pages = Math.max(1, Math.ceil(rows.length / PAGE));
     const current = Math.min(page, pages - 1);
     const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
-    const seasonLabel = seasons[season];
+    const win = windowGames(season);
+    const seasonLabel = win ? `Last ${win} · ${short(seasons.cur)}` : seasons[season as 'cur' | 'prev'];
 
     const update = (patch: Partial<SkaterFilter>) => {
         setFilter(f => ({ ...f, ...patch }));
@@ -218,6 +252,17 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
     const onSort = (key: SortKey) => {
         setSort(s => ((s.key === 'impact' && headline === 'net' ? 'net' : s.key) === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: FIRST_DIR[key] ?? 'desc' }));
         setPage(0);
+    };
+    const toggle = (id: string) =>
+        setOpen(prev => {
+            const next = new Set(prev);
+            if (!next.delete(id)) next.add(id);
+            return next;
+        });
+    /** A click anywhere on a row opens its drawer, except on the name (his page) or a control, or while selecting text. */
+    const onRowClick = (e: React.MouseEvent<HTMLTableRowElement>, id: string) => {
+        if ((e.target as Element).closest('a, button, input, select') || window.getSelection()?.toString()) return;
+        toggle(id);
     };
     const goPage = (p: number) => {
         setPage(p);
@@ -327,15 +372,22 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                         ))}
                     </select>
                     <Segmented
-                        label="Counting stats season"
+                        label="Counting stats"
                         size="sm"
                         className="shrink-0 md:ml-auto"
                         value={season}
                         onChange={v => {
                             setSeason(v);
                             setPage(0);
+                            // A last-N window is about form: a ranking by a rating would not move, so it ranks by points.
+                            if (windowGames(v) && !COLUMNS.some(c => c.key === sortKey && c.group === 'count')) setSort({ key: 'pts', dir: 'desc' });
                         }}
-                        options={(['cur', 'prev'] as const).map(s => ({ value: s, label: short(seasons[s]), ariaLabel: `${seasons[s]} counting stats` }))}
+                        options={SPANS.map(s => {
+                            const n = windowGames(s);
+                            return n
+                                ? { value: s, label: `L${n}`, ariaLabel: `Last ${n} games, ${seasons.cur}`, disabled: defaultSeason === 'prev' }
+                                : { value: s, label: short(seasons[s as 'cur' | 'prev']), ariaLabel: `${seasons[s as 'cur' | 'prev']} counting stats` };
+                        })}
                     />
                 </div>
             </div>
@@ -362,14 +414,14 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
             {rows.length === 0 ? (
                 <p className="panel label p-card">No matches</p>
             ) : (
-                <ScrollRegion label="Skater ratings table" onFocus={revealRegion} className="scroll-mt-filterbar rounded-card border border-line bg-surface-1">
+                <ScrollRegion ref={regionRef} label="Skater ratings table" onFocus={revealRegion} className="scroll-mt-filterbar rounded-card border border-line bg-surface-1">
                     <table className="w-full min-w-full font-mono text-caption tabular-nums md:min-w-[1040px]">
                         <caption className="sr-only">
                             Skaters sorted by {sortName}, {sort.dir === 'desc' ? 'highest first' : 'lowest first'}. Ratings as of {asOf ?? 'the latest refresh'}
                             {headline === 'impact' ? ': impact, offence, defence and penalties in goals per 82 games' : ''}
                             {headline === 'impact' && hasProd ? ', production in Game Score per 82 games' : ''}
-                            {headline === 'impact' ? ', rates per 60 minutes' : ''}; counting stats {seasonLabel} regular
-                            season.
+                            {headline === 'impact' ? ', rates per 60 minutes' : ''}; counting stats {win ? `${seasons.cur}, each skater's last ${win} games` : `${seasonLabel} regular season`}. Select
+                            a row to show his form.
                         </caption>
                         <thead className="scroll-mt-filterbar bg-bg">
                             <tr className="hidden md:table-row">
@@ -429,40 +481,83 @@ export default function SkaterStatsTable({ preview, src, asOf, seasons, defaultS
                                 ))}
                             </tr>
                         </thead>
-                        <tbody>
-                            {visible.map((p, i) => (
-                                <tr key={p.id} className="group">
-                                    <th scope="row" className={cn(CELL_BG, 'sticky left-0 z-10 h-8 w-[9rem] min-w-[9rem] border-b border-line px-2 text-left font-normal md:w-64')}>
-                                        <span className="flex items-center gap-2">
-                                            <span className="hidden w-7 shrink-0 text-right text-micro text-fg-3 md:inline">{current * PAGE + i + 1}</span>
-                                            <TeamLogo tri={p.team} size={18} />
-                                            <span className="flex min-w-0 items-baseline gap-2">
-                                                <span className="truncate font-bold text-fg-1">
-                                                    {/* Touch: the link's hit area fills the pinned name cell. */}
-                                                    <PlayerLink id={Number(p.id)} className="coarse:after:absolute coarse:after:inset-0 coarse:after:content-['']">
-                                                        <span className="md:hidden">{shortName(p.name)}</span>
-                                                        <span className="hidden md:inline">{p.name}</span>
-                                                    </PlayerLink>
-                                                </span>
-                                                <span className="shrink-0 text-micro uppercase text-fg-3">
-                                                    <span className="hidden md:inline">{p.team} </span>
-                                                    {p.pos}
-                                                    {p.rookie ? <span className="text-warn"> R</span> : null}
+                        {visible.map((p, i) => {
+                            const isOpen = open.has(p.id);
+                            const drawer = `${ids.form}-${p.id}`;
+                            return (
+                                // One body per skater (row + drawer), so an open drawer leaves the zebra alone.
+                                <tbody key={p.id} className="group" data-open={isOpen || undefined}>
+                                    <tr onClick={e => onRowClick(e, p.id)} className="cursor-pointer">
+                                        <th scope="row" className={cn(CELL_BG, OPEN_BG, 'sticky left-0 z-10 h-8 w-[9rem] min-w-[9rem] border-b border-line px-2 text-left font-normal md:w-64')}>
+                                            <span className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    aria-expanded={isOpen}
+                                                    aria-controls={drawer}
+                                                    onClick={() => toggle(p.id)}
+                                                    className="flex h-6 w-9 shrink-0 items-center justify-between rounded-[4px] text-micro text-fg-3 max-md:sr-only max-md:focus-visible:not-sr-only"
+                                                >
+                                                    <svg
+                                                        aria-hidden="true"
+                                                        viewBox="0 0 8 8"
+                                                        className={cn(
+                                                            'size-2 fill-none stroke-current text-mute transition-transform duration-200 ease-out group-hover:text-fg-2',
+                                                            isOpen && 'rotate-90 text-brand group-hover:text-brand',
+                                                        )}
+                                                        strokeWidth={1.6}
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    >
+                                                        <path d="M2.75 1.25 5.5 4 2.75 6.75" />
+                                                    </svg>
+                                                    <span>{current * PAGE + i + 1}</span>
+                                                    <span className="sr-only">: {isOpen ? 'hide' : 'show'} {p.name}&apos;s form</span>
+                                                </button>
+                                                <TeamLogo tri={p.team} size={18} />
+                                                <span className="flex min-w-0 items-baseline gap-2">
+                                                    <span className={cn('truncate font-bold', isOpen ? 'text-brand' : 'text-fg-1')}>
+                                                        {/* Touch: the link's hit area fills the pinned name cell. */}
+                                                        <PlayerLink id={Number(p.id)} className="coarse:after:absolute coarse:after:inset-0 coarse:after:content-['']">
+                                                            <span className="md:hidden">{shortName(p.name)}</span>
+                                                            <span className="hidden md:inline">{p.name}</span>
+                                                        </PlayerLink>
+                                                    </span>
+                                                    <span className="shrink-0 text-micro uppercase text-fg-3">
+                                                        <span className="hidden md:inline">{p.team} </span>
+                                                        {p.pos}
+                                                        {p.rookie ? <span className="text-warn"> R</span> : null}
+                                                    </span>
                                                 </span>
                                             </span>
-                                        </span>
-                                    </th>
-                                    <td className={cn(CELL_BG, 'h-8 border-b border-line px-2')}>
-                                        {headline === 'impact' ? <ImpactBar p={p} /> : <NetBar p={p} />}
-                                    </td>
-                                    {columns.map(c => (
-                                        <td key={c.key} className={cn(CELL_BG, 'h-8 whitespace-nowrap border-b border-line px-2 text-right text-fg-2', colClass(c))}>
-                                            {c.render(p, season)}
+                                        </th>
+                                        <td className={cn(CELL_BG, OPEN_BG, 'h-8 border-b border-line px-2')}>
+                                            {headline === 'impact' ? <ImpactBar p={p} /> : <NetBar p={p} />}
                                         </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
+                                        {columns.map(c => (
+                                            <td key={c.key} className={cn(CELL_BG, OPEN_BG, 'h-8 whitespace-nowrap border-b border-line px-2 text-right text-fg-2', colClass(c))}>
+                                                {c.render(p, season)}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                    {isOpen ? (
+                                        <tr id={drawer}>
+                                            <td colSpan={2 + columns.length} className="border-b border-line bg-well p-0">
+                                                {/* Pinned to the region's visible width, so a sideways-scrolled table keeps the drawer in view. */}
+                                                <div className="sticky left-0 animate-[fade-in_180ms_ease-out]" style={regionW ? { width: regionW } : undefined}>
+                                                    <SkaterForm
+                                                        id={p.id}
+                                                        team={p.team}
+                                                        season={ponySeasons[season === 'prev' ? 'prev' : 'cur']}
+                                                        tag={season === 'prev' ? short(seasons.prev) : null}
+                                                        win={win}
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : null}
+                                </tbody>
+                            );
+                        })}
                     </table>
                 </ScrollRegion>
             )}
