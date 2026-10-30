@@ -714,14 +714,14 @@
         ],
         "f3": [
             {
-                "name": "Bo Groulx",
-                "number": 29,
+                "name": "Dakota Joshua",
+                "number": 81,
                 "pos": "lw",
-                "id": 28732,
+                "id": 25020,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             },
             {
                 "name": "Colton Sissons",
@@ -810,6 +810,28 @@
                 "movement": null
             },
             {
+                "name": "Chris Tanev",
+                "number": 8,
+                "pos": "rd",
+                "id": 1494,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": true,
+                "movement": "new"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Oliver Ekman-Larsson",
+                "number": 95,
+                "pos": "ld",
+                "id": 1172,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
                 "name": "Troy Stecher",
                 "number": 28,
                 "pos": "rd",
@@ -817,29 +839,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Dakota Mermis",
-                "number": 36,
-                "pos": "ld",
-                "id": 2914,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Oliver Ekman-Larsson",
-                "number": 95,
-                "pos": "rd",
-                "id": 1172,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -956,13 +956,13 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Troy Stecher",
-                "number": 28,
+                "name": "Chris Tanev",
+                "number": 8,
                 "pos": "sk4",
-                "id": 2702,
+                "id": 1494,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -994,18 +994,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Dakota Mermis",
-                "number": 36,
+                "name": "Troy Stecher",
+                "number": 28,
                 "pos": "sk4",
-                "id": 2914,
+                "id": 2702,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-28)",
-        "updated_at": "2026-10-29T13:59:50.118Z",
-        "fetched_at": "2026-10-30T01:01:59Z"
+        "lineup_source": "David Alter",
+        "updated_at": "2026-10-30T19:44:42.261Z",
+        "fetched_at": "2026-10-30T20:01:59Z"
     },
     "MTL": {
         "f1": [
@@ -2361,7 +2361,7 @@
                 "id": 2811,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -2534,6 +2534,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Filip Chytil",
+                "number": 77,
+                "pos": "ir2",
+                "id": 2811,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -2591,7 +2600,7 @@
                 "id": 2811,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Jamie Oleksiak",
@@ -2613,8 +2622,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-10-29)",
-        "updated_at": "2026-10-30T14:15:26.171Z",
-        "fetched_at": "2026-10-30T15:02:07Z"
+        "updated_at": "2026-10-30T19:35:15.965Z",
+        "fetched_at": "2026-10-30T20:01:59Z"
     },
     "VGK": {
         "f1": [
