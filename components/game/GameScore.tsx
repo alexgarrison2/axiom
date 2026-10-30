@@ -451,7 +451,8 @@ export function GameScore() {
 
                     {/* Scale. */}
                     <div className="grid grid-cols-[9rem_minmax(0,1fr)] gap-x-2 min-[360px]:grid-cols-[9.5rem_minmax(0,1fr)] min-[360px]:gap-x-3 md:grid-cols-[12.5rem_minmax(0,1fr)]" aria-hidden="true">
-                        <span />
+                        {/* The rows read 0-10 ratings; the bars and this scale are the goals behind them. */}
+                        <span className="pr-1 text-right text-micro uppercase tracking-label text-fg-3">Goals</span>
                         <span ref={scaleRef} className="relative h-4 text-micro tabular-nums text-fg-3">
                             {ticks.map(t =>
                                 Math.round(t / step) % labelEvery === 0 ? (
