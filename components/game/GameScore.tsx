@@ -12,17 +12,18 @@ import { GameSection, sideTeams, useGame } from './GameContext';
 import { TipFace } from './HoverTip';
 import { JerseyNumber } from './Jersey';
 import { useWidth } from './Pulse';
-import { IDEAS, PARTS, signed, stack } from '@/lib/pony/parts';
-import { fmtRating, ponyRating, ponyTier } from '@/lib/pony/rating';
+import { PARTS, signed, stack } from '@/lib/pony/parts';
+import { fmtRating, PONY_TIERS, ponyRating, ponyTier } from '@/lib/pony/rating';
 import { TeamToggle } from '@/components/ui/team-toggle';
 import { fmtInt } from '@/components/views/format';
 
 /*
- * Pony Score breakdown: every skater's one-game score in goals (lib/game/analytics.ts gameScores, constants measured by pipeline/tools/pony_score_calibrate.py) as a signed stack of
- * eight parts (offence in a cool family, defence in a warm one; the same
- * four ideas each side). Positive parts stack right of zero, negative parts
- * left, and an ink notch marks the net. Hover a row for its card; click (or
- * Enter) pins it.
+ * Pony Score breakdown: every player's one-game Pony Rating (0-10 against
+ * the position, lib/pony/rating.ts) as a bar in its tier colour on a shared
+ * 0-10 scale, 5.0 the ordinary game. The score in goals behind it
+ * (lib/game/analytics.ts gameScores) lives in the card: a signed stack of
+ * eight parts, offence in a cool family, defence in a warm one. Hover a row
+ * for its card; click (or Enter) pins it.
  */
 
 
@@ -194,7 +195,7 @@ export function GameScore() {
     const defence = data.skaters.filter(r => r.player.pos === 'D');
     const goalies = data.goalies.filter(g => g.toi > 0);
 
-    // One symmetric scale for the team: the widest side of any stack, rounded up to a half point.
+    // The card's mini stack: one symmetric goals scale for the team, the widest side of any stack rounded up to a half point.
     let reach = 0.5;
     for (const r of data.skaters) {
         let pos = 0;
@@ -207,14 +208,12 @@ export function GameScore() {
     }
     for (const g of goalies) reach = Math.max(reach, Math.abs(g.total));
     const d = Math.ceil(reach * 2) / 2;
-    const x = (v: number) => VB / 2 + (v / d) * (VB / 2 - 6);
-    const ticks: number[] = [];
-    // At most ~6 ticks a side: a game's ±1.5 in halves, a season's ±25 in fives.
-    const step = [0.25, 0.5, 1, 2, 5, 10, 20].find(v => d / v <= 6) ?? 50;
-    for (let v = -Math.floor(d / step) * step; v <= d + 1e-9; v += step) ticks.push(Math.round(v * 4) / 4);
-    // Every gridline keeps its label while there is room; narrow scales label every second (or fourth) one, always through 0.
-    const tickPx = scaleW && ticks.length > 1 ? scaleW / (ticks.length - 1) : Infinity;
-    const labelEvery = tickPx >= 34 ? 1 : tickPx * 2 >= 34 ? 2 : 4;
+    // The rows: the 0-10 rating, a gridline a point, 5.0 (the ordinary game) in dim text.
+    const x = (v: number) => 6 + (v / 10) * (VB - 12);
+    const ticks = Array.from({ length: 11 }, (_, i) => i);
+    // Every gridline keeps its label while there is room; narrow scales label every second (or fifth) one.
+    const tickPx = scaleW ? scaleW / 10 : Infinity;
+    const labelEvery = tickPx >= 24 ? 1 : tickPx * 2 >= 24 ? 2 : 5;
 
     React.useLayoutEffect(() => {
         const r = cardRef.current?.getBoundingClientRect();
@@ -321,7 +320,7 @@ export function GameScore() {
                 </span>
                 <svg viewBox={`0 0 ${VB} ${ROW_H}`} preserveAspectRatio="none" className="block h-full w-full overflow-visible" aria-hidden="true">
                     {ticks.map(t => (
-                        <line key={t} x1={x(t)} x2={x(t)} y1={0} y2={ROW_H} className={t === 0 ? 'stroke-fg-3' : 'stroke-line'} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+                        <line key={t} x1={x(t)} x2={x(t)} y1={0} y2={ROW_H} className={t === 5 ? 'stroke-fg-3' : 'stroke-line'} strokeWidth={1} vectorEffect="non-scaling-stroke" />
                     ))}
                     <g className="gs-grow" style={{ transformOrigin: `${x(0)}px 50%`, animationDelay: `${Math.min(i, 24) * 22}ms` }}>
                         {bar}
@@ -346,10 +345,10 @@ export function GameScore() {
         );
     };
 
+    const ratingBar = (rating: number) => <rect x={x(0)} y={(ROW_H - BAR_H) / 2} width={x(rating) - x(0)} height={BAR_H} className={ponyTier(rating).fill} />;
+
     const skaterRow = (r: GameScoreRow, i: number, list: GameScoreRow[], group: string) => {
         const rank = `${i + 1} of ${list.length} ${group}`;
-        const segs = stack(r.parts, x);
-        const y0 = (ROW_H - BAR_H) / 2;
         const rating = ponyRating(r.total, r.player.pos);
         return row({
             rowKey: `s${r.player.id}`,
@@ -362,15 +361,7 @@ export function GameScore() {
                     <span className="min-w-0 truncate text-caption text-fg-1">{r.player.last}</span>
                 </>
             ),
-            bar: (
-                <>
-                    {segs.map(s => (
-                        <rect key={s.k} x={s.x} y={y0} width={Math.max(0, s.w - 1.5)} height={BAR_H} fill={PARTS[s.k].color} />
-                    ))}
-                </>
-            ),
-            // The net: an ink notch where the parts add up to.
-            children: <line x1={x(r.total)} x2={x(r.total)} y1={y0 - 4} y2={y0 + BAR_H + 4} className="stroke-fg-1" strokeWidth={2} vectorEffect="non-scaling-stroke" />,
+            bar: ratingBar(rating),
         });
     };
 
@@ -400,16 +391,15 @@ export function GameScore() {
             }
         >
             <div ref={panelRef} className="panel p-card">
-                {/* Legend: the four ideas, each with its offence and defence colour. */}
+                {/* Legend: the six tiers, each with its floor. */}
                 <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-micro uppercase tracking-label text-fg-3">
-                    <span className="flex items-center gap-1.5 text-fg-2">
-                        Cool = offence · warm = defence
-                    </span>
-                    {IDEAS.map(([o, dd]) => (
-                        <span key={o} className="flex items-center gap-1.5">
-                            <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: PARTS[o].color }} />
-                            <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: PARTS[dd].color }} />
-                            {PARTS[o].label}
+                    {PONY_TIERS.map(t => (
+                        <span key={t.label} className="flex items-center gap-1.5">
+                            <svg viewBox="0 0 10 10" className="size-2.5" aria-hidden="true">
+                                <rect width={10} height={10} rx={2} className={t.fill} />
+                            </svg>
+                            <span className={t.className}>{t.label}</span>
+                            {Number.isFinite(t.floor) ? <span className="tabular-nums">{fmtRating(t.floor)}+</span> : null}
                         </span>
                     ))}
                     <Link href="/methodology#pony-score" className="ml-auto underline-offset-4 hover:text-fg-1 hover:underline coarse:-my-3 coarse:inline-flex coarse:min-h-11 coarse:items-center">
@@ -429,8 +419,6 @@ export function GameScore() {
                         ? group(
                               'Goalie',
                               goalies.map(g => {
-                                  const y0 = (ROW_H - BAR_H) / 2;
-                                  const a = Math.min(x(0), x(g.total));
                                   const rating = ponyRating(g.total, 'G');
                                   return row({
                                       rowKey: `g${g.player.id}`,
@@ -443,7 +431,7 @@ export function GameScore() {
                                               <span className="min-w-0 truncate text-caption text-goalie">{g.player.last}</span>
                                           </>
                                       ),
-                                      bar: <rect x={a} y={y0} width={Math.abs(x(g.total) - x(0))} height={BAR_H} fill="var(--goalie)" opacity={0.75} />,
+                                      bar: ratingBar(rating),
                                   });
                               }),
                           )
@@ -451,13 +439,12 @@ export function GameScore() {
 
                     {/* Scale. */}
                     <div className="grid grid-cols-[9rem_minmax(0,1fr)] gap-x-2 min-[360px]:grid-cols-[9.5rem_minmax(0,1fr)] min-[360px]:gap-x-3 md:grid-cols-[12.5rem_minmax(0,1fr)]" aria-hidden="true">
-                        {/* The rows read 0-10 ratings; the bars and this scale are the goals behind them. */}
-                        <span className="pr-1 text-right text-micro uppercase tracking-label text-fg-3">Goals</span>
+                        <span />
                         <span ref={scaleRef} className="relative h-4 text-micro tabular-nums text-fg-3">
                             {ticks.map(t =>
-                                Math.round(t / step) % labelEvery === 0 ? (
+                                t % labelEvery === 0 ? (
                                     <span key={t} className="absolute -translate-x-1/2" style={{ left: `${(x(t) / VB) * 100}%` }}>
-                                        {t > 0 ? `+${t}` : t < 0 ? `−${Math.abs(t)}` : '0'}
+                                        {t}
                                     </span>
                                 ) : null,
                             )}

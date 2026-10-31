@@ -31,19 +31,22 @@ export function ponyRating(score: number, pos: string | null | undefined): numbe
     return Math.round(Math.min(10, Math.max(0, r)) * 10) / 10;
 }
 
-export type Tier = { label: string; className: string };
+export type Tier = { label: string; className: string; fill: string };
 
 /** Six bands on the rating: Incredible is the top 1%, Horrible the bottom 5%. */
 const TIERS: [number, Tier][] = [
-    [9, { label: 'Incredible', className: 'text-pos' }],
-    [7.5, { label: 'Great', className: 'text-pos/80' }],
-    [6, { label: 'Good', className: 'text-fg-1' }],
-    [4, { label: 'Average', className: 'text-fg-2' }],
-    [2.5, { label: 'Below avg', className: 'text-neg/80' }],
-    [-Infinity, { label: 'Horrible', className: 'text-neg' }],
+    [9, { label: 'Incredible', className: 'text-pos', fill: 'fill-pos' }],
+    [7.5, { label: 'Great', className: 'text-pos/80', fill: 'fill-pos/80' }],
+    [6, { label: 'Good', className: 'text-fg-1', fill: 'fill-fg-1' }],
+    [4, { label: 'Average', className: 'text-fg-2', fill: 'fill-fg-2' }],
+    [2.5, { label: 'Below avg', className: 'text-neg/80', fill: 'fill-neg/80' }],
+    [-Infinity, { label: 'Horrible', className: 'text-neg', fill: 'fill-neg' }],
 ];
 
 export const ponyTier = (rating: number): Tier => TIERS.find(([c]) => rating >= c)![1];
+
+/** The tiers top-down with their floors, for a legend. */
+export const PONY_TIERS = TIERS.map(([floor, t]) => ({ floor, ...t }));
 
 /** "8.6" */
 export const fmtRating = (r: number) => r.toFixed(1);
