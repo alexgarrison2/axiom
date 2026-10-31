@@ -4420,24 +4420,24 @@
         ],
         "d3": [
             {
-                "name": "Josh Manson",
-                "number": 42,
-                "pos": "ld",
-                "id": 2400,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
-            },
-            {
                 "name": "Brent Burns",
                 "number": 84,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 792,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Noah Juulsen",
+                "number": 47,
+                "pos": "rd",
+                "id": 2500,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "g": [
@@ -4467,7 +4467,7 @@
                 "pos": "ir1",
                 "id": 2400,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -4556,9 +4556,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-28)",
-        "updated_at": "2026-10-29T13:58:56.079Z",
-        "fetched_at": "2026-10-30T01:01:59Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-10-31T14:30:25.920Z",
+        "fetched_at": "2026-10-31T15:02:50Z"
     },
     "LAK": {
         "f1": [
