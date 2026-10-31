@@ -7889,16 +7889,6 @@
         ],
         "f4": [
             {
-                "name": "Hayden Hodgson",
-                "number": 42,
-                "pos": "lw",
-                "id": 23173,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Stephen Halliday",
                 "number": 83,
                 "pos": "c",
@@ -8030,13 +8020,22 @@
                 "pos": "ir3",
                 "id": 3911,
                 "ppUnit": null,
+                "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Hayden Hodgson",
+                "number": 42,
+                "pos": "ir4",
+                "id": 23173,
+                "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
             },
             {
                 "name": "Andre Burakovsky",
                 "number": 28,
-                "pos": "ir4",
+                "pos": "ir5",
                 "id": 2154,
                 "ppUnit": 2,
                 "injuryStatus": "dtd",
@@ -8121,7 +8120,7 @@
         ],
         "lineup_source": "Last Game (2026-10-29)",
         "updated_at": "2026-10-30T14:12:15.109Z",
-        "fetched_at": "2026-10-31T12:02:49Z"
+        "fetched_at": "2026-10-31T14:02:28Z"
     },
     "DET": {
         "f1": [
