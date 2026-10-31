@@ -48,7 +48,6 @@
     "daniil miromanov": "8482624",
     "tyson gross": "8486056",
     "brayden pachal": "8481167",
-    "william stromgren": "8482766",
     "landon slaggert": "8482172",
     "sacha boisvert": "8484793",
     "sam lafferty": "8478043",
@@ -69,6 +68,7 @@
     "alexander petrovic": "8475755",
     "dylan larkin": "8477946",
     "john leonard": "8481077",
+    "axel sandin-pellikka": "8484223",
     "james van riemsdyk": "8474037",
     "jacob bernard-docker": "8480879",
     "simon edvinsson": "8482762",
@@ -101,6 +101,7 @@
     "kenny connors": "8483675",
     "anze kopitar": "8471685",
     "marcus johansson": "8475149",
+    "carson lambos": "8482781",
     "hunter haight": "8483452",
     "robby fabbri": "8477952",
     "vladimir tarasenko": "8475765",
@@ -198,7 +199,6 @@
     "justin holl": "8475718",
     "oskar sundqvist": "8476897",
     "matt luff": "8479644",
-    "theo lindstein": "8484188",
     "jack finley": "8482090",
     "otto stenberg": "8484230",
     "hunter skinner": "8481715",
@@ -210,7 +210,6 @@
     "maxim groshev": "8482168",
     "philippe myers": "8479026",
     "ryan tverberg": "8482525",
-    "jacob quillan": "8484901",
     "luke haymes": "8485467",
     "william villeneuve": "8482174",
     "henry thrun": "8481567",
@@ -233,7 +232,6 @@
     "kirill kudryavtsev": "8483467",
     "braeden cootes": "8485385",
     "reilly smith": "8475191",
-    "jonas rondbjerg": "8480007",
     "ben hutton": "8477018",
     "tanner laczynski": "8479550",
     "jaycob megna": "8477034",
@@ -387,6 +385,7 @@
     "olli maatta": "8476874",
     "blake coleman": "8476399",
     "kevin bahl": "8480860",
+    "william stromgren": "8482766",
     "jonathan huberdeau": "8476456",
     "wyatt kaiser": "8482176",
     "matt grzelcyk": "8476891",
@@ -456,7 +455,6 @@
     "albert johansson": "8481607",
     "andrew copp": "8477429",
     "patrick kane": "8474141",
-    "axel sandin-pellikka": "8484223",
     "michael rasmussen": "8479992",
     "emmitt finnie": "8484471",
     "moritz seider": "8481542",
@@ -543,7 +541,6 @@
     "mats zuccarello": "8475692",
     "marcus foligno": "8475220",
     "yakov trenin": "8478508",
-    "carson lambos": "8482781",
     "ben jones": "8480259",
     "ryan hartman": "8477451",
     "matt kiersted": "8482641",
@@ -777,6 +774,7 @@
     "jordan kyrou": "8479385",
     "pius suter": "8480459",
     "robert thomas": "8480023",
+    "theo lindstein": "8484188",
     "cam fowler": "8475764",
     "jonatan berggren": "8481013",
     "alexey toropchenko": "8480281",
@@ -827,6 +825,7 @@
     "matthew knies": "8482720",
     "marshall rifai": "8483546",
     "nick robertson": "8481582",
+    "jacob quillan": "8484901",
     "morgan rielly": "8476853",
     "bo groulx": "8480870",
     "john tavares": "8475166",
@@ -877,6 +876,7 @@
     "zeev buium": "8484798",
     "filip hronek": "8479425",
     "shea theodore": "8477447",
+    "jonas rondbjerg": "8480007",
     "mitch marner": "8478483",
     "cole smith": "8482062",
     "brett howden": "8479353",
@@ -1312,13 +1312,6 @@
         "team": "CGY"
       }
     ],
-    "stromgren": [
-      {
-        "pid": "8482766",
-        "full_name": "william stromgren",
-        "team": "CGY"
-      }
-    ],
     "slaggert": [
       {
         "pid": "8482172",
@@ -1487,6 +1480,13 @@
         "pid": "8484186",
         "full_name": "ryan leonard",
         "team": "WSH"
+      }
+    ],
+    "sandin-pellikka": [
+      {
+        "pid": "8484223",
+        "full_name": "axel sandin-pellikka",
+        "team": "DET"
       }
     ],
     "riemsdyk": [
@@ -1741,6 +1741,13 @@
         "pid": "8481607",
         "full_name": "albert johansson",
         "team": "DET"
+      }
+    ],
+    "lambos": [
+      {
+        "pid": "8482781",
+        "full_name": "carson lambos",
+        "team": "MIN"
       }
     ],
     "haight": [
@@ -2468,13 +2475,6 @@
         "team": "STL"
       }
     ],
-    "lindstein": [
-      {
-        "pid": "8484188",
-        "full_name": "theo lindstein",
-        "team": "STL"
-      }
-    ],
     "finley": [
       {
         "pid": "8482090",
@@ -2547,13 +2547,6 @@
       {
         "pid": "8482525",
         "full_name": "ryan tverberg",
-        "team": "TOR"
-      }
-    ],
-    "quillan": [
-      {
-        "pid": "8484901",
-        "full_name": "jacob quillan",
         "team": "TOR"
       }
     ],
@@ -2710,13 +2703,6 @@
         "pid": "8485385",
         "full_name": "braeden cootes",
         "team": "VAN"
-      }
-    ],
-    "rondbjerg": [
-      {
-        "pid": "8480007",
-        "full_name": "jonas rondbjerg",
-        "team": "VGK"
       }
     ],
     "hutton": [
@@ -3820,6 +3806,13 @@
         "team": "CGY"
       }
     ],
+    "stromgren": [
+      {
+        "pid": "8482766",
+        "full_name": "william stromgren",
+        "team": "CGY"
+      }
+    ],
     "huberdeau": [
       {
         "pid": "8476456",
@@ -4242,13 +4235,6 @@
       {
         "pid": "8477429",
         "full_name": "andrew copp",
-        "team": "DET"
-      }
-    ],
-    "sandin-pellikka": [
-      {
-        "pid": "8484223",
-        "full_name": "axel sandin-pellikka",
         "team": "DET"
       }
     ],
@@ -4844,13 +4830,6 @@
       {
         "pid": "8478508",
         "full_name": "yakov trenin",
-        "team": "MIN"
-      }
-    ],
-    "lambos": [
-      {
-        "pid": "8482781",
-        "full_name": "carson lambos",
         "team": "MIN"
       }
     ],
@@ -6362,6 +6341,13 @@
         "team": "STL"
       }
     ],
+    "lindstein": [
+      {
+        "pid": "8484188",
+        "full_name": "theo lindstein",
+        "team": "STL"
+      }
+    ],
     "fowler": [
       {
         "pid": "8475764",
@@ -6689,6 +6675,13 @@
         "pid": "8483546",
         "full_name": "marshall rifai",
         "team": "TOR"
+      }
+    ],
+    "quillan": [
+      {
+        "pid": "8484901",
+        "full_name": "jacob quillan",
+        "team": "VAN"
       }
     ],
     "rielly": [
@@ -7020,6 +7013,13 @@
       {
         "pid": "8477447",
         "full_name": "shea theodore",
+        "team": "VGK"
+      }
+    ],
+    "rondbjerg": [
+      {
+        "pid": "8480007",
+        "full_name": "jonas rondbjerg",
         "team": "VGK"
       }
     ],

@@ -49457,5 +49457,66 @@
         "market_p": 0.4167
       }
     }
+  },
+  {
+    "gameId": 2026020214,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-30",
+    "homeTeam": "Golden Knights",
+    "awayTeam": "Devils",
+    "homeScore": 2,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.22,
+    "awayXg": 2.96,
+    "homeWinProb": 54.3,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Devils",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.2948,
+    "logLoss": 0.7831,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-30T21:48:00Z",
+    "startUtc": "2026-10-30T22:00:00Z",
+    "marketHomeProb": 51.2,
+    "modelHomeProb": 55.1,
+    "homeOdds": -115.0,
+    "awayOdds": -105.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 55.1,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.346,
+        "ll": 1.0613,
+        "naive_ll": 0.9756,
+        "market_p": 0.3961
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.689,
+        "ll": 0.3725,
+        "naive_ll": 0.3582,
+        "market_p": 0.7088
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.455,
+        "ll": 0.7875,
+        "naive_ll": 0.7895,
+        "market_p": 0.4453
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.333,
+        "ll": 1.0996,
+        "naive_ll": 1.1838,
+        "market_p": null
+      }
+    }
   }
 ]
