@@ -7565,9 +7565,19 @@
         ],
         "f4": [
             {
+                "name": "Curtis Douglas",
+                "number": 42,
+                "pos": "lw",
+                "id": 27811,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Ben Meyers",
                 "number": 59,
-                "pos": "lw",
+                "pos": "c",
                 "id": 30084,
                 "ppUnit": null,
                 "injuryStatus": null,
@@ -7577,18 +7587,8 @@
             {
                 "name": "Ryan Winterton",
                 "number": 26,
-                "pos": "c",
-                "id": 30837,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Jani Nyman",
-                "number": 38,
                 "pos": "rw",
-                "id": 36373,
+                "id": 30837,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -7786,9 +7786,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-28)",
-        "updated_at": "2026-10-29T14:01:17.849Z",
-        "fetched_at": "2026-10-30T01:01:59Z"
+        "lineup_source": "Seattle Kraken",
+        "updated_at": "2026-10-30T23:54:29.086Z",
+        "fetched_at": "2026-10-31T00:02:39Z"
     },
     "OTT": {
         "f1": [
@@ -9804,38 +9804,6 @@
         ],
         "f2": [
             {
-                "name": "Yegor Sharangovich",
-                "number": 17,
-                "pos": "lw",
-                "id": 29637,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Morgan Frost",
-                "number": 48,
-                "pos": "c",
-                "id": 2814,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Aydar Suniev",
-                "number": 61,
-                "pos": "rw",
-                "id": 34016,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
                 "name": "Matvei Gridin",
                 "number": 92,
                 "pos": "lw",
@@ -9843,7 +9811,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Martin Pospisil",
@@ -9853,7 +9821,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Ryan Strome",
@@ -9863,7 +9831,39 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Aydar Suniev",
+                "number": 61,
+                "pos": "lw",
+                "id": 34016,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Morgan Frost",
+                "number": 48,
+                "pos": "c",
+                "id": 2814,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Yegor Sharangovich",
+                "number": 17,
+                "pos": "rw",
+                "id": 29637,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -9929,7 +9929,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Zach Whitecloud",
@@ -9939,7 +9939,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -9951,7 +9951,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Zayne Parekh",
@@ -9961,7 +9961,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -10098,9 +10098,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Pat Steinberg",
-        "updated_at": "2026-10-30T17:29:52.645Z",
-        "fetched_at": "2026-10-30T18:02:02Z"
+        "lineup_source": "Ryan Pike",
+        "updated_at": "2026-10-30T23:38:11.753Z",
+        "fetched_at": "2026-10-31T00:02:39Z"
     },
     "NSH": {
         "f1": [
