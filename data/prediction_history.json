@@ -49891,5 +49891,134 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020221,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-31",
+    "homeTeam": "Kings",
+    "awayTeam": "Sabres",
+    "homeScore": 2,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 3.01,
+    "awayXg": 3.22,
+    "homeWinProb": 46.5,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Sabres",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2162,
+    "logLoss": 0.6255,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-31T19:03:00Z",
+    "startUtc": "2026-10-31T20:00:00Z",
+    "marketHomeProb": 44.5,
+    "modelHomeProb": 47.0,
+    "homeOdds": 114.0,
+    "awayOdds": -135.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 47.0,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.42,
+        "ll": 0.8675,
+        "naive_ll": 0.7968,
+        "market_p": 0.4269
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.692,
+        "ll": 0.3682,
+        "naive_ll": 0.3497,
+        "market_p": 0.6744
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.435,
+        "ll": 0.8324,
+        "naive_ll": 0.8466,
+        "market_p": 0.4453
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.353,
+        "ll": 1.0413,
+        "naive_ll": 1.0061,
+        "market_p": null
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.522,
+        "ll": 0.6501,
+        "naive_ll": 0.6423,
+        "market_p": null
+      }
+    }
+  },
+  {
+    "gameId": 2026020222,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-31",
+    "homeTeam": "Sharks",
+    "awayTeam": "Senators",
+    "homeScore": 1,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.03,
+    "awayXg": 3.16,
+    "homeWinProb": 47.9,
+    "predictedWinner": "Senators",
+    "actualWinner": "Senators",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2294,
+    "logLoss": 0.652,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-31T19:03:00Z",
+    "startUtc": "2026-10-31T20:00:00Z",
+    "marketHomeProb": 41.2,
+    "modelHomeProb": 49.6,
+    "homeOdds": 130.0,
+    "awayOdds": -155.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 49.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.404,
+        "ll": 0.9063,
+        "naive_ll": 0.8275,
+        "market_p": 0.46
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.29,
+        "ll": 1.2379,
+        "naive_ll": 1.2626,
+        "market_p": 0.3607
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.549,
+        "ll": 0.5997,
+        "naive_ll": 0.6086,
+        "market_p": 0.4814
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.33,
+        "ll": 1.1087,
+        "naive_ll": 1.1838,
+        "market_p": null
+      }
+    }
   }
 ]
