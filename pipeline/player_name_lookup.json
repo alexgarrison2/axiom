@@ -56,7 +56,6 @@
     "jason polin": "8484255",
     "jack ahcan": "8482072",
     "zakhar bardakov": "8482947",
-    "gavin brindley": "8484149",
     "t.j. tynan": "8476391",
     "alex barre-boulet": "8479718",
     "ivan ivan": "8483930",
@@ -70,7 +69,6 @@
     "john leonard": "8481077",
     "axel sandin-pellikka": "8484223",
     "james van riemsdyk": "8474037",
-    "jacob bernard-docker": "8480879",
     "simon edvinsson": "8482762",
     "travis hamonic": "8474612",
     "dominik shine": "8479942",
@@ -136,7 +134,6 @@
     "brady martin": "8485405",
     "joakim kemell": "8483465",
     "adam boqvist": "8480871",
-    "isaiah george": "8483448",
     "mathew barzal": "8478445",
     "marshall warren": "8481569",
     "liam foudy": "8480853",
@@ -167,6 +164,7 @@
     "lane pederson": "8478967",
     "jacob gaucher": "8481848",
     "jett luchanko": "8484779",
+    "hunter mcdonald": "8483760",
     "anthony richard": "8478409",
     "adam ginning": "8480874",
     "joona koppanen": "8479533",
@@ -220,6 +218,7 @@
     "calle jarnkrok": "8475714",
     "brandon tanev": "8479293",
     "andrew agozzino": "8475461",
+    "daniil but": "8484388",
     "kevin rooney": "8479291",
     "pierre-olivier joseph": "8480058",
     "aatu raty": "8482691",
@@ -413,6 +412,7 @@
     "cale makar": "8480069",
     "brett kulak": "8476967",
     "brent burns": "8470613",
+    "gavin brindley": "8484149",
     "parker kelly": "8480448",
     "nathan mackinnon": "8477492",
     "martin necas": "8480039",
@@ -460,6 +460,7 @@
     "moritz seider": "8481542",
     "nate danielson": "8484160",
     "lucas raymond": "8482078",
+    "jacob bernard-docker": "8480879",
     "sheldon dries": "8480326",
     "michael brandsegg-nyg\u00e5rd": "8484794",
     "ben chiarot": "8475279",
@@ -624,6 +625,7 @@
     "anthony duclair": "8477407",
     "cole mcward": "8484287",
     "ondrej palat": "8476292",
+    "isaiah george": "8483448",
     "bo horvat": "8477500",
     "anders lee": "8475314",
     "kyle palmieri": "8475151",
@@ -689,7 +691,6 @@
     "rasmus ristolainen": "8477499",
     "alex bump": "8483731",
     "sean couturier": "8476461",
-    "hunter mcdonald": "8483760",
     "oliver bonk": "8484148",
     "travis konecny": "8478439",
     "denver barkey": "8484142",
@@ -852,7 +853,6 @@
     "sean durzi": "8480434",
     "mikhail sergachev": "8479410",
     "dylan guenther": "8482699",
-    "daniil but": "8484388",
     "nate schmidt": "8477220",
     "john marino": "8478507",
     "nick desimone": "8480084",
@@ -1368,13 +1368,6 @@
         "team": "COL"
       }
     ],
-    "brindley": [
-      {
-        "pid": "8484149",
-        "full_name": "gavin brindley",
-        "team": "COL"
-      }
-    ],
     "tynan": [
       {
         "pid": "8476391",
@@ -1499,13 +1492,6 @@
         "pid": "8477845",
         "full_name": "trevor van riemsdyk",
         "team": "PIT"
-      }
-    ],
-    "bernard-docker": [
-      {
-        "pid": "8480879",
-        "full_name": "jacob bernard-docker",
-        "team": "DET"
       }
     ],
     "edvinsson": [
@@ -2003,13 +1989,6 @@
         "team": "NJD"
       }
     ],
-    "george": [
-      {
-        "pid": "8483448",
-        "full_name": "isaiah george",
-        "team": "NYI"
-      }
-    ],
     "barzal": [
       {
         "pid": "8478445",
@@ -2225,6 +2204,13 @@
       {
         "pid": "8484779",
         "full_name": "jett luchanko",
+        "team": "PHI"
+      }
+    ],
+    "mcdonald": [
+      {
+        "pid": "8483760",
+        "full_name": "hunter mcdonald",
         "team": "PHI"
       }
     ],
@@ -2615,6 +2601,13 @@
       {
         "pid": "8475461",
         "full_name": "andrew agozzino",
+        "team": "UTA"
+      }
+    ],
+    "but": [
+      {
+        "pid": "8484388",
+        "full_name": "daniil but",
         "team": "UTA"
       }
     ],
@@ -3981,6 +3974,13 @@
         "team": "COL"
       }
     ],
+    "brindley": [
+      {
+        "pid": "8484149",
+        "full_name": "gavin brindley",
+        "team": "COL"
+      }
+    ],
     "kelly": [
       {
         "pid": "8480448",
@@ -4270,6 +4270,13 @@
       {
         "pid": "8482078",
         "full_name": "lucas raymond",
+        "team": "DET"
+      }
+    ],
+    "bernard-docker": [
+      {
+        "pid": "8480879",
+        "full_name": "jacob bernard-docker",
         "team": "DET"
       }
     ],
@@ -5336,6 +5343,13 @@
         "team": "NYI"
       }
     ],
+    "george": [
+      {
+        "pid": "8483448",
+        "full_name": "isaiah george",
+        "team": "NYI"
+      }
+    ],
     "horvat": [
       {
         "pid": "8477500",
@@ -5763,13 +5777,6 @@
       {
         "pid": "8476461",
         "full_name": "sean couturier",
-        "team": "PHI"
-      }
-    ],
-    "mcdonald": [
-      {
-        "pid": "8483760",
-        "full_name": "hunter mcdonald",
         "team": "PHI"
       }
     ],
@@ -6856,13 +6863,6 @@
       {
         "pid": "8482699",
         "full_name": "dylan guenther",
-        "team": "UTA"
-      }
-    ],
-    "but": [
-      {
-        "pid": "8484388",
-        "full_name": "daniil but",
         "team": "UTA"
       }
     ],

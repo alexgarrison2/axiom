@@ -1,60 +1,4 @@
 {
-    "2026020221": {
-        "game_id": 2026020221,
-        "game_date": "2026-10-31",
-        "start_time_utc": "2026-10-31T20:00:00Z",
-        "home_team": "Kings",
-        "away_team": "Sabres",
-        "home_abbrev": "LAK",
-        "away_abbrev": "BUF",
-        "source": "nhl_partner_draftkings",
-        "sources": [
-            "nhl_partner_draftkings"
-        ],
-        "fetched_at": "2026-10-31T19:02:26Z",
-        "Kings_three_way": 165,
-        "total_over": -135,
-        "total_line": "5.5",
-        "three_way_tie": 300,
-        "Kings_puckline": -225,
-        "Kings_puckline_spread": "+1.5",
-        "Sabres_three_way": 120,
-        "total_under": 114,
-        "Sabres_puckline": 185,
-        "Sabres_puckline_spread": "-1.5",
-        "Kings": 114,
-        "Sabres": -135,
-        "home_ml": 114,
-        "away_ml": -135
-    },
-    "2026020222": {
-        "game_id": 2026020222,
-        "game_date": "2026-10-31",
-        "start_time_utc": "2026-10-31T20:00:00Z",
-        "home_team": "Sharks",
-        "away_team": "Senators",
-        "home_abbrev": "SJS",
-        "away_abbrev": "OTT",
-        "source": "nhl_partner_draftkings",
-        "sources": [
-            "nhl_partner_draftkings"
-        ],
-        "fetched_at": "2026-10-31T19:02:26Z",
-        "Sharks_three_way": 180,
-        "Sharks_puckline": -192,
-        "Sharks_puckline_spread": "+1.5",
-        "total_over": -118,
-        "total_line": "6.5",
-        "three_way_tie": 320,
-        "Senators_three_way": 105,
-        "Senators_puckline": 160,
-        "Senators_puckline_spread": "-1.5",
-        "total_under": -102,
-        "Sharks": 130,
-        "Senators": -155,
-        "home_ml": 130,
-        "away_ml": -155
-    },
     "2026020223": {
         "game_id": 2026020223,
         "game_date": "2026-10-31",
@@ -67,14 +11,14 @@
         "sources": [
             "nhl_partner_draftkings"
         ],
-        "fetched_at": "2026-10-31T18:02:27Z",
+        "fetched_at": "2026-10-31T20:04:27Z",
         "Canadiens_three_way": 125,
-        "three_way_tie": 310,
+        "three_way_tie": 320,
         "total_over": -118,
         "total_line": "6.5",
         "Canadiens_puckline": 190,
         "Canadiens_puckline_spread": "-1.5",
-        "Penguins_three_way": 155,
+        "Penguins_three_way": 150,
         "total_under": -102,
         "Penguins_puckline": -230,
         "Penguins_puckline_spread": "+1.5",
@@ -95,8 +39,8 @@
         "sources": [
             "nhl_partner_draftkings"
         ],
-        "fetched_at": "2026-10-31T19:02:26Z",
-        "Canucks_three_way": 215,
+        "fetched_at": "2026-10-31T20:04:27Z",
+        "Canucks_three_way": 210,
         "three_way_tie": 340,
         "Canucks_puckline": -155,
         "Canucks_puckline_spread": "+1.5",
@@ -123,7 +67,7 @@
         "sources": [
             "nhl_partner_draftkings"
         ],
-        "fetched_at": "2026-10-31T17:02:25Z",
+        "fetched_at": "2026-10-31T20:04:27Z",
         "Stars_puckline": 145,
         "Stars_puckline_spread": "-1.5",
         "Stars_three_way": -110,
@@ -132,7 +76,7 @@
         "three_way_tie": 310,
         "Blue Jackets_puckline": -175,
         "Blue Jackets_puckline_spread": "+1.5",
-        "Blue Jackets_three_way": 220,
+        "Blue Jackets_three_way": 215,
         "total_under": -120,
         "Stars": -192,
         "Blue Jackets": 160,
@@ -221,11 +165,11 @@
         "sources": [
             "espn_draftkings"
         ],
-        "fetched_at": "2026-10-31T16:02:53Z",
-        "Flyers": 130,
-        "Mammoth": -155,
-        "home_ml": 130,
-        "away_ml": -155,
+        "fetched_at": "2026-10-31T20:04:27Z",
+        "Flyers": 136,
+        "Mammoth": -162,
+        "home_ml": 136,
+        "away_ml": -162,
         "total_line": "6.5",
         "total_over": 114,
         "total_under": -135
@@ -263,13 +207,13 @@
         "sources": [
             "espn_draftkings"
         ],
-        "fetched_at": "2026-10-31T16:02:53Z",
-        "Ducks": -112,
-        "Senators": -108,
-        "home_ml": -112,
-        "away_ml": -108,
+        "fetched_at": "2026-10-31T20:04:27Z",
+        "Ducks": -108,
+        "Senators": -112,
+        "home_ml": -108,
+        "away_ml": -112,
         "total_line": "6.5",
-        "total_over": -112,
-        "total_under": -108
+        "total_over": -130,
+        "total_under": 110
     }
 }
