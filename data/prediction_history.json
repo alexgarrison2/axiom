@@ -49586,5 +49586,66 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020216,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-10-30",
+    "homeTeam": "Flames",
+    "awayTeam": "Kraken",
+    "homeScore": 6,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 2.95,
+    "awayXg": 3.29,
+    "homeWinProb": 44.5,
+    "predictedWinner": "Kraken",
+    "actualWinner": "Flames",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.308,
+    "logLoss": 0.8097,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-10-30T23:03:00Z",
+    "startUtc": "2026-10-31T00:00:00Z",
+    "marketHomeProb": 48.8,
+    "modelHomeProb": 43.4,
+    "homeOdds": -105.0,
+    "awayOdds": -115.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 43.4,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.337,
+        "ll": 1.0877,
+        "naive_ll": 1.0043,
+        "market_p": 0.398
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.674,
+        "ll": 0.3945,
+        "naive_ll": 0.3746,
+        "market_p": 0.7034
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.458,
+        "ll": 0.7809,
+        "naive_ll": 0.7687,
+        "market_p": 0.4814
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.324,
+        "ll": 1.127,
+        "naive_ll": 1.1906,
+        "market_p": null
+      }
+    }
   }
 ]
