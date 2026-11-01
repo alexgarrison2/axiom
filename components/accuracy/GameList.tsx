@@ -3,6 +3,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Segmented } from '@/components/ui/segmented';
+import { FilterChip } from '@/components/ui/filter-chip';
+import { DIVISIONS } from '@/lib/pony/teams';
 import { Slider } from '@/components/ui/slider';
 import { formatTime } from '@/lib/format/time';
 import { TEAM_CODES } from '@/components/ui/team-color';
@@ -14,6 +16,7 @@ import { isCorrect, isNoLean, isWrong, pickOf, pickProb, pickUnits, type Exclude
 import { fmtUnits } from './ledger-data';
 import type { GameTypeKey } from './report';
 import { groupByDay, summarize, vsMarket, type DayGroup, type DayShape, type SpanSummary } from './summary';
+import { DAYS, isFiltered, matches, NO_FILTER, playedIndex, teamSubject, type PickFilter } from './filters';
 import { useDataEpoch } from '@/lib/fresh';
 import { fmtInt } from '@/components/views/format';
 
@@ -89,7 +92,7 @@ export function GameList({
 }) {
     const [games, setGames] = React.useState<{ key: string; rows: GradedGame[]; failed?: boolean } | null>(null);
     const [attempt, setAttempt] = React.useState(0);
-    const [team, setTeam] = React.useState('all');
+    const [filter, setFilter] = React.useState<PickFilter>(NO_FILTER);
     const [result, setResult] = React.useState<ResultFilter>('all');
     const [includeRetro, setIncludeRetro] = React.useState(false);
     const [shown, setShown] = React.useState(PAGE);
@@ -98,6 +101,7 @@ export function GameList({
     /** Expanded days. Every day starts collapsed and only the reader opens one. */
     const [openDays, setOpenDays] = React.useState<ReadonlySet<string>>(() => new Set());
     const teamId = React.useId();
+    const dayId = React.useId();
     /** A filter changed: back to the first page with every day collapsed. */
     const refilter = () => {
         setShown(PAGE);
@@ -134,12 +138,14 @@ export function GameList({
     );
     const dates = React.useMemo(() => [...new Set(base.map(g => g.date))].sort(), [base]);
     const win = React.useMemo<[number, number]>(() => range ?? [0, Math.max(0, dates.length - 1)], [range, dates]);
+    // Back-to-backs are read off every loaded game (back-filled included), not just the ones shown.
+    const played = React.useMemo(() => playedIndex(games?.rows ?? []), [games]);
     const retroCount = React.useMemo(() => (games?.rows ?? []).filter(g => g.retro && (type === 'all' || (type === 'regular' ? g.type === '02' : g.type === '03'))).length, [games, type]);
 
     const inWindow = React.useMemo(() => {
         const [a, b] = [dates[win[0]] ?? '', dates[win[1]] ?? '9999'];
-        return base.filter(g => g.date >= a && g.date <= b && (team === 'all' || g.home === team || g.away === team));
-    }, [base, dates, win, team]);
+        return base.filter(g => g.date >= a && g.date <= b && matches(g, filter, played));
+    }, [base, dates, win, filter, played]);
     // The pick list and its record leave out coin flips (isCoinFlip, the slate's rule); they get their own strip.
     const rows = React.useMemo(
         () => inWindow.filter(g => !isNoLean(g) && (result === 'all' || (result === 'hit' ? isCorrect(g) : isWrong(g)))),
@@ -150,6 +156,12 @@ export function GameList({
     const days = React.useMemo(() => groupByDay(result === 'all' ? inWindow : rows), [inWindow, rows, result]);
     const pageDays = days.slice(0, shown);
     const allOpen = pageDays.every(d => openDays.has(d.date));
+    const refine = (patch: Partial<PickFilter>) => {
+        setFilter(f => ({ ...f, ...patch }));
+        refilter();
+    };
+    /** The situations are about the chosen team, else about the model's pick. */
+    const subject = teamSubject(filter) ? filter.who : null;
     const toggleDay = (date: string) => {
         const next = new Set(openDays);
         if (next.has(date)) next.delete(date);
@@ -214,19 +226,26 @@ export function GameList({
                 </label>
                 <select
                     id={teamId}
-                    value={team}
-                    onChange={e => {
-                        setTeam(e.target.value);
-                        refilter();
-                    }}
-                    className={cn(SELECT, 'max-sm:flex-1 max-sm:tracking-[0.04em] max-[359.98px]:tracking-normal')}
+                    value={filter.who}
+                    onChange={e => refine({ who: e.target.value })}
+                    className={cn(SELECT, 'max-sm:flex-1 max-sm:tracking-[0.04em] max-[359.98px]:tracking-normal', filter.who !== 'all' && 'border-brand/60 text-brand')}
                 >
                     <option value="all">All teams</option>
-                    {TEAM_CODES.map(t => (
-                        <option key={t} value={t}>
-                            {t}
-                        </option>
-                    ))}
+                    <optgroup label="Divisions">
+                        {Object.keys(DIVISIONS).map(d => (
+                            <option key={d} value={`div:${d}`}>
+                                {d}
+                            </option>
+                        ))}
+                        <option value="div:same">In-division games</option>
+                    </optgroup>
+                    <optgroup label="Teams">
+                        {TEAM_CODES.map(t => (
+                            <option key={t} value={t}>
+                                {t}
+                            </option>
+                        ))}
+                    </optgroup>
                 </select>
                 <Segmented
                     label="Result"
@@ -311,6 +330,78 @@ export function GameList({
                                     strokeLinejoin="round"
                                 />
                             </svg>
+                        </button>
+                    ) : null}
+                </div>
+                {/* Situations: the chosen team's when one team is chosen, else the model's pick's. Scrolls sideways on phones. */}
+                <div
+                    role="group"
+                    aria-label="Situations"
+                    className="flex basis-full items-center gap-2 overflow-x-auto border-t border-line pt-2 scrollbar-hide max-sm:order-3 sm:-mx-3 sm:px-3"
+                >
+                    <span className="inline-flex shrink-0 items-center gap-1.5 pr-1 text-micro font-medium uppercase tracking-label text-fg-3">
+                        {subject ? (
+                            <>
+                                <Crest tri={subject} size={20} className="drop-shadow-none" />
+                                {subject}
+                            </>
+                        ) : (
+                            'Pick'
+                        )}
+                    </span>
+                    {(['home', 'road'] as const).map(v => (
+                        <FilterChip
+                            key={v}
+                            selected={filter.venue === v}
+                            onSelectedChange={on => refine({ venue: on ? v : null })}
+                            title={subject ? `${subject} ${v === 'home' ? 'at home' : 'on the road'}` : `Picked the ${v === 'home' ? 'home' : 'road'} team`}
+                            className="shrink-0"
+                        >
+                            {v === 'home' ? 'Home' : 'Road'}
+                        </FilterChip>
+                    ))}
+                    {(['fav', 'dog'] as const).map(v => (
+                        <FilterChip
+                            key={v}
+                            selected={filter.role === v}
+                            onSelectedChange={on => refine({ role: on ? v : null })}
+                            title={`${subject ? `${subject} as` : 'Picked'} the market ${v === 'fav' ? 'favourite' : 'underdog'}`}
+                            className="shrink-0"
+                        >
+                            {v === 'fav' ? 'Fav' : 'Dog'}
+                        </FilterChip>
+                    ))}
+                    <FilterChip
+                        selected={filter.b2b}
+                        onSelectedChange={on => refine({ b2b: on })}
+                        title={subject ? `${subject} played the day before` : 'The picked team played the day before'}
+                        className="shrink-0"
+                    >
+                        B2B
+                    </FilterChip>
+                    <label htmlFor={dayId} className="sr-only">
+                        Day of the week
+                    </label>
+                    <select
+                        id={dayId}
+                        value={filter.day ?? ''}
+                        onChange={e => refine({ day: e.target.value === '' ? null : Number(e.target.value) })}
+                        className={cn(SELECT, 'shrink-0 rounded-full px-3', filter.day != null && 'border-brand/60 text-brand')}
+                    >
+                        <option value="">Any day</option>
+                        {[1, 2, 3, 4, 5, 6, 0].map(d => (
+                            <option key={d} value={d}>
+                                {DAYS[d]}
+                            </option>
+                        ))}
+                    </select>
+                    {isFiltered(filter) ? (
+                        <button
+                            type="button"
+                            onClick={() => refine(NO_FILTER)}
+                            className="ml-auto inline-flex min-h-8 shrink-0 items-center rounded-control px-2 text-micro font-medium uppercase tracking-[0.12em] text-fg-2 transition-colors hover:text-brand coarse:min-h-11"
+                        >
+                            Clear
                         </button>
                     ) : null}
                 </div>
