@@ -1,7 +1,7 @@
 {
  "season_id": "20262027",
  "prev_season_id": "20252026",
- "generated_at": "2026-11-01T05:02:12Z",
+ "generated_at": "2026-11-01T11:47:06Z",
  "goalies": {
   "Adin Hill": {
    "cur": {
@@ -134,7 +134,14 @@
    }
   },
   "Arsenii Sergeev": {
-   "cur": null,
+   "cur": {
+    "w": 0,
+    "l": 1,
+    "ot": 0,
+    "svpct": 0.84848,
+    "gaa": 5.0,
+    "gp": 1
+   },
    "prev": {
     "w": 1,
     "l": 0,
@@ -1118,12 +1125,12 @@
   },
   "Mackenzie Blackwood": {
    "cur": {
-    "w": 6,
+    "w": 7,
     "l": 3,
     "ot": 0,
-    "svpct": 0.89406,
-    "gaa": 2.81,
-    "gp": 9
+    "svpct": 0.89733,
+    "gaa": 2.73,
+    "gp": 10
    },
    "prev": {
     "w": 23,
