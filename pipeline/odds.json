@@ -1,32 +1,4 @@
 {
-    "2026020230": {
-        "game_id": 2026020230,
-        "game_date": "2026-11-01",
-        "start_time_utc": "2026-11-01T23:00:00Z",
-        "home_team": "Rangers",
-        "away_team": "Oilers",
-        "home_abbrev": "NYR",
-        "away_abbrev": "EDM",
-        "source": "nhl_partner_draftkings",
-        "sources": [
-            "nhl_partner_draftkings"
-        ],
-        "fetched_at": "2026-11-01T22:02:27Z",
-        "Rangers_puckline": 190,
-        "Rangers_puckline_spread": "-1.5",
-        "total_over": -118,
-        "total_line": "6.5",
-        "Rangers_three_way": 125,
-        "three_way_tie": 330,
-        "Oilers_puckline": -230,
-        "Oilers_puckline_spread": "+1.5",
-        "total_under": -102,
-        "Oilers_three_way": 150,
-        "Rangers": -125,
-        "Oilers": 105,
-        "home_ml": -125,
-        "away_ml": 105
-    },
     "2026020231": {
         "game_id": 2026020231,
         "game_date": "2026-11-01",
@@ -88,14 +60,14 @@
         "sources": [
             "espn_draftkings"
         ],
-        "fetched_at": "2026-11-01T17:24:00Z",
+        "fetched_at": "2026-11-01T23:02:24Z",
         "Panthers": -175,
         "Red Wings": 145,
         "home_ml": -175,
         "away_ml": 145,
         "total_line": "5.5",
-        "total_over": -130,
-        "total_under": 110
+        "total_over": -125,
+        "total_under": 105
     },
     "2026020234": {
         "game_id": 2026020234,
@@ -109,14 +81,14 @@
         "sources": [
             "espn_draftkings"
         ],
-        "fetched_at": "2026-11-01T17:24:00Z",
+        "fetched_at": "2026-11-01T23:02:24Z",
         "Blackhawks": 190,
         "Avalanche": -230,
         "home_ml": 190,
         "away_ml": -230,
-        "total_line": "5.5",
-        "total_over": -135,
-        "total_under": 114
+        "total_line": "6.5",
+        "total_over": 105,
+        "total_under": -125
     },
     "2026020235": {
         "game_id": 2026020235,
@@ -130,13 +102,13 @@
         "sources": [
             "espn_draftkings"
         ],
-        "fetched_at": "2026-11-01T17:24:00Z",
+        "fetched_at": "2026-11-01T23:02:24Z",
         "Sharks": -135,
         "Flames": 114,
         "home_ml": -135,
         "away_ml": 114,
         "total_line": "6.5",
-        "total_over": 105,
-        "total_under": -125
+        "total_over": -102,
+        "total_under": -118
     }
 }
