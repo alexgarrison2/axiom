@@ -138,5 +138,89 @@
         "Senators": -118,
         "home_ml": -102,
         "away_ml": -118
+    },
+    "2026020232": {
+        "game_id": 2026020232,
+        "game_date": "2026-11-02",
+        "start_time_utc": "2026-11-03T00:00:00Z",
+        "home_team": "Bruins",
+        "away_team": "Golden Knights",
+        "home_abbrev": "BOS",
+        "away_abbrev": "VGK",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-11-01T17:24:00Z",
+        "Bruins": -108,
+        "Golden Knights": -112,
+        "home_ml": -108,
+        "away_ml": -112,
+        "total_line": "6.5",
+        "total_over": 105,
+        "total_under": -125
+    },
+    "2026020233": {
+        "game_id": 2026020233,
+        "game_date": "2026-11-02",
+        "start_time_utc": "2026-11-03T00:00:00Z",
+        "home_team": "Panthers",
+        "away_team": "Red Wings",
+        "home_abbrev": "FLA",
+        "away_abbrev": "DET",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-11-01T17:24:00Z",
+        "Panthers": -175,
+        "Red Wings": 145,
+        "home_ml": -175,
+        "away_ml": 145,
+        "total_line": "5.5",
+        "total_over": -130,
+        "total_under": 110
+    },
+    "2026020234": {
+        "game_id": 2026020234,
+        "game_date": "2026-11-02",
+        "start_time_utc": "2026-11-03T01:00:00Z",
+        "home_team": "Blackhawks",
+        "away_team": "Avalanche",
+        "home_abbrev": "CHI",
+        "away_abbrev": "COL",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-11-01T17:24:00Z",
+        "Blackhawks": 190,
+        "Avalanche": -230,
+        "home_ml": 190,
+        "away_ml": -230,
+        "total_line": "5.5",
+        "total_over": -135,
+        "total_under": 114
+    },
+    "2026020235": {
+        "game_id": 2026020235,
+        "game_date": "2026-11-02",
+        "start_time_utc": "2026-11-03T02:00:00Z",
+        "home_team": "Sharks",
+        "away_team": "Flames",
+        "home_abbrev": "SJS",
+        "away_abbrev": "CGY",
+        "source": "espn_draftkings",
+        "sources": [
+            "espn_draftkings"
+        ],
+        "fetched_at": "2026-11-01T17:24:00Z",
+        "Sharks": -135,
+        "Flames": 114,
+        "home_ml": -135,
+        "away_ml": 114,
+        "total_line": "6.5",
+        "total_over": 105,
+        "total_under": -125
     }
 }
