@@ -3284,43 +3284,11 @@
                 "id": 2498,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             }
         ],
         "f2": [
-            {
-                "name": "Porter Martone",
-                "number": null,
-                "pos": "lw",
-                "id": 37366,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Noah Cates",
-                "number": 27,
-                "pos": "c",
-                "id": 28087,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Matvei Michkov",
-                "number": 39,
-                "pos": "rw",
-                "id": 33997,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
             {
                 "name": "Tyson Foerster",
                 "number": 71,
@@ -3329,7 +3297,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Denver Barkey",
@@ -3348,20 +3316,52 @@
                 "id": 2786,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": "up"
             }
         ],
-        "f4": [
+        "f3": [
             {
-                "name": "Alex Bump",
-                "number": 20,
+                "name": "Porter Martone",
+                "number": null,
                 "pos": "lw",
-                "id": 34874,
+                "id": 37366,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Noah Cates",
+                "number": 27,
+                "pos": "c",
+                "id": 28087,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "down"
+            },
+            {
+                "name": "Matvei Michkov",
+                "number": 39,
+                "pos": "rw",
+                "id": 33997,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Cole Knuble",
+                "number": null,
+                "pos": "lw",
+                "id": 33787,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Sean Couturier",
@@ -3371,17 +3371,17 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
-                "name": "Michael Bunting",
-                "number": 58,
+                "name": "Noel Acciari",
+                "number": 52,
                 "pos": "rw",
-                "id": 3778,
+                "id": 2589,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -3418,33 +3418,33 @@
                 "movement": null
             },
             {
-                "name": "Nick Seeler",
-                "number": 24,
-                "pos": "rd",
-                "id": 4630,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Simon Benoit",
-                "number": 44,
-                "pos": "ld",
-                "id": 26550,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "new"
-            },
-            {
                 "name": "Oliver Bonk",
                 "number": 59,
                 "pos": "rd",
                 "id": 35107,
                 "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Nick Seeler",
+                "number": 24,
+                "pos": "ld",
+                "id": 4630,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Simon Benoit",
+                "number": 44,
+                "pos": "rd",
+                "id": 26550,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3477,24 +3477,6 @@
                 "pos": "ir1",
                 "id": 34689,
                 "ppUnit": null,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Owen Tippett",
-                "number": 74,
-                "pos": "ir2",
-                "id": 2786,
-                "ppUnit": 2,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Travis Konecny",
-                "number": 11,
-                "pos": "ir3",
-                "id": 2498,
-                "ppUnit": 2,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
@@ -3584,9 +3566,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Charlie O'Connor",
-        "updated_at": "2026-10-31T16:05:53.859Z",
-        "fetched_at": "2026-10-31T16:30:55Z"
+        "lineup_source": "Will James",
+        "updated_at": "2026-11-01T20:37:18.653Z",
+        "fetched_at": "2026-11-01T21:04:27Z"
     },
     "PIT": {
         "f1": [
@@ -6527,9 +6509,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Joe Smith",
-        "updated_at": "2026-10-31T15:57:59.714Z",
-        "fetched_at": "2026-10-31T16:03:07Z"
+        "lineup_source": "@CapitalsPR",
+        "updated_at": "2026-11-01T20:43:31.929Z",
+        "fetched_at": "2026-11-01T21:04:27Z"
     },
     "WSH": {
         "f1": [
@@ -6842,9 +6824,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Tom Gulitti",
-        "updated_at": "2026-10-31T15:57:34.355Z",
-        "fetched_at": "2026-10-31T16:03:07Z"
+        "lineup_source": "Sammi Silber",
+        "updated_at": "2026-11-01T20:06:55.433Z",
+        "fetched_at": "2026-11-01T21:04:27Z"
     },
     "CBJ": {
         "f1": [
@@ -8543,14 +8525,14 @@
                 "movement": null
             },
             {
-                "name": "Kailer Yamamoto",
-                "number": 56,
+                "name": "Michael Carcone",
+                "number": 53,
                 "pos": "rw",
-                "id": 2796,
+                "id": 3864,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -8575,14 +8557,14 @@
                 "movement": null
             },
             {
-                "name": "Daniil But",
-                "number": 50,
+                "name": "Liam O'Brien",
+                "number": 38,
                 "pos": "rw",
-                "id": 38459,
+                "id": 2377,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -8673,19 +8655,19 @@
         ],
         "ir": [
             {
-                "name": "Michael Carcone",
-                "number": 53,
+                "name": "John Marino",
+                "number": 6,
                 "pos": "ir1",
-                "id": 3864,
+                "id": 25570,
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
-                "name": "John Marino",
-                "number": 6,
+                "name": "Kailer Yamamoto",
+                "number": 56,
                 "pos": "ir2",
-                "id": 25570,
+                "id": 2796,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -8767,9 +8749,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-10-29)",
-        "updated_at": "2026-10-30T13:54:27.690Z",
-        "fetched_at": "2026-11-01T11:47:10Z"
+        "lineup_source": "Utah Mammoth",
+        "updated_at": "2026-11-01T20:40:08.520Z",
+        "fetched_at": "2026-11-01T21:04:27Z"
     },
     "WPG": {
         "f1": [
