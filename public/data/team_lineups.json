@@ -4298,7 +4298,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -4352,7 +4352,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Fedor Svechkov",
@@ -4433,19 +4433,19 @@
         ],
         "g": [
             {
-                "name": "Mackenzie Blackwood",
-                "number": 39,
+                "name": "Scott Wedgewood",
+                "number": 41,
                 "pos": "g1",
-                "id": 3792,
+                "id": 1873,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Scott Wedgewood",
-                "number": 41,
+                "name": "Mackenzie Blackwood",
+                "number": 39,
                 "pos": "g2",
-                "id": 1873,
+                "id": 3792,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4549,7 +4549,7 @@
         ],
         "lineup_source": "Last Game (2026-10-31)",
         "updated_at": "2026-11-02T16:49:15.601Z",
-        "fetched_at": "2026-11-02T17:02:43Z"
+        "fetched_at": "2026-11-02T20:02:43Z"
     },
     "LAK": {
         "f1": [
@@ -10140,7 +10140,7 @@
             },
             {
                 "name": "Shane Wright",
-                "number": 51,
+                "number": 15,
                 "pos": "c",
                 "id": 30830,
                 "ppUnit": 2,
@@ -10236,7 +10236,7 @@
             },
             {
                 "name": "Adam Wilsby",
-                "number": 83,
+                "number": 2,
                 "pos": "rd",
                 "id": 36308,
                 "ppUnit": null,
@@ -10270,7 +10270,7 @@
         "d3": [
             {
                 "name": "Daemon Hunt",
-                "number": 48,
+                "number": 52,
                 "pos": "ld",
                 "id": 29543,
                 "ppUnit": null,
@@ -10379,7 +10379,7 @@
             },
             {
                 "name": "Daemon Hunt",
-                "number": 48,
+                "number": 52,
                 "pos": "sk3",
                 "id": 29543,
                 "ppUnit": null,
@@ -10388,7 +10388,7 @@
             },
             {
                 "name": "Adam Wilsby",
-                "number": 83,
+                "number": 2,
                 "pos": "sk4",
                 "id": 36308,
                 "ppUnit": null,
@@ -10398,6 +10398,6 @@
         ],
         "lineup_source": "Alex Daugherty",
         "updated_at": "2026-11-02T17:30:52.545Z",
-        "fetched_at": "2026-11-02T18:02:50Z"
+        "fetched_at": "2026-11-02T20:02:43Z"
     }
 }
