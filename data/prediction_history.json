@@ -50543,5 +50543,73 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020231,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-01",
+    "homeTeam": "Ducks",
+    "awayTeam": "Senators",
+    "homeScore": 6,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 3.33,
+    "awayXg": 3.08,
+    "homeWinProb": 54.0,
+    "predictedWinner": "Ducks",
+    "actualWinner": "Ducks",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2116,
+    "logLoss": 0.6162,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-02T00:07:00Z",
+    "startUtc": "2026-11-02T01:00:00Z",
+    "marketHomeProb": 48.1,
+    "modelHomeProb": 55.5,
+    "homeOdds": -102.0,
+    "awayOdds": -118.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 55.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.427,
+        "ll": 0.851,
+        "naive_ll": 0.783,
+        "market_p": 0.373
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.751,
+        "ll": 0.2863,
+        "naive_ll": 0.2728,
+        "market_p": 0.6925
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.495,
+        "ll": 0.7032,
+        "naive_ll": 0.7081,
+        "market_p": 0.5547
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.316,
+        "ll": 1.152,
+        "naive_ll": 1.1096,
+        "market_p": null
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.469,
+        "ll": 0.7572,
+        "naive_ll": 0.7544,
+        "market_p": null
+      }
+    }
   }
 ]

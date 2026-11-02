@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-02T02:07:13.286204+00:00",
+ "generated_at": "2026-11-02T05:04:52.021242+00:00",
  "unit": "Every pick bet to win 1 unit: a -120 favourite risks 1.2u, a +150 underdog risks 0.67u",
  "disclaimer": "For information and entertainment only. Past results do not predict future results.",
  "source": "graded live picks in prediction_history.json at the price shown when the pick was published",
@@ -9456,21 +9456,21 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 206,
-    "n_graded": 206,
+    "n_bets": 207,
+    "n_graded": 207,
     "n_pending": 0,
-    "record": "132-74",
-    "wins": 132,
+    "record": "133-74",
+    "wins": 133,
     "losses": 74,
-    "units_staked": 344.4006,
-    "units_profit": 18.632,
-    "roi": 0.0541,
+    "units_staked": 345.4206,
+    "units_profit": 19.632,
+    "roi": 0.0568,
     "roi_ci": [
-     -0.0487,
-     0.1507
+     -0.0435,
+     0.1567
     ],
     "clv_mean": -0.033,
-    "clv_n": 206,
+    "clv_n": 207,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
@@ -9490,11 +9490,11 @@
      },
      {
       "bucket": "5-10%",
-      "n": 27,
-      "record": "18-9",
-      "units_staked": 48.6071,
-      "units_profit": 5.9428,
-      "roi": 0.1223
+      "n": 28,
+      "record": "19-9",
+      "units_staked": 49.6271,
+      "units_profit": 6.9428,
+      "roi": 0.1399
      },
      {
       "bucket": "10-20%",
@@ -9522,11 +9522,11 @@
      },
      {
       "bucket": "0.6-1u",
-      "n": 13,
-      "record": "8-5",
-      "units_staked": 12.7206,
-      "units_profit": 3.142,
-      "roi": 0.247
+      "n": 14,
+      "record": "9-5",
+      "units_staked": 13.7406,
+      "units_profit": 4.142,
+      "roi": 0.3014
      },
      {
       "bucket": "1.1-2u",
@@ -14695,6 +14695,31 @@
      "decision": "REG",
      "closing_price": 105.0,
      "clv": -0.0459,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020231,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-01",
+     "startUtc": "2026-11-02T01:00:00Z",
+     "snapshotUtc": "2026-11-02T00:07:00Z",
+     "team": "Ducks",
+     "opponent": "Senators",
+     "side": "home",
+     "stake_units": 1.02,
+     "price": -102.0,
+     "decimal_price": 1.9804,
+     "ev_at_bet": 0.0694,
+     "ev_bucket": "5-10%",
+     "stake_bucket": "0.6-1u",
+     "model_prob": 0.54,
+     "result": "win",
+     "profit_units": 1.0,
+     "final": "3-6",
+     "decision": "REG",
+     "closing_price": -102.0,
+     "clv": -0.0466,
      "model_version": "sim-m5-v4_st-20261003"
     }
    ]
