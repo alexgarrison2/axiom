@@ -7467,7 +7467,7 @@
                 "id": 30804,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             },
             {
@@ -7503,14 +7503,14 @@
                 "movement": null
             },
             {
-                "name": "Mackie Samoskevich",
-                "number": 11,
+                "name": "Matthew Wood",
+                "number": 71,
                 "pos": "rw",
-                "id": 31226,
+                "id": 33571,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
@@ -7535,26 +7535,26 @@
                 "movement": null
             },
             {
-                "name": "Matthew Wood",
-                "number": 71,
+                "name": "Mackie Samoskevich",
+                "number": 11,
                 "pos": "rw",
-                "id": 33571,
+                "id": 31226,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "down"
             }
         ],
         "f4": [
             {
-                "name": "Curtis Douglas",
-                "number": 42,
+                "name": "Jani Nyman",
+                "number": 38,
                 "pos": "lw",
-                "id": 27811,
+                "id": 36373,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Ben Meyers",
@@ -7690,15 +7690,6 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Matty Beniers",
-                "number": 10,
-                "pos": "ir4",
-                "id": 30804,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -7777,9 +7768,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-01T22:47:35.633Z",
-        "fetched_at": "2026-11-02T00:04:01Z"
+        "lineup_source": "Mike Benton",
+        "updated_at": "2026-11-03T18:41:16.753Z",
+        "fetched_at": "2026-11-03T18:48:39Z"
     },
     "OTT": {
         "f1": [
@@ -7900,14 +7891,14 @@
                 "movement": null
             },
             {
-                "name": "Xavier Bourgault",
-                "number": null,
+                "name": "Sammy Blais",
+                "number": 27,
                 "pos": "rw",
-                "id": 29962,
+                "id": 2848,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -8119,9 +8110,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "@Senators",
-        "updated_at": "2026-11-01T23:49:05.875Z",
-        "fetched_at": "2026-11-02T00:04:01Z"
+        "lineup_source": "Jackson Starr",
+        "updated_at": "2026-11-03T18:43:19.045Z",
+        "fetched_at": "2026-11-03T18:48:39Z"
     },
     "DET": {
         "f1": [
