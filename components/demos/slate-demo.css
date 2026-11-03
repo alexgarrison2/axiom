@@ -1,0 +1,614 @@
+/* pony xG's Neon Arcade tokens, scoped to the demo */
+.px {
+  --px-bg: #05070b;
+  --px-surface-1: #0a0e15;
+  --px-surface-2: #0f1622;
+  --px-track: #0c121c;
+  --px-line: #152031;
+  --px-brand: #29e7ff;
+  --px-model: #ff4fd8;
+  --px-goalie: #4d9fff;
+  --px-text-1: #e8eef8;
+  --px-text-2: #8e99ad;
+  --px-text-3: #7a869b;
+  --px-mute: #3b475c;
+  --px-font: var(--font-plex-condensed, 'IBM Plex Sans Condensed'), 'Arial Narrow', system-ui, sans-serif;
+  --px-travel: cubic-bezier(0.45, 0, 0.1, 1);
+}
+
+.px .ss-stage {
+  overflow: hidden;
+  background: var(--px-bg);
+}
+
+/* Corner bleed: inset top and left, off the right and the bottom. The pane's
+   content ends a gutter inside the stage, so the crop only cuts its surface */
+.px-win {
+  position: absolute;
+  top: 34px;
+  left: 36px;
+  width: 800px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px rgb(255 255 255 / 0.07);
+}
+
+.px-body {
+  min-height: 500px;
+  padding: 0 12px;
+  background: var(--px-bg);
+  font-family: var(--px-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--px-text-1);
+}
+
+.px-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 4px;
+}
+
+.px-date {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.px-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 11px;
+  border: 1px solid rgb(41 231 255 / 0.55);
+  border-radius: 999px;
+  color: var(--px-text-1);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px rgb(41 231 255 / 0.18);
+}
+
+.px-pill b {
+  color: var(--px-brand);
+  font-weight: 700;
+}
+
+.px-cols {
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+/* ---- Rail ---- */
+
+.px-rail {
+  display: grid;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--px-line);
+  border-radius: 16px;
+  background: var(--px-surface-1);
+}
+
+.px-card {
+  display: grid;
+  gap: 6px;
+  padding: 9px 12px 10px;
+  border-radius: 12px;
+  transition: background-color 160ms ease;
+}
+
+.px-card[data-hover]:not([data-selected]) {
+  background: rgb(15 22 34 / 0.6);
+}
+
+.px-goalies,
+.px-ends {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.px-goalies {
+  align-items: center;
+  height: 15px;
+}
+
+.px-goalie {
+  color: var(--px-text-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.px-goalie--on {
+  color: var(--px-goalie);
+}
+
+.px-goalie--on::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 5px 1px 0;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  vertical-align: middle;
+}
+
+.px-match {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 8px;
+}
+
+.px-crest-sm {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgb(0 0 0 / 0.65));
+}
+
+.px-ends {
+  color: var(--px-text-3);
+  font-size: 11px;
+}
+
+.px-ends b {
+  margin: 0 4px;
+  color: var(--px-text-2);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.px-ends span:first-child b {
+  margin-left: 0;
+}
+
+.px-ends span:last-child b {
+  margin-right: 0;
+}
+
+.px-ends i {
+  color: var(--px-text-1);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* The rail's sliding indicator: the product's own cyan ring on the selected game */
+.px-ring {
+  border: 1px solid rgb(41 231 255 / 0.6);
+  border-radius: 12px;
+  background: rgb(41 231 255 / 0.035);
+  box-shadow: 0 0 16px rgb(41 231 255 / 0.16), inset 0 0 12px rgb(41 231 255 / 0.08);
+  pointer-events: none;
+}
+
+/* ---- Win bar ---- */
+
+.px-bar {
+  position: relative;
+  display: block;
+  height: 26px;
+  border-radius: 12px;
+  background: var(--px-track);
+}
+
+.px-bar[data-size='lg'] {
+  height: 46px;
+}
+
+.px-fill-a,
+.px-fill-h {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  background-color: var(--c);
+  box-shadow: 0 0 26px -4px var(--c);
+  transition:
+    width 650ms var(--px-travel),
+    background-color 260ms ease,
+    box-shadow 260ms ease,
+    filter 260ms ease;
+}
+
+.px-fill-a {
+  left: 0;
+  border-radius: 12px 0 0 12px;
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--c) 70%, #000), var(--c));
+}
+
+.px-fill-h {
+  right: 0;
+  border-radius: 0 12px 12px 0;
+  background-image: linear-gradient(90deg, var(--c), color-mix(in srgb, var(--c) 70%, #000));
+}
+
+.px-fill-a[data-dog],
+.px-fill-h[data-dog] {
+  box-shadow: none;
+  filter: saturate(0.55) brightness(0.75);
+}
+
+.px-fill-a::after,
+.px-fill-h::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(115deg, rgb(255 255 255 / 0.07) 0 2px, transparent 2px 9px);
+  mix-blend-mode: overlay;
+}
+
+.px-pct {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.45);
+}
+
+.px-pct sup {
+  margin-left: 1px;
+  font-size: 0.5em;
+  vertical-align: 0.6em;
+}
+
+.px-pct--a {
+  left: 8px;
+}
+
+.px-pct--h {
+  right: 8px;
+}
+
+.px-bar[data-size='lg'] .px-pct {
+  font-size: 26px;
+}
+
+.px-bar[data-size='lg'] .px-pct--a {
+  left: 16px;
+}
+
+.px-bar[data-size='lg'] .px-pct--h {
+  right: 16px;
+}
+
+.px-mkt {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: #fff;
+  box-shadow: 0 0 8px rgb(255 255 255 / 0.8);
+  transition: left 650ms var(--px-travel);
+}
+
+.px-bar[data-size='lg'] .px-mkt {
+  top: -6px;
+  bottom: -6px;
+}
+
+.px-mdl {
+  position: absolute;
+  bottom: -11px;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  background: var(--px-model);
+  box-shadow: 0 0 10px var(--px-model);
+  transform: rotate(45deg);
+  transition: left 650ms var(--px-travel);
+}
+
+.px-bar[data-size='lg'] .px-mdl {
+  bottom: -14px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+}
+
+/* ---- Pane ---- */
+
+.px-pane {
+  min-height: 460px;
+  padding: 14px 104px 0 20px;
+  border: 1px solid var(--px-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--px-surface-1), var(--px-bg) 70%);
+}
+
+.px-time {
+  color: var(--px-text-1);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.px-hero {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) 60px;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.px-hero-mid {
+  padding-bottom: 8px;
+}
+
+.px-crests {
+  display: grid;
+}
+
+.px-crest {
+  grid-area: 1 / 1;
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgb(0 0 0 / 0.65));
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.px-crest[data-on] {
+  opacity: 1;
+}
+
+.px-lines {
+  /* Fixed, so a goalie's name changing never moves the tabs below */
+  height: 42px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.px-side {
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+}
+
+.px-side--home {
+  justify-items: end;
+}
+
+.px-g {
+  color: var(--px-text-2);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.px-g--on {
+  color: var(--px-goalie);
+}
+
+.px-ml {
+  color: var(--px-text-2);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.px-xg {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-bottom: 1px;
+  color: var(--px-text-3);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.px-xg .ss-count {
+  color: var(--px-text-1);
+  font-weight: 700;
+}
+
+.px-dim {
+  color: var(--px-mute);
+}
+
+.px-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 18px;
+  padding: 3px;
+  border: 1px solid var(--px-line);
+  border-radius: 10px;
+}
+
+.px-tab {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  border-radius: 7px;
+  color: var(--px-text-3);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.px-tab[data-on] {
+  background: #101a29;
+  color: var(--px-brand);
+  box-shadow: inset 0 -1px 0 rgb(41 231 255 / 0.6);
+}
+
+.px-why {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.px-factor {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 12px;
+}
+
+.px-factor > :last-child {
+  justify-self: end;
+}
+
+.px-track {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--px-track);
+}
+
+.px-track::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: 50%;
+  width: 1px;
+  background: var(--px-mute);
+}
+
+.px-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+  opacity: 0.85;
+  transition:
+    left 650ms var(--px-travel),
+    width 650ms var(--px-travel),
+    background-color 260ms ease;
+}
+
+/* ---- The cut-off next game ---- */
+
+.px-card--next {
+  opacity: 0.9;
+}
+
+/* ---- Compact: the phone column, the site's stacked cards ---- */
+
+.px-phone {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+}
+
+/* The phone draws its screen in points at about 0.82 scale: the type is set
+   a step up so nothing renders under 10px */
+.px .ss-stage[data-layout='compact'] .px-ends {
+  font-size: 13px;
+}
+
+.px .ss-stage[data-layout='compact'] .px-ends b {
+  font-size: 16px;
+}
+
+.px .ss-stage[data-layout='compact'] .px-time {
+  font-size: 13px;
+}
+
+.px .ss-stage[data-layout='compact'] .px-g {
+  font-size: 15px;
+}
+
+.px .ss-stage[data-layout='compact'] .px-body {
+  min-height: 0;
+  padding: 0 14px;
+  background: transparent;
+}
+
+.px .ss-stage[data-layout='compact'] .px-date {
+  font-size: 18px;
+}
+
+.px-list {
+  height: 600px;
+  overflow: hidden;
+  margin: -8px -14px 0;
+  padding: 8px 14px 0;
+  /* Cards soften as they slide under the date, never cut by a hard line */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14px);
+}
+
+.px-track-y {
+  display: grid;
+  gap: 10px;
+  will-change: transform;
+}
+
+/* Thrown on release, at the finger's speed, on UIKit's curve */
+.px-track-y[data-thrown] {
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.px-mcard {
+  display: grid;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--px-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--px-surface-1), var(--px-bg));
+}
+
+.px-mteams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.px-mteams .px-side {
+  gap: 6px;
+}
+
+.px-mteams .px-crest {
+  width: 52px;
+  height: 52px;
+}
+
+.px-at {
+  color: var(--px-mute);
+  font-size: 13px;
+}
+
+.px-mends {
+  margin-top: 4px;
+}
+
+.px-mends b {
+  margin: 0 3px;
+}
+
+.px .ss-stage[data-layout='compact'] .px-pill {
+  height: 28px;
+  font-size: 13px;
+}
+
+.px-unit {
+  position: absolute;
+  width: 100px;
+  height: 0;
+  visibility: hidden;
+}
