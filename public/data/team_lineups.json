@@ -3033,7 +3033,7 @@
                 "id": 305,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -3066,7 +3066,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -3157,6 +3157,15 @@
         ],
         "ir": [
             {
+                "name": "Patrick Kane",
+                "number": 88,
+                "pos": "ir1",
+                "id": 305,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
                 "name": "Bowen Byram",
                 "number": 24,
                 "pos": "ir2",
@@ -3243,8 +3252,8 @@
             }
         ],
         "lineup_source": "Kalen Lumpkins",
-        "updated_at": "2026-11-02T17:17:01.051Z",
-        "fetched_at": "2026-11-02T18:02:50Z"
+        "updated_at": "2026-11-03T03:31:54.687Z",
+        "fetched_at": "2026-11-03T05:53:11Z"
     },
     "PHI": {
         "f1": [
@@ -7122,10 +7131,10 @@
                 "number": 73,
                 "pos": "lw",
                 "id": 1656,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Macklin Celebrini",
@@ -7174,7 +7183,7 @@
                 "number": 44,
                 "pos": "rw",
                 "id": 4675,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7196,7 +7205,7 @@
                 "number": null,
                 "pos": "c",
                 "id": 36370,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7209,7 +7218,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -7234,14 +7243,14 @@
                 "movement": null
             },
             {
-                "name": "Ty Dellandrea",
-                "number": 10,
+                "name": "Adam Gaudette",
+                "number": 81,
                 "pos": "rw",
-                "id": 4813,
-                "ppUnit": null,
+                "id": 4646,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -7282,7 +7291,7 @@
                 "number": 7,
                 "pos": "rd",
                 "id": 29644,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7304,7 +7313,7 @@
                 "number": 9,
                 "pos": "rd",
                 "id": 1572,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7390,10 +7399,10 @@
         ],
         "pk2": [
             {
-                "name": "Ty Dellandrea",
-                "number": 10,
+                "name": "Zack Ostapchuk",
+                "number": 63,
                 "pos": "sk1",
-                "id": 4813,
+                "id": 34545,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -7403,7 +7412,7 @@
                 "number": 44,
                 "pos": "sk2",
                 "id": 4675,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -7421,14 +7430,14 @@
                 "number": 7,
                 "pos": "sk4",
                 "id": 29644,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
         "lineup_source": "Max Miller",
         "updated_at": "2026-11-02T18:52:28.682Z",
-        "fetched_at": "2026-11-02T19:02:37Z"
+        "fetched_at": "2026-11-03T05:53:11Z"
     },
     "SEA": {
         "f1": [

@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-11-03T03:09:23Z",
+  "fetched_at": "2026-11-03T05:53:29Z",
   "source": "bovada",
   "games": {
     "2026020244": {
@@ -9,6 +9,10 @@
       "home": "CBJ",
       "away": "COL",
       "players": {
+        "Logan O'Connor": {
+          "tag": "COL",
+          "atg": 800
+        },
         "Artturi Lehkonen": {
           "tag": "COL",
           "atg": 193,
@@ -42,16 +46,16 @@
         },
         "Brent Burns": {
           "tag": "COL",
-          "atg": 1200
+          "atg": 1300
         },
         "Cole Sillinger": {
           "tag": "CBJ",
-          "atg": 550,
+          "atg": 525,
           "g2": 8000
         },
         "Zach Werenski": {
           "tag": "CBJ",
-          "atg": 310,
+          "atg": 300,
           "g2": 3300,
           "a1": -170,
           "a2": 290
@@ -65,17 +69,19 @@
         },
         "Jaden Schwartz": {
           "tag": "COL",
-          "atg": 400,
+          "atg": 405,
           "g2": 5000
         },
         "Nathan MacKinnon": {
           "tag": "COL",
-          "atg": 119,
-          "g2": 700
+          "atg": 123,
+          "g2": 700,
+          "a1": -122,
+          "a2": 430
         },
         "Sean Monahan": {
           "tag": "CBJ",
-          "atg": 475,
+          "atg": 500,
           "g2": 5500
         },
         "Matthew Knies": {
@@ -87,7 +93,7 @@
         },
         "Fedor Svechkov": {
           "tag": "COL",
-          "atg": 800
+          "atg": 850
         },
         "Ivan Provorov": {
           "tag": "CBJ",
@@ -95,7 +101,7 @@
         },
         "Denton Mateychuk": {
           "tag": "CBJ",
-          "atg": 800
+          "atg": 750
         },
         "Devon Toews": {
           "tag": "COL",
@@ -105,39 +111,43 @@
         "Martin Necas": {
           "tag": "COL",
           "atg": 200,
-          "g2": 1600
+          "g2": 1600,
+          "a1": 104,
+          "a2": 600
         },
         "Nazem Kadri": {
           "tag": "COL",
-          "atg": 285,
-          "g2": 2500
+          "atg": 300,
+          "g2": 2500,
+          "a1": 148,
+          "a2": 850
         },
         "Sam Malinski": {
           "tag": "COL",
-          "atg": 1000
+          "atg": 1100
         },
         "Luca Del Bel Belluz": {
-          "tag": "CBJ",
-          "atg": 500,
-          "g2": 7000
-        },
-        "T.J. Hughes": {
-          "tag": "COL",
-          "atg": 360,
-          "g2": 4000
-        },
-        "Jake Christiansen": {
-          "tag": "CBJ",
-          "atg": 2200
-        },
-        "Dmitry Voronkov": {
           "tag": "CBJ",
           "atg": 525,
           "g2": 7000
         },
+        "T.J. Hughes": {
+          "tag": "COL",
+          "atg": 370,
+          "g2": 4000
+        },
+        "Jake Christiansen": {
+          "tag": "CBJ",
+          "atg": 2100
+        },
+        "Dmitry Voronkov": {
+          "tag": "CBJ",
+          "atg": 550,
+          "g2": 7000
+        },
         "Valeri Nichushkin": {
           "tag": "CBJ",
-          "atg": 340,
+          "atg": 350,
           "g2": 3500
         },
         "Parker Kelly": {
@@ -147,12 +157,14 @@
         },
         "Brett Kulak": {
           "tag": "COL",
-          "atg": 1600
+          "atg": 1900
         },
         "Brock Nelson": {
           "tag": "COL",
           "atg": 260,
-          "g2": 2200
+          "g2": 2200,
+          "a1": 180,
+          "a2": 1100
         },
         "Ryan Lomberg": {
           "tag": "CBJ",
@@ -160,8 +172,10 @@
         },
         "Cale Makar": {
           "tag": "COL",
-          "atg": 325,
-          "g2": 3300
+          "atg": 330,
+          "g2": 3300,
+          "a1": -118,
+          "a2": 420
         },
         "Charlie Coyle": {
           "tag": "CBJ",
@@ -170,16 +184,16 @@
         },
         "Conor Garland": {
           "tag": "CBJ",
-          "atg": 410,
+          "atg": 430,
           "g2": 5500
         },
         "Erik Gudbranson": {
           "tag": "CBJ",
-          "atg": 1700
+          "atg": 2100
         },
         "Noah Juulsen": {
           "tag": "COL",
-          "atg": 1500
+          "atg": 1700
         }
       }
     },
@@ -190,13 +204,21 @@
       "home": "WSH",
       "away": "DAL",
       "players": {
+        "Timothy Liljegren": {
+          "tag": "WSH",
+          "atg": 1300
+        },
+        "Radek Faksa": {
+          "tag": "DAL",
+          "atg": 1000
+        },
         "Thomas Harley": {
           "tag": "DAL",
-          "atg": 700
+          "atg": 725
         },
         "Esa Lindell": {
           "tag": "DAL",
-          "atg": 1000
+          "atg": 1100
         },
         "Tom Wilson": {
           "tag": "WSH",
@@ -207,7 +229,7 @@
         },
         "Lian Bichsel": {
           "tag": "DAL",
-          "atg": 1900
+          "atg": 2500
         },
         "David Perron": {
           "tag": "DAL",
@@ -216,19 +238,19 @@
         },
         "Arttu Hyry": {
           "tag": "DAL",
-          "atg": 625,
+          "atg": 650,
           "g2": 10000
         },
         "Jamie Benn": {
           "tag": "DAL",
-          "atg": 450,
+          "atg": 460,
           "g2": 6500
         },
         "Jason Robertson": {
           "tag": "DAL",
-          "atg": 144,
+          "atg": 153,
           "g2": 1000,
-          "a1": 102,
+          "a1": 106,
           "a2": 550
         },
         "Justin Sourdif": {
@@ -243,42 +265,42 @@
         },
         "Jack St. Ivany": {
           "tag": "WSH",
-          "atg": 1800
+          "atg": 2100
         },
         "Ilya Protas": {
           "tag": "WSH",
-          "atg": 440,
+          "atg": 450,
           "g2": 5000
         },
         "Anthony Beauvillier": {
           "tag": "WSH",
-          "atg": 525,
+          "atg": 550,
           "g2": 10000
         },
         "Pierre-Luc Dubois": {
           "tag": "WSH",
-          "atg": 410,
+          "atg": 420,
           "g2": 5000
         },
         "Jordan Kyrou": {
           "tag": "WSH",
-          "atg": 270,
+          "atg": 275,
           "g2": 2500,
-          "a1": 172,
+          "a1": 176,
           "a2": 1000
         },
         "Nils Lundkvist": {
           "tag": "DAL",
-          "atg": 1700
+          "atg": 2300
         },
         "Ryan Leonard": {
           "tag": "WSH",
-          "atg": 350,
+          "atg": 355,
           "g2": 4000
         },
         "Tyler Seguin": {
           "tag": "DAL",
-          "atg": 350,
+          "atg": 355,
           "g2": 3500
         },
         "Matt Roy": {
@@ -287,21 +309,21 @@
         },
         "Wyatt Johnston": {
           "tag": "DAL",
-          "atg": 169,
+          "atg": 174,
           "g2": 1300,
           "a1": 108,
           "a2": 550
         },
         "Alex Tuch": {
           "tag": "WSH",
-          "atg": 235,
+          "atg": 230,
           "g2": 2000,
-          "a1": 215,
+          "a1": 210,
           "a2": 1200
         },
         "Miro Heiskanen": {
           "tag": "DAL",
-          "atg": 525,
+          "atg": 500,
           "g2": 7500,
           "a1": -107,
           "a2": 500
@@ -317,18 +339,18 @@
         },
         "Tyler Myers": {
           "tag": "DAL",
-          "atg": 1800
+          "atg": 2100
         },
         "Mikko Rantanen": {
           "tag": "DAL",
-          "atg": 200,
+          "atg": 205,
           "g2": 1500,
-          "a1": -113,
-          "a2": 450
+          "a1": -115,
+          "a2": 440
         },
         "Justin Hryckowian": {
           "tag": "DAL",
-          "atg": 575,
+          "atg": 600,
           "g2": 8000
         },
         "Roope Hintz": {
@@ -340,7 +362,7 @@
         },
         "Joel Kiviranta": {
           "tag": "DAL",
-          "atg": 825
+          "atg": 1000
         },
         "Sam Steel": {
           "tag": "DAL",
@@ -352,11 +374,11 @@
           "atg": 275,
           "g2": 2500,
           "a1": 116,
-          "a2": 625
+          "a2": 675
         },
         "Cole Hutson": {
           "tag": "WSH",
-          "atg": 450,
+          "atg": 460,
           "g2": 6500
         },
         "Jakob Chychrun": {
@@ -368,7 +390,7 @@
         },
         "Aliaksei Protas": {
           "tag": "WSH",
-          "atg": 440,
+          "atg": 435,
           "g2": 5500
         }
       }
@@ -380,9 +402,25 @@
       "home": "TBL",
       "away": "DET",
       "players": {
+        "Max Crozier": {
+          "tag": "TB",
+          "atg": 1100
+        },
+        "Carter Mazur": {
+          "tag": "DET",
+          "atg": 900
+        },
+        "Janis Moser": {
+          "tag": "TB",
+          "atg": 1000
+        },
+        "John Gerard Leonard": {
+          "tag": null,
+          "atg": 600
+        },
         "Andreas Englund": {
           "tag": "DET",
-          "atg": 1800
+          "atg": 2200
         },
         "Nikita Kucherov": {
           "tag": "TB",
@@ -393,7 +431,7 @@
         },
         "Jeffrey Viel": {
           "tag": "TB",
-          "atg": 625,
+          "atg": 575,
           "g2": 10000
         },
         "Emil Lilleberg": {
@@ -402,7 +440,7 @@
         },
         "Ryan McDonagh": {
           "tag": "TB",
-          "atg": 1300
+          "atg": 1400
         },
         "Andrew Copp": {
           "tag": "DET",
@@ -411,7 +449,7 @@
         },
         "Gage Goncalves": {
           "tag": "TB",
-          "atg": 345,
+          "atg": 365,
           "g2": 4000
         },
         "Michael Brandsegg-Nygard": {
@@ -432,11 +470,11 @@
         },
         "Justin Faulk": {
           "tag": "DET",
-          "atg": 800
+          "atg": 875
         },
         "Keegan Kolesar": {
           "tag": "DET",
-          "atg": 900
+          "atg": 1000
         },
         "J.T. Compher": {
           "tag": "DET",
@@ -445,29 +483,29 @@
         },
         "Scott Sabourin": {
           "tag": "TB",
-          "atg": 875
+          "atg": 1000
         },
         "John Carlson": {
           "tag": "TB",
-          "atg": 475,
+          "atg": 525,
           "g2": 6000,
           "a1": 144,
           "a2": 825
         },
         "William Wallinder": {
           "tag": "DET",
-          "atg": 1500
+          "atg": 1700
         },
         "Charle-Edouard D'Astous": {
           "tag": "TB",
-          "atg": 475,
+          "atg": 500,
           "g2": 6000,
           "a1": 102,
           "a2": 550
         },
         "Michael Rasmussen": {
           "tag": "DET",
-          "atg": 475,
+          "atg": 500,
           "g2": 6000
         },
         "Sheldon Dries": {
@@ -476,7 +514,7 @@
         },
         "Emmitt Finnie": {
           "tag": "DET",
-          "atg": 320,
+          "atg": 310,
           "g2": 3000
         },
         "Brayden Point": {
@@ -488,7 +526,7 @@
         },
         "Alex DeBrincat": {
           "tag": "DET",
-          "atg": 195,
+          "atg": 190,
           "g2": 1400,
           "a1": 112,
           "a2": 550
@@ -500,11 +538,11 @@
         },
         "Ben Chiarot": {
           "tag": "DET",
-          "atg": 1800
+          "atg": 2200
         },
         "Conor Geekie": {
           "tag": "TB",
-          "atg": 500,
+          "atg": 525,
           "g2": 8000
         },
         "Pontus Holmberg": {
@@ -514,17 +552,17 @@
         },
         "Victor Hedman": {
           "tag": "TB",
-          "atg": 675,
+          "atg": 750,
           "g2": 10000
         },
         "Ilya Mikheyev": {
           "tag": "TB",
-          "atg": 410,
+          "atg": 430,
           "g2": 5000
         },
         "Anton Johansson": {
           "tag": "DET",
-          "atg": 1500
+          "atg": 1700
         },
         "Lucas Raymond": {
           "tag": "DET",
@@ -549,7 +587,7 @@
         },
         "Moritz Seider": {
           "tag": "DET",
-          "atg": 575,
+          "atg": 600,
           "g2": 10000,
           "a1": 110,
           "a2": 550
@@ -574,34 +612,34 @@
         },
         "Zach Bogosian": {
           "tag": "MIN",
-          "atg": 1500
+          "atg": 1800
         },
         "Owen Tippett": {
           "tag": "PHI",
-          "atg": 325,
+          "atg": 315,
           "g2": 3300,
           "a1": 230,
           "a2": 1300
         },
         "Matvei Michkov": {
           "tag": "PHI",
-          "atg": 200,
+          "atg": 210,
           "g2": 1600,
           "a1": 185,
           "a2": 1000
         },
         "Danila Yurov": {
           "tag": "MIN",
-          "atg": 390,
+          "atg": 385,
           "g2": 4000
         },
         "Oliver Bonk": {
           "tag": "PHI",
-          "atg": 875
+          "atg": 900
         },
         "Jonas Brodin": {
           "tag": "MIN",
-          "atg": 750,
+          "atg": 775,
           "g2": 10000
         },
         "Noah Cates": {
@@ -611,37 +649,37 @@
         },
         "Ryan Hartman": {
           "tag": "MIN",
-          "atg": 440,
+          "atg": 450,
           "g2": 5000
         },
         "Tyler Pitlick": {
           "tag": "MIN",
-          "atg": 900
+          "atg": 1000
         },
         "Michael McCarron": {
           "tag": "MIN",
-          "atg": 460,
+          "atg": 475,
           "g2": 6000
         },
         "Kirill Kaprizov": {
           "tag": "MIN",
-          "atg": -105,
+          "atg": -107,
           "g2": 550,
           "a1": -162,
           "a2": 330
         },
         "Noel Acciari": {
           "tag": "PHI",
-          "atg": 750
+          "atg": 775
         },
         "Cole Knuble": {
           "tag": "PHI",
-          "atg": 575,
+          "atg": 600,
           "g2": 8000
         },
         "Matt Kiersted": {
           "tag": "MIN",
-          "atg": 1400
+          "atg": 1700
         },
         "Travis Sanheim": {
           "tag": "PHI",
@@ -649,45 +687,45 @@
         },
         "Denver Barkey": {
           "tag": "PHI",
-          "atg": 380,
+          "atg": 390,
           "g2": 4500
         },
         "Jamie Drysdale": {
           "tag": "PHI",
-          "atg": 700,
+          "atg": 750,
           "a1": 140,
           "a2": 800
         },
         "Porter Martone": {
           "tag": "PHI",
-          "atg": 295,
+          "atg": 305,
           "g2": 3000
         },
         "Bobby Brink": {
           "tag": "MIN",
-          "atg": 370,
+          "atg": 375,
           "g2": 4500
         },
         "Matt Boldy": {
           "tag": "MIN",
-          "atg": 157,
+          "atg": 153,
           "g2": 1000,
-          "a1": -122,
+          "a1": -125,
           "a2": 430
         },
         "David Spacek": {
           "tag": "MIN",
-          "atg": 700,
+          "atg": 725,
           "g2": 10000
         },
         "Nico Sturm": {
           "tag": "MIN",
-          "atg": 725,
+          "atg": 750,
           "g2": 10000
         },
         "Joel Eriksson Ek": {
           "tag": "MIN",
-          "atg": 200,
+          "atg": 205,
           "g2": 1700,
           "a1": 116,
           "a2": 625
@@ -699,7 +737,7 @@
         },
         "Travis Konecny": {
           "tag": "PHI",
-          "atg": 340,
+          "atg": 350,
           "g2": 3500
         },
         "Yakov Trenin": {
@@ -714,36 +752,44 @@
         },
         "Cam York": {
           "tag": "PHI",
-          "atg": 1100
+          "atg": 1200
         },
         "Christian Dvorak": {
           "tag": "PHI",
-          "atg": 410,
+          "atg": 420,
           "g2": 5500
         },
         "Blake Coleman": {
           "tag": "MIN",
-          "atg": 350,
+          "atg": 360,
           "g2": 3500
         },
         "Quinn Hughes": {
           "tag": "MIN",
-          "atg": 440,
+          "atg": 435,
           "g2": 5000,
           "a1": -193,
           "a2": 265
         },
         "Tyson Foerster": {
           "tag": "PHI",
-          "atg": 345,
+          "atg": 350,
           "g2": 3500
         },
         "Trevor Zegras": {
           "tag": "PHI",
-          "atg": 290,
+          "atg": 285,
           "g2": 2500,
           "a1": 144,
           "a2": 800
+        },
+        "Nick Seeler": {
+          "tag": "PHI",
+          "atg": 1700
+        },
+        "Simon Benoit": {
+          "tag": "PHI",
+          "atg": 1100
         }
       }
     },
@@ -756,7 +802,7 @@
       "players": {
         "Cam Fowler": {
           "tag": "STL",
-          "atg": 775
+          "atg": 850
         },
         "Dalibor Dvorsky": {
           "tag": "STL",
@@ -768,23 +814,23 @@
           "atg": 270,
           "g2": 2500,
           "a1": 134,
-          "a2": 700
+          "a2": 750
         },
         "Mason McTavish": {
           "tag": "STL",
           "atg": 212,
           "g2": 1700,
           "a1": 180,
-          "a2": 1000
+          "a2": 1100
         },
         "Jonatan Berggren": {
           "tag": "STL",
-          "atg": 475,
+          "atg": 500,
           "g2": 6500
         },
         "Eeli Tolvanen": {
           "tag": "NYR",
-          "atg": 475,
+          "atg": 500,
           "g2": 8000
         },
         "Gabe Perreault": {
@@ -794,11 +840,11 @@
         },
         "Vladislav Gavrikov": {
           "tag": "NYR",
-          "atg": 825
+          "atg": 875
         },
         "Marcus Pettersson": {
           "tag": "NYR",
-          "atg": 1400
+          "atg": 1500
         },
         "Will Cuylle": {
           "tag": "NYR",
@@ -814,7 +860,7 @@
         },
         "Brandon Carlo": {
           "tag": "STL",
-          "atg": 1200
+          "atg": 1300
         },
         "Pavel Buchnevich": {
           "tag": "STL",
@@ -823,19 +869,19 @@
         },
         "Jake Neighbours": {
           "tag": "STL",
-          "atg": 275,
+          "atg": 265,
           "g2": 2500,
           "a1": 200,
           "a2": 1200
         },
         "Pius Suter": {
           "tag": "STL",
-          "atg": 525,
-          "g2": 7500
+          "atg": 550,
+          "g2": 7000
         },
         "Mika Zibanejad": {
           "tag": "NYR",
-          "atg": 190,
+          "atg": 193,
           "g2": 1400,
           "a1": 112,
           "a2": 600
@@ -849,29 +895,29 @@
         },
         "Adam Jiricek": {
           "tag": "STL",
-          "atg": 800
+          "atg": 825
         },
         "Adam Fox": {
           "tag": "NYR",
           "atg": 525,
-          "g2": 7500,
+          "g2": 8000,
           "a1": -132,
           "a2": 390
         },
         "Braden Schneider": {
           "tag": "NYR",
-          "atg": 875
+          "atg": 900
         },
         "Philip Broberg": {
           "tag": "STL",
-          "atg": 525,
-          "g2": 7500,
+          "atg": 550,
+          "g2": 8000,
           "a1": 152,
           "a2": 850
         },
         "Connor McMichael": {
           "tag": "STL",
-          "atg": 350,
+          "atg": 360,
           "g2": 4000
         },
         "Alberts Smits": {
@@ -880,15 +926,15 @@
         },
         "Tye Kartye": {
           "tag": "NYR",
-          "atg": 440,
+          "atg": 450,
           "g2": 5500
         },
         "Pavel Dorofeyev": {
           "tag": "NYR",
-          "atg": 180,
-          "g2": 1200,
+          "atg": 193,
+          "g2": 1300,
           "a1": 148,
-          "a2": 850
+          "a2": 825
         },
         "Dylan Holloway": {
           "tag": "STL",
@@ -908,25 +954,37 @@
         },
         "Noah Laba": {
           "tag": "NYR",
-          "atg": 675,
+          "atg": 725,
           "g2": 10000
         },
         "Scott Morrow": {
           "tag": "NYR",
-          "atg": 1200
+          "atg": 1300
         },
         "Alexy Toropchenko": {
           "tag": "STL",
-          "atg": 700
+          "atg": 725
         },
         "Jimmy Snuggerud": {
           "tag": "STL",
-          "atg": 205,
+          "atg": 200,
           "g2": 1700,
           "a1": 162,
           "a2": 1100
         },
         "Matt Rempe": {
+          "tag": "NYR",
+          "atg": 900
+        },
+        "Justin Barron": {
+          "tag": "STL",
+          "atg": 750
+        },
+        "Theo Lindstein": {
+          "tag": "STL",
+          "atg": 1500
+        },
+        "Luke Glendening": {
           "tag": "NYR",
           "atg": 900
         }
@@ -947,41 +1005,51 @@
         "MacKenzie Weegar": {
           "tag": "UTA",
           "atg": 625,
-          "g2": 10000
+          "g2": 10000,
+          "a1": 150,
+          "a2": 825
         },
         "Mikhail Sergachev": {
           "tag": "UTA",
           "atg": 440,
-          "g2": 6000
+          "g2": 6000,
+          "a1": -112,
+          "a2": 460
         },
         "Michael Carcone": {
           "tag": "UTA",
-          "atg": 350,
+          "atg": 365,
           "g2": 4000
         },
         "Auston Matthews": {
           "tag": "TOR",
-          "atg": 125,
-          "g2": 750
+          "atg": 122,
+          "g2": 750,
+          "a1": -121,
+          "a2": 440
         },
         "Jack McBain": {
           "tag": "UTA",
-          "atg": 650,
-          "g2": 8000
+          "atg": 675,
+          "g2": 10000
         },
         "Troy Stecher": {
           "tag": "TOR",
-          "atg": 1500
+          "atg": 1700
         },
         "Jack Roslovic": {
           "tag": "TOR",
-          "atg": 220,
-          "g2": 1800
+          "atg": 215,
+          "g2": 1800,
+          "a1": 164,
+          "a2": 900
         },
         "Clayton Keller": {
           "tag": "UTA",
-          "atg": 193,
-          "g2": 1400
+          "atg": 195,
+          "g2": 1400,
+          "a1": -107,
+          "a2": 475
         },
         "Jake McCabe": {
           "tag": "TOR",
@@ -989,31 +1057,35 @@
         },
         "Lawson Crouse": {
           "tag": "UTA",
-          "atg": 410,
-          "g2": 4500
+          "atg": 425,
+          "g2": 5000
         },
         "Zack MacEwen": {
           "tag": "TOR",
-          "atg": 875
+          "atg": 825
         },
         "Logan Cooley": {
           "tag": "UTA",
           "atg": 155,
-          "g2": 1000
+          "g2": 1000,
+          "a1": 122,
+          "a2": 625
         },
         "Nick Schmaltz": {
           "tag": "UTA",
-          "atg": 174,
-          "g2": 1200
+          "atg": 176,
+          "g2": 1200,
+          "a1": 122,
+          "a2": 625
         },
         "Andrew Peeke": {
           "tag": "UTA",
-          "atg": 1300
+          "atg": 1400
         },
         "Dakota Joshua": {
           "tag": "TOR",
-          "atg": 450,
-          "g2": 5500
+          "atg": 440,
+          "g2": 6000
         },
         "Barrett Hayton": {
           "tag": "UTA",
@@ -1022,35 +1094,41 @@
         },
         "Anders Lee": {
           "tag": "UTA",
-          "atg": 305,
+          "atg": 315,
           "g2": 3000
         },
         "Easton Cowan": {
           "tag": "TOR",
-          "atg": 260,
-          "g2": 2500
+          "atg": 275,
+          "g2": 2500,
+          "a1": 200,
+          "a2": 1200
         },
         "Gavin McKenna": {
           "tag": "TOR",
           "atg": 255,
-          "g2": 2200
+          "g2": 2200,
+          "a1": 240,
+          "a2": 1400
         },
         "Kevin Stenlund": {
           "tag": "UTA",
-          "atg": 825
+          "atg": 850
         },
         "Vincent Trocheck": {
           "tag": "UTA",
           "atg": 325,
-          "g2": 3300
+          "g2": 3300,
+          "a1": 150,
+          "a2": 825
         },
         "Chris Tanev": {
           "tag": "TOR",
-          "atg": 1500
+          "atg": 1600
         },
         "Oliver Ekman-Larsson": {
           "tag": "TOR",
-          "atg": 850
+          "atg": 875
         },
         "Brandon Duhaime": {
           "tag": "TOR",
@@ -1058,22 +1136,26 @@
         },
         "Liam O'Brien": {
           "tag": "UTA",
-          "atg": 725,
+          "atg": 700,
           "g2": 10000
         },
         "Dylan Guenther": {
           "tag": "UTA",
-          "atg": 155,
-          "g2": 1100
+          "atg": 150,
+          "g2": 1100,
+          "a1": 122,
+          "a2": 675
         },
         "William Nylander": {
           "tag": "TOR",
           "atg": 168,
-          "g2": 1100
+          "g2": 1100,
+          "a1": -107,
+          "a2": 475
         },
         "Artyom Duda": {
           "tag": "UTA",
-          "atg": 1100
+          "atg": 1000
         },
         "Dmitri Simashev": {
           "tag": "UTA",
@@ -1081,19 +1163,20 @@
         },
         "Colton Sissons": {
           "tag": "TOR",
-          "atg": 650
+          "atg": 675,
+          "g2": 10000
         },
         "Morgan Rielly": {
           "tag": "TOR",
-          "atg": 850
+          "atg": 825
         },
         "Nate Schmidt": {
           "tag": "UTA",
-          "atg": 1000
+          "atg": 1100
         },
         "Nick Paul": {
           "tag": "TOR",
-          "atg": 400,
+          "atg": 410,
           "g2": 4000
         },
         "Teddy Blueger": {
@@ -1103,8 +1186,10 @@
         },
         "Darren Raddysh": {
           "tag": "TOR",
-          "atg": 420,
-          "g2": 5500
+          "atg": 425,
+          "g2": 5500,
+          "a1": 116,
+          "a2": 600
         }
       }
     },
@@ -1115,80 +1200,102 @@
       "home": "PIT",
       "away": "VGK",
       "players": {
+        "Kaedan Korcak": {
+          "tag": "PIT",
+          "atg": 1200
+        },
+        "Dylan Coghlan": {
+          "tag": "VGK",
+          "atg": 825
+        },
+        "Jonas R\u00f8ndbjerg": {
+          "tag": "VGK",
+          "atg": 700
+        },
         "Shea Theodore": {
           "tag": "VGK",
-          "atg": 450,
-          "g2": 7000
+          "atg": 500,
+          "g2": 5500
         },
         "Brayden McNabb": {
           "tag": "VGK",
-          "atg": 1000
+          "atg": 1100
         },
         "Ivan Barbashev": {
           "tag": "VGK",
           "atg": 240,
-          "g2": 1900
+          "g2": 2000,
+          "a1": 172,
+          "a2": 1000
         },
         "Kris Letang": {
           "tag": "PIT",
           "atg": 750,
-          "a1": 190,
+          "a1": 180,
           "a2": 1100
         },
         "Mark Stone": {
           "tag": "VGK",
           "atg": 175,
-          "g2": 1300
+          "g2": 1200,
+          "a1": 100,
+          "a2": 500
         },
         "Brett Howden": {
           "tag": "VGK",
-          "atg": 390,
+          "atg": 395,
           "g2": 4500
         },
         "Braeden Bowman": {
           "tag": "VGK",
-          "atg": 360,
+          "atg": 385,
           "g2": 4500
         },
         "Trevor Connelly": {
           "tag": "VGK",
-          "atg": 260,
-          "g2": 2500
+          "atg": 270,
+          "g2": 2500,
+          "a1": 176,
+          "a2": 1000
         },
         "Tomas Hertl": {
           "tag": "VGK",
-          "atg": 230,
-          "g2": 2000
+          "atg": 235,
+          "g2": 2000,
+          "a1": 146,
+          "a2": 800
         },
         "Tommy Novak": {
           "tag": "PIT",
-          "atg": 225,
-          "g2": 2000
+          "atg": 220,
+          "g2": 1900,
+          "a1": 176,
+          "a2": 1000
         },
         "Connor Dewar": {
           "tag": "PIT",
           "atg": 575,
-          "g2": 10000
+          "g2": 8000
         },
         "Declan Carlile": {
           "tag": "PIT",
-          "atg": 850
+          "atg": 900
         },
         "Andrei Kuzmenko": {
           "tag": "PIT",
           "atg": 355,
-          "g2": 3500
+          "g2": 4000
         },
         "Yegor Chinakhov": {
           "tag": "PIT",
-          "atg": 300,
-          "g2": 2500
+          "atg": 305,
+          "g2": 3000
         },
         "Sidney Crosby": {
           "tag": "PIT",
-          "atg": 185,
-          "g2": 1400,
-          "a1": -107,
+          "atg": 183,
+          "g2": 1300,
+          "a1": -103,
           "a2": 500
         },
         "Spencer Stastney": {
@@ -1197,61 +1304,63 @@
         },
         "Erik Karlsson": {
           "tag": "PIT",
-          "atg": 440,
-          "g2": 5000,
+          "atg": 445,
+          "g2": 5500,
           "a1": -130,
           "a2": 400
         },
         "Ilya Solovyov": {
           "tag": "PIT",
-          "atg": 1500
+          "atg": 1200
         },
         "William Karlsson": {
           "tag": "VGK",
-          "atg": 295,
+          "atg": 310,
           "g2": 3000
         },
         "Nicholas Robertson": {
           "tag": "PIT",
           "atg": 410,
-          "g2": 5500
+          "g2": 4500
         },
         "Samuel Girard": {
           "tag": "PIT",
-          "atg": 1000
+          "atg": 1100
         },
         "Nic Dowd": {
           "tag": "VGK",
-          "atg": 725
+          "atg": 775,
+          "g2": 10000
         },
         "Rasmus Andersson": {
           "tag": "VGK",
-          "atg": 550,
+          "atg": 575,
           "g2": 8000
         },
         "Noah Hanifin": {
           "tag": "VGK",
-          "atg": 800
+          "atg": 875
         },
         "Blake Lizotte": {
           "tag": "PIT",
-          "atg": 650,
-          "g2": 10000
+          "atg": 675
         },
         "Justin Brazeau": {
           "tag": "PIT",
-          "atg": 460,
+          "atg": 420,
           "g2": 5000
         },
         "Marc Gatcomb": {
           "tag": "VGK",
-          "atg": 675,
+          "atg": 750,
           "g2": 10000
         },
         "Jack Eichel": {
           "tag": "VGK",
-          "atg": 180,
-          "g2": 1300
+          "atg": 176,
+          "g2": 1300,
+          "a1": -157,
+          "a2": 330
         },
         "Hendrix Lapierre": {
           "tag": "PIT",
@@ -1260,28 +1369,32 @@
         },
         "Mitch Marner": {
           "tag": "VGK",
-          "atg": 225,
-          "g2": 2000
+          "atg": 230,
+          "g2": 2000,
+          "a1": -113,
+          "a2": 450
         },
         "Ben Kindel": {
           "tag": "PIT",
-          "atg": 275,
-          "g2": 2500
+          "atg": 290,
+          "g2": 2500,
+          "a1": 235,
+          "a2": 1300
         },
         "Ville Koivunen": {
           "tag": "PIT",
           "atg": 335,
-          "g2": 3300
+          "g2": 3000
         },
         "Jeremy Lauzon": {
           "tag": "VGK",
-          "atg": 1000
+          "atg": 1200
         },
         "Rickard Rakell": {
           "tag": "PIT",
           "atg": 178,
-          "g2": 1200,
-          "a1": 130,
+          "g2": 1300,
+          "a1": 128,
           "a2": 750
         }
       }
@@ -1293,10 +1406,14 @@
       "home": "MTL",
       "away": "WPG",
       "players": {
+        "Florian Xhekaj": {
+          "tag": "MTL",
+          "atg": 750
+        },
         "Zachary Bolduc": {
           "tag": "MTL",
-          "atg": 230,
-          "g2": 1900
+          "atg": 235,
+          "g2": 2000
         },
         "Alexandre Carrier": {
           "tag": "MTL",
@@ -1304,14 +1421,15 @@
         },
         "Phillip Danault": {
           "tag": "MTL",
-          "atg": 575
+          "atg": 550,
+          "g2": 10000
         },
         "Cole Caufield": {
           "tag": "MTL",
-          "atg": 106,
+          "atg": 109,
           "g2": 700,
           "a1": -105,
-          "a2": 500
+          "a2": 525
         },
         "Alex Iafallo": {
           "tag": "WPG",
@@ -1324,19 +1442,19 @@
         },
         "Gabriel Vilardi": {
           "tag": "WPG",
-          "atg": 285,
+          "atg": 265,
           "g2": 2500,
           "a1": 154,
           "a2": 825
         },
         "Isak Rosen": {
           "tag": "WPG",
-          "atg": 525,
+          "atg": 550,
           "g2": 8000
         },
         "Dylan Samberg": {
           "tag": "WPG",
-          "atg": 1300
+          "atg": 1500
         },
         "Viggo Bj\u00f6rck": {
           "tag": "WPG",
@@ -1345,29 +1463,29 @@
         },
         "Elias Salomonsson": {
           "tag": "WPG",
-          "atg": 800
+          "atg": 850
         },
         "Dylan Demelo": {
           "tag": "WPG",
-          "atg": 1500
+          "atg": 1600
         },
         "Nino Niederreiter": {
           "tag": "WPG",
-          "atg": 450,
+          "atg": 460,
           "g2": 5500
         },
         "Chris Kreider": {
           "tag": "MTL",
-          "atg": 270,
+          "atg": 295,
           "g2": 2500
         },
         "Brad Lambert": {
           "tag": "WPG",
-          "atg": 800
+          "atg": 850
         },
         "Jake Evans": {
           "tag": "MTL",
-          "atg": 415,
+          "atg": 440,
           "g2": 4500
         },
         "Nick Suzuki": {
@@ -1377,42 +1495,42 @@
         },
         "Juraj Slafkovsky": {
           "tag": "MTL",
-          "atg": 212,
-          "g2": 1700
+          "atg": 215,
+          "g2": 1600
         },
         "Haydn Fleury": {
           "tag": "WPG",
-          "atg": 1300
+          "atg": 1500
         },
         "Cole Perfetti": {
           "tag": "WPG",
-          "atg": 260,
+          "atg": 250,
           "g2": 2200,
           "a1": 176,
           "a2": 900
         },
         "Lane Hutson": {
           "tag": "MTL",
-          "atg": 435,
-          "g2": 5500,
+          "atg": 445,
+          "g2": 6000,
           "a1": -159,
           "a2": 320
         },
         "Mark Scheifele": {
           "tag": "WPG",
           "atg": 260,
-          "g2": 2500,
+          "g2": 2200,
           "a1": -113,
           "a2": 460
         },
         "Josh Anderson": {
           "tag": "MTL",
-          "atg": 305,
+          "atg": 320,
           "g2": 3300
         },
         "Kaiden Guhle": {
           "tag": "MTL",
-          "atg": 1300
+          "atg": 1400
         },
         "Alex Newhook": {
           "tag": "MTL",
@@ -1426,12 +1544,12 @@
         },
         "Alexandre Texier": {
           "tag": "MTL",
-          "atg": 390,
-          "g2": 4500
+          "atg": 385,
+          "g2": 5000
         },
         "Adam Lowry": {
           "tag": "WPG",
-          "atg": 675,
+          "atg": 700,
           "g2": 10000
         },
         "Mario Ferraro": {
@@ -1440,7 +1558,7 @@
         },
         "Neal Pionk": {
           "tag": "WPG",
-          "atg": 675,
+          "atg": 725,
           "g2": 10000,
           "a1": 142,
           "a2": 800
@@ -1448,21 +1566,21 @@
         "Noah Dobson": {
           "tag": "MTL",
           "atg": 600,
-          "g2": 8000,
+          "g2": 10000,
           "a1": 124,
           "a2": 675
         },
         "Morgan Barron": {
           "tag": "WPG",
-          "atg": 600,
+          "atg": 625,
           "g2": 10000
         },
         "Kyle Connor": {
           "tag": "WPG",
-          "atg": 175,
+          "atg": 172,
           "g2": 1200,
           "a1": 106,
-          "a2": 550
+          "a2": 525
         }
       }
     },
@@ -1482,7 +1600,7 @@
         },
         "Anthony Mantha": {
           "tag": "NJ",
-          "atg": 320,
+          "atg": 335,
           "g2": 3300
         },
         "Ryan Shea": {
@@ -1491,7 +1609,7 @@
         },
         "Shakir Mukhamadullin": {
           "tag": "EDM",
-          "atg": 1500
+          "atg": 1600
         },
         "Vasily Podkolzin": {
           "tag": "EDM",
@@ -1502,21 +1620,21 @@
         },
         "Colton Dach": {
           "tag": "EDM",
-          "atg": 625,
+          "atg": 675,
           "g2": 10000
         },
         "Jesper Boqvist": {
           "tag": "NJ",
-          "atg": 365,
+          "atg": 370,
           "g2": 4000
         },
         "Mathieu Joseph": {
           "tag": "EDM",
-          "atg": 750
+          "atg": 800
         },
         "Jonas Siegenthaler": {
           "tag": "NJ",
-          "atg": 1400
+          "atg": 1600
         },
         "Evan Bouchard": {
           "tag": "EDM",
@@ -1527,7 +1645,7 @@
         },
         "Trent Frederic": {
           "tag": "EDM",
-          "atg": 800
+          "atg": 825
         },
         "Jesper Bratt": {
           "tag": "NJ",
@@ -1536,22 +1654,22 @@
         },
         "Luke Hughes": {
           "tag": "NJ",
-          "atg": 405,
+          "atg": 400,
           "g2": 4500,
           "a1": 110,
           "a2": 550
         },
         "Johnathan Kovacevic": {
           "tag": "NJ",
-          "atg": 1300
+          "atg": 1500
         },
         "Connor Murphy": {
           "tag": "EDM",
-          "atg": 1200
+          "atg": 1300
         },
         "Declan Chisholm": {
           "tag": "NJ",
-          "atg": 1000
+          "atg": 1200
         },
         "Jason Dickinson": {
           "tag": "EDM",
@@ -1564,67 +1682,67 @@
         },
         "Leon Draisaitl": {
           "tag": "EDM",
-          "atg": 129,
+          "atg": 125,
           "g2": 800,
           "a1": -113,
           "a2": 460
         },
         "Arseni Gritsyuk": {
           "tag": "NJ",
-          "atg": 275,
+          "atg": 280,
           "g2": 2500,
           "a1": 190,
           "a2": 1100
         },
         "Brett Pesce": {
           "tag": "NJ",
-          "atg": 1300
+          "atg": 1400
         },
         "Timo Meier": {
           "tag": "NJ",
-          "atg": 230,
+          "atg": 235,
           "g2": 2000,
           "a1": 190,
           "a2": 1100
         },
         "Ty Emberson": {
           "tag": "EDM",
-          "atg": 1900
+          "atg": 2100
         },
         "Dougie Hamilton": {
           "tag": "NJ",
-          "atg": 525,
+          "atg": 550,
           "g2": 7500,
           "a1": 154,
           "a2": 900
         },
         "Alex Formenton": {
           "tag": "EDM",
-          "atg": 700,
+          "atg": 725,
           "g2": 10000
         },
         "Luke Evangelista": {
           "tag": "NJ",
-          "atg": 275,
+          "atg": 280,
           "g2": 2500
         },
         "Owen Michaels": {
           "tag": "EDM",
-          "atg": 775
+          "atg": 800
         },
         "Connor Brown": {
           "tag": "NJ",
-          "atg": 315,
+          "atg": 330,
           "g2": 3300
         },
         "Kasperi Kapanen": {
           "tag": "EDM",
-          "atg": 410,
+          "atg": 415,
           "g2": 5000
         },
         "Jack Hughes": {
           "tag": "NJ",
-          "atg": 159,
+          "atg": 156,
           "g2": 1100,
           "a1": -141,
           "a2": 370
@@ -1650,7 +1768,11 @@
         },
         "Mattias Ekholm": {
           "tag": "EDM",
-          "atg": 800
+          "atg": 850
+        },
+        "Filip H\u00e5llander": {
+          "tag": "EDM",
+          "atg": 725
         }
       }
     },
@@ -1661,16 +1783,24 @@
       "home": "NSH",
       "away": "CAR",
       "players": {
+        "Reid Schaefer": {
+          "tag": "NSH",
+          "atg": 750
+        },
+        "Jonathan Marchessault": {
+          "tag": "NSH",
+          "atg": 350
+        },
         "Nikolaj Ehlers": {
           "tag": "CAR",
-          "atg": 205,
+          "atg": 215,
           "g2": 1600,
           "a1": -112,
           "a2": 450
         },
         "Sean Walker": {
           "tag": "CAR",
-          "atg": 600,
+          "atg": 650,
           "g2": 10000
         },
         "Jalen Chatfield": {
@@ -1679,16 +1809,16 @@
         },
         "Nick Perbix": {
           "tag": "NSH",
-          "atg": 1700
+          "atg": 2000
         },
         "Vitali Pinchuk": {
           "tag": "NSH",
-          "atg": 475,
+          "atg": 500,
           "g2": 6500
         },
         "Roman Josi": {
           "tag": "NSH",
-          "atg": 450,
+          "atg": 475,
           "g2": 5500,
           "a1": -121,
           "a2": 420
@@ -1702,29 +1832,29 @@
         },
         "Alexander Kerfoot": {
           "tag": "NSH",
-          "atg": 445,
+          "atg": 460,
           "g2": 5500
         },
         "William Carrier": {
           "tag": "CAR",
-          "atg": 440,
+          "atg": 460,
           "g2": 6000
         },
         "Steven Stamkos": {
           "tag": "NSH",
-          "atg": 188,
+          "atg": 183,
           "g2": 1400,
           "a1": 126,
           "a2": 625
         },
         "Nils H\u00f6glander": {
           "tag": "NSH",
-          "atg": 500,
+          "atg": 525,
           "g2": 7000
         },
         "Jack Drury": {
           "tag": "NSH",
-          "atg": 800
+          "atg": 825
         },
         "Shayne Gostisbehere": {
           "tag": "CAR",
@@ -1735,16 +1865,16 @@
         },
         "Jordan Martinook": {
           "tag": "CAR",
-          "atg": 450,
+          "atg": 460,
           "g2": 5500
         },
         "Nicolas Deslauriers": {
           "tag": "CAR",
-          "atg": 800
+          "atg": 825
         },
         "Jackson Blake": {
           "tag": "CAR",
-          "atg": 205,
+          "atg": 215,
           "g2": 1800,
           "a1": 106,
           "a2": 550
@@ -1756,11 +1886,11 @@
         },
         "Daemon Hunt": {
           "tag": "NSH",
-          "atg": 1800
+          "atg": 2200
         },
         "Brady Skjei": {
           "tag": "NSH",
-          "atg": 1000
+          "atg": 1100
         },
         "Jaccob Slavin": {
           "tag": "CAR",
@@ -1768,11 +1898,11 @@
         },
         "Juuso V\u00e4lim\u00e4ki": {
           "tag": "CAR",
-          "atg": 800
+          "atg": 850
         },
         "Adam Wilsby": {
           "tag": "NSH",
-          "atg": 1300
+          "atg": 1400
         },
         "Jesperi Kotkaniemi": {
           "tag": "CAR",
@@ -1800,23 +1930,23 @@
         },
         "Mavrik Bourque": {
           "tag": "NSH",
-          "atg": 355,
+          "atg": 370,
           "g2": 3500
         },
         "K'Andre Miller": {
           "tag": "CAR",
-          "atg": 850
+          "atg": 875
         },
         "Logan Stankoven": {
           "tag": "CAR",
-          "atg": 225,
+          "atg": 220,
           "g2": 2000,
-          "a1": 154,
+          "a1": 158,
           "a2": 850
         },
         "Jayden Struble": {
           "tag": "NSH",
-          "atg": 1700
+          "atg": 2200
         },
         "Adam Edstrom": {
           "tag": "NSH",
@@ -1825,7 +1955,7 @@
         },
         "Sebastian Aho": {
           "tag": "CAR",
-          "atg": 168,
+          "atg": 171,
           "g2": 1300,
           "a1": -132,
           "a2": 400
@@ -1868,7 +1998,7 @@
         },
         "Mikael Granlund": {
           "tag": "ANA",
-          "atg": 225,
+          "atg": 230,
           "g2": 2000,
           "a1": 112,
           "a2": 550
@@ -1923,7 +2053,7 @@
         },
         "Brendan Gallagher": {
           "tag": "VAN",
-          "atg": 600,
+          "atg": 575,
           "g2": 10000
         },
         "Max Sasson": {
