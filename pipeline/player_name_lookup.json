@@ -60,7 +60,6 @@
     "t.j. tynan": "8476391",
     "alex barre-boulet": "8479718",
     "ivan ivan": "8483930",
-    "keaton middleton": "8479387",
     "taylor makar": "8482953",
     "cameron hughes": "8478888",
     "nathan bastian": "8479414",
@@ -139,6 +138,7 @@
     "marshall warren": "8481569",
     "liam foudy": "8480853",
     "carson soucy": "8477369",
+    "taylor raddysh": "8479390",
     "brendan brisson": "8482153",
     "juuso parssinen": "8481704",
     "connor mackey": "8482067",
@@ -148,10 +148,10 @@
     "urho vaakanainen": "8480001",
     "jonny brodzinski": "8477380",
     "vincent iorio": "8482861",
-    "jaroslav chmelar": "8482877",
     "conor sheary": "8477839",
     "anton blidh": "8477320",
     "olle lycksell": "8480245",
+    "nick jensen": "8475324",
     "jorian donovan": "8483435",
     "xavier bourgault": "8482673",
     "dennis gilbert": "8478502",
@@ -165,6 +165,7 @@
     "lane pederson": "8478967",
     "jacob gaucher": "8481848",
     "jett luchanko": "8484779",
+    "alex bump": "8483731",
     "hunter mcdonald": "8483760",
     "anthony richard": "8478409",
     "adam ginning": "8480874",
@@ -201,6 +202,7 @@
     "matt luff": "8479644",
     "jack finley": "8482090",
     "otto stenberg": "8484230",
+    "logan mailloux": "8482733",
     "hunter skinner": "8481715",
     "dylan duke": "8482663",
     "jakob pelletier": "8481592",
@@ -427,6 +429,7 @@
     "valeri nichushkin": "8477501",
     "nazem kadri": "8475172",
     "gabriel landeskog": "8476455",
+    "keaton middleton": "8479387",
     "jack drury": "8480835",
     "brock nelson": "8475754",
     "ilya lyubushkin": "8480950",
@@ -644,7 +647,6 @@
     "jean-gabriel pageau": "8476419",
     "tony deangelo": "8477950",
     "victor eklund": "8485388",
-    "taylor raddysh": "8479390",
     "gabe perreault": "8484210",
     "adam sykora": "8483669",
     "matthew robertson": "8481525",
@@ -654,6 +656,7 @@
     "braden schneider": "8482073",
     "mika zibanejad": "8476459",
     "adam edstrom": "8481726",
+    "jaroslav chmelar": "8482877",
     "matt rempe": "8482460",
     "will cuylle": "8482157",
     "vincent trocheck": "8476389",
@@ -666,7 +669,6 @@
     "claude giroux": "8473512",
     "ridly greig": "8482092",
     "lars eller": "8474189",
-    "nick jensen": "8475324",
     "fabian zetterlund": "8480188",
     "nick cousins": "8476393",
     "michael amadio": "8478020",
@@ -691,7 +693,6 @@
     "cam york": "8481546",
     "emil andrae": "8482126",
     "rasmus ristolainen": "8477499",
-    "alex bump": "8483731",
     "sean couturier": "8476461",
     "oliver bonk": "8484148",
     "travis konecny": "8478439",
@@ -789,7 +790,6 @@
     "pavel buchnevich": "8477402",
     "dalibor dvorsky": "8484164",
     "jimmy snuggerud": "8483516",
-    "logan mailloux": "8482733",
     "aleksanteri kaskimaki": "8483463",
     "j.j. moser": "8482655",
     "anthony cirelli": "8478519",
@@ -1394,18 +1394,6 @@
         "pid": "8483930",
         "full_name": "ivan ivan",
         "team": "COL"
-      }
-    ],
-    "middleton": [
-      {
-        "pid": "8479387",
-        "full_name": "keaton middleton",
-        "team": "COL"
-      },
-      {
-        "pid": "8478136",
-        "full_name": "jake middleton",
-        "team": "CGY"
       }
     ],
     "makar": [
@@ -2019,6 +2007,18 @@
         "team": "NYI"
       }
     ],
+    "raddysh": [
+      {
+        "pid": "8479390",
+        "full_name": "taylor raddysh",
+        "team": "NYR"
+      },
+      {
+        "pid": "8478178",
+        "full_name": "darren raddysh",
+        "team": "TOR"
+      }
+    ],
     "brisson": [
       {
         "pid": "8482153",
@@ -2082,13 +2082,6 @@
         "team": "NYR"
       }
     ],
-    "chmelar": [
-      {
-        "pid": "8482877",
-        "full_name": "jaroslav chmelar",
-        "team": "NYR"
-      }
-    ],
     "sheary": [
       {
         "pid": "8477839",
@@ -2107,6 +2100,13 @@
       {
         "pid": "8480245",
         "full_name": "olle lycksell",
+        "team": "OTT"
+      }
+    ],
+    "jensen": [
+      {
+        "pid": "8475324",
+        "full_name": "nick jensen",
         "team": "OTT"
       }
     ],
@@ -2196,6 +2196,13 @@
       {
         "pid": "8484779",
         "full_name": "jett luchanko",
+        "team": "PHI"
+      }
+    ],
+    "bump": [
+      {
+        "pid": "8483731",
+        "full_name": "alex bump",
         "team": "PHI"
       }
     ],
@@ -2471,6 +2478,13 @@
       {
         "pid": "8484230",
         "full_name": "otto stenberg",
+        "team": "STL"
+      }
+    ],
+    "mailloux": [
+      {
+        "pid": "8482733",
+        "full_name": "logan mailloux",
         "team": "STL"
       }
     ],
@@ -4062,6 +4076,18 @@
         "team": "COL"
       }
     ],
+    "middleton": [
+      {
+        "pid": "8479387",
+        "full_name": "keaton middleton",
+        "team": "COL"
+      },
+      {
+        "pid": "8478136",
+        "full_name": "jake middleton",
+        "team": "CGY"
+      }
+    ],
     "drury": [
       {
         "pid": "8480835",
@@ -5467,18 +5493,6 @@
         "team": "OTT"
       }
     ],
-    "raddysh": [
-      {
-        "pid": "8479390",
-        "full_name": "taylor raddysh",
-        "team": "NYR"
-      },
-      {
-        "pid": "8478178",
-        "full_name": "darren raddysh",
-        "team": "TOR"
-      }
-    ],
     "perreault": [
       {
         "pid": "8484210",
@@ -5526,6 +5540,13 @@
         "pid": "8481726",
         "full_name": "adam edstrom",
         "team": "NSH"
+      }
+    ],
+    "chmelar": [
+      {
+        "pid": "8482877",
+        "full_name": "jaroslav chmelar",
+        "team": "NYR"
       }
     ],
     "rempe": [
@@ -5603,13 +5624,6 @@
         "pid": "8474189",
         "full_name": "lars eller",
         "team": "FLA"
-      }
-    ],
-    "jensen": [
-      {
-        "pid": "8475324",
-        "full_name": "nick jensen",
-        "team": "ANA"
       }
     ],
     "zetterlund": [
@@ -5777,13 +5791,6 @@
       {
         "pid": "8477499",
         "full_name": "rasmus ristolainen",
-        "team": "PHI"
-      }
-    ],
-    "bump": [
-      {
-        "pid": "8483731",
-        "full_name": "alex bump",
         "team": "PHI"
       }
     ],
@@ -6443,13 +6450,6 @@
       {
         "pid": "8483516",
         "full_name": "jimmy snuggerud",
-        "team": "STL"
-      }
-    ],
-    "mailloux": [
-      {
-        "pid": "8482733",
-        "full_name": "logan mailloux",
         "team": "STL"
       }
     ],
