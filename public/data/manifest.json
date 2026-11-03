@@ -34,12 +34,12 @@
     },
     "dfo_goalies": {
       "pages": 2,
-      "fetched_at": "2026-11-03T18:48:22Z"
+      "fetched_at": "2026-11-03T19:02:24Z"
     },
     "espn_injuries": {
       "entries": 125,
       "matched": 121,
-      "fetched_at": "2026-11-03T18:48:26Z"
+      "fetched_at": "2026-11-03T19:02:32Z"
     },
     "odds": {
       "games": 15,
@@ -49,16 +49,16 @@
         "bovada": 11,
         "espn": 4
       },
-      "fetched_at": "2026-11-03T18:48:29Z"
+      "fetched_at": "2026-11-03T19:02:36Z"
     },
     "bu_bundle": {
       "built_at": "2026-11-03T17:11:38+00:00",
       "max_source_date": "2026-11-02",
       "n_games": 235,
       "season": "20262027",
-      "age_h": 1.6,
+      "age_h": 1.9,
       "flag": "on",
-      "fetched_at": "2026-11-03T18:48:36Z"
+      "fetched_at": "2026-11-03T19:02:47Z"
     },
     "player_ratings": {
       "as_of": "2026-11-01",
@@ -68,7 +68,7 @@
       "fetched_at": "2026-11-03T05:54:33Z"
     },
     "player_props": {
-      "fetched_at": "2026-11-03T18:48:34Z",
+      "fetched_at": "2026-11-03T19:02:45Z",
       "games": 11
     },
     "skater_games": {
@@ -78,7 +78,7 @@
   "schema_version": 1,
   "season_id": "20262027",
   "season_label": "2026-27",
-  "generated_at": "2026-11-03T18:49:54Z",
+  "generated_at": "2026-11-03T19:04:08Z",
   "mode": "lite",
   "games_played_current_season": 235,
   "phase": {
@@ -102,21 +102,21 @@
       "stage": "upcoming_games",
       "status": "ok",
       "rows_written": 15,
-      "seconds": 3.9,
+      "seconds": 8.2,
       "required": true
     },
     {
       "stage": "injuries",
       "status": "ok",
       "rows_written": 125,
-      "seconds": 0.6,
+      "seconds": 0.8,
       "required": false
     },
     {
       "stage": "clinch_status",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 0.0,
+      "seconds": 0.1,
       "required": false
     },
     {
@@ -130,21 +130,21 @@
       "stage": "odds",
       "status": "ok",
       "rows_written": 15,
-      "seconds": 2.1,
+      "seconds": 3.9,
       "required": false
     },
     {
       "stage": "player_props",
       "status": "ok",
       "rows_written": 1250,
-      "seconds": 5.0,
+      "seconds": 8.6,
       "required": false
     },
     {
       "stage": "goalie_stats",
       "status": "ok",
       "rows_written": 104,
-      "seconds": 0.2,
+      "seconds": 0.6,
       "required": false
     },
     {
@@ -169,21 +169,21 @@
       "rows_written": 0,
       "seconds": 0.0,
       "required": true,
-      "reason": "12.9h old"
+      "reason": "13.2h old"
     },
     {
       "stage": "bu_bundle",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 2.4,
+      "seconds": 1.9,
       "required": false,
-      "reason": "built 1.6h ago, 235 games of 20262027, PONYXG_BU=on"
+      "reason": "built 1.9h ago, 235 games of 20262027, PONYXG_BU=on"
     },
     {
       "stage": "predict",
       "status": "ok",
       "rows_written": 15,
-      "seconds": 63.1,
+      "seconds": 65.5,
       "required": true
     },
     {
@@ -212,14 +212,14 @@
       "stage": "prediction_history",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 5.1,
+      "seconds": 5.2,
       "required": true
     },
     {
       "stage": "model_report",
       "status": "ok",
       "rows_written": 233,
-      "seconds": 0.6,
+      "seconds": 0.5,
       "required": true
     },
     {
@@ -239,15 +239,15 @@
   ],
   "ok": true,
   "run": {
-    "started_at": "2026-11-03T18:48:22Z",
-    "finished_at": "2026-11-03T18:49:54Z",
-    "seconds": 92.4,
-    "github_run_id": "41697201274"
+    "started_at": "2026-11-03T19:02:23Z",
+    "finished_at": "2026-11-03T19:04:08Z",
+    "seconds": 104.7,
+    "github_run_id": "41699411570"
   },
   "last_full_attempt": "2026-11-03T05:55:55Z",
   "last_full_run": "2026-11-03T05:55:55Z",
   "stale": {},
-  "last_lite_attempt": "2026-11-03T18:49:54Z",
-  "last_lite_run": "2026-11-03T18:49:54Z",
+  "last_lite_attempt": "2026-11-03T19:04:08Z",
+  "last_lite_run": "2026-11-03T19:04:08Z",
   "stale_since": {}
 }
