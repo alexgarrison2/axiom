@@ -160,6 +160,18 @@ describe('percentiles and advantage', () => {
         expect(leagueRank(2, [], true)).toBeNull();
     });
 
+    it('a filtered side stands in for its own team: ranked among the other teams, never past the league', () => {
+        // The team's own (unfiltered) entry is 3; a starter-filtered side at 0.5 replaces it.
+        expect(leagueRank(0.5, ref, true, 3)).toEqual({ rank: 4, outOf: 4 });
+        expect(leagueRank(5, ref, true, 3)).toEqual({ rank: 1, outOf: 4 });
+        expect(leagueRank(2.5, ref, true, 3)).toEqual({ rank: 2, outOf: 4 }); // only 4 is better once 3 steps aside
+        expect(leagueRank(3, ref, true, 3)).toEqual({ rank: 2, outOf: 4 }); // unfiltered: same as no own
+        expect(percentile(0.5, ref, true, 3)).toBe(12.5); // half of itself, of 4
+        expect(percentile(3, ref, true, 3)).toBe(percentile(3, ref, true));
+        // An own value the reference does not hold removes nothing: the side counts itself in.
+        expect(leagueRank(0.5, ref, true, 9)).toEqual({ rank: 5, outOf: 5 });
+    });
+
     it('ordinals', () => {
         expect([1, 2, 3, 4, 11, 12, 13, 21, 68.4, 98.6].map(ordinal)).toEqual(['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '68th', '99th']);
     });

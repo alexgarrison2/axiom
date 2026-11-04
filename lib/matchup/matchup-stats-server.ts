@@ -8,7 +8,7 @@ import { packGames } from '../../utils/team-stats/game-row';
 import { groupByTeam } from '../../utils/team-stats/filter';
 import { TEAM_TRICODES } from '../../utils/team-stats/teams';
 import type { GameRow } from '../../utils/team-stats/types';
-import { buildReference, restBuckets, type LeagueReference, type MatchupGame, type TeamGamesPayload } from './matchup-stats';
+import { buildReference, restBuckets, unpackTeamGames, type LeagueReference, type MatchupGame, type TeamGamesPayload } from './matchup-stats';
 
 /*
  * Server loader for app/api/matchup-stats/*. Both routes are force-static,
@@ -114,6 +114,16 @@ export function teamGamesPayload(tri: string): TeamGamesPayload | null {
     };
 }
 
+/**
+ * Built from every team's games exactly as the browser unpacks them (the
+ * payload rounds 5v5 xG, TOI and the row scalars), so a side's unfiltered
+ * value lands on its own entry and the side can stand in for it.
+ */
 export function leagueReference(): LeagueReference {
-    return { seasons: [...WINDOW], ref: buildReference(windowGames()) };
+    const seen = new Map<string, MatchupGame[]>();
+    for (const tri of windowGames().keys()) {
+        const p = teamGamesPayload(tri);
+        if (p) seen.set(tri, unpackTeamGames(p));
+    }
+    return { seasons: [...WINDOW], ref: buildReference(seen) };
 }

@@ -278,37 +278,54 @@ export function buildReference(byTeam: Map<string, MatchupGame[]>): LeagueRefere
     return ref;
 }
 
+const r3 = (v: number) => Math.round(v * 1000) / 1000;
+
+/**
+ * The league with the side standing in for its own team: the reference less
+ * one entry at `own` (the team's value over the same slice before the starter
+ * filter, tonight's game kept), plus the side's value. A starter-filtered or
+ * tonight-excluded side differs from its team's entry, and without this it
+ * would join the 32 as a 33rd. Without `own` the side's value is taken as its
+ * team's entry; an `own` the reference does not hold removes nothing.
+ */
+function withSide(ref: number[], v: number, own?: number | null): number[] {
+    const o = r3(own != null && Number.isFinite(own) ? own : v);
+    const i = ref.findIndex(x => Math.abs(x - o) < 1e-9);
+    return [...(i < 0 ? ref : [...ref.slice(0, i), ...ref.slice(i + 1)]), v];
+}
+
 /**
  * Percentile as "better than X% of the reference", 0-100, mid-rank for ties:
  * (worse + ½·equal) / n. Lower-is-better stats are flipped, so a higher
- * percentile is always better.
+ * percentile is always better. With `own`, the side replaces its team's entry
+ * (see withSide); without it the reference is taken as is.
  */
-export function percentile(v: number | null | undefined, ref: number[] | undefined, higherBetter: boolean): number | null {
+export function percentile(v: number | null | undefined, ref: number[] | undefined, higherBetter: boolean, own?: number | null): number | null {
     if (v == null || !Number.isFinite(v) || !ref?.length) return null;
+    const pool = own != null && Number.isFinite(own) ? withSide(ref, v, own) : ref;
     const eps = 1e-6;
     let worse = 0, equal = 0;
-    for (const x of ref) {
+    for (const x of pool) {
         if (Math.abs(x - v) <= eps) equal++;
         else if (higherBetter ? x < v : x > v) worse++;
     }
-    const n = ref.length;
-    return Math.max(0, Math.min(100, ((worse + 0.5 * equal) / n) * 100));
+    return Math.max(0, Math.min(100, ((worse + 0.5 * equal) / pool.length) * 100));
 }
 
 /**
  * League rank, 1 = best (lower-is-better stats flipped), ties sharing the
  * better rank. The reference holds values rounded to 3 dp, so the side's value
- * is too. A value not in the reference (a starter-filtered side) counts itself in.
+ * is too. The side stands in for its own team's entry (`own`, see withSide), so
+ * a filtered side is ranked among the other teams and never comes out 33rd of 32;
+ * a value the reference does not hold with no `own` counts itself in.
  */
-export function leagueRank(v: number | null | undefined, ref: number[] | undefined, higherBetter: boolean): { rank: number; outOf: number } | null {
+export function leagueRank(v: number | null | undefined, ref: number[] | undefined, higherBetter: boolean, own?: number | null): { rank: number; outOf: number } | null {
     if (v == null || !Number.isFinite(v) || !ref?.length) return null;
-    const r = Math.round(v * 1000) / 1000;
-    let better = 0, member = false;
-    for (const x of ref) {
-        if (Math.abs(x - r) < 1e-9) member = true;
-        else if (higherBetter ? x > r : x < r) better++;
-    }
-    return { rank: better + 1, outOf: ref.length + (member ? 0 : 1) };
+    const r = r3(v);
+    const pool = withSide(ref, r, own);
+    let better = 0;
+    for (const x of pool) if (higherBetter ? x > r : x < r) better++;
+    return { rank: better + 1, outOf: pool.length };
 }
 
 /** Percentile from a 1-based rank (1 = best) among `outOf`, same mid-rank rule. */

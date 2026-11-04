@@ -228,6 +228,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
         const filters = {} as Record<Side, SideFilter>;
         const rest = {} as Record<Side, ReturnType<typeof tonightRest>>;
         const values = {} as Record<Side, ReturnType<typeof sideValues>>;
+        const own = {} as Record<Side, ReturnType<typeof sideValues>>;
         const gp = {} as Record<Side, number>;
         const pending = {} as Record<Side, number>;
         for (const side of SIDES) {
@@ -244,6 +245,8 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
             const logged = games[side].filter(g => g.row.type === 2 && g.row.id !== p.id && g.row.date < p.date).length;
             pending[side] = Math.max(0, (p[side].gp ?? 0) - logged);
             values[side] = sideValues(t[side], sel);
+            // The team's own entry in the league reference (same slice, no starter filter, tonight's game kept): the side stands in for it, so a filtered side ranks among the other 31.
+            own[side] = sideValues(t[side], filterGames(games[side], { ...filters[side], starter: null }));
         }
         const details: Record<Side, SideDetails | null> | null = state.status === 'ready' && state.data ? { away: state.data.away, home: state.data.home } : null;
         const rows: RowModel[] = STATS.map(stat => {
@@ -255,8 +258,9 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
                 } else {
                     const ref = league.ref[refKey(filters[side].location, filters[side].rest, last)]?.[stat.key];
                     const v = values[side][stat.key];
-                    const r = leagueRank(v, ref, stat.higherBetter);
-                    cells[side] = { value: v, pct: percentile(v, ref, stat.higherBetter), rank: r?.rank ?? null, outOf: r?.outOf ?? null, gp: gp[side], minGp: last === 'all' ? undefined : last };
+                    const o = own[side][stat.key];
+                    const r = leagueRank(v, ref, stat.higherBetter, o);
+                    cells[side] = { value: v, pct: percentile(v, ref, stat.higherBetter, o), rank: r?.rank ?? null, outOf: r?.outOf ?? null, gp: gp[side], minGp: last === 'all' ? undefined : last };
                 }
             }
             return { stat, cells, adv: advantage(cells.away, cells.home) };
