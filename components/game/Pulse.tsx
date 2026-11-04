@@ -87,7 +87,8 @@ function stepAt(pts: [number, number][], t: number): number {
     return v;
 }
 
-function readStored<T extends string>(key: string, allowed: readonly T[]): T | null {
+/** A remembered per-browser choice, if it is still one of `allowed`. */
+export function readStored<T extends string>(key: string, allowed: readonly T[]): T | null {
     try {
         const v = window.localStorage.getItem(key);
         return v && (allowed as readonly string[]).includes(v) ? (v as T) : null;
@@ -95,7 +96,7 @@ function readStored<T extends string>(key: string, allowed: readonly T[]): T | n
         return null;
     }
 }
-function store(key: string, v: string) {
+export function store(key: string, v: string) {
     try {
         window.localStorage.setItem(key, v);
     } catch {
