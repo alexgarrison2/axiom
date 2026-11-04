@@ -11,12 +11,12 @@ import { fmtInt } from '@/components/views/format';
 
 /**
  * A goalie's season in pictures, between the hero and the game log:
- *  GSAx     running goals saved above expected, game by game
+ *  GSAx     goals saved above expected as a waterfall, game by game to the season
  *  Danger   save % on low / medium / high-danger shots against the league
  *  Save map every shot he faced on a tilted rink (or GSAx by area)
  *  Types    save % per shot type against the league, with the sample's likely range
  *  Situations GSAx by strength, sized by the share of shots faced there
- *  Workload every appearance: shots faced, green / red for beating expected
+ *  Workload every appearance in order: shots faced (saves, goals against), quality starts, back-to-backs
  * Shot-level sections read the season's shot file (pipeline/goalie_shots.py).
  */
 
@@ -137,51 +137,138 @@ function Pending({ ready }: { ready: boolean }) {
     return <p className="py-6 text-caption text-fg-3">{ready ? 'No shot data for this season yet.' : 'Loading'}</p>;
 }
 
-/* ── Season: running GSAx ─────────────────────────────────────────────── */
+/* ── Columns: one per appearance (GSAx and Workload) ────────────────── */
+
+/** Wide enough to print a figure over, and the opponent under, every column. */
+const ROOMY = 34;
+
+/** "@STL" on the road, "PIT" at home. */
+const oppTag = (g: GoalieNight) => `${g.home ? '' : '@'}${g.opp}`;
+
+/** Hover, tap or the arrow keys pick a column; the mouse leaving or Escape lets go. */
+function useScrub(n: number) {
+    const [at, setAt] = React.useState<number | null>(null);
+    const onKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const d = e.key === 'ArrowRight' ? 1 : -1;
+            setAt(a => (a == null ? (d > 0 ? 0 : n - 1) : Math.max(0, Math.min(n - 1, a + d))));
+        } else if (e.key === 'Home' || e.key === 'End') {
+            e.preventDefault();
+            setAt(e.key === 'Home' ? 0 : n - 1);
+        } else if (e.key === 'Escape') setAt(null);
+    };
+    const chart = {
+        tabIndex: 0,
+        onKeyDown,
+        onPointerLeave: (e: React.PointerEvent) => e.pointerType === 'mouse' && setAt(null),
+        className: 'block rounded-control outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand',
+    };
+    return { at, setAt, chart };
+}
+
+/** Under the columns: the opponent under each one when there is room, and the month under its first game. Months that would run past `stop` drop out; of two that would touch, the one with more games stays. */
+function ColumnAxis({ nights, cx, y, roomy, stop }: { nights: GoalieNight[]; cx: (i: number) => number; y: number; roomy: boolean; stop: number }) {
+    const runs: { i: number; games: number }[] = [];
+    nights.forEach((g, i) => {
+        if (i && g.date.slice(5, 7) === nights[i - 1].date.slice(5, 7)) runs[runs.length - 1].games++;
+        else runs.push({ i, games: 1 });
+    });
+    const kept: typeof runs = [];
+    for (const r of runs) {
+        if (cx(r.i) + (roomy ? 13 : 26) > stop) continue;
+        const prev = kept[kept.length - 1];
+        if (prev && cx(r.i) - cx(prev.i) < 34) {
+            if (r.games > prev.games) kept[kept.length - 1] = r;
+        } else kept.push(r);
+    }
+    const months = kept.map(r => r.i);
+    return (
+        <g aria-hidden="true" className="text-micro">
+            {roomy
+                ? nights.map((g, i) => (
+                      <text key={g.game} x={cx(i)} y={y} textAnchor="middle" className="fill-fg-3">
+                          {oppTag(g)}
+                      </text>
+                  ))
+                : null}
+            {months.map(i => (
+                <text key={`m${i}`} x={cx(i)} y={roomy ? y + 14 : y} textAnchor={roomy ? 'middle' : 'start'} className={roomy ? 'fill-fg-2' : 'fill-fg-3'}>
+                    {MONTHS[Number(nights[i].date.slice(5, 7)) - 1]}
+                </text>
+            ))}
+        </g>
+    );
+}
+
+/** The one authored moment: the GSAx staircase builds game by game (off under reduced motion). */
+const CHART_CSS = `
+@keyframes gw-rise { from { transform: scaleY(0); } }
+@keyframes gw-fade { from { opacity: 0; } }
+.gw-rise { transform-box: fill-box; animation: gw-rise 460ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.gw-fade { animation: gw-fade 320ms ease-out both; }
+@media (prefers-reduced-motion: reduce) { .gw-rise, .gw-fade { animation: none; } }
+`;
+
+/* ── Season: GSAx waterfall ──────────────────────────────────────────── */
 
 function Race({ nights }: { nights: GoalieNight[] }) {
     const [ref, W] = useWidth<HTMLDivElement>();
-    const [at, setAt] = React.useState<number | null>(null);
-    const id = React.useId().replace(/:/g, '');
-    const H = 230;
-    const P = { l: 36, r: 12, t: 22, b: 24 };
-    const pts = React.useMemo(() => {
-        const out: { g: GoalieNight; i: number; c: number }[] = [];
-        nights.forEach((g, i) => out.push({ g, i, c: (out[i - 1]?.c ?? 0) + g.ps }));
+    const n = nights.length;
+    const { at, setAt, chart } = useScrub(n);
+    // Each night from the running total before it to the one after.
+    const steps = React.useMemo(() => {
+        const out: { g: GoalieNight; i: number; from: number; c: number }[] = [];
+        nights.forEach((g, i) => {
+            const from = out[i - 1]?.c ?? 0;
+            out.push({ g, i, from, c: from + g.ps });
+        });
         return out;
     }, [nights]);
-    const n = pts.length;
     if (!n) return null;
-    const lo = Math.min(0, ...pts.map(p => p.c)) - 1;
-    const hi = Math.max(0, ...pts.map(p => p.c)) + 1;
-    const X = (i: number) => P.l + (n > 1 ? i / (n - 1) : 0.5) * (W - P.l - P.r);
-    const Y = (v: number) => P.t + ((hi - v) / (hi - lo)) * (H - P.t - P.b);
-    const line = pts.map(p => `${X(p.i).toFixed(1)},${Y(p.c).toFixed(1)}`).join(' ');
-    const area = `${X(0)},${Y(0)} ${line} ${X(n - 1)},${Y(0)}`;
-    const step = hi - lo > 24 ? 10 : 5;
+    const total = steps[n - 1].c;
+
+    // One column per appearance, half a column of air, then the season total in a slot wide enough for its label.
+    const P = { l: 36, r: 8, t: 8 };
+    const plotW = Math.max(0, W - P.l - P.r);
+    const seasonW = Math.max(60, plotW / (n + 1.5));
+    const band = Math.max(0, plotW - seasonW) / (n + 0.5);
+    const roomy = band >= ROOMY;
+    const H = roomy ? 268 : 240;
+    const base = H - (roomy ? 40 : 24);
+    const cx = (i: number) => P.l + band * (i + 0.5);
+    const seasonL = P.l + band * (n + 0.5);
+    const tx = seasonL + seasonW / 2;
+    const bw = Math.max(2, Math.min(28, band * 0.64));
+    const tw = Math.max(bw, Math.min(28, seasonW * 0.4));
+    // Values span lo..hi with room above and below for the figures.
+    const lo = Math.min(0, ...steps.map(s => s.c));
+    const hi = Math.max(0, ...steps.map(s => s.c));
+    const span = Math.max(1, hi - lo);
+    const padT = 20;
+    const padB = 18;
+    const Y = (v: number) => P.t + padT + ((hi - v) / span) * (base - P.t - padT - padB);
+    const step = span > 24 ? 10 : span > 12 ? 5 : span > 4 ? 2 : 1;
     const ticks: number[] = [];
-    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
-    const months: { i: number; m: string }[] = [];
-    pts.forEach(p => {
-        const m = MONTHS[Number(p.g.date.slice(5, 7)) - 1];
-        if (!months.length || months[months.length - 1].m !== m) months.push({ i: p.i, m });
-    });
-    const best = pts.reduce((a, b) => (b.g.ps > a.g.ps ? b : a));
-    const worst = pts.reduce((a, b) => (b.g.ps < a.g.ps ? b : a));
-    const last = pts[n - 1];
-    const sel = at != null ? pts[at] : null;
-    const move = (clientX: number, el: SVGRectElement) => {
-        const r = el.getBoundingClientRect();
-        setAt(Math.max(0, Math.min(n - 1, Math.round(((clientX - r.left) / r.width) * (n - 1)))));
+    for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) ticks.push(v);
+    const best = steps.reduce((a, b) => (b.g.ps > a.g.ps ? b : a));
+    const worst = steps.reduce((a, b) => (b.g.ps < a.g.ps ? b : a));
+    const sel = at != null ? steps[at] : null;
+    const delay = (i: number) => `${Math.round(i * Math.min(45, 700 / n))}ms`;
+    const bar = (from: number, to: number) => {
+        const h = Math.max(1.5, Math.abs(Y(to) - Y(from)));
+        return { y: to >= from ? Y(from) - h : Y(from), h };
     };
+    const tb = bar(0, total);
+
     return (
         <Panel
             title="GSAx"
             legend={
                 <>
-                    <span className="inline-flex items-center gap-1.5"><Swatch className="w-4 border-t-2 border-fg-1" />running GSAx</span>
-                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-2.5 w-2.5 rounded-[2px] bg-pos/25" />above expected</span>
-                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-2.5 w-2.5 rounded-[2px] bg-neg/25" />below</span>
+                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-2.5 w-2.5 rounded-[2px] bg-pos/70" />above expected</span>
+                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-2.5 w-2.5 rounded-[2px] bg-neg/70" />below</span>
+                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-2.5 w-2.5 rounded-[2px] bg-fg-1" />season</span>
                 </>
             }
         >
@@ -194,64 +281,106 @@ function Race({ nights }: { nights: GoalieNight[] }) {
                         <span>{sel.g.sa - sel.g.ga}/{sel.g.sa} saves</span>
                         <span className="text-model">{sel.g.xga.toFixed(2)} xGA</span>
                         <span>night <b className={sel.g.ps >= 0 ? 'text-pos' : 'text-neg'}>{sg(sel.g.ps)}</b></span>
-                        <span>season <b className="text-fg-1">{sg(sel.c, 1)}</b></span>
+                        <span>season {sg(sel.from, 1)} → <b className="text-fg-1">{sg(sel.c, 1)}</b></span>
                     </>
                 ) : (
-                    <>
-                        <span>
-                            <b className="text-fg-1">{sg(last.c, 1)}</b> goals saved above expected over {n} games
-                        </span>
-                    </>
+                    <span>
+                        <b className="text-fg-1">{sg(total, 1)}</b> goals saved above expected over {n} games
+                    </span>
                 )}
             </p>
             <div ref={ref} className="w-full">
                 {W ? (
-                    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Running goals saved above expected over ${n} games: ${sg(last.c, 1)}`} className="block">
-                        <defs>
-                            <clipPath id={`up${id}`}><rect x={0} y={0} width={W} height={Y(0)} /></clipPath>
-                            <clipPath id={`dn${id}`}><rect x={0} y={Y(0)} width={W} height={H} /></clipPath>
-                        </defs>
+                    <svg
+                        width={W}
+                        height={H}
+                        viewBox={`0 0 ${W} ${H}`}
+                        role="group"
+                        aria-label={`Goals saved above expected, game by game, to ${sg(total, 1)} over ${n} games. Arrow keys step through the games.`}
+                        {...chart}
+                    >
+                        <style>{CHART_CSS}</style>
                         {ticks.map(v => (
                             <g key={v}>
                                 <line x1={P.l} x2={W - P.r} y1={Y(v)} y2={Y(v)} className={v === 0 ? 'stroke-fg-disabled' : 'stroke-line'} />
                                 <text x={P.l - 8} y={Y(v) + 4} textAnchor="end" className="fill-fg-3 text-micro">{v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0'}</text>
                             </g>
                         ))}
-                        {months.map(m => (
-                            <text key={m.m + m.i} x={X(m.i)} y={H - 6} className="fill-fg-3 text-micro">{m.m}</text>
-                        ))}
-                        <polygon points={area} className="fill-pos/20" clipPath={`url(#up${id})`} />
-                        <polygon points={area} className="fill-neg/20" clipPath={`url(#dn${id})`} />
-                        <polyline points={line} fill="none" className="stroke-fg-1" strokeWidth={2} strokeLinejoin="round" />
-                        {n > 2
-                            ? ([[best, 'best'], [worst, 'worst']] as const).map(([p, k]) => (
-                                  <g key={k}>
-                                      <circle cx={X(p.i)} cy={Y(p.c)} r={4.5} className={k === 'best' ? 'fill-pos' : 'fill-neg'} />
-                                      <text x={Math.min(Math.max(X(p.i), 70), W - 70)} y={Y(p.c) + (k === 'best' ? -10 : 18)} textAnchor="middle" className={cn('text-micro font-semibold uppercase tracking-[0.08em]', k === 'best' ? 'fill-pos' : 'fill-neg')}>
-                                          {k} {sg(p.g.ps)} {p.g.home ? 'vs' : '@'} {p.g.opp}
+                        {sel ? <rect x={cx(sel.i) - band / 2} y={P.t} width={band} height={base - P.t} className="fill-surface-3" /> : null}
+
+                        {/* The staircase: each night from the running total before it to the one after, a hairline carrying the level to the next. */}
+                        {steps.map(s => {
+                            const up = s.g.ps >= 0;
+                            const b = bar(s.from, s.c);
+                            const nx = s.i < n - 1 ? cx(s.i + 1) - bw / 2 : tx - tw / 2;
+                            const dim = sel != null && sel.i !== s.i;
+                            return (
+                                <g key={s.g.game}>
+                                    <line x1={cx(s.i) + bw / 2} x2={nx} y1={Y(s.c)} y2={Y(s.c)} className="gw-fade stroke-fg-3" strokeOpacity={0.55} style={{ animationDelay: delay(s.i + 1) }} />
+                                    <g className="transition-opacity duration-200" style={{ opacity: dim ? 0.35 : 1 }}>
+                                        <rect
+                                            x={cx(s.i) - bw / 2}
+                                            y={b.y}
+                                            width={bw}
+                                            height={b.h}
+                                            rx={Math.min(2, bw / 4)}
+                                            className={cn('gw-rise', up ? 'fill-pos/70' : 'fill-neg/70')}
+                                            style={{ transformOrigin: up ? 'center bottom' : 'center top', animationDelay: delay(s.i) }}
+                                        />
+                                        {roomy ? (
+                                            <text x={cx(s.i)} y={up ? b.y - 5 : b.y + b.h + 12} textAnchor="middle" className={cn('gw-fade text-micro', up ? 'fill-pos' : 'fill-neg')} style={{ animationDelay: delay(s.i) }}>
+                                                {sg(s.g.ps)}
+                                            </text>
+                                        ) : null}
+                                    </g>
+                                </g>
+                            );
+                        })}
+
+                        {/* The season: one bar from zero to where the staircase ends. */}
+                        <g className="transition-opacity duration-200" style={{ opacity: sel ? 0.35 : 1 }}>
+                            <rect x={tx - tw / 2} y={tb.y} width={tw} height={tb.h} rx={2} className="gw-rise fill-fg-1" style={{ transformOrigin: total >= 0 ? 'center bottom' : 'center top', animationDelay: delay(n) }} />
+                            <text x={tx} y={total >= 0 ? tb.y - 6 : tb.y + tb.h + 13} textAnchor="middle" className="gw-fade fill-fg-1 text-caption font-bold" style={{ animationDelay: delay(n) }}>
+                                {sg(total, 1)}
+                            </text>
+                        </g>
+                        <text x={tx} y={base + 14} textAnchor="middle" className="fill-fg-2 text-micro font-semibold uppercase tracking-[0.12em]" aria-hidden="true">
+                            Season
+                        </text>
+
+                        {/* Narrow charts name only the best and worst nights. */}
+                        {!roomy && n > 2
+                            ? ([[best, 'best'], [worst, 'worst']] as const).map(([s, k]) => {
+                                  const b = bar(s.from, s.c);
+                                  return (
+                                      <text
+                                          key={k}
+                                          x={Math.min(Math.max(cx(s.i), P.l + 64), seasonL - 64)}
+                                          y={k === 'best' ? b.y - 7 : b.y + b.h + 14}
+                                          textAnchor="middle"
+                                          paintOrder="stroke"
+                                          stroke="var(--surface-1)"
+                                          strokeWidth={4}
+                                          strokeLinejoin="round"
+                                          className={cn('gw-fade text-micro font-semibold uppercase tracking-[0.08em]', k === 'best' ? 'fill-pos' : 'fill-neg')}
+                                          style={{ animationDelay: delay(n) }}
+                                      >
+                                          {k} {sg(s.g.ps)} {oppTag(s.g)}
                                       </text>
-                                  </g>
-                              ))
+                                  );
+                              })
                             : null}
-                        {sel ? (
-                            <>
-                                <line x1={X(sel.i)} x2={X(sel.i)} y1={P.t} y2={H - P.b} className="stroke-fg-1" strokeOpacity={0.4} />
-                                <circle cx={X(sel.i)} cy={Y(sel.c)} r={4} className="fill-brand" />
-                            </>
-                        ) : null}
-                        <rect
-                            x={P.l}
-                            y={0}
-                            width={Math.max(0, W - P.l - P.r)}
-                            height={H}
-                            fill="transparent"
-                            onPointerMove={e => move(e.clientX, e.currentTarget)}
-                            onPointerDown={e => move(e.clientX, e.currentTarget)}
-                            onPointerLeave={e => e.pointerType === 'mouse' && setAt(null)}
-                        />
+
+                        <ColumnAxis nights={nights} cx={cx} y={base + 14} roomy={roomy} stop={seasonL} />
+
+                        {/* Hit areas: a column per game; the season column lets go. */}
+                        {steps.map(s => (
+                            <rect key={s.g.game} x={cx(s.i) - band / 2} y={0} width={band} height={H} fill="transparent" onPointerEnter={() => setAt(s.i)} onPointerDown={() => setAt(s.i)} />
+                        ))}
+                        <rect x={seasonL} y={0} width={W - seasonL} height={H} fill="transparent" onPointerEnter={() => setAt(null)} onPointerDown={() => setAt(null)} />
                     </svg>
                 ) : (
-                    <div style={{ height: H }} />
+                    <div style={{ height: 268 }} />
                 )}
             </div>
         </Panel>
@@ -484,76 +613,123 @@ function Situations({ shots }: { shots: ShotRow[] }) {
 
 /* ── Workload ────────────────────────────────────────────────────────── */
 
+/** Starts are 30+ minutes. A quality start (Vollman) saves .903, or .885 on 20 shots or fewer; a really bad start is under .850. */
+const svOf = (g: GoalieNight) => (g.sa - g.ga) / Math.max(g.sa, 1);
+const isStart = (g: GoalieNight) => g.toi >= 1800;
+const isQs = (g: GoalieNight) => isStart(g) && (svOf(g) >= 0.903 || (g.sa <= 20 && svOf(g) >= 0.885));
+const isRbs = (g: GoalieNight) => isStart(g) && svOf(g) < 0.85;
+
 function Workload({ nights }: { nights: GoalieNight[] }) {
     const [ref, W] = useWidth<HTMLDivElement>();
-    const [at, setAt] = React.useState<number | null>(null);
-    if (!nights.length) return null;
-    const H = 140;
-    const P = { l: 28, r: 6, t: 20, b: 22 };
-    const t0 = Date.parse(`${nights[0].date}T12:00:00Z`);
-    const days = Math.max(1, (Date.parse(`${nights[nights.length - 1].date}T12:00:00Z`) - t0) / 864e5 + 1);
-    const X = (d: string) => P.l + ((Date.parse(`${d}T12:00:00Z`) - t0) / 864e5 / days) * (W - P.l - P.r);
-    const bw = Math.max(3, Math.min(10, ((W - P.l - P.r) / days) * 0.8));
-    const maxSa = Math.max(20, ...nights.map(g => g.sa));
-    const Y = (v: number) => H - P.b - (v / maxSa) * (H - P.t - P.b);
-    const gap = (i: number) => (i ? (Date.parse(nights[i].date) - Date.parse(nights[i - 1].date)) / 864e5 : 99);
-    const starts = nights.filter(g => g.toi >= 1800);
-    const sv = (g: GoalieNight) => (g.sa - g.ga) / Math.max(g.sa, 1);
-    const qs = starts.filter(g => sv(g) >= 0.903 || (g.sa <= 20 && sv(g) >= 0.885)).length;
-    const rbs = starts.filter(g => sv(g) < 0.85).length;
-    const b2b = nights.filter((_, i) => gap(i) === 1).length;
-    const months: { d: string; m: string }[] = [];
-    nights.forEach(g => {
-        const m = MONTHS[Number(g.date.slice(5, 7)) - 1];
-        if (!months.length || months[months.length - 1].m !== m) months.push({ d: g.date, m });
-    });
+    const n = nights.length;
+    const { at, setAt, chart } = useScrub(n);
+    if (!n) return null;
+
+    // One column per appearance, in order: shots faced, saves below and goals against on top.
+    const P = { l: 28, r: 6, t: 20 };
+    const band = Math.max(0, W - P.l - P.r) / n;
+    const roomy = band >= ROOMY;
+    const H = roomy ? 206 : 180;
+    const base = H - (roomy ? 54 : 40);
+    const top = Math.max(20, Math.ceil(Math.max(...nights.map(g => g.sa)) / 10) * 10);
+    const Y = (v: number) => base - (v / top) * (base - P.t);
+    const cx = (i: number) => P.l + band * (i + 0.5);
+    const bw = Math.max(2, Math.min(24, band * 0.58));
+    const grid = top > 40 ? 20 : 10;
+    const ticks: number[] = [];
+    for (let v = grid; v <= top; v += grid) ticks.push(v);
+    const b2b = (i: number) => i > 0 && (Date.parse(nights[i].date) - Date.parse(nights[i - 1].date)) / 864e5 === 1;
+    const backToBacks = nights.filter((_, i) => b2b(i)).length;
+    const starts = nights.filter(isStart).length;
+    const qs = nights.filter(isQs).length;
+    const rbs = nights.filter(isRbs).length;
     const sel = at != null ? nights[at] : null;
+    const markY = base + 13;
+
     return (
         <Panel
             title="Workload"
             legend={
                 <>
-                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-3 w-2 rounded-[1px] bg-pos/70" />beat expected</span>
-                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-3 w-2 rounded-[1px] bg-neg/70" />below</span>
-                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-2 w-2 rounded-full bg-warn" />back-to-back ({b2b})</span>
-                    <span className="ml-auto text-fg-1">
-                        Quality starts <b>{qs}/{starts.length}</b>
-                        {starts.length ? ` (${Math.round((qs / starts.length) * 100)}%)` : ''} · Really bad starts <b className="text-neg">{rbs}</b>
+                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-3 w-2 rounded-[1px] bg-info/45" />saves</span>
+                    <span className="inline-flex items-center gap-1.5"><Swatch className="h-3 w-2 rounded-[1px] bg-neg/85" />goals against</span>
+                    {backToBacks ? <span className="inline-flex items-center gap-1.5"><Swatch className="h-0.5 w-4 rounded-full bg-warn" />back-to-back ({backToBacks})</span> : null}
+                    <span className="ml-auto inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-fg-1">
+                        <span className="inline-flex items-center gap-1.5">
+                            <Swatch className="h-2 w-2 rounded-full bg-pos" />
+                            Quality starts <b>{qs}/{starts}</b>
+                            {starts ? ` (${Math.round((qs / starts) * 100)}%)` : ''}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <Swatch className="h-2 w-2 rounded-full bg-neg" />
+                            Really bad starts <b className="text-neg">{rbs}</b>
+                        </span>
                     </span>
                 </>
             }
         >
-            <p className="min-h-5 text-caption text-fg-2" aria-live="polite">
+            <p className="flex min-h-5 flex-wrap items-baseline gap-x-3 text-caption text-fg-2" aria-live="polite">
                 {sel ? (
                     <>
-                        <b className="text-fg-1">{day(sel.date)} {sel.home ? 'vs' : '@'} {sel.opp}</b> · {sel.sa - sel.ga}/{sel.sa} saves · <span className={sel.ps >= 0 ? 'text-pos' : 'text-neg'}>{sg(sel.ps)}</span>
+                        <Link href={`/games/${sel.game}`} className="font-semibold text-fg-1 hover:text-brand">
+                            {day(sel.date)} {sel.home ? 'vs' : '@'} {sel.opp}
+                        </Link>
+                        <span>{sel.sa - sel.ga}/{sel.sa} saves</span>
+                        <span>{p3(sel.sa ? svOf(sel) : NaN)}</span>
+                        <span className="text-model">{sel.xga.toFixed(2)} xGA</span>
+                        {isQs(sel) ? <span className="text-pos">quality start</span> : isRbs(sel) ? <span className="text-neg">really bad start</span> : !isStart(sel) ? <span>relief</span> : null}
+                        {b2b(at!) ? <span className="text-warn">back-to-back</span> : null}
                     </>
                 ) : (
-                    <>{nights.length} appearances · {Math.round(sum(nights, g => g.sa) / nights.length)} shots a game</>
+                    <span>
+                        {n} appearances · {Math.round(sum(nights, g => g.sa) / n)} shots a game
+                    </span>
                 )}
             </p>
             <div ref={ref} className="w-full">
                 {W ? (
-                    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${nights.length} appearances, shots faced each game`} className="block" onPointerLeave={e => e.pointerType === 'mouse' && setAt(null)}>
-                        {[20, 40].filter(v => v <= maxSa).map(v => (
+                    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`${n} appearances, shots faced and goals against each game. Arrow keys step through the games.`} {...chart}>
+                        {ticks.map(v => (
                             <g key={v}>
                                 <line x1={P.l} x2={W - P.r} y1={Y(v)} y2={Y(v)} className="stroke-line" />
                                 <text x={P.l - 6} y={Y(v) + 4} textAnchor="end" className="fill-fg-3 text-micro">{v}</text>
                             </g>
                         ))}
-                        {months.map(m => (
-                            <text key={m.d} x={X(m.d)} y={H - 6} className="fill-fg-3 text-micro">{m.m}</text>
-                        ))}
+                        <line x1={P.l} x2={W - P.r} y1={base} y2={base} className="stroke-line-strong" />
+                        {sel ? <rect x={cx(at!) - band / 2} y={P.t - 16} width={band} height={markY + 8 - (P.t - 16)} className="fill-surface-3" /> : null}
+
+                        {nights.map((g, i) => {
+                            const x = cx(i) - bw / 2;
+                            const saved = g.sa - g.ga;
+                            const gap = g.ga && saved && bw >= 4 ? 1 : 0;
+                            return (
+                                <g key={g.game} className="transition-opacity duration-200" style={{ opacity: sel && at !== i ? 0.35 : 1 }}>
+                                    {saved ? <rect x={x} y={Y(saved) + gap} width={bw} height={Math.max(0, Y(0) - Y(saved) - gap)} className="fill-info/45" /> : null}
+                                    {g.ga ? <rect x={x} y={Y(g.sa)} width={bw} height={Y(saved) - Y(g.sa)} rx={Math.min(1.5, bw / 4)} className="fill-neg/85" /> : null}
+                                    {roomy ? (
+                                        <text x={cx(i)} y={Y(g.sa) - 5} textAnchor="middle" className="fill-fg-3 text-micro">
+                                            {g.sa}
+                                        </text>
+                                    ) : null}
+                                    {isQs(g) || isRbs(g) ? (
+                                        <circle cx={cx(i)} cy={markY} r={3.5} className={isQs(g) ? 'fill-pos' : 'fill-neg'} />
+                                    ) : isStart(g) ? (
+                                        <circle cx={cx(i)} cy={markY} r={3} fill="none" className="stroke-mute" strokeWidth={1.5} />
+                                    ) : null}
+                                </g>
+                            );
+                        })}
+                        {/* Back-to-backs: an amber link joining the two nights. */}
+                        {nights.map((g, i) => (b2b(i) ? <line key={`b${g.game}`} x1={cx(i - 1)} x2={cx(i)} y1={base + 4} y2={base + 4} className="stroke-warn" strokeWidth={2} strokeLinecap="round" /> : null))}
+
+                        <ColumnAxis nights={nights} cx={cx} y={base + 32} roomy={roomy} stop={W - P.r} />
+
                         {nights.map((g, i) => (
-                            <g key={g.game} onPointerEnter={() => setAt(i)} onPointerDown={() => setAt(i)}>
-                                <rect x={X(g.date) - bw / 2 - 1} y={P.t} width={bw + 2} height={H - P.t - P.b} fill="transparent" />
-                                <rect x={X(g.date) - bw / 2} y={Y(g.sa)} width={bw} height={Y(0) - Y(g.sa)} rx={1} className={cn(g.ps >= 0 ? 'fill-pos/70' : 'fill-neg/70', at === i && 'fill-brand')} />
-                                {gap(i) === 1 ? <circle cx={X(g.date)} cy={P.t - 9} r={3} className="fill-warn" /> : null}
-                            </g>
+                            <rect key={`h${g.game}`} x={cx(i) - band / 2} y={0} width={band} height={H} fill="transparent" onPointerEnter={() => setAt(i)} onPointerDown={() => setAt(i)} />
                         ))}
                     </svg>
                 ) : (
-                    <div style={{ height: H }} />
+                    <div style={{ height: 206 }} />
                 )}
             </div>
         </Panel>
