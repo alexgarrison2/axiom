@@ -1422,10 +1422,10 @@
                 "movement": null
             },
             {
-                "name": "Matthew Poitras",
-                "number": 51,
+                "name": "Sean Kuraly",
+                "number": 7,
                 "pos": "c",
-                "id": 33196,
+                "id": 2585,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -1488,14 +1488,14 @@
         ],
         "d3": [
             {
-                "name": "Jonathan Aspirot",
-                "number": 45,
+                "name": "Frederic Brunet",
+                "number": 42,
                 "pos": "ld",
-                "id": 26475,
+                "id": 31316,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Mason Lohrei",
@@ -1530,11 +1530,11 @@
         ],
         "pk1": [
             {
-                "name": "Elias Lindholm",
-                "number": 28,
+                "name": "Fraser Minten",
+                "number": 93,
                 "pos": "sk1",
-                "id": 2133,
-                "ppUnit": 1,
+                "id": 31575,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -1568,19 +1568,19 @@
         ],
         "pk2": [
             {
-                "name": "Fraser Minten",
-                "number": 93,
+                "name": "Pavel Zacha",
+                "number": 18,
                 "pos": "sk1",
-                "id": 31575,
-                "ppUnit": 2,
+                "id": 2481,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Tanner Jeannot",
-                "number": 84,
+                "name": "Mark Kastelic",
+                "number": 47,
                 "pos": "sk2",
-                "id": 4695,
+                "id": 2904,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1604,9 +1604,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jim McBride",
-        "updated_at": "2026-11-02T15:38:30.209Z",
-        "fetched_at": "2026-11-02T16:02:39Z"
+        "lineup_source": "Scott McLaughlin",
+        "updated_at": "2026-11-03T18:44:02.727Z",
+        "fetched_at": "2026-11-04T02:02:27Z"
     },
     "NYR": {
         "f1": [
@@ -8317,7 +8317,7 @@
                 "id": 1870,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Daniil Tarasov",
@@ -8364,6 +8364,15 @@
                 "id": 2522,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "John Gibson",
+                "number": 36,
+                "pos": "ir6",
+                "id": 1870,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -8444,8 +8453,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-11-02)",
-        "updated_at": "2026-11-03T15:02:39.683Z",
-        "fetched_at": "2026-11-03T15:02:47Z"
+        "updated_at": "2026-11-04T01:15:50.083Z",
+        "fetched_at": "2026-11-04T02:02:27Z"
     },
     "UTA": {
         "f1": [
