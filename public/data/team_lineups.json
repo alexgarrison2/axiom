@@ -10213,14 +10213,14 @@
                 "movement": null
             },
             {
-                "name": "Jonathan Marchessault",
-                "number": 81,
+                "name": "Vitali Pinchuk",
+                "number": 51,
                 "pos": "rw",
-                "id": 2399,
+                "id": 31775,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -10318,6 +10318,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Jonathan Marchessault",
+                "number": 81,
+                "pos": "ir2",
+                "id": 2399,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -10398,6 +10407,6 @@
         ],
         "lineup_source": "Alex Daugherty",
         "updated_at": "2026-11-02T17:30:52.545Z",
-        "fetched_at": "2026-11-02T20:02:43Z"
+        "fetched_at": "2026-11-04T01:02:49Z"
     }
 }
