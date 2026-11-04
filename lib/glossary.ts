@@ -277,8 +277,8 @@ export const GLOSSARY = {
     'player-form': {
         label: 'FORM',
         title: 'Recent form (last 5, 10 and 20 games)',
-        short: 'L5, L10 and L20 put the counting stats (GP, G, A, PTS, TOI, SOG/GP) on each skater’s last 5, 10 or 20 games this season and add FORM, his Pony Score per game over those games, which the table ranks by. Select a row for his season game by game (points, Pony Score with its five-game average, ice time by situation) beside his per-game splits.',
-        detail: 'IMPACT and the other ratings do not change with the window: they estimate ability from about three seasons, each game weighing half as much as one 90 games newer, so the last 5 games are about 4% of the rating. FORM is what he did lately; IMPACT is what to expect. FORM is green or red past the top or bottom tenth (±0.25 a game). In the row drawer a green or red arrow marks a window well off his season: 0.3 points, 0.75 shots, 0.12 ixG, 1:00 of ice time, 0:45 on the power play, 6 points of 5v5 xG share or 0.15 Pony Score per game.',
+        short: 'A skater’s Pony Score per game over his last 5, 10 or 20 games this season (L5, L10, L20), which those views rank by; the counting stats cover the same games. FORM is what he did lately, IMPACT what to expect.',
+        detail: 'Select a row for his season game by game (points, Pony Score with its five-game average, ice time by situation) beside his per-game splits. IMPACT and the other ratings do not change with the window: they estimate ability from about three seasons, each game weighing half as much as one 90 games newer, so the last 5 games are about 4% of the rating. FORM is what he did lately; IMPACT is what to expect. FORM is green or red past the top or bottom tenth (±0.25 a game). In the row drawer a green or red arrow marks a window well off his season: 0.3 points, 0.75 shots, 0.12 ixG, 1:00 of ice time, 0:45 on the power play, 6 points of 5v5 xG share or 0.15 Pony Score per game.',
         anchor: 'players',
         aliases: ['last 5', 'last 10', 'last 20', 'L5', 'L10', 'L20', 'form', 'FORM', 'trend', 'hot streak'],
     },
