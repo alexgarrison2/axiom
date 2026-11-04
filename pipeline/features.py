@@ -70,7 +70,7 @@ ELO_K = 4.0
 ELO_KX = 4.0                  # xG-share term in the Elo update
 ELO_HFA = 35.0
 ELO_OFFSEASON_REGRESSION = 0.5
-GOALIE_CUR_PRIOR_GP = 30      # w_cur = gp_cur / (gp_cur + 30)
+GOALIE_CUR_PRIOR_GP = 30      # w_cur = gp_cur / (gp_cur + min(30, prior weighted GP))
 GOALIE_SHRINK_GP = 25         # rating *= ev / (ev + 25), ev = weighted GP
 GOALIE_SEASON_DECAY = (1.0, 0.5)   # weights of seasons s-1, s-2 in the prior
 XG_NORM_PRIOR_GOALS = 1000.0  # shrink in-season normalisation factor to last season's
@@ -544,8 +544,11 @@ class FeatureState:
         """Components of a goalie's rating (GSAx per game, normalised within season).
 
         cur_rate / prior_rate: GSAx per game this season / weighted prior seasons
-        w_cur = gp_cur / (gp_cur + GOALIE_CUR_PRIOR_GP) blends them; the blend is
-        shrunk toward 0 by ev / (ev + GOALIE_SHRINK_GP), ev = weighted GP."""
+        w_cur = gp_cur / (gp_cur + min(GOALIE_CUR_PRIOR_GP, prior weighted GP))
+        blends them: the prior counts as at most GOALIE_CUR_PRIOR_GP games, and
+        never as more games than it has (three hot games last season must not
+        outweigh ten this season). The blend is shrunk toward 0 by
+        ev / (ev + GOALIE_SHRINK_GP), ev = weighted GP."""
         season = self.season if season is None else season
         key = self.resolve_goalie(name)
         if key is None:
@@ -564,7 +567,7 @@ class FeatureState:
         if p_gp == 0:
             w_cur, raw = 1.0, cur_rate
         else:
-            w_cur = cur.gp / (cur.gp + GOALIE_CUR_PRIOR_GP)
+            w_cur = cur.gp / (cur.gp + min(GOALIE_CUR_PRIOR_GP, p_gp))
             raw = w_cur * cur_rate + (1 - w_cur) * prior_rate
         ev = cur.gp + p_gp
         shrink = ev / (ev + GOALIE_SHRINK_GP)

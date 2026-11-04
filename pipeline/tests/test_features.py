@@ -74,3 +74,21 @@ def test_goalie_name_resolution():
     assert st.resolve_goalie('Leevi Merilainen') == 'Leevi Meriläinen'
     assert st.resolve_goalie('L. Merilainen') == 'Leevi Meriläinen'
     assert st.resolve_goalie('Nobody Here') is None
+
+
+def test_goalie_prior_counts_at_most_its_games():
+    """A three-game prior must not outweigh ten games this season (the blend's
+    prior counts as min(30, its weighted games)); a full prior keeps the 30 cap."""
+    def state(prior_gp, prior_gsax):
+        st = F.FeatureState(season=2026)
+        st.season_totals = {2025: (1.0, 1.0)}           # exact past-season factor 1.0
+        st.season_goals = st.season_xg = 0.0             # in-season factor falls back to prev_norm 1.0
+        st.goalies['G'] = {2025: F.GoalieSeason(xga=prior_gsax + 2.0 * prior_gp, ga=2.0 * prior_gp, gp=prior_gp),
+                           2026: F.GoalieSeason(xga=20.0, ga=20.0, gp=10)}   # average this season
+        return st.goalie_breakdown('G', 2026)
+
+    thin = state(3, 5.2)                                 # +1.73 a game over 3 games
+    assert thin['w_cur'] == 10 / 13
+    assert abs(thin['raw'] - 5.2 / 13) < 1e-9            # pooled: every game counts once
+    full = state(60, 6.0)
+    assert full['w_cur'] == 10 / 40                      # unchanged for an established starter
