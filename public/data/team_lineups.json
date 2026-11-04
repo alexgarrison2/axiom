@@ -3605,10 +3605,10 @@
         ],
         "f2": [
             {
-                "name": "Andrei Kuzmenko",
-                "number": 10,
+                "name": "Egor Chinakhov",
+                "number": 59,
                 "pos": "lw",
-                "id": 25254,
+                "id": 30655,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -3625,14 +3625,14 @@
                 "movement": null
             },
             {
-                "name": "Egor Chinakhov",
-                "number": 59,
+                "name": "Evgeni Malkin",
+                "number": 71,
                 "pos": "rw",
-                "id": 30655,
+                "id": 1236,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             }
         ],
         "f3": [
@@ -3818,7 +3818,7 @@
                 "number": 71,
                 "pos": "ir5",
                 "id": 1236,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -3899,9 +3899,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:15:13.066Z",
-        "fetched_at": "2026-11-04T16:02:44Z"
+        "lineup_source": "@PensInsideScoop",
+        "updated_at": "2026-11-04T19:47:07.263Z",
+        "fetched_at": "2026-11-04T20:02:41Z"
     },
     "NYI": {
         "f1": [
@@ -7233,7 +7233,7 @@
                 "number": 51,
                 "pos": "rw",
                 "id": 38105,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7265,7 +7265,7 @@
                 "number": 81,
                 "pos": "rw",
                 "id": 4646,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7287,7 +7287,7 @@
                 "number": 65,
                 "pos": "rd",
                 "id": 2099,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7317,24 +7317,24 @@
         ],
         "d3": [
             {
-                "name": "Nolan Allan",
-                "number": 5,
-                "pos": "ld",
-                "id": 32541,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Dmitry Orlov",
                 "number": 9,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 1572,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Eric Pohlkamp",
+                "number": null,
+                "pos": "rd",
+                "id": 33798,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "g": [
@@ -7392,7 +7392,7 @@
                 "number": 51,
                 "pos": "sk2",
                 "id": 38105,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -7410,7 +7410,7 @@
                 "number": 65,
                 "pos": "sk4",
                 "id": 2099,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -7455,7 +7455,7 @@
         ],
         "lineup_source": "Last Game (2026-11-02)",
         "updated_at": "2026-11-03T15:10:05.431Z",
-        "fetched_at": "2026-11-03T16:02:51Z"
+        "fetched_at": "2026-11-04T20:02:41Z"
     },
     "SEA": {
         "f1": [
@@ -7642,14 +7642,14 @@
                 "movement": null
             },
             {
-                "name": "Cale Fleury",
-                "number": 8,
+                "name": "Ville Ottavainen",
+                "number": 46,
                 "pos": "rd",
-                "id": 26737,
+                "id": 31756,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -7778,8 +7778,8 @@
             }
         ],
         "lineup_source": "Mike Benton",
-        "updated_at": "2026-11-03T18:41:16.753Z",
-        "fetched_at": "2026-11-04T13:02:29Z"
+        "updated_at": "2026-11-04T19:45:45.790Z",
+        "fetched_at": "2026-11-04T20:02:41Z"
     },
     "OTT": {
         "f1": [
@@ -10413,8 +10413,8 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:21:04.579Z",
-        "fetched_at": "2026-11-04T16:02:44Z"
+        "lineup_source": "Nick Kieser",
+        "updated_at": "2026-11-04T19:48:39.008Z",
+        "fetched_at": "2026-11-04T20:02:41Z"
     }
 }
