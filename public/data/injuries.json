@@ -109,12 +109,12 @@
   "team": "BUF",
   "position": "C",
   "status": "Day-To-Day",
-  "type": "Concussion",
-  "returnDate": "2026-11-04",
+  "type": null,
+  "returnDate": null,
   "comment": "Kulich (concussion) participated in Tuesday's practice and is close to being ready to return, according to Rachel Lenzi of The Buffalo News.",
   "date": "2026-11-03T18:06Z",
   "espn_id": "598332",
-  "fetched_at": "2026-11-03T18:48:26Z"
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8479941,
@@ -186,26 +186,26 @@
   "name": "Taylor Hall",
   "team": "CAR",
   "position": "LW",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Upper Body",
   "returnDate": "2026-11-05",
-  "comment": "Hall (upper body) isn't expected to play against Nashville on Tuesday, per Walt Ruff of the Hurricanes' official site.",
-  "date": "2026-11-03T19:03Z",
-  "espn_id": "598355",
-  "fetched_at": "2026-11-03T20:02:43Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598452",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8482747,
   "name": "Brennan Othmann",
   "team": "CGY",
   "position": "LW",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Upper Body",
   "returnDate": "2026-11-04",
-  "comment": "out",
-  "date": "2026-11-03T01:53Z",
-  "espn_id": "598279",
-  "fetched_at": "2026-11-03T02:02:24Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:22Z",
+  "espn_id": "598461",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8482074,
@@ -381,13 +381,13 @@
   "name": "Albert Johansson",
   "team": "DET",
   "position": "D",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Undisclosed",
   "returnDate": "2026-11-05",
-  "comment": "out",
-  "date": "2026-11-02T19:31Z",
-  "espn_id": "598267",
-  "fetched_at": "2026-11-02T20:02:32Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598459",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8477946,
@@ -771,13 +771,13 @@
   "name": "Kirby Dach",
   "team": "MTL",
   "position": "C",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Illness",
   "returnDate": "2026-11-05",
-  "comment": "out",
-  "date": "2026-11-03T19:06Z",
-  "espn_id": "598356",
-  "fetched_at": "2026-11-03T20:02:43Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598458",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8483549,
@@ -843,6 +843,19 @@
   "date": "2026-10-02T17:31Z",
   "espn_id": "594455",
   "fetched_at": "2026-10-02T18:02:26Z"
+ },
+ {
+  "playerId": 8476539,
+  "name": "Jonathan Marchessault",
+  "team": "NSH",
+  "position": "RW",
+  "status": "Day-To-Day",
+  "type": "Lower Body",
+  "returnDate": "2026-11-05",
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598454",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8481014,
@@ -969,23 +982,23 @@
   "status": "Injured Reserve",
   "type": "Foot",
   "returnDate": "2026-11-09",
-  "comment": "Korpisalo (lower body) will miss at least four more weeks, per Elliotte Friedman of Sportsnet on Saturday.",
-  "date": "2026-10-10T17:11Z",
-  "espn_id": "595329",
-  "fetched_at": "2026-10-25T22:04:13Z"
+  "comment": "Korpisalo (foot) was reassigned to AHL Hartford on Wednesday for a conditioning stint, Mollie Walker of the New York Post.",
+  "date": "2026-11-04T15:18Z",
+  "espn_id": "598449",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8480434,
   "name": "Sean Durzi",
   "team": "NYR",
   "position": "D",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Undisclosed",
   "returnDate": "2026-11-05",
-  "comment": "out",
-  "date": "2026-11-03T17:37Z",
-  "espn_id": "598326",
-  "fetched_at": "2026-11-03T18:02:39Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598457",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8477444,
@@ -1096,13 +1109,13 @@
   "name": "Evgeni Malkin",
   "team": "PIT",
   "position": "C",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Lower Body",
   "returnDate": "2026-11-05",
-  "comment": "out",
-  "date": "2026-11-03T16:56Z",
-  "espn_id": "598316",
-  "fetched_at": "2026-11-03T17:03:08Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598450",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8477435,
@@ -1252,13 +1265,13 @@
   "name": "Colton Parayko",
   "team": "STL",
   "position": "D",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Upper Body",
   "returnDate": "2026-11-05",
-  "comment": "out",
-  "date": "2026-11-03T17:49Z",
-  "espn_id": "598329",
-  "fetched_at": "2026-11-03T18:02:39Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598455",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8479346,
@@ -1330,13 +1343,13 @@
   "name": "Zemgus Girgensons",
   "team": "TBL",
   "position": "C",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Lower Body",
   "returnDate": "2026-11-05",
-  "comment": "Girgensons (lower body) won't play against Detroit on Tuesday, per Lightning reporter Gabby Shirley.",
-  "date": "2026-11-02T17:13Z",
-  "espn_id": "598238",
-  "fetched_at": "2026-11-02T18:02:34Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598453",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8481570,
@@ -1369,13 +1382,13 @@
   "name": "John Tavares",
   "team": "TOR",
   "position": "C",
-  "status": "Out",
+  "status": "Injured Reserve",
   "type": "Lower Body",
   "returnDate": "2026-11-07",
-  "comment": "out",
-  "date": "2026-11-03T16:09Z",
-  "espn_id": "598307",
-  "fetched_at": "2026-11-03T17:03:08Z"
+  "comment": "ir",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598451",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8480893,
@@ -1473,13 +1486,13 @@
   "name": "Kailer Yamamoto",
   "team": "UTA",
   "position": "RW",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Upper Body",
   "returnDate": "2026-11-05",
-  "comment": "Yamamoto (upper body) won't play against Toronto on Tuesday.",
-  "date": "2026-11-03T23:37Z",
-  "espn_id": "598364",
-  "fetched_at": "2026-11-04T00:02:34Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598456",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8483472,
@@ -1551,13 +1564,13 @@
   "name": "Tom Willander",
   "team": "VAN",
   "position": "D",
-  "status": "Out",
+  "status": "Day-To-Day",
   "type": "Lower Body",
   "returnDate": "2026-11-05",
-  "comment": "out",
-  "date": "2026-11-04T01:49Z",
-  "espn_id": "598369",
-  "fetched_at": "2026-11-04T02:02:21Z"
+  "comment": "day-to-day",
+  "date": "2026-11-04T15:21Z",
+  "espn_id": "598460",
+  "fetched_at": "2026-11-04T16:02:34Z"
  },
  {
   "playerId": 8478450,
@@ -1571,19 +1584,6 @@
   "date": "2026-10-21T19:24Z",
   "espn_id": "596781",
   "fetched_at": "2026-10-21T20:01:43Z"
- },
- {
-  "playerId": 8483672,
-  "name": "Garrett Brown",
-  "team": "WPG",
-  "position": "C",
-  "status": "Injured Reserve",
-  "type": "Lower Body",
-  "returnDate": "2026-11-14",
-  "comment": "ir-nr",
-  "date": "2026-09-29T15:55Z",
-  "espn_id": "594172",
-  "fetched_at": "2026-10-30T14:01:44Z"
  },
  {
   "playerId": 8477504,
