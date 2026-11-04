@@ -8311,25 +8311,34 @@
         ],
         "g": [
             {
-                "name": "John Gibson",
-                "number": 36,
-                "pos": "g1",
-                "id": 1870,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": true
-            },
-            {
                 "name": "Daniil Tarasov",
                 "number": 80,
-                "pos": "g2",
+                "pos": "g1",
                 "id": 28133,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Michal Postava",
+                "number": 35,
+                "pos": "g2",
+                "id": 38462,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
         "ir": [
+            {
+                "name": "Albert Johansson",
+                "number": 20,
+                "pos": "ir1",
+                "id": 30661,
+                "ppUnit": null,
+                "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
             {
                 "name": "Marco Kasper",
                 "number": null,
@@ -8453,8 +8462,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:04:01.957Z",
-        "fetched_at": "2026-11-04T16:02:44Z"
+        "updated_at": "2026-11-04T22:10:52.665Z",
+        "fetched_at": "2026-11-04T23:02:42Z"
     },
     "UTA": {
         "f1": [
