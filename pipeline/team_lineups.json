@@ -1857,7 +1857,7 @@
                 "pos": "ir4",
                 "id": 27104,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             }
         ],
@@ -1939,7 +1939,7 @@
         ],
         "lineup_source": "Remy Mastey",
         "updated_at": "2026-11-05T15:55:42.022Z",
-        "fetched_at": "2026-11-05T16:02:27Z"
+        "fetched_at": "2026-11-05T20:02:26Z"
     },
     "EDM": {
         "f1": [
@@ -2687,7 +2687,7 @@
                 "number": 24,
                 "pos": "lw",
                 "id": 36773,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2703,26 +2703,26 @@
                 "movement": null
             },
             {
-                "name": "Braeden Bowman",
-                "number": 42,
+                "name": "Victor Olofsson",
+                "number": 95,
                 "pos": "rw",
-                "id": 30925,
-                "ppUnit": 2,
+                "id": 4718,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
             {
-                "name": "Raphael Lavoie",
-                "number": 36,
+                "name": "Braeden Bowman",
+                "number": 42,
                 "pos": "lw",
-                "id": 27948,
+                "id": 30925,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Nic Dowd",
@@ -2840,15 +2840,6 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Victor Olofsson",
-                "number": 95,
-                "pos": "ir2",
-                "id": 4718,
-                "ppUnit": null,
-                "injuryStatus": "out",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -2927,9 +2918,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:14:26.829Z",
-        "fetched_at": "2026-11-05T12:04:26Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-05T19:14:58.304Z",
+        "fetched_at": "2026-11-05T20:02:26Z"
     },
     "CHI": {
         "f1": [
