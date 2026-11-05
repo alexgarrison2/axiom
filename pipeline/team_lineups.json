@@ -2138,19 +2138,19 @@
         ],
         "g": [
             {
-                "name": "Tristan Jarry",
-                "number": 35,
+                "name": "Matt Tomkins",
+                "number": null,
                 "pos": "g1",
-                "id": 2626,
+                "id": 22713,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Matt Tomkins",
-                "number": null,
+                "name": "Tristan Jarry",
+                "number": 35,
                 "pos": "g2",
-                "id": 22713,
+                "id": 2626,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -2297,9 +2297,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:06:12.659Z",
-        "fetched_at": "2026-11-04T16:02:44Z"
+        "lineup_source": "Bob Stauffer",
+        "updated_at": "2026-11-05T17:14:37.123Z",
+        "fetched_at": "2026-11-05T18:02:25Z"
     },
     "VAN": {
         "f1": [
@@ -3622,8 +3622,8 @@
                 "id": 1236,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             }
         ],
         "f3": [
@@ -3803,15 +3803,6 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Evgeni Malkin",
-                "number": 71,
-                "pos": "ir5",
-                "id": 1236,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3891,8 +3882,8 @@
             }
         ],
         "lineup_source": "@PensInsideScoop",
-        "updated_at": "2026-11-04T19:47:07.263Z",
-        "fetched_at": "2026-11-04T20:02:41Z"
+        "updated_at": "2026-11-05T17:15:35.147Z",
+        "fetched_at": "2026-11-05T18:02:25Z"
     },
     "NYI": {
         "f1": [
@@ -6171,7 +6162,7 @@
                 "id": 2494,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -6412,6 +6403,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Joel Eriksson Ek",
+                "number": 14,
+                "pos": "ir6",
+                "id": 2494,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -6490,9 +6490,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:11:56.360Z",
-        "fetched_at": "2026-11-05T02:02:36Z"
+        "lineup_source": "Joe Smith",
+        "updated_at": "2026-11-05T17:39:49.417Z",
+        "fetched_at": "2026-11-05T18:02:25Z"
     },
     "WSH": {
         "f1": [
@@ -9483,14 +9483,14 @@
                 "movement": null
             },
             {
-                "name": "Jonatan Berggren",
-                "number": 29,
+                "name": "Aleksanteri Kaskimaki",
+                "number": null,
                 "pos": "rw",
-                "id": 29107,
+                "id": 36379,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f3": [
@@ -9509,7 +9509,7 @@
                 "number": 15,
                 "pos": "c",
                 "id": 35010,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -9569,14 +9569,14 @@
                 "movement": null
             },
             {
-                "name": "Brandon Carlo",
-                "number": 25,
+                "name": "Colton Parayko",
+                "number": 55,
                 "pos": "rd",
-                "id": 2692,
+                "id": 2531,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d2": [
@@ -9591,53 +9591,53 @@
                 "movement": null
             },
             {
-                "name": "Adam Ji\u0159\u00ed\u010dek",
-                "number": 36,
+                "name": "Brandon Carlo",
+                "number": 25,
                 "pos": "rd",
-                "id": 38135,
-                "ppUnit": 2,
+                "id": 2692,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d3": [
             {
-                "name": "Theo Lindstein",
-                "number": 41,
-                "pos": "ld",
-                "id": 38097,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Justin Barron",
                 "number": 72,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 29338,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Adam Ji\u0159\u00ed\u010dek",
+                "number": 36,
+                "pos": "rd",
+                "id": 38135,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "g": [
             {
-                "name": "Joel Hofer",
-                "number": 30,
+                "name": "Jordan Binnington",
+                "number": 50,
                 "pos": "g1",
-                "id": 28910,
+                "id": 1984,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Jordan Binnington",
-                "number": 50,
+                "name": "Joel Hofer",
+                "number": 30,
                 "pos": "g2",
-                "id": 1984,
+                "id": 28910,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -9660,15 +9660,6 @@
                 "id": 3907,
                 "ppUnit": null,
                 "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Colton Parayko",
-                "number": 55,
-                "pos": "ir6",
-                "id": 2531,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -9701,10 +9692,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Brandon Carlo",
-                "number": 25,
+                "name": "Colton Parayko",
+                "number": 55,
                 "pos": "sk4",
-                "id": 2692,
+                "id": 2531,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -9739,18 +9730,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Theo Lindstein",
-                "number": 41,
+                "name": "Brandon Carlo",
+                "number": 25,
                 "pos": "sk4",
-                "id": 38097,
+                "id": 2692,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:09:58.655Z",
-        "fetched_at": "2026-11-04T16:02:44Z"
+        "lineup_source": "Jeremy Rutherford",
+        "updated_at": "2026-11-05T17:31:35.319Z",
+        "fetched_at": "2026-11-05T18:02:25Z"
     },
     "CGY": {
         "f1": [
