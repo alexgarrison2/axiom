@@ -4234,7 +4234,7 @@
                 "number": 62,
                 "pos": "lw",
                 "id": 2679,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4276,7 +4276,7 @@
                 "number": 91,
                 "pos": "c",
                 "id": 1425,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4515,7 +4515,7 @@
                 "number": 62,
                 "pos": "sk2",
                 "id": 2679,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -4538,9 +4538,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:18:42.572Z",
-        "fetched_at": "2026-11-04T16:02:44Z"
+        "lineup_source": "Aarif Deen",
+        "updated_at": "2026-11-05T18:51:32.366Z",
+        "fetched_at": "2026-11-05T19:02:27Z"
     },
     "LAK": {
         "f1": [
@@ -9490,7 +9490,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f3": [
@@ -9569,28 +9569,6 @@
                 "movement": null
             },
             {
-                "name": "Colton Parayko",
-                "number": 55,
-                "pos": "rd",
-                "id": 2531,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "new"
-            }
-        ],
-        "d2": [
-            {
-                "name": "Cam Fowler",
-                "number": 17,
-                "pos": "ld",
-                "id": 16,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Brandon Carlo",
                 "number": 25,
                 "pos": "rd",
@@ -9598,10 +9576,10 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "up"
             }
         ],
-        "d3": [
+        "d2": [
             {
                 "name": "Justin Barron",
                 "number": 72,
@@ -9610,7 +9588,29 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            },
+            {
+                "name": "Colton Parayko",
+                "number": 55,
+                "pos": "rd",
+                "id": 2531,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Cam Fowler",
+                "number": 17,
+                "pos": "ld",
+                "id": 16,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             },
             {
                 "name": "Adam Ji\u0159\u00ed\u010dek",
@@ -9620,7 +9620,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -9739,9 +9739,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jeremy Rutherford",
-        "updated_at": "2026-11-05T17:31:35.319Z",
-        "fetched_at": "2026-11-05T18:02:25Z"
+        "lineup_source": "Lou Korac",
+        "updated_at": "2026-11-05T18:25:37.043Z",
+        "fetched_at": "2026-11-05T19:02:27Z"
     },
     "CGY": {
         "f1": [
