@@ -51741,6 +51741,74 @@
     }
   },
   {
+    "gameId": 2026020249,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-04",
+    "homeTeam": "Kings",
+    "awayTeam": "Sharks",
+    "homeScore": 7,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 3.41,
+    "awayXg": 2.66,
+    "homeWinProb": 62.3,
+    "predictedWinner": "Kings",
+    "actualWinner": "Kings",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1421,
+    "logLoss": 0.4732,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-05T01:03:00Z",
+    "startUtc": "2026-11-05T03:00:00Z",
+    "marketHomeProb": 60.6,
+    "modelHomeProb": 62.7,
+    "homeOdds": -166.0,
+    "awayOdds": 140.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 62.7,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.501,
+        "ll": 0.6911,
+        "naive_ll": 0.6239,
+        "market_p": 0.4742
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.376,
+        "ll": 0.9782,
+        "naive_ll": 0.9934,
+        "market_p": 0.3696
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.429,
+        "ll": 0.8463,
+        "naive_ll": 0.8341,
+        "market_p": 0.4654
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.39,
+        "ll": 0.9416,
+        "naive_ll": 0.8895,
+        "market_p": 0.3772
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.585,
+        "ll": 0.5361,
+        "naive_ll": 0.5232,
+        "market_p": 0.5833
+      }
+    }
+  },
+  {
     "gameId": 2026020250,
     "season": "2026-27",
     "gameType": "02",
