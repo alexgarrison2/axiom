@@ -4924,14 +4924,14 @@
         ],
         "f3": [
             {
-                "name": "Sam Steel",
-                "number": 18,
+                "name": "Joel Kiviranta",
+                "number": 94,
                 "pos": "lw",
-                "id": 2663,
+                "id": 31187,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Justin Hryckowian",
@@ -4956,10 +4956,10 @@
         ],
         "f4": [
             {
-                "name": "Joel Kiviranta",
-                "number": 94,
+                "name": "David Perron",
+                "number": 57,
                 "pos": "lw",
-                "id": 31187,
+                "id": 1338,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4976,61 +4976,39 @@
                 "movement": null
             },
             {
-                "name": "David Perron",
-                "number": 57,
+                "name": "Colin Blackwell",
+                "number": 15,
                 "pos": "rw",
-                "id": 1338,
+                "id": 4822,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
-            {
-                "name": "Esa Lindell",
-                "number": 23,
-                "pos": "ld",
-                "id": 2517,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Miro Heiskanen",
-                "number": 4,
-                "pos": "rd",
-                "id": 2803,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
-            }
-        ],
-        "d2": [
             {
                 "name": "Thomas Harley",
                 "number": 55,
                 "pos": "ld",
                 "id": 29213,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Nils Lundkvist",
-                "number": 5,
+                "name": "Esa Lindell",
+                "number": 23,
                 "pos": "rd",
-                "id": 4821,
+                "id": 2517,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             }
         ],
-        "d3": [
+        "d2": [
             {
                 "name": "Lian Bichsel",
                 "number": 6,
@@ -5039,7 +5017,29 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Nils Lundkvist",
+                "number": 5,
+                "pos": "rd",
+                "id": 4821,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
                 "movement": null
+            }
+        ],
+        "d3": [
+            {
+                "name": "Trey Taylor",
+                "number": null,
+                "pos": "ld",
+                "id": 31852,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Tyler Myers",
@@ -5054,19 +5054,19 @@
         ],
         "g": [
             {
-                "name": "Jake Oettinger",
-                "number": 29,
+                "name": "Casey DeSmith",
+                "number": 1,
                 "pos": "g1",
-                "id": 2813,
+                "id": 2572,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Casey DeSmith",
-                "number": 1,
+                "name": "Jake Oettinger",
+                "number": 29,
                 "pos": "g2",
-                "id": 2572,
+                "id": 2813,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5105,7 +5105,7 @@
                 "number": 4,
                 "pos": "ir4",
                 "id": 2803,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -5130,19 +5130,19 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Thomas Harley",
-                "number": 55,
+                "name": "Esa Lindell",
+                "number": 23,
                 "pos": "sk3",
-                "id": 29213,
-                "ppUnit": 2,
+                "id": 2517,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Miro Heiskanen",
-                "number": 4,
+                "name": "Thomas Harley",
+                "number": 55,
                 "pos": "sk4",
-                "id": 2803,
+                "id": 29213,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5172,7 +5172,7 @@
                 "number": 5,
                 "pos": "sk3",
                 "id": 4821,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -5186,9 +5186,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-03)",
-        "updated_at": "2026-11-04T15:16:07.639Z",
-        "fetched_at": "2026-11-04T16:02:44Z"
+        "lineup_source": "Owen Newkirk",
+        "updated_at": "2026-11-05T21:04:47.002Z",
+        "fetched_at": "2026-11-05T22:02:29Z"
     },
     "TBL": {
         "f1": [
