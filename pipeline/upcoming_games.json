@@ -9,20 +9,20 @@
         "awayTeam": "Blue Jackets",
         "homeTeamAbbrev": "BUF",
         "awayTeamAbbrev": "CBJ",
-        "homeGoalieConfirmed": "Colten Ellis",
+        "homeGoalieConfirmed": "Ukko-Pekka Luukkonen",
         "homeGoalieStatus": "Unconfirmed",
         "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": true,
-        "homeGoalieAlt": "Ukko-Pekka Luukkonen",
-        "awayGoalieConfirmed": "Cam Talbot",
+        "homeGoalieConflict": false,
+        "homeGoalieAlt": null,
+        "awayGoalieConfirmed": "Jet Greaves",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
+        "awayGoalieConflict": true,
+        "awayGoalieAlt": "Cam Talbot",
         "tvNetwork": "",
         "tvDisplay": [
             {
-                "network": "CBJNHL",
+                "network": "CBJHN",
                 "market": "A",
                 "team": "CBJ",
                 "country": "US"
@@ -36,16 +36,6 @@
         ],
         "tvBroadcasts": [
             {
-                "network": "CBJNHL",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "CBJHN",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
                 "network": "SN+",
                 "market": "N",
                 "countryCode": "CA"
@@ -56,8 +46,18 @@
                 "countryCode": "CA"
             },
             {
+                "network": "CBJHN",
+                "market": "A",
+                "countryCode": "US"
+            },
+            {
                 "network": "MSG-B",
                 "market": "H",
+                "countryCode": "US"
+            },
+            {
+                "network": "CBJNHL",
+                "market": "A",
                 "countryCode": "US"
             }
         ]
@@ -93,8 +93,8 @@
         ],
         "tvBroadcasts": [
             {
-                "network": "MINNHL",
-                "market": "H",
+                "network": "NHLN",
+                "market": "N",
                 "countryCode": "US"
             },
             {
@@ -103,13 +103,13 @@
                 "countryCode": "US"
             },
             {
-                "network": "NHLN",
-                "market": "N",
+                "network": "NBCSCA",
+                "market": "A",
                 "countryCode": "US"
             },
             {
-                "network": "NBCSCA",
-                "market": "A",
+                "network": "MINNHL",
+                "market": "H",
                 "countryCode": "US"
             },
             {
@@ -137,8 +137,8 @@
         "awayGoalieConfirmed": "Lukas Dostal",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Ville Husso",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
@@ -245,16 +245,6 @@
         ],
         "tvBroadcasts": [
             {
-                "network": "STLNHL",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "BN+",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
                 "network": "NHLN",
                 "market": "N",
                 "countryCode": "US"
@@ -263,6 +253,16 @@
                 "network": "SN+",
                 "market": "N",
                 "countryCode": "CA"
+            },
+            {
+                "network": "BN+",
+                "market": "A",
+                "countryCode": "US"
+            },
+            {
+                "network": "STLNHL",
+                "market": "A",
+                "countryCode": "US"
             },
             {
                 "network": "SCRIPPS",
@@ -408,11 +408,6 @@
         ],
         "tvBroadcasts": [
             {
-                "network": "Mammoth+",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
                 "network": "NHLN",
                 "market": "N",
                 "countryCode": "US"
@@ -426,6 +421,11 @@
                 "network": "TVAS-D",
                 "market": "N",
                 "countryCode": "CA"
+            },
+            {
+                "network": "Mammoth+",
+                "market": "A",
+                "countryCode": "US"
             },
             {
                 "network": "Utah16",
@@ -511,18 +511,13 @@
                 "country": "US"
             },
             {
-                "network": "CARNHL",
+                "network": "HHN",
                 "market": "H",
                 "team": "CAR",
                 "country": "US"
             }
         ],
         "tvBroadcasts": [
-            {
-                "network": "CARNHL",
-                "market": "H",
-                "countryCode": "US"
-            },
             {
                 "network": "HHN",
                 "market": "H",
@@ -531,6 +526,11 @@
             {
                 "network": "CHSN",
                 "market": "A",
+                "countryCode": "US"
+            },
+            {
+                "network": "CARNHL",
+                "market": "H",
                 "countryCode": "US"
             }
         ]
@@ -612,18 +612,13 @@
                 "country": "US"
             },
             {
-                "network": "MINNHL",
+                "network": "Wild+",
                 "market": "H",
                 "team": "MIN",
                 "country": "US"
             }
         ],
         "tvBroadcasts": [
-            {
-                "network": "MINNHL",
-                "market": "H",
-                "countryCode": "US"
-            },
             {
                 "network": "Wild+",
                 "market": "H",
@@ -632,6 +627,11 @@
             {
                 "network": "The Spot",
                 "market": "A",
+                "countryCode": "US"
+            },
+            {
+                "network": "MINNHL",
+                "market": "H",
                 "countryCode": "US"
             }
         ]
