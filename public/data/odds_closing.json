@@ -8690,9 +8690,10 @@
   "away_abbrev": "CBJ",
   "source": "nhl_partner_draftkings",
   "sources": [
-   "nhl_partner_draftkings"
+   "nhl_partner_draftkings",
+   "bovada"
   ],
-  "fetched_at": "2026-11-06T18:02:10Z",
+  "fetched_at": "2026-11-06T19:02:15Z",
   "total_over": -102,
   "total_line": "6.5",
   "Sabres_puckline": 142,
@@ -8707,7 +8708,12 @@
   "Blue Jackets": 142,
   "home_ml": -170,
   "away_ml": 142,
-  "captured_at": "2026-11-06T18:02:10Z"
+  "Blue Jackets_1p_ml": 120,
+  "Sabres_1p_ml": -160,
+  "Blue Jackets_1p_three_way": 220,
+  "Sabres_1p_three_way": 147,
+  "1p_three_way_tie": 178,
+  "captured_at": "2026-11-06T19:02:15Z"
  },
  "2026020263": {
   "game_id": 2026020263,
@@ -8719,24 +8725,30 @@
   "away_abbrev": "SJS",
   "source": "nhl_partner_draftkings",
   "sources": [
-   "nhl_partner_draftkings"
+   "nhl_partner_draftkings",
+   "bovada"
   ],
-  "fetched_at": "2026-11-06T17:02:06Z",
-  "Wild_three_way": -155,
-  "total_over": 100,
+  "fetched_at": "2026-11-06T19:02:15Z",
+  "Wild_three_way": -160,
+  "total_over": -105,
   "total_line": "6.5",
-  "Wild_puckline": -105,
+  "Wild_puckline": -110,
   "Wild_puckline_spread": "-1.5",
-  "three_way_tie": 350,
+  "three_way_tie": 360,
   "Sharks_three_way": 300,
-  "total_under": -120,
-  "Sharks_puckline": -115,
+  "total_under": -115,
+  "Sharks_puckline": -110,
   "Sharks_puckline_spread": "+1.5",
   "Wild": -270,
   "Sharks": 220,
   "home_ml": -270,
   "away_ml": 220,
-  "captured_at": "2026-11-06T17:02:06Z"
+  "Sharks_1p_ml": 150,
+  "Wild_1p_ml": -200,
+  "Sharks_1p_three_way": 265,
+  "Wild_1p_three_way": 119,
+  "1p_three_way_tie": 185,
+  "captured_at": "2026-11-06T19:02:15Z"
  },
  "2026020264": {
   "game_id": 2026020264,
@@ -8748,9 +8760,10 @@
   "away_abbrev": "ANA",
   "source": "nhl_partner_draftkings",
   "sources": [
-   "nhl_partner_draftkings"
+   "nhl_partner_draftkings",
+   "bovada"
   ],
-  "fetched_at": "2026-11-06T18:40:28Z",
+  "fetched_at": "2026-11-06T19:02:15Z",
   "total_over": -105,
   "total_line": "6.5",
   "Flames_three_way": 110,
@@ -8765,7 +8778,12 @@
   "Ducks": 124,
   "home_ml": -148,
   "away_ml": 124,
-  "captured_at": "2026-11-06T18:40:28Z"
+  "Ducks_1p_ml": 100,
+  "Flames_1p_ml": -130,
+  "Ducks_1p_three_way": 193,
+  "Flames_1p_three_way": 165,
+  "1p_three_way_tie": 180,
+  "captured_at": "2026-11-06T19:02:15Z"
  },
  "2026020265": {
   "game_id": 2026020265,
