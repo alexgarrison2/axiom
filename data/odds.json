@@ -9,23 +9,29 @@
         "away_abbrev": "ANA",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-06T00:02:10Z",
+        "fetched_at": "2026-11-06T00:37:34Z",
         "Oilers_puckline": 124,
         "Oilers_puckline_spread": "-1.5",
         "total_over": -148,
         "total_line": "6.5",
         "Oilers_three_way": -120,
-        "three_way_tie": 360,
+        "three_way_tie": 350,
         "Ducks_puckline": -148,
         "Ducks_puckline_spread": "+1.5",
         "total_under": 124,
-        "Ducks_three_way": 215,
+        "Ducks_three_way": 220,
         "Oilers": -192,
         "Ducks": 160,
         "home_ml": -192,
-        "away_ml": 160
+        "away_ml": 160,
+        "Ducks_1p_ml": 120,
+        "Oilers_1p_ml": -160,
+        "Ducks_1p_three_way": 220,
+        "Oilers_1p_three_way": 133,
+        "1p_three_way_tie": 200
     },
     "2026020261": {
         "game_id": 2026020261,
@@ -37,9 +43,10 @@
         "away_abbrev": "NSH",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-05T23:02:04Z",
+        "fetched_at": "2026-11-06T00:37:34Z",
         "Avalanche_puckline": 114,
         "Avalanche_puckline_spread": "-1.5",
         "Avalanche_three_way": -130,
@@ -53,7 +60,12 @@
         "Avalanche": -218,
         "Predators": 180,
         "home_ml": -218,
-        "away_ml": 180
+        "away_ml": 180,
+        "Predators_1p_ml": 135,
+        "Avalanche_1p_ml": -180,
+        "Predators_1p_three_way": 240,
+        "Avalanche_1p_three_way": 130,
+        "1p_three_way_tie": 185
     },
     "2026020262": {
         "game_id": 2026020262,
@@ -63,18 +75,25 @@
         "away_team": "Blue Jackets",
         "home_abbrev": "BUF",
         "away_abbrev": "CBJ",
-        "source": "espn_draftkings",
+        "source": "bovada",
         "sources": [
-            "espn_draftkings"
+            "bovada"
         ],
-        "fetched_at": "2026-11-06T00:02:10Z",
-        "Sabres": -175,
-        "Blue Jackets": 145,
-        "home_ml": -175,
-        "away_ml": 145,
+        "fetched_at": "2026-11-06T00:37:34Z",
+        "Blue Jackets_puckline": -160,
+        "Blue Jackets_puckline_spread": "+1.5",
+        "Sabres_puckline": 135,
+        "Sabres_puckline_spread": "-1.5",
+        "total_over": 100,
         "total_line": "6.5",
-        "total_over": -102,
-        "total_under": -118
+        "total_under": -120,
+        "Sabres": -177,
+        "Blue Jackets": 153,
+        "home_ml": -177,
+        "away_ml": 153,
+        "Blue Jackets_1p_three_way": 220,
+        "Sabres_1p_three_way": 145,
+        "1p_three_way_tie": 180
     },
     "2026020263": {
         "game_id": 2026020263,
@@ -84,18 +103,30 @@
         "away_team": "Sharks",
         "home_abbrev": "MIN",
         "away_abbrev": "SJS",
-        "source": "espn_draftkings",
+        "source": "bovada",
         "sources": [
-            "espn_draftkings"
+            "bovada"
         ],
-        "fetched_at": "2026-11-05T23:02:04Z",
-        "Wild": -258,
-        "Sharks": 210,
-        "home_ml": -258,
-        "away_ml": 210,
-        "total_line": "6.5",
-        "total_over": 105,
-        "total_under": -125
+        "fetched_at": "2026-11-06T00:37:34Z",
+        "Sharks_puckline": -125,
+        "Sharks_puckline_spread": "+1.5",
+        "Wild_puckline": 105,
+        "Wild_puckline_spread": "-1.5",
+        "total_over": -125,
+        "total_line": "6.0",
+        "total_under": 105,
+        "Sharks_1p_ml": 150,
+        "Wild_1p_ml": -200,
+        "Wild": -260,
+        "Sharks": 215,
+        "home_ml": -260,
+        "away_ml": 215,
+        "Sharks_three_way": 305,
+        "Wild_three_way": -152,
+        "three_way_tie": 345,
+        "Sharks_1p_three_way": 255,
+        "Wild_1p_three_way": 125,
+        "1p_three_way_tie": 180
     },
     "2026020264": {
         "game_id": 2026020264,
@@ -105,17 +136,24 @@
         "away_team": "Ducks",
         "home_abbrev": "CGY",
         "away_abbrev": "ANA",
-        "source": "espn_draftkings",
+        "source": "bovada",
         "sources": [
-            "espn_draftkings"
+            "bovada"
         ],
-        "fetched_at": "2026-11-05T23:02:04Z",
+        "fetched_at": "2026-11-06T00:37:34Z",
+        "Ducks_puckline": -230,
+        "Ducks_puckline_spread": "+1.5",
+        "Flames_puckline": 190,
+        "Flames_puckline_spread": "-1.5",
+        "total_over": -103,
+        "total_line": "6.5",
+        "total_under": -117,
         "Flames": -122,
         "Ducks": 102,
         "home_ml": -122,
         "away_ml": 102,
-        "total_line": "6.5",
-        "total_over": -105,
-        "total_under": -115
+        "Ducks_1p_three_way": 190,
+        "Flames_1p_three_way": 165,
+        "1p_three_way_tie": 180
     }
 }
