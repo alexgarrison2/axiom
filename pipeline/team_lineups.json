@@ -3242,14 +3242,14 @@
     "PHI": {
         "f1": [
             {
-                "name": "Trevor Zegras",
-                "number": 46,
+                "name": "Tyson Foerster",
+                "number": 71,
                 "pos": "lw",
-                "id": 30202,
-                "ppUnit": 1,
+                "id": 29750,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Christian Dvorak",
@@ -3284,38 +3284,6 @@
                 "movement": null
             },
             {
-                "name": "Cole Knuble",
-                "number": 54,
-                "pos": "c",
-                "id": 33787,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Owen Tippett",
-                "number": 74,
-                "pos": "rw",
-                "id": 2786,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Tyson Foerster",
-                "number": 71,
-                "pos": "lw",
-                "id": 29750,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Noah Cates",
                 "number": 27,
                 "pos": "c",
@@ -3323,7 +3291,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Matvei Michkov",
@@ -3333,7 +3301,39 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Trevor Zegras",
+                "number": 46,
+                "pos": "lw",
+                "id": 30202,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Cole Knuble",
+                "number": 54,
+                "pos": "c",
+                "id": 33787,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Owen Tippett",
+                "number": 74,
+                "pos": "rw",
+                "id": 2786,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -3550,9 +3550,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-05)",
-        "updated_at": "2026-11-06T14:47:22.978Z",
-        "fetched_at": "2026-11-07T03:05:13Z"
+        "lineup_source": "Jackie Spiegel",
+        "updated_at": "2026-11-07T19:31:04.028Z",
+        "fetched_at": "2026-11-07T20:02:12Z"
     },
     "PIT": {
         "f1": [
@@ -4609,7 +4609,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Kenny Connors",
@@ -4619,7 +4619,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Joel Armia",
@@ -4629,7 +4629,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -4641,7 +4641,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Scott Laughton",
@@ -4651,7 +4651,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Alex Turcotte",
@@ -4661,7 +4661,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -4847,8 +4847,8 @@
             }
         ],
         "lineup_source": "Zach Dooley",
-        "updated_at": "2026-11-07T17:52:32.037Z",
-        "fetched_at": "2026-11-07T18:02:05Z"
+        "updated_at": "2026-11-07T19:29:12.612Z",
+        "fetched_at": "2026-11-07T20:02:12Z"
     },
     "DAL": {
         "f1": [
