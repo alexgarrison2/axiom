@@ -6786,14 +6786,14 @@
                 "movement": null
             },
             {
-                "name": "Adam Fantilli",
-                "number": 19,
+                "name": "Sean Monahan",
+                "number": 23,
                 "pos": "c",
-                "id": 33179,
-                "ppUnit": 1,
+                "id": 2138,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Kent Johnson",
@@ -6818,14 +6818,14 @@
                 "movement": null
             },
             {
-                "name": "Sean Monahan",
-                "number": 23,
+                "name": "Adam Fantilli",
+                "number": 19,
                 "pos": "c",
-                "id": 2138,
-                "ppUnit": 2,
+                "id": 33179,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Conor Garland",
@@ -6872,34 +6872,34 @@
         ],
         "f4": [
             {
-                "name": "Ryan Lomberg",
-                "number": 94,
-                "pos": "lw",
-                "id": 3905,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Luca Del Bel Belluz",
-                "number": 93,
-                "pos": "c",
-                "id": 30880,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Dmitri Voronkov",
                 "number": 10,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 31266,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Jack Williams",
+                "number": null,
+                "pos": "c",
+                "id": 38425,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
+                "name": "Steven Lorentz",
+                "number": 18,
+                "pos": "rw",
+                "id": 3916,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -7075,9 +7075,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-05)",
-        "updated_at": "2026-11-06T14:52:00.274Z",
-        "fetched_at": "2026-11-06T15:02:22Z"
+        "lineup_source": "Mark Scheig",
+        "updated_at": "2026-11-06T23:40:06.122Z",
+        "fetched_at": "2026-11-07T00:02:14Z"
     },
     "SJS": {
         "f1": [
@@ -9123,8 +9123,8 @@
                 "id": 36381,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Josh Norris",
@@ -9225,20 +9225,20 @@
         ],
         "d3": [
             {
-                "name": "Zach Metsa",
-                "number": 73,
+                "name": "Conor Timmins",
+                "number": 21,
                 "pos": "ld",
-                "id": 28387,
+                "id": 2797,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Louis Crevier",
-                "number": 46,
+                "name": "Zach Metsa",
+                "number": 73,
                 "pos": "rd",
-                "id": 29897,
+                "id": 28387,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -9276,15 +9276,6 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Conor Timmins",
-                "number": 21,
-                "pos": "ir2",
-                "id": 2797,
-                "ppUnit": null,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Alex Lyon",
                 "number": 34,
                 "pos": "ir3",
@@ -9294,18 +9285,9 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Jiri Kulich",
-                "number": 20,
-                "pos": "ir4",
-                "id": 36381,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Konsta Helenius",
                 "number": 94,
-                "pos": "ir5",
+                "pos": "ir4",
                 "id": 38139,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
@@ -9389,8 +9371,8 @@
             }
         ],
         "lineup_source": "Rachel Lenzi",
-        "updated_at": "2026-11-06T16:14:17.945Z",
-        "fetched_at": "2026-11-06T17:02:13Z"
+        "updated_at": "2026-11-06T23:38:46.668Z",
+        "fetched_at": "2026-11-07T00:02:14Z"
     },
     "STL": {
         "f1": [
