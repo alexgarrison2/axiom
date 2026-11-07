@@ -364,7 +364,7 @@
                 "number": 95,
                 "pos": "rw",
                 "id": 36428,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -382,24 +382,24 @@
                 "movement": null
             },
             {
-                "name": "Anton Lundell",
-                "number": 15,
+                "name": "Lars Eller",
+                "number": 20,
                 "pos": "c",
-                "id": 33026,
+                "id": 840,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Lars Eller",
-                "number": 20,
+                "name": "Cole Reinhardt",
+                "number": 23,
                 "pos": "rw",
-                "id": 840,
-                "ppUnit": 2,
+                "id": 28385,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -547,15 +547,24 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Anton Lundell",
+                "number": 15,
+                "pos": "ir4",
+                "id": 33026,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
             {
-                "name": "Anton Lundell",
-                "number": 15,
+                "name": "Sam Reinhart",
+                "number": 13,
                 "pos": "sk1",
-                "id": 33026,
-                "ppUnit": 2,
+                "id": 2364,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -625,9 +634,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-04)",
-        "updated_at": "2026-11-05T15:07:30.444Z",
-        "fetched_at": "2026-11-07T12:02:20Z"
+        "lineup_source": "Rob Darragh",
+        "updated_at": "2026-11-07T17:09:04.554Z",
+        "fetched_at": "2026-11-07T17:09:53Z"
     },
     "TOR": {
         "f1": [
@@ -6772,8 +6781,8 @@
             }
         ],
         "lineup_source": "Sammi Silber",
-        "updated_at": "2026-11-06T17:39:05.115Z",
-        "fetched_at": "2026-11-06T18:02:19Z"
+        "updated_at": "2026-11-07T17:06:47.236Z",
+        "fetched_at": "2026-11-07T17:09:53Z"
     },
     "CBJ": {
         "f1": [
