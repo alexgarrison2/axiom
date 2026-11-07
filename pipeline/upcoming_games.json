@@ -4,7 +4,7 @@
         "gameDate": "2026-11-07",
         "startTimeUTC": "2026-11-07T17:30:00Z",
         "gameType": 2,
-        "gameState": "CRIT",
+        "gameState": "OFF",
         "homeTeam": "Capitals",
         "awayTeam": "Panthers",
         "homeTeamAbbrev": "WSH",
@@ -57,7 +57,7 @@
         "gameDate": "2026-11-07",
         "startTimeUTC": "2026-11-07T18:00:00Z",
         "gameType": 2,
-        "gameState": "LIVE",
+        "gameState": "FINAL",
         "homeTeam": "Predators",
         "awayTeam": "Blues",
         "homeTeamAbbrev": "NSH",
@@ -127,8 +127,8 @@
         "awayGoalieConfirmed": "Joonas Korpisalo",
         "awayGoalieStatus": "Confirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Dylan Garand",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {
@@ -840,8 +840,8 @@
         "awayGoalieConfirmed": "Dan Vladar",
         "awayGoalieStatus": "Unconfirmed",
         "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": true,
-        "awayGoalieAlt": "Joseph Woll",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
         "tvNetwork": "",
         "tvDisplay": [
             {

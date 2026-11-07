@@ -6803,8 +6803,8 @@
                 "id": 2138,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "up"
+                "gameTimeDecision": true,
+                "movement": null
             },
             {
                 "name": "Kent Johnson",
@@ -6836,7 +6836,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Conor Garland",
@@ -6889,7 +6889,7 @@
                 "id": 31266,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -6900,7 +6900,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Steven Lorentz",
@@ -6910,7 +6910,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -7008,6 +7008,24 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Sean Monahan",
+                "number": 23,
+                "pos": "ir2",
+                "id": 2138,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Dmitri Voronkov",
+                "number": 10,
+                "pos": "ir3",
+                "id": 31266,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -7018,7 +7036,7 @@
                 "id": 2138,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Valeri Nichushkin",
@@ -7087,8 +7105,8 @@
             }
         ],
         "lineup_source": "Mark Scheig",
-        "updated_at": "2026-11-06T23:40:06.122Z",
-        "fetched_at": "2026-11-07T00:02:14Z"
+        "updated_at": "2026-11-07T15:07:44.323Z",
+        "fetched_at": "2026-11-07T21:04:59Z"
     },
     "SJS": {
         "f1": [
