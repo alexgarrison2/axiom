@@ -52595,5 +52595,73 @@
         "market_p": 0.3875
       }
     }
+  },
+  {
+    "gameId": 2026020262,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-06",
+    "homeTeam": "Sabres",
+    "awayTeam": "Blue Jackets",
+    "homeScore": 5,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 3.32,
+    "awayXg": 2.72,
+    "homeWinProb": 59.8,
+    "predictedWinner": "Sabres",
+    "actualWinner": "Sabres",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1616,
+    "logLoss": 0.5142,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-06T23:36:00Z",
+    "startUtc": "2026-11-07T00:00:00Z",
+    "marketHomeProb": 61.0,
+    "modelHomeProb": 59.5,
+    "homeOdds": -170.0,
+    "awayOdds": 142.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 59.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.479,
+        "ll": 0.7361,
+        "naive_ll": 0.6719,
+        "market_p": 0.4959
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.357,
+        "ll": 1.03,
+        "naive_ll": 1.06,
+        "market_p": 0.3895
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.424,
+        "ll": 0.858,
+        "naive_ll": 0.8435,
+        "market_p": 0.4722
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.384,
+        "ll": 0.9571,
+        "naive_ll": 0.9251,
+        "market_p": 0.3731
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.574,
+        "ll": 0.5551,
+        "naive_ll": 0.5557,
+        "market_p": 0.5833
+      }
+    }
   }
 ]
