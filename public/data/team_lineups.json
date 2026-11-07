@@ -184,14 +184,14 @@
                 "movement": null
             },
             {
-                "name": "Juuso Valimaki",
-                "number": 8,
+                "name": "Alexander Nikishin",
+                "number": 21,
                 "pos": "rd",
-                "id": 2790,
+                "id": 32897,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             }
         ],
         "g": [
@@ -301,9 +301,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-05)",
-        "updated_at": "2026-11-06T14:45:50.029Z",
-        "fetched_at": "2026-11-07T03:05:13Z"
+        "lineup_source": "Walt Ruff",
+        "updated_at": "2026-11-07T15:36:28.193Z",
+        "fetched_at": "2026-11-07T16:02:22Z"
     },
     "FLA": {
         "f1": [
@@ -1382,14 +1382,14 @@
                 "movement": null
             },
             {
-                "name": "James Hagens",
-                "number": 44,
+                "name": "Michael Eyssimont",
+                "number": 81,
                 "pos": "rw",
-                "id": 37375,
+                "id": 4693,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -1510,6 +1510,17 @@
                 "gameTimeDecision": false
             }
         ],
+        "ir": [
+            {
+                "name": "James Hagens",
+                "number": 44,
+                "pos": "ir1",
+                "id": 37375,
+                "ppUnit": null,
+                "injuryStatus": "ir",
+                "gameTimeDecision": false
+            }
+        ],
         "pk1": [
             {
                 "name": "Fraser Minten",
@@ -1586,9 +1597,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-05)",
-        "updated_at": "2026-11-06T14:48:57.657Z",
-        "fetched_at": "2026-11-07T02:02:16Z"
+        "lineup_source": "DFO Projections",
+        "updated_at": "2026-11-07T15:09:39.993Z",
+        "fetched_at": "2026-11-07T16:02:22Z"
     },
     "NYR": {
         "f1": [
@@ -7915,22 +7926,22 @@
         ],
         "g": [
             {
-                "name": "Linus Ullmark",
-                "number": 35,
-                "pos": "g1",
-                "id": 2534,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": true
-            },
-            {
                 "name": "Samuel Ersson",
                 "number": 33,
-                "pos": "g2",
+                "pos": "g1",
                 "id": 29149,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Linus Ullmark",
+                "number": 35,
+                "pos": "g2",
+                "id": 2534,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": true
             }
         ],
         "ir": [
@@ -8058,7 +8069,7 @@
         ],
         "lineup_source": "Last Game (2026-11-04)",
         "updated_at": "2026-11-07T11:57:03.858Z",
-        "fetched_at": "2026-11-07T12:02:20Z"
+        "fetched_at": "2026-11-07T16:02:22Z"
     },
     "DET": {
         "f1": [
