@@ -1620,7 +1620,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mika Zibanejad",
@@ -1672,7 +1672,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -1704,7 +1704,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -1785,14 +1785,14 @@
         ],
         "d3": [
             {
-                "name": "Alberts Smits",
-                "number": 12,
+                "name": "Matthew Robertson",
+                "number": 29,
                 "pos": "ld",
-                "id": 38784,
+                "id": 29499,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Scott Morrow",
@@ -1860,6 +1860,15 @@
                 "id": 27104,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Alberts Smits",
+                "number": 12,
+                "pos": "ir5",
+                "id": 38784,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -1941,7 +1950,7 @@
         ],
         "lineup_source": "Vince Mercogliano",
         "updated_at": "2026-11-07T21:37:17.681Z",
-        "fetched_at": "2026-11-07T22:02:01Z"
+        "fetched_at": "2026-11-07T23:01:49Z"
     },
     "EDM": {
         "f1": [
