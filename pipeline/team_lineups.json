@@ -366,7 +366,7 @@
                 "id": 36428,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -399,7 +399,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -636,7 +636,7 @@
         ],
         "lineup_source": "Rob Darragh",
         "updated_at": "2026-11-07T17:09:04.554Z",
-        "fetched_at": "2026-11-07T17:09:53Z"
+        "fetched_at": "2026-11-07T19:02:20Z"
     },
     "TOR": {
         "f1": [
@@ -3557,14 +3557,14 @@
     "PIT": {
         "f1": [
             {
-                "name": "Tommy Novak",
-                "number": 18,
+                "name": "Evgeni Malkin",
+                "number": 71,
                 "pos": "lw",
-                "id": 26595,
-                "ppUnit": 1,
+                "id": 1236,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sidney Crosby",
@@ -3589,14 +3589,14 @@
         ],
         "f2": [
             {
-                "name": "Egor Chinakhov",
-                "number": 59,
+                "name": "Tommy Novak",
+                "number": 18,
                 "pos": "lw",
-                "id": 30655,
-                "ppUnit": 2,
+                "id": 26595,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Ben Kindel",
@@ -3609,10 +3609,10 @@
                 "movement": null
             },
             {
-                "name": "Evgeni Malkin",
-                "number": 71,
+                "name": "Egor Chinakhov",
+                "number": 59,
                 "pos": "rw",
-                "id": 1236,
+                "id": 30655,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -3695,14 +3695,14 @@
                 "movement": null
             },
             {
-                "name": "Erik Karlsson",
-                "number": 65,
+                "name": "Kaedan Korczak",
+                "number": 6,
                 "pos": "rd",
-                "id": 1087,
-                "ppUnit": 1,
+                "id": 28524,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -3717,14 +3717,14 @@
                 "movement": null
             },
             {
-                "name": "Kaedan Korczak",
-                "number": 6,
+                "name": "Erik Karlsson",
+                "number": 65,
                 "pos": "rd",
-                "id": 28524,
-                "ppUnit": null,
+                "id": 1087,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d3": [
@@ -3876,7 +3876,7 @@
         ],
         "lineup_source": "Last Game (2026-11-05)",
         "updated_at": "2026-11-06T14:49:59.523Z",
-        "fetched_at": "2026-11-07T12:02:20Z"
+        "fetched_at": "2026-11-07T19:02:20Z"
     },
     "NYI": {
         "f1": [
