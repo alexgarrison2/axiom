@@ -53526,5 +53526,66 @@
         "market_p": 0.4776
       }
     }
+  },
+  {
+    "gameId": 2026020276,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-07",
+    "homeTeam": "Oilers",
+    "awayTeam": "Canucks",
+    "homeScore": 4,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 4.56,
+    "awayXg": 2.18,
+    "homeWinProb": 83.1,
+    "predictedWinner": "Oilers",
+    "actualWinner": "Oilers",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.0286,
+    "logLoss": 0.1851,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-08T02:02:00Z",
+    "startUtc": "2026-11-08T03:00:00Z",
+    "marketHomeProb": 77.4,
+    "modelHomeProb": 84.3,
+    "homeOdds": -375.0,
+    "awayOdds": 295.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 84.3,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.742,
+        "ll": 0.2984,
+        "naive_ll": 0.268,
+        "market_p": 0.671
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.626,
+        "ll": 0.4684,
+        "naive_ll": 0.4713,
+        "market_p": 0.5883
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.461,
+        "ll": 0.7744,
+        "naive_ll": 0.7608,
+        "market_p": 0.4232
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.279,
+        "ll": 1.2765,
+        "naive_ll": 1.343,
+        "market_p": null
+      }
+    }
   }
 ]
