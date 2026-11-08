@@ -360,14 +360,14 @@
                 "movement": null
             },
             {
-                "name": "Anton Lundell",
-                "number": 15,
+                "name": "Lars Eller",
+                "number": 20,
                 "pos": "rw",
-                "id": 33026,
+                "id": 840,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": "up"
             }
         ],
         "f3": [
@@ -382,14 +382,14 @@
                 "movement": null
             },
             {
-                "name": "Lars Eller",
-                "number": 20,
+                "name": "Anton Lundell",
+                "number": 15,
                 "pos": "c",
-                "id": 840,
+                "id": 33026,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Cole Reinhardt",
@@ -549,15 +549,6 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Anton Lundell",
-                "number": 15,
-                "pos": "ir4",
-                "id": 33026,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Sandis Vilmanis",
                 "number": 95,
                 "pos": "ir5",
@@ -611,7 +602,7 @@
                 "number": 20,
                 "pos": "sk1",
                 "id": 840,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -643,9 +634,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-08T15:02:59.925Z",
-        "fetched_at": "2026-11-08T16:01:55Z"
+        "lineup_source": "Rob Darragh",
+        "updated_at": "2026-11-08T17:39:02.371Z",
+        "fetched_at": "2026-11-08T18:01:53Z"
     },
     "TOR": {
         "f1": [
@@ -1357,14 +1348,14 @@
         ],
         "f2": [
             {
-                "name": "Matthew Poitras",
-                "number": 51,
+                "name": "Michael Eyssimont",
+                "number": 81,
                 "pos": "lw",
-                "id": 33196,
-                "ppUnit": 2,
+                "id": 4693,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Fraser Minten",
@@ -1431,14 +1422,14 @@
                 "movement": null
             },
             {
-                "name": "Michael Eyssimont",
-                "number": 81,
+                "name": "Matthew Poitras",
+                "number": 51,
                 "pos": "c",
-                "id": 4693,
-                "ppUnit": null,
+                "id": 33196,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "down"
             },
             {
                 "name": "Mark Kastelic",
@@ -1624,9 +1615,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-08T16:51:50.056Z",
-        "fetched_at": "2026-11-08T17:01:54Z"
+        "lineup_source": "Russ Macias",
+        "updated_at": "2026-11-08T17:37:45.822Z",
+        "fetched_at": "2026-11-08T18:01:53Z"
     },
     "NYR": {
         "f1": [
