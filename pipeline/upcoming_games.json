@@ -1,624 +1,5 @@
 [
     {
-        "id": 2026020265,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-07T17:30:00Z",
-        "gameType": 2,
-        "gameState": "OFF",
-        "homeTeam": "Capitals",
-        "awayTeam": "Panthers",
-        "homeTeamAbbrev": "WSH",
-        "awayTeamAbbrev": "FLA",
-        "homeGoalieConfirmed": "Logan Thompson",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Akira Schmid",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "SCRIPPS",
-                "market": "A",
-                "team": "FLA",
-                "country": "US"
-            },
-            {
-                "network": "MNMT",
-                "market": "H",
-                "team": "WSH",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "SN",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "MNMT",
-                "market": "H",
-                "countryCode": "US"
-            },
-            {
-                "network": "SCRIPPS",
-                "market": "A",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020266,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-07T18:00:00Z",
-        "gameType": 2,
-        "gameState": "OFF",
-        "homeTeam": "Predators",
-        "awayTeam": "Blues",
-        "homeTeamAbbrev": "NSH",
-        "awayTeamAbbrev": "STL",
-        "homeGoalieConfirmed": "Juuse Saros",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Joel Hofer",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "NHLN",
-        "tvDisplay": [
-            {
-                "network": "NHLN",
-                "market": "N",
-                "team": null,
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "NHLN",
-                "market": "N",
-                "countryCode": "US"
-            },
-            {
-                "network": "SN+",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "BN+",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "STLNHL",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "SCRIPPS",
-                "market": "H",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020267,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-07T22:00:00Z",
-        "gameType": 2,
-        "gameState": "OFF",
-        "homeTeam": "Kraken",
-        "awayTeam": "Rangers",
-        "homeTeamAbbrev": "SEA",
-        "awayTeamAbbrev": "NYR",
-        "homeGoalieConfirmed": "Joey Daccord",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Joonas Korpisalo",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "MSG 2",
-                "market": "A",
-                "team": "NYR",
-                "country": "US"
-            },
-            {
-                "network": "Prime Video",
-                "market": "H",
-                "team": "SEA",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "Prime Video",
-                "market": "H",
-                "countryCode": "US"
-            },
-            {
-                "network": "MSG 2",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "MSG",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "KONG",
-                "market": "H",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020268,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T00:00:00Z",
-        "gameType": 2,
-        "gameState": "FINAL",
-        "homeTeam": "Maple Leafs",
-        "awayTeam": "Canadiens",
-        "homeTeamAbbrev": "TOR",
-        "awayTeamAbbrev": "MTL",
-        "homeGoalieConfirmed": "Sergei Bobrovsky",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Jacob Fowler",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "SN",
-                "market": "N",
-                "team": null,
-                "country": "CA"
-            },
-            {
-                "network": "TVAS",
-                "market": "N",
-                "team": null,
-                "country": "CA"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "SN",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "TVAS",
-                "market": "N",
-                "countryCode": "CA"
-            }
-        ]
-    },
-    {
-        "id": 2026020269,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T00:00:00Z",
-        "gameType": 2,
-        "gameState": "FINAL",
-        "homeTeam": "Senators",
-        "awayTeam": "Mammoth",
-        "homeTeamAbbrev": "OTT",
-        "awayTeamAbbrev": "UTA",
-        "homeGoalieConfirmed": "Samuel Ersson",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Karel Vejmelka",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "NHLN",
-        "tvDisplay": [
-            {
-                "network": "NHLN",
-                "market": "N",
-                "team": null,
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "NHLN",
-                "market": "N",
-                "countryCode": "US"
-            },
-            {
-                "network": "SN1",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "TVAS-D",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "Mammoth+",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "Utah16",
-                "market": "A",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020270,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T00:00:00Z",
-        "gameType": 2,
-        "gameState": "FINAL",
-        "homeTeam": "Islanders",
-        "awayTeam": "Devils",
-        "homeTeamAbbrev": "NYI",
-        "awayTeamAbbrev": "NJD",
-        "homeGoalieConfirmed": "Ilya Sorokin",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Jake Allen",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "MSGSN2",
-                "market": "A",
-                "team": "NJD",
-                "country": "US"
-            },
-            {
-                "network": "MSGSN",
-                "market": "H",
-                "team": "NYI",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "MSGSN2",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "MSGSN",
-                "market": "H",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020271,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T01:00:00Z",
-        "gameType": 2,
-        "gameState": "LIVE",
-        "homeTeam": "Hurricanes",
-        "awayTeam": "Blackhawks",
-        "homeTeamAbbrev": "CAR",
-        "awayTeamAbbrev": "CHI",
-        "homeGoalieConfirmed": "Pyotr Kochetkov",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Spencer Knight",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "CHSN",
-                "market": "A",
-                "team": "CHI",
-                "country": "US"
-            },
-            {
-                "network": "HHN",
-                "market": "H",
-                "team": "CAR",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "HHN",
-                "market": "H",
-                "countryCode": "US"
-            },
-            {
-                "network": "CHSN",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "CARNHL",
-                "market": "H",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020272,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T01:00:00Z",
-        "gameType": 2,
-        "gameState": "LIVE",
-        "homeTeam": "Stars",
-        "awayTeam": "Sharks",
-        "homeTeamAbbrev": "DAL",
-        "awayTeamAbbrev": "SJS",
-        "homeGoalieConfirmed": "Jake Oettinger",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Alex Nedeljkovic",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "NBCSCA",
-                "market": "A",
-                "team": "SJS",
-                "country": "US"
-            },
-            {
-                "network": "Prime Video",
-                "market": "H",
-                "team": "DAL",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "Prime Video",
-                "market": "H",
-                "countryCode": "US"
-            },
-            {
-                "network": "NBCSCA",
-                "market": "A",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020273,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T01:00:00Z",
-        "gameType": 2,
-        "gameState": "LIVE",
-        "homeTeam": "Wild",
-        "awayTeam": "Lightning",
-        "homeTeamAbbrev": "MIN",
-        "awayTeamAbbrev": "TBL",
-        "homeGoalieConfirmed": "Calvin Pickard",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Dennis Hildeby",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "The Spot",
-                "market": "A",
-                "team": "TBL",
-                "country": "US"
-            },
-            {
-                "network": "Wild+",
-                "market": "H",
-                "team": "MIN",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "Wild+",
-                "market": "H",
-                "countryCode": "US"
-            },
-            {
-                "network": "The Spot",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "MINNHL",
-                "market": "H",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020274,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T02:00:00Z",
-        "gameType": 2,
-        "gameState": "LIVE",
-        "homeTeam": "Avalanche",
-        "awayTeam": "Red Wings",
-        "homeTeamAbbrev": "COL",
-        "awayTeamAbbrev": "DET",
-        "homeGoalieConfirmed": "Mackenzie Blackwood",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Daniil Tarasov",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "DSN",
-                "market": "A",
-                "team": "DET",
-                "country": "US"
-            },
-            {
-                "network": "ALT",
-                "market": "H",
-                "team": "COL",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "DSN",
-                "market": "A",
-                "countryCode": "US"
-            },
-            {
-                "network": "ALT",
-                "market": "H",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020275,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T02:00:00Z",
-        "gameType": 2,
-        "gameState": "LIVE",
-        "homeTeam": "Kings",
-        "awayTeam": "Penguins",
-        "homeTeamAbbrev": "LAK",
-        "awayTeamAbbrev": "PIT",
-        "homeGoalieConfirmed": "Darcy Kuemper",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Sergei Murashov",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "SN-PIT",
-                "market": "A",
-                "team": "PIT",
-                "country": "US"
-            },
-            {
-                "network": "ABTV ",
-                "market": "H",
-                "team": "LAK",
-                "country": "US"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "ABTV ",
-                "market": "H",
-                "countryCode": "US"
-            },
-            {
-                "network": "SN-PIT",
-                "market": "A",
-                "countryCode": "US"
-            }
-        ]
-    },
-    {
-        "id": 2026020276,
-        "gameDate": "2026-11-07",
-        "startTimeUTC": "2026-11-08T03:00:00Z",
-        "gameType": 2,
-        "gameState": "PRE",
-        "homeTeam": "Oilers",
-        "awayTeam": "Canucks",
-        "homeTeamAbbrev": "EDM",
-        "awayTeamAbbrev": "VAN",
-        "homeGoalieConfirmed": "Devon Levi",
-        "homeGoalieStatus": "Confirmed",
-        "homeGoalieSource": "dailyfaceoff",
-        "homeGoalieConflict": false,
-        "homeGoalieAlt": null,
-        "awayGoalieConfirmed": "Leevi Merilainen",
-        "awayGoalieStatus": "Confirmed",
-        "awayGoalieSource": "dailyfaceoff",
-        "awayGoalieConflict": false,
-        "awayGoalieAlt": null,
-        "tvNetwork": "",
-        "tvDisplay": [
-            {
-                "network": "SN",
-                "market": "N",
-                "team": null,
-                "country": "CA"
-            },
-            {
-                "network": "TVAS",
-                "market": "N",
-                "team": null,
-                "country": "CA"
-            }
-        ],
-        "tvBroadcasts": [
-            {
-                "network": "SN",
-                "market": "N",
-                "countryCode": "CA"
-            },
-            {
-                "network": "TVAS",
-                "market": "N",
-                "countryCode": "CA"
-            }
-        ]
-    },
-    {
         "id": 2026020277,
         "gameDate": "2026-11-08",
         "startTimeUTC": "2026-11-08T18:00:00Z",
@@ -912,6 +293,148 @@
             },
             {
                 "network": "SN-PIT",
+                "market": "A",
+                "countryCode": "US"
+            }
+        ]
+    },
+    {
+        "id": 2026020283,
+        "gameDate": "2026-11-09",
+        "startTimeUTC": "2026-11-10T01:00:00Z",
+        "gameType": 2,
+        "gameState": "FUT",
+        "homeTeam": "Oilers",
+        "awayTeam": "Rangers",
+        "homeTeamAbbrev": "EDM",
+        "awayTeamAbbrev": "NYR",
+        "homeGoalieConfirmed": "Devon Levi",
+        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieSource": "dailyfaceoff",
+        "homeGoalieConflict": false,
+        "homeGoalieAlt": null,
+        "awayGoalieConfirmed": "Dylan Garand",
+        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieSource": "dailyfaceoff",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
+        "tvNetwork": "",
+        "tvDisplay": [
+            {
+                "network": "MSG",
+                "market": "A",
+                "team": "NYR",
+                "country": "US"
+            }
+        ],
+        "tvBroadcasts": [
+            {
+                "network": "SN+",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "TVAS",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "MSG",
+                "market": "A",
+                "countryCode": "US"
+            }
+        ]
+    },
+    {
+        "id": 2026020284,
+        "gameDate": "2026-11-09",
+        "startTimeUTC": "2026-11-10T02:30:00Z",
+        "gameType": 2,
+        "gameState": "FUT",
+        "homeTeam": "Canucks",
+        "awayTeam": "Flyers",
+        "homeTeamAbbrev": "VAN",
+        "awayTeamAbbrev": "PHI",
+        "homeGoalieConfirmed": "Kevin Lankinen",
+        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieSource": "dailyfaceoff",
+        "homeGoalieConflict": true,
+        "homeGoalieAlt": "Leevi Merilainen",
+        "awayGoalieConfirmed": "Dan Vladar",
+        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieSource": "dailyfaceoff",
+        "awayGoalieConflict": true,
+        "awayGoalieAlt": "Joseph Woll",
+        "tvNetwork": "",
+        "tvDisplay": [
+            {
+                "network": "NBCSP",
+                "market": "A",
+                "team": "PHI",
+                "country": "US"
+            }
+        ],
+        "tvBroadcasts": [
+            {
+                "network": "SN+",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "NBCSP",
+                "market": "A",
+                "countryCode": "US"
+            }
+        ]
+    },
+    {
+        "id": 2026020285,
+        "gameDate": "2026-11-09",
+        "startTimeUTC": "2026-11-10T03:00:00Z",
+        "gameType": 2,
+        "gameState": "FUT",
+        "homeTeam": "Sharks",
+        "awayTeam": "Islanders",
+        "homeTeamAbbrev": "SJS",
+        "awayTeamAbbrev": "NYI",
+        "homeGoalieConfirmed": "Alex Nedeljkovic",
+        "homeGoalieStatus": "Unconfirmed",
+        "homeGoalieSource": "dailyfaceoff",
+        "homeGoalieConflict": true,
+        "homeGoalieAlt": "Yaroslav Askarov",
+        "awayGoalieConfirmed": "Ilya Sorokin",
+        "awayGoalieStatus": "Unconfirmed",
+        "awayGoalieSource": "dailyfaceoff",
+        "awayGoalieConflict": false,
+        "awayGoalieAlt": null,
+        "tvNetwork": "",
+        "tvDisplay": [
+            {
+                "network": "MSGSN",
+                "market": "A",
+                "team": "NYI",
+                "country": "US"
+            },
+            {
+                "network": "NBCSCA",
+                "market": "H",
+                "team": "SJS",
+                "country": "US"
+            }
+        ],
+        "tvBroadcasts": [
+            {
+                "network": "TVAS",
+                "market": "N",
+                "countryCode": "CA"
+            },
+            {
+                "network": "NBCSCA",
+                "market": "H",
+                "countryCode": "US"
+            },
+            {
+                "network": "MSGSN",
                 "market": "A",
                 "countryCode": "US"
             }
