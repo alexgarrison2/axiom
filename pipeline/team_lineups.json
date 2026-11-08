@@ -791,24 +791,24 @@
         ],
         "d2": [
             {
-                "name": "Morgan Rielly",
-                "number": 44,
+                "name": "Cole McWard",
+                "number": null,
                 "pos": "ld",
-                "id": 1935,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
-            },
-            {
-                "name": "Chris Tanev",
-                "number": 8,
-                "pos": "rd",
-                "id": 1494,
+                "id": 30512,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
+            },
+            {
+                "name": "Dakota Mermis",
+                "number": 36,
+                "pos": "rd",
+                "id": 2914,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "d3": [
@@ -827,7 +827,7 @@
                 "number": 28,
                 "pos": "rd",
                 "id": 2702,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -895,7 +895,16 @@
                 "number": 44,
                 "pos": "ir5",
                 "id": 1935,
-                "ppUnit": 2,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Chris Tanev",
+                "number": 8,
+                "pos": "ir6",
+                "id": 1494,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -929,10 +938,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Chris Tanev",
-                "number": 8,
+                "name": "Dakota Mermis",
+                "number": 36,
                 "pos": "sk4",
-                "id": 1494,
+                "id": 2914,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -971,14 +980,14 @@
                 "number": 28,
                 "pos": "sk4",
                 "id": 2702,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-08T16:11:53.670Z",
-        "fetched_at": "2026-11-08T17:01:54Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-08T22:04:35.607Z",
+        "fetched_at": "2026-11-08T23:02:03Z"
     },
     "MTL": {
         "f1": [
@@ -5238,14 +5247,14 @@
                 "movement": null
             },
             {
-                "name": "Gage Goncalves",
-                "number": 93,
+                "name": "Yanni Gourde",
+                "number": 37,
                 "pos": "rw",
-                "id": 32521,
+                "id": 2566,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f3": [
@@ -5297,16 +5306,6 @@
                 "pos": "c",
                 "id": 31505,
                 "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Scott Sabourin",
-                "number": 46,
-                "pos": "rw",
-                "id": 2171,
-                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5368,14 +5367,14 @@
                 "movement": null
             },
             {
-                "name": "J.J. Moser",
-                "number": 90,
+                "name": "Maxwell Crozier",
+                "number": 24,
                 "pos": "rd",
-                "id": 34680,
+                "id": 28863,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -5395,17 +5394,6 @@
                 "id": 36477,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
-            }
-        ],
-        "ir": [
-            {
-                "name": "Yanni Gourde",
-                "number": 37,
-                "pos": "ir1",
-                "id": 2566,
-                "ppUnit": null,
-                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -5485,9 +5473,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-08T15:43:30.962Z",
-        "fetched_at": "2026-11-08T16:01:55Z"
+        "lineup_source": "Gabby Shirley",
+        "updated_at": "2026-11-08T22:41:48.253Z",
+        "fetched_at": "2026-11-08T23:02:03Z"
     },
     "ANA": {
         "f1": [
@@ -9047,9 +9035,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-05)",
-        "updated_at": "2026-11-06T14:54:57.477Z",
-        "fetched_at": "2026-11-07T17:02:22Z"
+        "lineup_source": "Winnipeg Sports Talk",
+        "updated_at": "2026-11-08T22:43:55.424Z",
+        "fetched_at": "2026-11-08T23:02:03Z"
     },
     "BUF": {
         "f1": [
