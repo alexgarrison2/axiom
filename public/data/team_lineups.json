@@ -5889,16 +5889,6 @@
         ],
         "f3": [
             {
-                "name": "Anthony Mantha",
-                "number": 39,
-                "pos": "lw",
-                "id": 2151,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Evan Rodrigues",
                 "number": 17,
                 "pos": "c",
@@ -5935,7 +5925,7 @@
                 "number": 12,
                 "pos": "c",
                 "id": 2785,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -6046,6 +6036,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Anthony Mantha",
+                "number": 39,
+                "pos": "ir2",
+                "id": 2151,
+                "ppUnit": null,
+                "injuryStatus": "out",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -6124,9 +6123,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-08T15:13:27.671Z",
-        "fetched_at": "2026-11-08T16:01:55Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-08T21:52:06.152Z",
+        "fetched_at": "2026-11-08T22:02:10Z"
     },
     "MIN": {
         "f1": [
