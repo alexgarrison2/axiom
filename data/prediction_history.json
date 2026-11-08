@@ -53587,5 +53587,73 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020277,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-08",
+    "homeTeam": "Bruins",
+    "awayTeam": "Panthers",
+    "homeScore": 4,
+    "awayScore": 1,
+    "decision": "REG",
+    "homeXg": 3.51,
+    "awayXg": 2.69,
+    "homeWinProb": 63.2,
+    "predictedWinner": "Bruins",
+    "actualWinner": "Bruins",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1354,
+    "logLoss": 0.4589,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-08T17:24:00Z",
+    "startUtc": "2026-11-08T18:00:00Z",
+    "marketHomeProb": 57.7,
+    "modelHomeProb": 64.6,
+    "homeOdds": -148.0,
+    "awayOdds": 124.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 64.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.512,
+        "ll": 0.6694,
+        "naive_ll": 0.605,
+        "market_p": 0.4481
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.384,
+        "ll": 0.9571,
+        "naive_ll": 0.9624,
+        "market_p": 0.346
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.545,
+        "ll": 0.607,
+        "naive_ll": 0.61,
+        "market_p": 0.5454
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.4,
+        "ll": 0.9163,
+        "naive_ll": 0.8715,
+        "market_p": 0.3536
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.595,
+        "ll": 0.5192,
+        "naive_ll": 0.5122,
+        "market_p": 0.5447
+      }
+    }
   }
 ]
