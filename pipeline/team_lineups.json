@@ -2985,7 +2985,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Frank Nazar",
@@ -3017,7 +3017,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Ryan Donato",
@@ -3027,7 +3027,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -3049,7 +3049,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Dillon Boucher",
@@ -3115,7 +3115,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Sam Rinzel",
@@ -3244,9 +3244,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Ben Pope",
-        "updated_at": "2026-11-07T16:13:29.983Z",
-        "fetched_at": "2026-11-07T17:02:22Z"
+        "lineup_source": "Mark Lazerus",
+        "updated_at": "2026-11-08T00:38:24.996Z",
+        "fetched_at": "2026-11-08T01:00:13Z"
     },
     "PHI": {
         "f1": [
@@ -4933,7 +4933,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Justin Hryckowian",
@@ -4965,7 +4965,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Radek Faksa",
@@ -5189,8 +5189,8 @@
             }
         ],
         "lineup_source": "Robert Tiffin",
-        "updated_at": "2026-11-07T16:38:02.472Z",
-        "fetched_at": "2026-11-07T17:02:22Z"
+        "updated_at": "2026-11-08T00:39:19.661Z",
+        "fetched_at": "2026-11-08T01:00:13Z"
     },
     "TBL": {
         "f1": [
@@ -5309,28 +5309,38 @@
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Scott Sabourin",
+                "number": 46,
+                "pos": "rw",
+                "id": 2171,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "d1": [
             {
-                "name": "Victor Hedman",
-                "number": 77,
+                "name": "Ryan McDonagh",
+                "number": 27,
                 "pos": "ld",
-                "id": 1369,
-                "ppUnit": 2,
+                "id": 1048,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "up"
             },
             {
-                "name": "Maxwell Crozier",
-                "number": 24,
+                "name": "Erik Cernak",
+                "number": 81,
                 "pos": "rd",
-                "id": 28863,
+                "id": 2749,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -5342,7 +5352,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Charle-Edouard D'Astous",
@@ -5352,29 +5362,29 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Ryan McDonagh",
-                "number": 27,
+                "name": "Victor Hedman",
+                "number": 77,
                 "pos": "ld",
-                "id": 1048,
-                "ppUnit": null,
+                "id": 1369,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "down"
             },
             {
-                "name": "Erik Cernak",
-                "number": 81,
+                "name": "J.J. Moser",
+                "number": 90,
                 "pos": "rd",
-                "id": 2749,
+                "id": 34680,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "new"
             }
         ],
         "g": [
@@ -5437,10 +5447,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Maxwell Crozier",
-                "number": 24,
+                "name": "Erik Cernak",
+                "number": 81,
                 "pos": "sk4",
-                "id": 28863,
+                "id": 2749,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5484,9 +5494,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-05)",
-        "updated_at": "2026-11-06T14:41:30.806Z",
-        "fetched_at": "2026-11-06T15:02:22Z"
+        "lineup_source": "Gabby Shirley",
+        "updated_at": "2026-11-08T00:40:47.512Z",
+        "fetched_at": "2026-11-08T01:00:13Z"
     },
     "ANA": {
         "f1": [
@@ -6179,7 +6189,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Bobby Brink",
@@ -6233,7 +6243,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Nico Sturm",
@@ -6253,7 +6263,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -6456,9 +6466,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Joe Smith",
-        "updated_at": "2026-11-07T23:57:06.257Z",
-        "fetched_at": "2026-11-08T00:01:54Z"
+        "lineup_source": "Michael Russo",
+        "updated_at": "2026-11-08T00:42:52.198Z",
+        "fetched_at": "2026-11-08T01:00:13Z"
     },
     "WSH": {
         "f1": [
@@ -7215,7 +7225,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Adam Gaudette",
@@ -7411,8 +7421,8 @@
             }
         ],
         "lineup_source": "Sheng Peng",
-        "updated_at": "2026-11-07T00:36:56.052Z",
-        "fetched_at": "2026-11-08T00:01:54Z"
+        "updated_at": "2026-11-08T00:38:57.086Z",
+        "fetched_at": "2026-11-08T01:00:13Z"
     },
     "SEA": {
         "f1": [
