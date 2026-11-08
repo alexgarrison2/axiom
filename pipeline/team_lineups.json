@@ -968,8 +968,8 @@
             }
         ],
         "lineup_source": "David Alter",
-        "updated_at": "2026-11-07T16:24:41.190Z",
-        "fetched_at": "2026-11-07T17:02:22Z"
+        "updated_at": "2026-11-07T23:46:36.306Z",
+        "fetched_at": "2026-11-08T00:01:54Z"
     },
     "MTL": {
         "f1": [
@@ -4226,8 +4226,8 @@
             }
         ],
         "lineup_source": "Stefen Rosner",
-        "updated_at": "2026-11-07T16:24:11.035Z",
-        "fetched_at": "2026-11-07T17:02:22Z"
+        "updated_at": "2026-11-07T23:36:58.849Z",
+        "fetched_at": "2026-11-08T00:01:54Z"
     },
     "COL": {
         "f1": [
@@ -6124,8 +6124,8 @@
             }
         ],
         "lineup_source": "Amanda Stein",
-        "updated_at": "2026-11-07T17:35:06.973Z",
-        "fetched_at": "2026-11-07T18:02:05Z"
+        "updated_at": "2026-11-07T23:44:37.842Z",
+        "fetched_at": "2026-11-08T00:01:54Z"
     },
     "MIN": {
         "f1": [
@@ -6146,7 +6146,7 @@
                 "id": 2494,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             },
             {
@@ -6172,14 +6172,14 @@
                 "movement": null
             },
             {
-                "name": "Michael McCarron",
-                "number": 47,
+                "name": "Ryan Hartman",
+                "number": 38,
                 "pos": "c",
-                "id": 2156,
-                "ppUnit": null,
+                "id": 2161,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Bobby Brink",
@@ -6226,9 +6226,19 @@
         ],
         "f4": [
             {
+                "name": "Marcus Foligno",
+                "number": 17,
+                "pos": "lw",
+                "id": 1689,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Nico Sturm",
                 "number": 78,
-                "pos": "lw",
+                "pos": "c",
                 "id": 27037,
                 "ppUnit": null,
                 "injuryStatus": null,
@@ -6236,24 +6246,14 @@
                 "movement": null
             },
             {
-                "name": "Ryan Hartman",
-                "number": 38,
-                "pos": "c",
-                "id": 2161,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Tyler Pitlick",
-                "number": 19,
+                "name": "Nick Foligno",
+                "number": 17,
                 "pos": "rw",
-                "id": 1649,
+                "id": 1081,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -6362,49 +6362,31 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Nick Foligno",
-                "number": 17,
-                "pos": "ir3",
-                "id": 1081,
-                "ppUnit": null,
-                "injuryStatus": "out",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Marcus Foligno",
-                "number": 17,
-                "pos": "ir4",
-                "id": 1689,
-                "ppUnit": null,
-                "injuryStatus": "out",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Jared Spurgeon",
                 "number": 46,
-                "pos": "ir5",
+                "pos": "ir3",
                 "id": 1557,
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
             },
             {
-                "name": "Joel Eriksson Ek",
-                "number": 14,
-                "pos": "ir6",
-                "id": 2494,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
+                "name": "Michael McCarron",
+                "number": 47,
+                "pos": "ir4",
+                "id": 2156,
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
         "pk1": [
             {
-                "name": "Michael McCarron",
-                "number": 47,
+                "name": "Ryan Hartman",
+                "number": 38,
                 "pos": "sk1",
-                "id": 2156,
-                "ppUnit": null,
+                "id": 2161,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -6475,8 +6457,8 @@
             }
         ],
         "lineup_source": "Joe Smith",
-        "updated_at": "2026-11-05T17:39:49.417Z",
-        "fetched_at": "2026-11-07T03:05:13Z"
+        "updated_at": "2026-11-07T23:57:06.257Z",
+        "fetched_at": "2026-11-08T00:01:54Z"
     },
     "WSH": {
         "f1": [
@@ -7226,14 +7208,14 @@
                 "movement": null
             },
             {
-                "name": "Zack Ostapchuk",
-                "number": 63,
+                "name": "Filip Bystedt",
+                "number": null,
                 "pos": "c",
-                "id": 34545,
+                "id": 36370,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Adam Gaudette",
@@ -7354,10 +7336,10 @@
         ],
         "pk1": [
             {
-                "name": "Zack Ostapchuk",
-                "number": 63,
+                "name": "Filip Bystedt",
+                "number": null,
                 "pos": "sk1",
-                "id": 34545,
+                "id": 36370,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -7430,7 +7412,7 @@
         ],
         "lineup_source": "Sheng Peng",
         "updated_at": "2026-11-07T00:36:56.052Z",
-        "fetched_at": "2026-11-07T18:02:05Z"
+        "fetched_at": "2026-11-08T00:01:54Z"
     },
     "SEA": {
         "f1": [
@@ -7962,13 +7944,13 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Linus Ullmark",
-                "number": 35,
+                "name": "Jonas Johansson",
+                "number": 31,
                 "pos": "g2",
-                "id": 2534,
+                "id": 4561,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             }
         ],
         "ir": [
@@ -8094,9 +8076,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-04)",
-        "updated_at": "2026-11-07T11:57:03.858Z",
-        "fetched_at": "2026-11-07T16:02:22Z"
+        "lineup_source": "Andrew Wilimek",
+        "updated_at": "2026-11-07T23:43:56.957Z",
+        "fetched_at": "2026-11-08T00:01:54Z"
     },
     "DET": {
         "f1": [
@@ -8602,14 +8584,14 @@
         ],
         "d2": [
             {
-                "name": "Nate Schmidt",
-                "number": 88,
+                "name": "Dmitri Simashev",
+                "number": 26,
                 "pos": "ld",
-                "id": 2093,
+                "id": 38458,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Andrew Peeke",
@@ -8624,14 +8606,14 @@
         ],
         "d3": [
             {
-                "name": "Dmitri Simashev",
-                "number": 26,
+                "name": "Artem Duda",
+                "number": null,
                 "pos": "ld",
-                "id": 38458,
+                "id": 36382,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Nick DeSimone",
@@ -8679,6 +8661,15 @@
                 "number": 56,
                 "pos": "ir2",
                 "id": 2796,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Nate Schmidt",
+                "number": 88,
+                "pos": "ir3",
+                "id": 2093,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -8742,10 +8733,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Nate Schmidt",
-                "number": 88,
+                "name": "Dmitri Simashev",
+                "number": 26,
                 "pos": "sk3",
-                "id": 2093,
+                "id": 38458,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -8760,9 +8751,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-05)",
-        "updated_at": "2026-11-06T14:34:31.946Z",
-        "fetched_at": "2026-11-06T15:02:22Z"
+        "lineup_source": "Utah Mammoth",
+        "updated_at": "2026-11-07T23:41:14.289Z",
+        "fetched_at": "2026-11-08T00:01:54Z"
     },
     "WPG": {
         "f1": [
