@@ -806,7 +806,7 @@
                 "id": 1935,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -898,6 +898,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Morgan Rielly",
+                "number": 44,
+                "pos": "ir5",
+                "id": 1935,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -977,8 +986,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-08T15:09:36.575Z",
-        "fetched_at": "2026-11-08T16:01:55Z"
+        "updated_at": "2026-11-08T16:11:53.670Z",
+        "fetched_at": "2026-11-08T17:01:54Z"
     },
     "MTL": {
         "f1": [
@@ -1355,7 +1364,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Fraser Minten",
@@ -1407,7 +1416,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -1422,14 +1431,14 @@
                 "movement": null
             },
             {
-                "name": "Sean Kuraly",
-                "number": 7,
+                "name": "Michael Eyssimont",
+                "number": 81,
                 "pos": "c",
-                "id": 2585,
+                "id": 4693,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Mark Kastelic",
@@ -1615,9 +1624,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Adam Pellerin",
-        "updated_at": "2026-11-07T16:11:30.686Z",
-        "fetched_at": "2026-11-07T17:02:22Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-08T16:51:50.056Z",
+        "fetched_at": "2026-11-08T17:01:54Z"
     },
     "NYR": {
         "f1": [
