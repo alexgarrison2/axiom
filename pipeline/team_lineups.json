@@ -7158,8 +7158,8 @@
                 "id": 2145,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Kiefer Sherwood",
@@ -7223,7 +7223,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Collin Graf",
@@ -7233,7 +7233,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -7245,7 +7245,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Michael Kesselring",
@@ -7255,7 +7255,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -7267,7 +7267,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jacob Trouba",
@@ -7277,7 +7277,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -7324,15 +7324,6 @@
         ],
         "ir": [
             {
-                "name": "Alexander Wennberg",
-                "number": 21,
-                "pos": "ir1",
-                "id": 2145,
-                "ppUnit": 1,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Igor Chernyshov",
                 "number": 92,
                 "pos": "ir2",
@@ -7350,7 +7341,7 @@
                 "id": 2145,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Collin Graf",
@@ -7418,9 +7409,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-09T18:46:49.471Z",
-        "fetched_at": "2026-11-09T19:02:10Z"
+        "lineup_source": "Sheng Peng",
+        "updated_at": "2026-11-09T22:32:58.597Z",
+        "fetched_at": "2026-11-09T23:02:03Z"
     },
     "SEA": {
         "f1": [
