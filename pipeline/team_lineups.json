@@ -661,14 +661,14 @@
                 "movement": null
             },
             {
-                "name": "Jack Roslovic",
-                "number": 96,
+                "name": "Colton Sissons",
+                "number": 10,
                 "pos": "rw",
-                "id": 2499,
-                "ppUnit": 1,
+                "id": 2030,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -677,10 +677,10 @@
                 "number": 92,
                 "pos": "lw",
                 "id": 37717,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "John Tavares",
@@ -715,24 +715,24 @@
                 "movement": null
             },
             {
-                "name": "Colton Sissons",
-                "number": 10,
+                "name": "Nick Paul",
+                "number": 20,
                 "pos": "c",
-                "id": 2030,
-                "ppUnit": null,
+                "id": 2357,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Nick Paul",
-                "number": 20,
+                "name": "Vinni Lettieri",
+                "number": 95,
                 "pos": "rw",
-                "id": 2357,
+                "id": 4621,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "new"
             }
         ],
         "f4": [
@@ -798,7 +798,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Troy Stecher",
@@ -808,7 +808,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -820,7 +820,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Cole McWard",
@@ -830,7 +830,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -904,6 +904,15 @@
                 "number": 8,
                 "pos": "ir6",
                 "id": 1494,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Jack Roslovic",
+                "number": 96,
+                "pos": "ir7",
+                "id": 2499,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -985,9 +994,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "David Alter",
-        "updated_at": "2026-11-08T23:39:09.880Z",
-        "fetched_at": "2026-11-09T00:04:10Z"
+        "lineup_source": "Toronto Maples Leafs",
+        "updated_at": "2026-11-09T00:22:21.249Z",
+        "fetched_at": "2026-11-09T01:01:58Z"
     },
     "MTL": {
         "f1": [
@@ -3630,10 +3639,10 @@
         ],
         "f3": [
             {
-                "name": "Rutger McGroarty",
-                "number": 2,
+                "name": "Andrei Kuzmenko",
+                "number": 10,
                 "pos": "lw",
-                "id": 33262,
+                "id": 25254,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -3892,9 +3901,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-08T23:13:44.478Z",
-        "fetched_at": "2026-11-09T00:04:10Z"
+        "lineup_source": "Pittsburgh Penguins",
+        "updated_at": "2026-11-09T00:36:41.786Z",
+        "fetched_at": "2026-11-09T01:01:58Z"
     },
     "NYI": {
         "f1": [
@@ -5573,14 +5582,14 @@
                 "movement": null
             },
             {
-                "name": "Sam Colangelo",
-                "number": 12,
+                "name": "Frank Vatrano",
+                "number": 77,
                 "pos": "rw",
-                "id": 32857,
+                "id": 2545,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f4": [
@@ -5815,9 +5824,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Anaheim Ducks",
-        "updated_at": "2026-11-07T01:02:00.555Z",
-        "fetched_at": "2026-11-08T21:02:00Z"
+        "lineup_source": "Derek Lee",
+        "updated_at": "2026-11-09T00:38:20.487Z",
+        "fetched_at": "2026-11-09T01:01:58Z"
     },
     "NJD": {
         "f1": [
