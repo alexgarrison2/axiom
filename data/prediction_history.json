@@ -53716,5 +53716,66 @@
         "market_p": 0.3316
       }
     }
+  },
+  {
+    "gameId": 2026020280,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-08",
+    "homeTeam": "Jets",
+    "awayTeam": "Lightning",
+    "homeScore": 4,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 2.77,
+    "awayXg": 3.52,
+    "homeWinProb": 38.0,
+    "predictedWinner": "Lightning",
+    "actualWinner": "Jets",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3844,
+    "logLoss": 0.9676,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-08T22:02:00Z",
+    "startUtc": "2026-11-08T23:00:00Z",
+    "marketHomeProb": 41.2,
+    "modelHomeProb": 37.2,
+    "homeOdds": 130.0,
+    "awayOdds": -155.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 37.2,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.283,
+        "ll": 1.2623,
+        "naive_ll": 1.179,
+        "market_p": 0.3366
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.62,
+        "ll": 0.478,
+        "naive_ll": 0.4655,
+        "market_p": 0.6459
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.47,
+        "ll": 0.755,
+        "naive_ll": 0.755,
+        "market_p": 0.4768
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.323,
+        "ll": 1.1301,
+        "naive_ll": 1.2037,
+        "market_p": 0.3306
+      }
+    }
   }
 ]
