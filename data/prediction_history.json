@@ -53899,5 +53899,73 @@
         "market_p": 0.3473
       }
     }
+  },
+  {
+    "gameId": 2026020282,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-08",
+    "homeTeam": "Ducks",
+    "awayTeam": "Penguins",
+    "homeScore": 5,
+    "awayScore": 2,
+    "decision": "REG",
+    "homeXg": 3.5,
+    "awayXg": 3.24,
+    "homeWinProb": 54.0,
+    "predictedWinner": "Ducks",
+    "actualWinner": "Ducks",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2116,
+    "logLoss": 0.6162,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-09T00:06:00Z",
+    "startUtc": "2026-11-09T01:00:00Z",
+    "marketHomeProb": 52.3,
+    "modelHomeProb": 54.5,
+    "homeOdds": -120.0,
+    "awayOdds": 100.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 54.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.426,
+        "ll": 0.8533,
+        "naive_ll": 0.7781,
+        "market_p": 0.4144
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.313,
+        "ll": 1.1616,
+        "naive_ll": 1.1752,
+        "market_p": 0.3203
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.545,
+        "ll": 0.607,
+        "naive_ll": 0.609,
+        "market_p": 0.5883
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.362,
+        "ll": 1.0161,
+        "naive_ll": 0.9782,
+        "market_p": 0.3445
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.525,
+        "ll": 0.6444,
+        "naive_ll": 0.6358,
+        "market_p": 0.5112
+      }
+    }
   }
 ]
