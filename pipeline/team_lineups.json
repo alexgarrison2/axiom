@@ -5229,7 +5229,7 @@
                 "id": 2456,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -5272,7 +5272,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f3": [
@@ -5392,7 +5392,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -5412,6 +5412,17 @@
                 "id": 36477,
                 "ppUnit": null,
                 "injuryStatus": null,
+                "gameTimeDecision": false
+            }
+        ],
+        "ir": [
+            {
+                "name": "Brayden Point",
+                "number": 21,
+                "pos": "ir1",
+                "id": 2456,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -5492,8 +5503,8 @@
             }
         ],
         "lineup_source": "Gabby Shirley",
-        "updated_at": "2026-11-08T22:41:48.253Z",
-        "fetched_at": "2026-11-08T23:02:03Z"
+        "updated_at": "2026-11-09T02:12:27.722Z",
+        "fetched_at": "2026-11-09T03:03:45Z"
     },
     "ANA": {
         "f1": [
