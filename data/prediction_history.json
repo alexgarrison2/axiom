@@ -53655,5 +53655,66 @@
         "market_p": 0.5447
       }
     }
+  },
+  {
+    "gameId": 2026020278,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-08",
+    "homeTeam": "Sabres",
+    "awayTeam": "Golden Knights",
+    "homeScore": 1,
+    "awayScore": 4,
+    "decision": "REG",
+    "homeXg": 3.01,
+    "awayXg": 3.15,
+    "homeWinProb": 47.7,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Golden Knights",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2275,
+    "logLoss": 0.6482,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-08T20:02:00Z",
+    "startUtc": "2026-11-08T20:30:00Z",
+    "marketHomeProb": 49.5,
+    "modelHomeProb": 47.2,
+    "homeOdds": -108.0,
+    "awayOdds": -112.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 47.2,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.403,
+        "ll": 0.9088,
+        "naive_ll": 0.8237,
+        "market_p": 0.3816
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.292,
+        "ll": 1.231,
+        "naive_ll": 1.2588,
+        "market_p": 0.2869
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.554,
+        "ll": 0.5906,
+        "naive_ll": 0.5997,
+        "market_p": 0.5116
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.328,
+        "ll": 1.1147,
+        "naive_ll": 1.1809,
+        "market_p": 0.3316
+      }
+    }
   }
 ]

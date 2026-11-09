@@ -673,21 +673,21 @@
         ],
         "f2": [
             {
-                "name": "John Tavares",
-                "number": 91,
+                "name": "Gavin McKenna",
+                "number": 92,
                 "pos": "lw",
-                "id": 1016,
-                "ppUnit": 1,
+                "id": 37717,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Nick Paul",
-                "number": 20,
+                "name": "John Tavares",
+                "number": 91,
                 "pos": "c",
-                "id": 2357,
-                "ppUnit": 2,
+                "id": 1016,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -725,14 +725,14 @@
                 "movement": null
             },
             {
-                "name": "Gavin McKenna",
-                "number": 92,
+                "name": "Nick Paul",
+                "number": 20,
                 "pos": "rw",
-                "id": 37717,
+                "id": 2357,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f4": [
@@ -791,28 +791,6 @@
         ],
         "d2": [
             {
-                "name": "Cole McWard",
-                "number": null,
-                "pos": "ld",
-                "id": 30512,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "new"
-            },
-            {
-                "name": "Dakota Mermis",
-                "number": 36,
-                "pos": "rd",
-                "id": 2914,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "new"
-            }
-        ],
-        "d3": [
-            {
                 "name": "Oliver Ekman-Larsson",
                 "number": 95,
                 "pos": "ld",
@@ -820,7 +798,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Troy Stecher",
@@ -830,7 +808,29 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Dakota Mermis",
+                "number": 36,
+                "pos": "ld",
+                "id": 2914,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Cole McWard",
+                "number": null,
+                "pos": "rd",
+                "id": 30512,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "g": [
@@ -985,9 +985,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-08T22:04:35.607Z",
-        "fetched_at": "2026-11-08T23:02:03Z"
+        "lineup_source": "David Alter",
+        "updated_at": "2026-11-08T23:39:09.880Z",
+        "fetched_at": "2026-11-09T00:04:10Z"
     },
     "MTL": {
         "f1": [
@@ -3258,7 +3258,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Christian Dvorak",
@@ -3300,7 +3300,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Matvei Michkov",
@@ -3310,7 +3310,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -3322,7 +3322,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Cole Knuble",
@@ -3332,7 +3332,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Owen Tippett",
@@ -3342,7 +3342,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -3560,8 +3560,8 @@
             }
         ],
         "lineup_source": "Jackie Spiegel",
-        "updated_at": "2026-11-07T19:31:04.028Z",
-        "fetched_at": "2026-11-07T20:02:12Z"
+        "updated_at": "2026-11-08T23:38:00.734Z",
+        "fetched_at": "2026-11-09T00:04:10Z"
     },
     "PIT": {
         "f1": [
@@ -3630,14 +3630,14 @@
         ],
         "f3": [
             {
-                "name": "Ville Koivunen",
-                "number": 41,
+                "name": "Rutger McGroarty",
+                "number": 2,
                 "pos": "lw",
-                "id": 34677,
+                "id": 33262,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Hendrix Lapierre",
@@ -3805,6 +3805,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Ville Koivunen",
+                "number": 41,
+                "pos": "ir5",
+                "id": 34677,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3883,9 +3892,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-08T15:48:57.721Z",
-        "fetched_at": "2026-11-08T16:01:55Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-08T23:13:44.478Z",
+        "fetched_at": "2026-11-09T00:04:10Z"
     },
     "NYI": {
         "f1": [
@@ -6111,9 +6120,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-08T21:52:06.152Z",
-        "fetched_at": "2026-11-08T22:02:10Z"
+        "lineup_source": "New Jersey Devils",
+        "updated_at": "2026-11-08T23:46:00.049Z",
+        "fetched_at": "2026-11-09T00:04:10Z"
     },
     "MIN": {
         "f1": [
@@ -10007,9 +10016,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Pat Steinberg",
-        "updated_at": "2026-11-08T17:08:32.497Z",
-        "fetched_at": "2026-11-08T17:23:32Z"
+        "lineup_source": "Ryan Pike",
+        "updated_at": "2026-11-08T23:37:29.887Z",
+        "fetched_at": "2026-11-09T00:04:10Z"
     },
     "NSH": {
         "f1": [
