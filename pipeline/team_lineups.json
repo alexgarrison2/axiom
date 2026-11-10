@@ -1692,38 +1692,6 @@
                 "movement": null
             },
             {
-                "name": "Oliver Bjorkstrand",
-                "number": 28,
-                "pos": "rw",
-                "id": 2603,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
-                "name": "Eeli Tolvanen",
-                "number": 17,
-                "pos": "lw",
-                "id": 2787,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Will Cuylle",
-                "number": 50,
-                "pos": "c",
-                "id": 29725,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Pavel Dorofeyev",
                 "number": 16,
                 "pos": "rw",
@@ -1731,16 +1699,16 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
-        "f4": [
+        "f3": [
             {
-                "name": "Jaroslav Chmelar",
-                "number": 49,
+                "name": "Will Cuylle",
+                "number": 50,
                 "pos": "lw",
-                "id": 34742,
-                "ppUnit": null,
+                "id": 29725,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1753,17 +1721,49 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            },
+            {
+                "name": "Oliver Bjorkstrand",
+                "number": 28,
+                "pos": "rw",
+                "id": 2603,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Eeli Tolvanen",
+                "number": 17,
+                "pos": "lw",
+                "id": 2787,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             },
             {
                 "name": "Luke Glendening",
                 "number": 41,
-                "pos": "rw",
+                "pos": "c",
                 "id": 2174,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
+            },
+            {
+                "name": "Jaroslav Chmelar",
+                "number": 49,
+                "pos": "rw",
+                "id": 34742,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
             }
         ],
         "d1": [
@@ -1976,8 +1976,8 @@
             }
         ],
         "lineup_source": "Vince Mercogliano",
-        "updated_at": "2026-11-09T18:36:47.442Z",
-        "fetched_at": "2026-11-09T19:02:10Z"
+        "updated_at": "2026-11-10T00:36:29.093Z",
+        "fetched_at": "2026-11-10T01:01:59Z"
     },
     "EDM": {
         "f1": [
