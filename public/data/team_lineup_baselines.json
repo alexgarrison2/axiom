@@ -1,15 +1,67 @@
 {
+  "NYI": {
+    "xgf_rate": 2.6968,
+    "xga_rate": 2.7202
+  },
+  "WPG": {
+    "xgf_rate": 2.3275,
+    "xga_rate": 2.6434
+  },
+  "ANA": {
+    "xgf_rate": 2.2345,
+    "xga_rate": 2.9406
+  },
   "BOS": {
     "xgf_rate": 2.7769,
     "xga_rate": 2.4815
   },
-  "MIN": {
-    "xgf_rate": 2.6392,
-    "xga_rate": 2.2902
+  "SJS": {
+    "xgf_rate": 2.1929,
+    "xga_rate": 2.9261
   },
-  "CHI": {
-    "xgf_rate": 2.0363,
-    "xga_rate": 3.1163
+  "TBL": {
+    "xgf_rate": 2.7614,
+    "xga_rate": 2.3367
+  },
+  "CAR": {
+    "xgf_rate": 3.0963,
+    "xga_rate": 2.1368
+  },
+  "SEA": {
+    "xgf_rate": 2.3179,
+    "xga_rate": 2.8509
+  },
+  "EDM": {
+    "xgf_rate": 2.0689,
+    "xga_rate": 2.2333
+  },
+  "DET": {
+    "xgf_rate": 2.6266,
+    "xga_rate": 2.2244
+  },
+  "WSH": {
+    "xgf_rate": 3.0163,
+    "xga_rate": 2.653
+  },
+  "TOR": {
+    "xgf_rate": 2.106,
+    "xga_rate": 2.4648
+  },
+  "CGY": {
+    "xgf_rate": 2.2593,
+    "xga_rate": 2.6644
+  },
+  "NYR": {
+    "xgf_rate": 2.6246,
+    "xga_rate": 2.4606
+  },
+  "BUF": {
+    "xgf_rate": 2.5557,
+    "xga_rate": 2.5605
+  },
+  "PHI": {
+    "xgf_rate": 1.9997,
+    "xga_rate": 2.9989
   },
   "CBJ": {
     "xgf_rate": 2.4625,
@@ -19,101 +71,21 @@
     "xgf_rate": 1.951,
     "xga_rate": 3.0372
   },
-  "CAR": {
-    "xgf_rate": 3.0963,
-    "xga_rate": 2.1368
+  "MIN": {
+    "xgf_rate": 2.6392,
+    "xga_rate": 2.2902
   },
-  "OTT": {
-    "xgf_rate": 2.403,
-    "xga_rate": 2.2183
-  },
-  "UTA": {
-    "xgf_rate": 2.9439,
-    "xga_rate": 2.1725
-  },
-  "NYR": {
-    "xgf_rate": 2.6127,
-    "xga_rate": 2.6021
-  },
-  "BUF": {
-    "xgf_rate": 2.5557,
-    "xga_rate": 2.5605
-  },
-  "LAK": {
-    "xgf_rate": 2.3162,
-    "xga_rate": 2.4047
-  },
-  "EDM": {
-    "xgf_rate": 2.0934,
-    "xga_rate": 2.2102
-  },
-  "DET": {
-    "xgf_rate": 2.6266,
-    "xga_rate": 2.2244
-  },
-  "CGY": {
-    "xgf_rate": 2.2593,
-    "xga_rate": 2.6644
-  },
-  "NYI": {
-    "xgf_rate": 2.6968,
-    "xga_rate": 2.7202
-  },
-  "DAL": {
-    "xgf_rate": 2.2892,
-    "xga_rate": 2.2596
-  },
-  "PHI": {
-    "xgf_rate": 1.9997,
-    "xga_rate": 2.9989
-  },
-  "SJS": {
-    "xgf_rate": 2.1929,
-    "xga_rate": 2.9261
-  },
-  "TOR": {
-    "xgf_rate": 2.106,
-    "xga_rate": 2.4648
-  },
-  "WSH": {
-    "xgf_rate": 3.0163,
-    "xga_rate": 2.653
+  "NSH": {
+    "xgf_rate": 2.3129,
+    "xga_rate": 2.7606
   },
   "PIT": {
     "xgf_rate": 2.825,
     "xga_rate": 2.5164
   },
-  "VGK": {
-    "xgf_rate": 2.5817,
-    "xga_rate": 2.2528
-  },
-  "WPG": {
-    "xgf_rate": 2.3275,
-    "xga_rate": 2.6434
-  },
   "MTL": {
     "xgf_rate": 2.726,
     "xga_rate": 2.4277
-  },
-  "SEA": {
-    "xgf_rate": 2.3179,
-    "xga_rate": 2.8509
-  },
-  "STL": {
-    "xgf_rate": 2.4824,
-    "xga_rate": 2.6279
-  },
-  "ANA": {
-    "xgf_rate": 2.2345,
-    "xga_rate": 2.9406
-  },
-  "TBL": {
-    "xgf_rate": 2.7614,
-    "xga_rate": 2.3367
-  },
-  "NSH": {
-    "xgf_rate": 2.3129,
-    "xga_rate": 2.7606
   },
   "NJD": {
     "xgf_rate": 2.7811,
@@ -123,8 +95,36 @@
     "xgf_rate": 2.7588,
     "xga_rate": 2.4318
   },
+  "LAK": {
+    "xgf_rate": 2.3162,
+    "xga_rate": 2.4047
+  },
+  "OTT": {
+    "xgf_rate": 2.403,
+    "xga_rate": 2.2183
+  },
+  "UTA": {
+    "xgf_rate": 2.9439,
+    "xga_rate": 2.1725
+  },
+  "VGK": {
+    "xgf_rate": 2.5817,
+    "xga_rate": 2.2528
+  },
+  "STL": {
+    "xgf_rate": 2.4824,
+    "xga_rate": 2.6279
+  },
   "FLA": {
     "xgf_rate": 2.2522,
     "xga_rate": 2.2759
+  },
+  "CHI": {
+    "xgf_rate": 2.0363,
+    "xga_rate": 3.1163
+  },
+  "DAL": {
+    "xgf_rate": 2.2892,
+    "xga_rate": 2.2596
   }
 }
