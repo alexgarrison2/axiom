@@ -5899,7 +5899,7 @@
             {
                 "name": "Evan Rodrigues",
                 "number": 17,
-                "pos": "c",
+                "pos": "lw",
                 "id": 2620,
                 "ppUnit": null,
                 "injuryStatus": null,
@@ -5907,14 +5907,24 @@
                 "movement": null
             },
             {
-                "name": "Jesper Boqvist",
-                "number": 70,
-                "pos": "rw",
-                "id": 28107,
-                "ppUnit": null,
+                "name": "Cody Glass",
+                "number": 12,
+                "pos": "c",
+                "id": 2785,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            },
+            {
+                "name": "Connor Brown",
+                "number": 16,
+                "pos": "rw",
+                "id": 2181,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
             }
         ],
         "f4": [
@@ -5929,24 +5939,14 @@
                 "movement": null
             },
             {
-                "name": "Cody Glass",
-                "number": 12,
-                "pos": "c",
-                "id": 2785,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Connor Brown",
-                "number": 16,
+                "name": "Jesper Boqvist",
+                "number": 70,
                 "pos": "rw",
-                "id": 2181,
-                "ppUnit": 1,
+                "id": 28107,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -6131,9 +6131,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-08)",
-        "updated_at": "2026-11-09T16:36:16.525Z",
-        "fetched_at": "2026-11-09T17:02:12Z"
+        "lineup_source": "Amanda Stein",
+        "updated_at": "2026-11-10T17:02:57.783Z",
+        "fetched_at": "2026-11-10T18:02:24Z"
     },
     "MIN": {
         "f1": [
@@ -8120,14 +8120,24 @@
                 "movement": null
             },
             {
-                "name": "J.T. Compher",
-                "number": 37,
+                "name": "Marco Kasper",
+                "number": null,
                 "pos": "c",
-                "id": 2751,
+                "id": 36364,
                 "ppUnit": 2,
                 "injuryStatus": null,
+                "gameTimeDecision": true,
+                "movement": "new"
+            },
+            {
+                "name": "Keegan Kolesar",
+                "number": 55,
+                "pos": "rw",
+                "id": 3790,
+                "ppUnit": null,
+                "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -8142,24 +8152,24 @@
                 "movement": null
             },
             {
-                "name": "Sheldon Dries",
-                "number": 15,
+                "name": "J.T. Compher",
+                "number": 37,
                 "pos": "c",
-                "id": 4826,
+                "id": 2751,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
-                "name": "Keegan Kolesar",
-                "number": 55,
+                "name": "Mason Appleton",
+                "number": 22,
                 "pos": "rw",
-                "id": 3790,
+                "id": 4582,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             }
         ],
         "d1": [
@@ -8263,8 +8273,8 @@
                 "number": null,
                 "pos": "ir2",
                 "id": 36364,
-                "ppUnit": null,
-                "injuryStatus": "ir",
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             },
             {
@@ -8273,7 +8283,7 @@
                 "pos": "ir3",
                 "id": 4582,
                 "ppUnit": null,
-                "injuryStatus": "ir",
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             },
             {
@@ -8310,18 +8320,18 @@
                 "number": 37,
                 "pos": "sk1",
                 "id": 2751,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Sheldon Dries",
-                "number": 15,
+                "name": "Mason Appleton",
+                "number": 22,
                 "pos": "sk2",
-                "id": 4826,
+                "id": 4582,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Ben Chiarot",
@@ -8380,9 +8390,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-08T17:07:34.868Z",
-        "fetched_at": "2026-11-08T21:30:15Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-10T17:25:45.914Z",
+        "fetched_at": "2026-11-10T18:02:24Z"
     },
     "UTA": {
         "f1": [
@@ -9722,7 +9732,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Morgan Frost",
@@ -9732,7 +9742,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Aydar Suniev",
@@ -9742,7 +9752,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -9754,7 +9764,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Martin Pospisil",
@@ -9764,7 +9774,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Ryan Strome",
@@ -9774,7 +9784,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -9785,8 +9795,8 @@
                 "id": 30831,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Jonathan Castagna",
@@ -9922,15 +9932,6 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Brennan Othmann",
-                "number": 78,
-                "pos": "ir4",
-                "id": 30831,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -10010,8 +10011,8 @@
             }
         ],
         "lineup_source": "Pat Steinberg",
-        "updated_at": "2026-11-10T16:57:07.499Z",
-        "fetched_at": "2026-11-10T17:02:20Z"
+        "updated_at": "2026-11-10T17:45:07.692Z",
+        "fetched_at": "2026-11-10T18:02:24Z"
     },
     "NSH": {
         "f1": [
