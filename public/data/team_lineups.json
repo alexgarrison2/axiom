@@ -801,14 +801,14 @@
                 "movement": null
             },
             {
-                "name": "Troy Stecher",
-                "number": 28,
+                "name": "Chris Tanev",
+                "number": 8,
                 "pos": "rd",
-                "id": 2702,
-                "ppUnit": 2,
+                "id": 1494,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             }
         ],
         "d3": [
@@ -823,14 +823,14 @@
                 "movement": null
             },
             {
-                "name": "Cole McWard",
-                "number": null,
+                "name": "Troy Stecher",
+                "number": 28,
                 "pos": "rd",
-                "id": 30512,
-                "ppUnit": null,
+                "id": 2702,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -900,18 +900,9 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Chris Tanev",
-                "number": 8,
-                "pos": "ir6",
-                "id": 1494,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Jack Roslovic",
                 "number": 96,
-                "pos": "ir7",
+                "pos": "ir6",
                 "id": 2499,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
@@ -947,13 +938,13 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Troy Stecher",
-                "number": 28,
+                "name": "Chris Tanev",
+                "number": 8,
                 "pos": "sk4",
-                "id": 2702,
-                "ppUnit": 2,
+                "id": 1494,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -985,18 +976,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Darren Raddysh",
-                "number": 43,
+                "name": "Troy Stecher",
+                "number": 28,
                 "pos": "sk4",
-                "id": 4756,
-                "ppUnit": 1,
+                "id": 2702,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-08)",
-        "updated_at": "2026-11-09T16:37:07.717Z",
-        "fetched_at": "2026-11-09T17:02:12Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-10T13:56:40.928Z",
+        "fetched_at": "2026-11-10T14:02:29Z"
     },
     "MTL": {
         "f1": [
@@ -6189,14 +6180,14 @@
                 "movement": null
             },
             {
-                "name": "Ryan Hartman",
-                "number": 38,
+                "name": "Michael McCarron",
+                "number": 47,
                 "pos": "c",
-                "id": 2161,
-                "ppUnit": 2,
+                "id": 2156,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             },
             {
                 "name": "Bobby Brink",
@@ -6253,14 +6244,14 @@
                 "movement": null
             },
             {
-                "name": "Nico Sturm",
-                "number": 78,
+                "name": "Ryan Hartman",
+                "number": 38,
                 "pos": "c",
-                "id": 27037,
-                "ppUnit": null,
+                "id": 2161,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Nick Foligno",
@@ -6399,13 +6390,13 @@
         ],
         "pk1": [
             {
-                "name": "Ryan Hartman",
-                "number": 38,
+                "name": "Michael McCarron",
+                "number": 47,
                 "pos": "sk1",
-                "id": 2161,
-                "ppUnit": 2,
+                "id": 2156,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Blake Coleman",
@@ -6437,19 +6428,19 @@
         ],
         "pk2": [
             {
-                "name": "Yakov Trenin",
-                "number": 13,
+                "name": "Ryan Hartman",
+                "number": 38,
                 "pos": "sk1",
-                "id": 3775,
-                "ppUnit": null,
+                "id": 2161,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Nico Sturm",
-                "number": 78,
+                "name": "Yakov Trenin",
+                "number": 13,
                 "pos": "sk2",
-                "id": 27037,
+                "id": 3775,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -6473,9 +6464,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-07)",
-        "updated_at": "2026-11-08T15:44:23.388Z",
-        "fetched_at": "2026-11-08T21:30:15Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-10T13:23:21.708Z",
+        "fetched_at": "2026-11-10T14:02:29Z"
     },
     "WSH": {
         "f1": [
