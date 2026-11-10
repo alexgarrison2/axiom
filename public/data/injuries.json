@@ -668,12 +668,12 @@
   "team": "MTL",
   "position": "RW",
   "status": "Day-To-Day",
-  "type": "Personal",
-  "returnDate": "2026-11-10",
+  "type": null,
+  "returnDate": null,
   "comment": "day-to-day",
   "date": "2026-11-08T13:39Z",
   "espn_id": "598982",
-  "fetched_at": "2026-11-08T14:01:46Z"
+  "fetched_at": "2026-11-10T16:02:29Z"
  },
  {
   "playerId": 8483549,
@@ -708,11 +708,11 @@
   "position": "G",
   "status": "Injured Reserve",
   "type": "Lower Body",
-  "returnDate": "2026-11-10",
+  "returnDate": "2026-11-12",
   "comment": "Montembeault (lower body) is considered day-to-day, according to Renaud Lavoie of TVA Sports on Saturday.",
   "date": "2026-10-31T15:25Z",
   "espn_id": "597970",
-  "fetched_at": "2026-11-07T19:02:11Z"
+  "fetched_at": "2026-11-10T16:02:29Z"
  },
  {
   "playerId": 8477511,
@@ -1200,13 +1200,13 @@
   "name": "Brayden Point",
   "team": "TBL",
   "position": "C",
-  "status": "Day-To-Day",
+  "status": "Injured Reserve",
   "type": "Undisclosed",
-  "returnDate": "2026-11-11",
-  "comment": "day-to-day",
-  "date": "2026-11-09T01:15Z",
-  "espn_id": "599088",
-  "fetched_at": "2026-11-09T02:03:52Z"
+  "returnDate": "2026-12-02",
+  "comment": "ir",
+  "date": "2026-11-10T15:30Z",
+  "espn_id": "599193",
+  "fetched_at": "2026-11-10T16:02:29Z"
  },
  {
   "playerId": 8481570,
@@ -1226,13 +1226,13 @@
   "name": "Colton Sissons",
   "team": "TOR",
   "position": "C",
-  "status": "Day-To-Day",
+  "status": "Out",
   "type": "Lower Body",
-  "returnDate": "2026-11-10",
-  "comment": "day-to-day",
-  "date": "2026-11-09T14:28Z",
-  "espn_id": "599121",
-  "fetched_at": "2026-11-09T15:01:55Z"
+  "returnDate": "2026-11-17",
+  "comment": "out",
+  "date": "2026-11-10T15:34Z",
+  "espn_id": "599194",
+  "fetched_at": "2026-11-10T16:02:29Z"
  },
  {
   "playerId": 8478007,
@@ -1248,30 +1248,17 @@
   "fetched_at": "2026-09-30T04:45:32Z"
  },
  {
-  "playerId": 8478458,
-  "name": "Jack Roslovic",
-  "team": "TOR",
-  "position": "C",
-  "status": "Day-To-Day",
-  "type": "Lower Body",
-  "returnDate": "2026-11-10",
-  "comment": "day-to-day",
-  "date": "2026-11-09T14:28Z",
-  "espn_id": "599122",
-  "fetched_at": "2026-11-09T15:01:55Z"
- },
- {
   "playerId": 8480893,
   "name": "Kirill Marchenko",
   "team": "TOR",
   "position": "RW",
   "status": "Injured Reserve",
   "type": "Lower Body",
-  "returnDate": "2026-11-17",
+  "returnDate": "2026-11-23",
   "comment": "ir",
   "date": "2026-10-29T17:28Z",
   "espn_id": "597716",
-  "fetched_at": "2026-10-29T23:01:52Z"
+  "fetched_at": "2026-11-10T16:02:29Z"
  },
  {
   "playerId": 8483546,
@@ -1280,11 +1267,11 @@
   "position": "D",
   "status": "Injured Reserve",
   "type": "Lower Body",
-  "returnDate": "2026-11-14",
+  "returnDate": "2026-11-23",
   "comment": "ir",
   "date": "2026-10-23T02:22Z",
   "espn_id": "596884",
-  "fetched_at": "2026-11-08T14:01:46Z"
+  "fetched_at": "2026-11-10T16:02:29Z"
  },
  {
   "playerId": 8477503,
@@ -1317,13 +1304,13 @@
   "name": "Morgan Rielly",
   "team": "TOR",
   "position": "D",
-  "status": "Day-To-Day",
+  "status": "Out",
   "type": "Lower Body",
-  "returnDate": "2026-11-10",
-  "comment": "day-to-day",
-  "date": "2026-11-09T14:28Z",
-  "espn_id": "599120",
-  "fetched_at": "2026-11-09T15:01:55Z"
+  "returnDate": "2026-11-12",
+  "comment": "Rielly (lower body) has been deemed day-to-day and will not play in Tuesday's home clash against the Avalanche, per David Alter of The Hockey News.",
+  "date": "2026-11-10T15:41Z",
+  "espn_id": "599197",
+  "fetched_at": "2026-11-10T16:02:29Z"
  },
  {
   "playerId": 8483565,
@@ -1332,11 +1319,11 @@
   "position": "D",
   "status": "Injured Reserve",
   "type": "Upper Body",
-  "returnDate": "2026-11-12",
+  "returnDate": "2026-11-23",
   "comment": "Blankenburg (undisclosed) was placed on injured reserve by the Maple Leafs on Friday, David Alter of The Hockey News reports.",
   "date": "2026-10-23T15:29Z",
   "espn_id": "597001",
-  "fetched_at": "2026-10-24T15:02:23Z"
+  "fetched_at": "2026-11-10T16:02:29Z"
  },
  {
   "playerId": 8482174,
