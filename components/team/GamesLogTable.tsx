@@ -410,7 +410,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                     </button>
                                     {isOpen ? (
                                         <div id={`box-m-${g.id}`} className="border-t border-line bg-bg/60 p-3">
-                                            <GameDigest id={g.id} tri={tri} color={teamColor} />
+                                            <GameDigest id={g.id} tri={tri} color={teamColor} st={{ pp: { g: g.ppg, o: g.ppo }, pk: { g: g.ppga, o: g.pko } }} />
                                         </div>
                                     ) : null}
                                 </li>
@@ -476,7 +476,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                                     <tr>
                                                         <td id={`box-${g.id}`} colSpan={cols.length + 1} className="border-b border-line bg-bg/60 p-0">
                                                             <div className="sticky left-0 max-w-[min(100vw-4rem,1240px)] px-4 pb-4 pt-2">
-                                                                <GameDigest id={g.id} tri={tri} color={teamColor} />
+                                                                <GameDigest id={g.id} tri={tri} color={teamColor} st={{ pp: { g: g.ppg, o: g.ppo }, pk: { g: g.ppga, o: g.pko } }} />
                                                             </div>
                                                         </td>
                                                     </tr>

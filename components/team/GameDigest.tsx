@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { Crest } from '@/components/ui/crest';
 import { cn } from '@/lib/utils';
 import { RinkMarkings } from '@/components/game/Rink';
 import { useWidth } from '@/components/game/Pulse';
@@ -16,6 +17,11 @@ const THEM = 'var(--text-2)';
 
 const sgn = (v: number, dp = 2) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(dp)}`;
 const tone = (v: number) => (v > 0.005 ? 'text-pos' : v < -0.005 ? 'text-neg' : 'text-fg-2');
+
+/** A team's crest where an abbreviation would sit (the name stays for screen readers). */
+function Mark({ tri, size = 22 }: { tri: string; size?: number }) {
+    return <Crest tri={tri} size={size} alt={tri} className="inline-block align-middle drop-shadow-none" />;
+}
 
 function Head({ children, aside }: { children: React.ReactNode; aside?: React.ReactNode }) {
     return (
@@ -67,7 +73,7 @@ function Flow({ m, side, color }: { m: GameModel; side: Side; color: string }) {
     }
     const tri = { us: m.teams[side].tri, them: m.teams[opp].tri };
     return (
-        <div ref={ref} className="min-w-0">
+        <div ref={ref} className="relative min-w-0">
             {w > 0 ? (
                 <svg width={w} height={H} className="block" role="img" aria-label={`Running xG: ${tri.us} ${fin.us.toFixed(2)}, ${tri.them} ${fin.them.toFixed(2)}`}>
                     {pps.map(([a, b, s], i) => (
@@ -106,22 +112,18 @@ function Flow({ m, side, color }: { m: GameModel; side: Side; color: string }) {
                             </g>
                         );
                     })}
-                    <text x={w - R + 8} y={yu} dy="0.32em" className="text-[12px] font-bold">
-                        <tspan className="fill-fg-1">{tri.us}</tspan>
-                        <tspan dx={5} className="fill-model">
-                            {fin.us.toFixed(2)}
-                        </tspan>
-                    </text>
-                    <text x={w - R + 8} y={yt} dy="0.32em" className="text-[12px]">
-                        <tspan className="fill-fg-3">{tri.them}</tspan>
-                        <tspan dx={5} className="fill-model" opacity={0.75}>
-                            {fin.them.toFixed(2)}
-                        </tspan>
-                    </text>
                 </svg>
             ) : (
                 <div style={{ height: H }} />
             )}
+            {w > 0
+                ? ([['us', yu], ['them', yt]] as const).map(([k, top]) => (
+                      <span key={k} className="pointer-events-none absolute flex -translate-y-1/2 items-center gap-1.5 text-[12px] tabular-nums" style={{ left: w - R + 8, top }} aria-hidden="true">
+                          <Mark tri={tri[k]} size={k === 'us' ? 24 : 20} />
+                          <span className={k === 'us' ? 'font-bold text-model' : 'text-model/75'}>{fin[k].toFixed(2)}</span>
+                      </span>
+                  ))
+                : null}
         </div>
     );
 }
@@ -155,12 +157,12 @@ function ShotRink({ m, side, color }: { m: GameModel; side: Side; color: string 
                     );
                 })}
             </svg>
-            <p className="mt-1 flex justify-between text-micro uppercase tracking-label text-fg-3">
-                <span>
-                    <span className="font-bold text-fg-1">{m.teams[side].tri}</span> {n.us} unbl
+            <p className="mt-1 flex items-center justify-between text-micro uppercase tracking-label text-fg-3">
+                <span className="flex items-center gap-1.5">
+                    <Mark tri={m.teams[side].tri} /> <span className="text-fg-1">{n.us}</span> unbl
                 </span>
-                <span>
-                    {n.them} unbl <span className="text-fg-2">{m.teams[other(side)].tri}</span>
+                <span className="flex items-center gap-1.5">
+                    {n.them} unbl <Mark tri={m.teams[other(side)].tri} />
                 </span>
             </p>
         </div>
@@ -204,14 +206,12 @@ function GoalList({ m, side, color, label }: { m: GameModel; side: Side; color: 
             {m.shootout.length ? (
                 <li className="grid min-h-7 grid-cols-[4.25rem_minmax(0,1fr)] items-center gap-2 border-t border-line">
                     <span className="text-micro uppercase text-fg-3">SO</span>
-                    <span>
-                        <span className="font-bold text-fg-1">
-                            {m.teams[side].tri} {made(side)}
-                        </span>
-                        <span className="text-fg-3">
-                            {' · '}
-                            {m.teams[other(side)].tri} {made(other(side))}
-                        </span>
+                    <span className="flex items-center gap-1.5">
+                        <Mark tri={m.teams[side].tri} />
+                        <span className="font-bold text-fg-1">{made(side)}</span>
+                        <span className="text-fg-3">·</span>
+                        <Mark tri={m.teams[other(side)].tri} />
+                        <span className="text-fg-3">{made(other(side))}</span>
                     </span>
                 </li>
             ) : null}
@@ -246,7 +246,7 @@ function TopSkaters({ m, side }: { m: GameModel; side: Side }) {
             <thead>
                 <tr>
                     <th scope="col" className={cn(TH, 'pl-0 text-left')}>
-                        {m.teams[side].tri}
+                        <Mark tri={m.teams[side].tri} />
                     </th>
                     {['G', 'A', 'SOG', 'ixG', 'TOI', 'Pony'].map(h => (
                         <th key={h} scope="col" className={cn(TH, h === 'Pony' && 'pr-0')}>
@@ -259,8 +259,8 @@ function TopSkaters({ m, side }: { m: GameModel; side: Side }) {
                 <tbody key={i}>
                     {i ? (
                         <tr>
-                            <th scope="colgroup" colSpan={7} className={cn(TH, 'h-7 border-t border-line-strong pl-0 text-left align-bottom')}>
-                                {m.teams[other(side)].tri}
+                            <th scope="colgroup" colSpan={7} className={cn(TH, 'h-7 border-t border-line-strong pl-0 text-left align-middle')}>
+                                <Mark tri={m.teams[other(side)].tri} />
                             </th>
                         </tr>
                     ) : null}
@@ -314,8 +314,10 @@ function GoalieTable({ m, side }: { m: GameModel; side: Side }) {
                     return (
                         <tr key={g.player.id} className="border-t border-line">
                             <th scope="row" className={cn('h-7 truncate pr-1.5 text-left font-normal', ours ? 'text-fg-1' : 'text-fg-2')}>
+                                <span className="mr-1.5">
+                                    <Mark tri={m.teams[g.player.side].tri} size={18} />
+                                </span>
                                 {g.player.last}
-                                <span className="ml-1.5 text-micro uppercase text-fg-3">{m.teams[g.player.side].tri}</span>
                             </th>
                             <td className={cn(TD, 'text-fg-1')}>
                                 {g.sa - g.ga}/{g.sa}
@@ -331,41 +333,101 @@ function GoalieTable({ m, side }: { m: GameModel; side: Side }) {
     );
 }
 
-/** What the log row does not carry: the team's number, its share of the two, the opponent's number. */
-function TeamSplits({ m, side, color }: { m: GameModel; side: Side; color: string }) {
+/** Official power-play goals / opportunities for the team (pp) and against it (pk), from the log row. */
+export interface SpecialTeams {
+    pp: { g: number; o: number };
+    pk: { g: number; o: number };
+}
+
+const SPLIT = 'grid grid-cols-[5.5rem_2.25rem_minmax(0,1fr)_2.25rem] items-center gap-2';
+
+/**
+ * One power play per segment across the bar, in game order, lit where it scored: the team's own on the PP row
+ * (its colour, count on its side), the opponent's on the PK row (dim, count on theirs). The order comes from the
+ * on-ice power-play windows when they agree with the official counts; otherwise the goals lead.
+ */
+function Chances({ name, g, o, lit, ours, color }: { name: string; g: number; o: number; lit: boolean[] | null; ours: boolean; color: string }) {
+    const cells = lit ?? Array.from({ length: o }, (_, i) => i < g);
+    const count = <span className={cn(ours ? 'text-right' : '', g ? 'font-bold text-fg-1' : 'text-fg-2')}>{o ? `${g}/${o}` : '—'}</span>;
+    return (
+        <div className={SPLIT}>
+            <dt className="text-micro uppercase tracking-[0.1em] text-fg-3">{name}</dt>
+            <dd className="contents">
+                {ours ? count : <span />}
+                <span className="flex h-2 gap-[3px]" aria-hidden="true">
+                    {cells.length ? (
+                        cells.map((on, i) => <span key={i} className={cn('flex-1 rounded-[2px]', !on && 'bg-track', on && !ours && 'bg-fg-2')} style={on && ours ? { background: color } : undefined} />)
+                    ) : (
+                        <span className="flex-1 rounded-[2px] bg-track opacity-50" />
+                    )}
+                </span>
+                {ours ? <span /> : count}
+            </dd>
+        </div>
+    );
+}
+
+/** The team's number, its share of the two, the opponent's number; special teams one segment per power play. */
+function TeamSplits({ m, side, color, st }: { m: GameModel; side: Side; color: string; st?: SpecialTeams }) {
     const t = React.useMemo(() => teamTotals(m.events, 'all', 'all'), [m]);
-    // Phones: the card row shows only the score, so the shot counts the wide table carries lead here.
-    const items: [string, keyof (typeof t)['away'], boolean?][] = [
-        ['Shots', 'sog', true],
-        ['Attempts', 'attempts', true],
-        ['High danger', 'hd', true],
-        ['Faceoffs', 'faceoffs'],
-        ['Hits', 'hits'],
-        ['Blocks', 'blocks'],
-        ['Takeaways', 'takeaways'],
-        ['Giveaways', 'giveaways'],
-        ['PIM', 'pim'],
-    ];
+    const opp = other(side);
+    // Which power plays scored, in order, when the windows match the official line.
+    const order = React.useMemo(() => {
+        const wins = powerPlays(m);
+        const of = (s: Side, want: { g: number; o: number } | undefined) => {
+            if (!want) return null;
+            const lit = wins.filter(w => w[2] === s).map(([a, b]) => m.events.some(e => e.type === 'goal' && e.side === s && e.strength === 'pp' && e.t > a && e.t <= b + 1));
+            return lit.length === want.o && lit.filter(Boolean).length === want.g ? lit : null;
+        };
+        return { pp: of(side, st?.pp), pk: of(opp, st?.pk) };
+    }, [m, side, opp, st]);
+    type Key = keyof (typeof t)['away'];
+    const row = (name: string, k: Key, o: { model?: boolean; phone?: boolean } = {}) => {
+        const a = t[side][k];
+        const b = t[opp][k];
+        const share = a + b > 0 ? (a / (a + b)) * 100 : 50;
+        const fmt = (v: number) => (o.model ? v.toFixed(2) : v);
+        return (
+            <div key={k} className={cn(SPLIT, o.phone && 'md:hidden')}>
+                <dt className="text-micro uppercase tracking-[0.1em] text-fg-3">{name}</dt>
+                <dd className="contents">
+                    <span className={cn('text-right', o.model ? 'text-model' : a > b ? 'font-bold text-fg-1' : 'text-fg-2', o.model && a > b && 'font-bold')}>{fmt(a)}</span>
+                    <span className="flex h-2 gap-px overflow-hidden rounded-[2px]" aria-hidden="true">
+                        <span style={{ width: `${share}%`, background: color, opacity: a >= b ? 0.9 : 0.45 }} />
+                        <span className="flex-1 bg-fg-2" style={{ opacity: b > a ? 0.6 : 0.25 }} />
+                    </span>
+                    <span className={cn(o.model ? 'text-model/80' : b > a ? 'font-bold text-fg-1' : 'text-fg-2', o.model && b > a && 'font-bold')}>{fmt(b)}</span>
+                </dd>
+            </div>
+        );
+    };
     return (
         <dl className="flex flex-col gap-1 text-caption tabular-nums">
-            {items.map(([name, k, phone]) => {
-                const a = t[side][k];
-                const b = t[other(side)][k];
-                const share = a + b > 0 ? (a / (a + b)) * 100 : 50;
-                return (
-                    <div key={k} className={cn('grid grid-cols-[5.5rem_1.75rem_minmax(0,1fr)_1.75rem] items-center gap-2', phone && 'md:hidden')}>
-                        <dt className="text-micro uppercase tracking-[0.1em] text-fg-3">{name}</dt>
-                        <dd className="contents">
-                            <span className={cn('text-right', a > b ? 'font-bold text-fg-1' : 'text-fg-2')}>{a}</span>
-                            <span className="flex h-2 gap-px overflow-hidden rounded-[2px]" aria-hidden="true">
-                                <span style={{ width: `${share}%`, background: color, opacity: a >= b ? 0.9 : 0.45 }} />
-                                <span className="flex-1 bg-fg-2" style={{ opacity: b > a ? 0.6 : 0.25 }} />
-                            </span>
-                            <span className={cn(b > a ? 'font-bold text-fg-1' : 'text-fg-2')}>{b}</span>
-                        </dd>
-                    </div>
-                );
-            })}
+            <div className={cn(SPLIT, 'mb-0.5')} aria-hidden="true">
+                <span />
+                <span className="flex justify-end">
+                    <Mark tri={m.teams[side].tri} size={28} />
+                </span>
+                <span />
+                <Mark tri={m.teams[opp].tri} size={28} />
+            </div>
+            {m.xgPending ? null : row('xG', 'xg', { model: true })}
+            {row('SOG', 'sog')}
+            {row('Attempts', 'attempts')}
+            {/* Phones: the card row shows only the score, so the chances the wide table carries stay here. */}
+            {row('High danger', 'hd', { phone: true })}
+            {st ? (
+                <>
+                    <Chances name="PP" g={st.pp.g} o={st.pp.o} lit={order.pp} ours color={color} />
+                    <Chances name="PK" g={st.pk.g} o={st.pk.o} lit={order.pk} ours={false} color={color} />
+                </>
+            ) : null}
+            {row('Faceoffs', 'faceoffs')}
+            {row('Hits', 'hits')}
+            {row('Blocks', 'blocks')}
+            {row('Takeaways', 'takeaways')}
+            {row('Giveaways', 'giveaways')}
+            {row('PIM', 'pim')}
         </dl>
     );
 }
@@ -375,7 +437,7 @@ function TeamSplits({ m, side, color }: { m: GameModel; side: Side; color: strin
  * the shot map, the goals with their win-probability swings, the best skaters by Pony Score, both goalies and
  * the team counts the log row does not carry. Always from the team's side: its colour against a dim opponent.
  */
-export default function GameDigest({ id, tri, color }: { id: string; tri: string; color: string }) {
+export default function GameDigest({ id, tri, color, st }: { id: string; tri: string; color: string; st?: SpecialTeams }) {
     const [m, setM] = React.useState<GameModel | null | undefined>(undefined);
     React.useEffect(() => {
         let alive = true;
@@ -454,7 +516,7 @@ export default function GameDigest({ id, tri, color }: { id: string; tri: string
                     </div>
                     <div>
                         <Head>Team</Head>
-                        <TeamSplits m={m} side={side} color={color} />
+                        <TeamSplits m={m} side={side} color={color} st={st} />
                     </div>
                 </section>
             </div>
