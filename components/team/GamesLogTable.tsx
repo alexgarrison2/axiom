@@ -1,32 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
 import { Crest } from '@/components/ui/crest';
-import { ScrollRegion } from '@/components/ui/scroll-region';
 import { cn } from '@/lib/utils';
 import { mmss, pct3, shortDate, signed } from '@/utils/team-stats/format';
-import type { Boxscores, BoxRow } from '@/utils/team-stats/team-types';
 import type { GameRow, PeriodFilter } from '@/utils/team-stats/types';
 import { HeaderCell, type SortDir } from '@/components/teams-table/HeaderCell';
 import { CELL_BG, HEAD_CELL, STICKY_EDGE } from '@/components/teams-table/table-style';
 import { PINNED_HEAD_HIDE, StickyHead, TableScroller } from '@/components/teams-table/TableScroller';
+import GameDigest from './GameDigest';
 import { flags, gameGsax, resultLabel, resultTone, score, stat, totals } from './game-log-model';
-
-/** Into the full game page (/games/[id]): goals, pulse, shots, skaters, lines, matchups. */
-function GameLink({ id }: { id: string }) {
-    return (
-        <Link
-            href={`/games/${id}`}
-            className="mb-2 inline-flex min-h-8 items-center gap-1.5 text-micro font-bold uppercase tracking-label text-brand hover:underline coarse:min-h-11"
-        >
-            Game page
-            <svg viewBox="0 0 8 8" className="h-2 w-2" aria-hidden="true">
-                <path d="M2.5 1 6 4 2.5 7" fill="none" stroke="currentColor" strokeWidth="1.4" />
-            </svg>
-        </Link>
-    );
-}
 
 interface GamesLogTableProps {
     games: GameRow[];
@@ -35,8 +18,8 @@ interface GamesLogTableProps {
     period: PeriodFilter;
     seasonLabel: string;
     teamColor: string;
-    /** Loads per-game player rows on demand (boxscore expansion). */
-    loadBoxscores: () => Promise<Boxscores | undefined>;
+    /** The team whose log this is: the digest in an opened row is drawn from its side. */
+    tri: string;
 }
 
 const TONE: Record<string, string> = {
@@ -239,13 +222,11 @@ function Flags({ g }: { g: GameRow }) {
 /**
  * The team game log: a summary strip, compact card rows on phones, and from
  * md up a dense table with one sticky column, a header that follows the page,
- * sortable header buttons and a disclosure per row that loads the boxscore.
+ * sortable header buttons and a disclosure per row that opens the game digest.
  */
-export default function GamesLogTable({ games, showSummary = true, period, seasonLabel, teamColor, loadBoxscores }: GamesLogTableProps) {
+export default function GamesLogTable({ games, showSummary = true, period, seasonLabel, teamColor, tri }: GamesLogTableProps) {
     const [sort, setSort] = React.useState<{ key: string; dir: SortDir } | null>(null);
     const [open, setOpen] = React.useState<Set<string>>(new Set());
-    const [box, setBox] = React.useState<Boxscores | null>(null);
-    const [boxState, setBoxState] = React.useState<'idle' | 'loading' | 'error'>('idle');
 
     const sorted = React.useMemo(() => {
         if (!sort) return games;
@@ -268,15 +249,6 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
             else next.add(id);
             return next;
         });
-        if (!box && boxState !== 'loading') {
-            setBoxState('loading');
-            loadBoxscores()
-                .then(b => {
-                    setBox(b ?? { players: {}, games: {} });
-                    setBoxState('idle');
-                })
-                .catch(() => setBoxState('error'));
-        }
     };
     const onSort = (key: string) => setSort(s => (s?.key === key ? { key, dir: s.dir === 'desc' ? 'asc' : 'desc' } : { key, dir: 'desc' }));
     const cols = COLS.filter(c => !(period !== 'All' && c.fullGame));
@@ -438,9 +410,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                     </button>
                                     {isOpen ? (
                                         <div id={`box-m-${g.id}`} className="border-t border-line bg-bg/60 p-3">
-                                            <GameLink id={g.id} />
-                                            <MiniStats g={g} period={period} />
-                                            <Boxscore rows={box?.games[g.id]} players={box?.players} state={boxState} />
+                                            <GameDigest id={g.id} tri={tri} color={teamColor} />
                                         </div>
                                     ) : null}
                                 </li>
@@ -458,7 +428,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                         </StickyHead>
                         <TableScroller label={`${seasonLabel} game log table`} pageScroll onScrollX={left => headRef.current && (headRef.current.scrollLeft = left)}>
                             <table className={tableCls} style={tableStyle}>
-                                <caption className="sr-only">{seasonLabel} game log. The first-column buttons show each boxscore.</caption>
+                                <caption className="sr-only">{seasonLabel} game log. The first-column buttons open each game.</caption>
                                 {colgroup}
                                 <thead className={PINNED_HEAD_HIDE}>{headCells}</thead>
                                 <tbody>
@@ -484,7 +454,7 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                                             <span className="whitespace-nowrap font-bold text-fg-1">
                                                                 <span className="font-normal text-fg-3">{g.home ? 'vs' : '@'}</span> {g.opp}
                                                             </span>
-                                                            <span className="sr-only">, show boxscore</span>
+                                                            <span className="sr-only">, show game</span>
                                                         </button>
                                                     </th>
                                                     {cols.map(c => (
@@ -505,9 +475,8 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                                                 {isOpen ? (
                                                     <tr>
                                                         <td id={`box-${g.id}`} colSpan={cols.length + 1} className="border-b border-line bg-bg/60 p-0">
-                                                            <div className="sticky left-0 max-w-[min(100vw-4rem,1000px)] px-3 py-2.5" style={{ borderLeft: `2px solid ${teamColor}` }}>
-                                                                <GameLink id={g.id} />
-                                                                <Boxscore rows={box?.games[g.id]} players={box?.players} state={boxState} />
+                                                            <div className="sticky left-0 max-w-[min(100vw-4rem,1240px)] px-4 pb-4 pt-2">
+                                                                <GameDigest id={g.id} tri={tri} color={teamColor} />
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -521,88 +490,6 @@ export default function GamesLogTable({ games, showSummary = true, period, seaso
                     </div>
                 </>
             )}
-        </div>
-    );
-}
-
-function MiniStats({ g, period }: { g: GameRow; period: PeriodFilter }) {
-    const items: [string, React.ReactNode][] = [
-        ['Shots', `${stat(g, 'sf', period)}–${stat(g, 'sa', period)}`],
-        ['xG', `${stat(g, 'xgf', period).toFixed(2)}–${stat(g, 'xga', period).toFixed(2)}`],
-        ['HD', `${stat(g, 'hdf', period)}–${stat(g, 'hda', period)}`],
-        ['PP/PK', period === 'All' ? `${g.ppg}/${g.ppo} · ${g.ppga}/${g.pko}` : '—'],
-        ['G', `${lastName(g.starter)} · ${lastName(g.oppStarter)}`],
-    ];
-    return (
-        <dl className="mb-2.5 grid grid-cols-2 gap-x-4 gap-y-1 text-caption">
-            {items.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-2">
-                    <dt className="label">{k}</dt>
-                    <dd className="truncate tabular-nums text-fg-1">{v}</dd>
-                </div>
-            ))}
-        </dl>
-    );
-}
-
-function Boxscore({ rows, players, state }: { rows: BoxRow[] | undefined; players?: Boxscores['players']; state: 'idle' | 'loading' | 'error' }) {
-    if (state === 'loading' && !rows) return <p className="label">Loading</p>;
-    if (state === 'error') return <p className="label text-neg">Boxscore unavailable</p>;
-    if (!rows || rows.length === 0) return <p className="label">No boxscore</p>;
-    const who = (id: string) => players?.[id] ?? [id, 0, ''];
-    const skaters = rows.filter(r => r[7] === 0).sort((a, b) => b[3] - a[3] || b[1] - a[1]);
-    const goalies = rows.filter(r => r[7] === 1);
-    return (
-        <div className="flex flex-col gap-2">
-            {goalies.length ? (
-                <p className="flex flex-wrap gap-x-4 text-caption">
-                    {goalies.map(r => (
-                        <span key={r[0]}>
-                            <span className="font-display text-[14px] font-semibold uppercase text-fg-1">{who(r[0])[0]}</span>{' '}
-                            <span className="tabular-nums text-fg-2">
-                                {r[9]}/{r[8]} SV
-                            </span>{' '}
-                            <span className="text-micro text-fg-3">{r[5]}</span>
-                        </span>
-                    ))}
-                </p>
-            ) : null}
-            <ScrollRegion label="Skater boxscore">
-                {/* Phones: fits the card (names truncate) so the names never scroll away. */}
-                <table className="w-full min-w-[400px] font-mono text-caption tabular-nums max-sm:min-w-0 max-sm:[&_td]:px-1.5 max-sm:[&_th]:px-1.5">
-                    <caption className="sr-only">Skater boxscore</caption>
-                    <thead>
-                        <tr>
-                            {['Player', 'G', 'A', 'P', '+/−', 'SOG', 'TOI'].map(h => (
-                                <th key={h} scope="col" className={cn('h-7 px-2 text-micro font-medium uppercase tracking-[0.1em] text-fg-3', h === 'Player' ? 'text-left' : 'text-right')}>
-                                    {h}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {skaters.map(r => {
-                            const [name, num] = who(r[0]);
-                            return (
-                                <tr key={r[0]} className="border-t border-line">
-                                    <th scope="row" className="h-7 px-2 text-left font-normal text-fg-1">
-                                        <span className="max-sm:block max-sm:max-w-[8rem] max-sm:truncate max-[359px]:max-w-[5.5rem]">
-                                            {num ? <span className="mr-1.5 text-fg-3">{num}</span> : null}
-                                            {name}
-                                        </span>
-                                    </th>
-                                    <td className="px-2 text-right">{r[1]}</td>
-                                    <td className="px-2 text-right">{r[2]}</td>
-                                    <td className="px-2 text-right font-bold">{r[3]}</td>
-                                    <td className={cn('px-2 text-right', diffTone(r[4]))}>{signed(r[4])}</td>
-                                    <td className="px-2 text-right">{r[6]}</td>
-                                    <td className="px-2 text-right text-fg-2">{r[5]}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </ScrollRegion>
         </div>
     );
 }

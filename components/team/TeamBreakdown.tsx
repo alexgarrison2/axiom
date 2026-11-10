@@ -13,6 +13,7 @@ import { Units } from '@/components/game/Units';
 import { XgBreakdown } from '@/components/game/XgBreakdown';
 import { Zones } from '@/components/game/Zones';
 import { cn } from '@/lib/utils';
+import { gamePack } from '@/lib/game/pack';
 import { mergeSeason } from '@/lib/game/season';
 import type { GameModel } from '@/lib/game/types';
 import type { LeagueRates } from '@/lib/game/league-ranks';
@@ -41,19 +42,6 @@ export interface SeasonGame {
 
 const SELECT =
     'h-8 min-w-0 rounded-control border border-line bg-surface-1 px-2 text-caption uppercase tracking-wide text-fg-1 hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand coarse:h-11 max-md:text-base max-md:normal-case max-md:tracking-normal';
-
-const packs = new Map<number, Promise<GameModel | null>>();
-function pack(id: number) {
-    if (!packs.has(id)) {
-        packs.set(
-            id,
-            fetch(`/api/game-pack/${id}`)
-                .then(r => (r.ok ? (r.json() as Promise<GameModel>) : null))
-                .catch(() => null),
-        );
-    }
-    return packs.get(id)!;
-}
 
 function Field({ label, className, children }: { label: string; className?: string; children: React.ReactNode }) {
     return (
@@ -92,7 +80,7 @@ export function TeamBreakdown({ tri, games, league }: { tri: string; games: Seas
         let bad = 0;
         const worker = async () => {
             for (let g = queue.shift(); g; g = queue.shift()) {
-                const m = await pack(g.id);
+                const m = await gamePack(g.id);
                 if (!live) return;
                 if (m) setModels(prev => (prev.has(g!.id) ? prev : new Map(prev).set(g!.id, m)));
                 else setFailed(++bad);

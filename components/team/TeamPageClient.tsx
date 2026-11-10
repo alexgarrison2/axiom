@@ -126,11 +126,6 @@ export default function TeamPageClient({ initial, seasons, breakdown, league }: 
         return t.gp ? signed(t.gsax, 1) : null;
     }, [heroView, filtered, filters.period]);
 
-    const loadBoxscores = React.useCallback(async () => {
-        const full = await fetchJsonCached<TeamPayload>(teamUrl(tri, season));
-        return full.boxscores;
-    }, [tri, season]);
-
     const current = payloads[seasons[0]] ?? initial;
     const regularCount = games.filter(g => g.type === 2).length;
     const label = seasonLabel(season);
@@ -288,7 +283,7 @@ export default function TeamPageClient({ initial, seasons, breakdown, league }: 
                         ) : null}
                     </div>
                 ) : (
-                    <GamesLogTable key={season} games={filtered} showSummary={!heroView} period={filters.period} seasonLabel={label} teamColor={initial.team.color} loadBoxscores={loadBoxscores} />
+                    <GamesLogTable key={season} games={filtered} showSummary={!heroView} period={filters.period} seasonLabel={label} teamColor={initial.team.color} tri={tri} />
                 )}
             </TabsContent>
 
