@@ -763,7 +763,7 @@
                 "id": 4489,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -898,6 +898,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Zack MacEwen",
+                "number": 19,
+                "pos": "ir6",
+                "id": 4489,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -977,8 +986,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-11-10)",
-        "updated_at": "2026-11-11T13:52:14.918Z",
-        "fetched_at": "2026-11-11T14:01:50Z"
+        "updated_at": "2026-11-11T16:38:21.237Z",
+        "fetched_at": "2026-11-11T17:01:56Z"
     },
     "MTL": {
         "f1": [
@@ -1606,9 +1615,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-08)",
-        "updated_at": "2026-11-09T16:32:38.147Z",
-        "fetched_at": "2026-11-10T02:01:56Z"
+        "lineup_source": "Jim McBride",
+        "updated_at": "2026-11-11T16:43:33.671Z",
+        "fetched_at": "2026-11-11T17:01:56Z"
     },
     "NYR": {
         "f1": [
@@ -1719,14 +1728,14 @@
                 "movement": null
             },
             {
-                "name": "Luke Glendening",
-                "number": 41,
+                "name": "Glenn Gawdin",
+                "number": null,
                 "pos": "c",
-                "id": 2174,
+                "id": 3934,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Jaroslav Chmelar",
@@ -1755,7 +1764,7 @@
                 "number": 23,
                 "pos": "rd",
                 "id": 27251,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1799,7 +1808,7 @@
                 "number": 60,
                 "pos": "rd",
                 "id": 34620,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1905,7 +1914,7 @@
                 "number": 23,
                 "pos": "sk4",
                 "id": 27251,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -1948,9 +1957,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-09)",
-        "updated_at": "2026-11-10T15:16:02.647Z",
-        "fetched_at": "2026-11-11T13:46:57Z"
+        "lineup_source": "Mollie Walker",
+        "updated_at": "2026-11-11T16:44:22.324Z",
+        "fetched_at": "2026-11-11T17:01:56Z"
     },
     "EDM": {
         "f1": [
@@ -4009,10 +4018,10 @@
         ],
         "d1": [
             {
-                "name": "Adam Pelech",
-                "number": 3,
+                "name": "Logan Stanley",
+                "number": 8,
                 "pos": "ld",
-                "id": 2449,
+                "id": 2652,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4031,24 +4040,24 @@
         ],
         "d2": [
             {
-                "name": "Logan Stanley",
-                "number": 8,
+                "name": "Adam Pelech",
+                "number": 3,
                 "pos": "ld",
-                "id": 2652,
+                "id": 2449,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "down"
             },
             {
-                "name": "Tony DeAngelo",
-                "number": 77,
+                "name": "Ryan Pulock",
+                "number": 6,
                 "pos": "rd",
-                "id": 2664,
-                "ppUnit": 2,
+                "id": 2146,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "gameTimeDecision": true,
+                "movement": "new"
             }
         ],
         "d3": [
@@ -4063,14 +4072,14 @@
                 "movement": null
             },
             {
-                "name": "Matthew Kessel",
-                "number": 4,
+                "name": "Tony DeAngelo",
+                "number": 77,
                 "pos": "rd",
-                "id": 30737,
-                "ppUnit": null,
+                "id": 2664,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
@@ -4216,9 +4225,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-09)",
-        "updated_at": "2026-11-10T15:20:31.779Z",
-        "fetched_at": "2026-11-11T03:05:31Z"
+        "lineup_source": "Andrew Gross",
+        "updated_at": "2026-11-11T16:02:27.780Z",
+        "fetched_at": "2026-11-11T17:01:56Z"
     },
     "COL": {
         "f1": [
@@ -9852,19 +9861,19 @@
         ],
         "g": [
             {
-                "name": "Dustin Wolf",
-                "number": 32,
+                "name": "Devin Cooley",
+                "number": null,
                 "pos": "g1",
-                "id": 29507,
+                "id": 32944,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Devin Cooley",
-                "number": null,
+                "name": "Dustin Wolf",
+                "number": 32,
                 "pos": "g2",
-                "id": 32944,
+                "id": 29507,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -9977,7 +9986,7 @@
         ],
         "lineup_source": "Pat Steinberg",
         "updated_at": "2026-11-10T17:45:07.692Z",
-        "fetched_at": "2026-11-11T16:02:03Z"
+        "fetched_at": "2026-11-11T17:01:56Z"
     },
     "NSH": {
         "f1": [
