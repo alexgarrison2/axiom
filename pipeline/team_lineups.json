@@ -4608,7 +4608,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Scott Laughton",
@@ -4660,7 +4660,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -4681,7 +4681,7 @@
                 "id": 744,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -4767,6 +4767,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Drew Doughty",
+                "number": 8,
+                "pos": "ir3",
+                "id": 744,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -4804,7 +4813,7 @@
                 "id": 744,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -4846,8 +4855,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-11-10)",
-        "updated_at": "2026-11-11T14:05:03.837Z",
-        "fetched_at": "2026-11-11T15:01:58Z"
+        "updated_at": "2026-11-11T20:29:09.948Z",
+        "fetched_at": "2026-11-11T21:02:11Z"
     },
     "DAL": {
         "f1": [
