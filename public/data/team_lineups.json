@@ -6810,10 +6810,10 @@
         ],
         "f2": [
             {
-                "name": "Valeri Nichushkin",
-                "number": 43,
+                "name": "Dmitri Voronkov",
+                "number": 10,
                 "pos": "lw",
-                "id": 2142,
+                "id": 31266,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -6830,14 +6830,14 @@
                 "movement": null
             },
             {
-                "name": "Dmitri Voronkov",
-                "number": 10,
+                "name": "Valeri Nichushkin",
+                "number": 43,
                 "pos": "rw",
-                "id": 31266,
+                "id": 2142,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -6874,9 +6874,19 @@
         ],
         "f4": [
             {
+                "name": "Ryan Lomberg",
+                "number": 94,
+                "pos": "lw",
+                "id": 3905,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
                 "name": "Jack Williams",
                 "number": null,
-                "pos": "lw",
+                "pos": "c",
                 "id": 38425,
                 "ppUnit": null,
                 "injuryStatus": null,
@@ -6886,22 +6896,12 @@
             {
                 "name": "Steven Lorentz",
                 "number": 18,
-                "pos": "c",
+                "pos": "rw",
                 "id": 3916,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
-            },
-            {
-                "name": "Ryan Lomberg",
-                "number": 94,
-                "pos": "rw",
-                "id": 3905,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "new"
             }
         ],
         "d1": [
@@ -6944,7 +6944,7 @@
                 "id": 31514,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             }
         ],
@@ -6967,7 +6967,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -6999,15 +6999,6 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Denton Mateychuk",
-                "number": 5,
-                "pos": "ir2",
-                "id": 31514,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -7036,7 +7027,7 @@
                 "id": 31514,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Ivan Provorov",
@@ -7086,9 +7077,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Wes Minke",
-        "updated_at": "2026-11-09T16:56:27.184Z",
-        "fetched_at": "2026-11-09T17:02:12Z"
+        "lineup_source": "@BlueJacketsNHL",
+        "updated_at": "2026-11-11T00:35:59.851Z",
+        "fetched_at": "2026-11-11T01:02:37Z"
     },
     "SJS": {
         "f1": [
@@ -8130,23 +8121,23 @@
                 "movement": null
             },
             {
+                "name": "Marco Kasper",
+                "number": null,
+                "pos": "c",
+                "id": 36364,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
                 "name": "J.T. Compher",
                 "number": 37,
-                "pos": "c",
+                "pos": "rw",
                 "id": 2751,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
-            },
-            {
-                "name": "Marco Kasper",
-                "number": null,
-                "pos": "rw",
-                "id": 36364,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -8169,7 +8160,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Keegan Kolesar",
@@ -8179,19 +8170,19 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
             {
-                "name": "Ben Chiarot",
-                "number": 8,
+                "name": "William Wallinder",
+                "number": 54,
                 "pos": "ld",
-                "id": 1587,
+                "id": 33029,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Moritz Seider",
@@ -8206,14 +8197,14 @@
         ],
         "d2": [
             {
-                "name": "William Wallinder",
-                "number": 54,
+                "name": "Ben Chiarot",
+                "number": 8,
                 "pos": "ld",
-                "id": 33029,
+                "id": 1587,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Justin Faulk",
@@ -8279,24 +8270,6 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Marco Kasper",
-                "number": null,
-                "pos": "ir2",
-                "id": 36364,
-                "ppUnit": 2,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Mason Appleton",
-                "number": 22,
-                "pos": "ir3",
-                "id": 4582,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Simon Edvinsson",
                 "number": 77,
                 "pos": "ir4",
@@ -8332,7 +8305,7 @@
                 "id": 4582,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Ben Chiarot",
@@ -8391,9 +8364,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-10T17:25:45.914Z",
-        "fetched_at": "2026-11-10T21:02:22Z"
+        "lineup_source": "@DetroitRedWings",
+        "updated_at": "2026-11-11T00:56:27.420Z",
+        "fetched_at": "2026-11-11T01:02:37Z"
     },
     "UTA": {
         "f1": [
