@@ -1825,19 +1825,19 @@
         ],
         "g": [
             {
-                "name": "Dylan Garand",
-                "number": null,
+                "name": "Joonas Korpisalo",
+                "number": 70,
                 "pos": "g1",
-                "id": 32794,
+                "id": 2556,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Joonas Korpisalo",
-                "number": 70,
+                "name": "Dylan Garand",
+                "number": null,
                 "pos": "g2",
-                "id": 2556,
+                "id": 32794,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -1968,7 +1968,7 @@
         ],
         "lineup_source": "Last Game (2026-11-09)",
         "updated_at": "2026-11-10T15:16:02.647Z",
-        "fetched_at": "2026-11-10T23:02:24Z"
+        "fetched_at": "2026-11-11T13:46:57Z"
     },
     "EDM": {
         "f1": [
@@ -3598,11 +3598,11 @@
         ],
         "f2": [
             {
-                "name": "Tommy Novak",
-                "number": 18,
+                "name": "Egor Chinakhov",
+                "number": 59,
                 "pos": "lw",
-                "id": 26595,
-                "ppUnit": 1,
+                "id": 30655,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3618,36 +3618,36 @@
                 "movement": null
             },
             {
-                "name": "Egor Chinakhov",
-                "number": 59,
+                "name": "Nicholas Robertson",
+                "number": 14,
                 "pos": "rw",
-                "id": 30655,
-                "ppUnit": 2,
+                "id": 29254,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
             {
-                "name": "Andrei Kuzmenko",
-                "number": 10,
+                "name": "Ville Koivunen",
+                "number": 41,
                 "pos": "lw",
-                "id": 25254,
+                "id": 34677,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "new"
             },
             {
-                "name": "Hendrix Lapierre",
-                "number": 22,
+                "name": "Tommy Novak",
+                "number": 18,
                 "pos": "c",
-                "id": 29894,
-                "ppUnit": null,
+                "id": 26595,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Justin Brazeau",
@@ -3682,14 +3682,14 @@
                 "movement": null
             },
             {
-                "name": "Nicholas Robertson",
-                "number": 14,
+                "name": "Rutger McGroarty",
+                "number": 2,
                 "pos": "rw",
-                "id": 29254,
+                "id": 33262,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -3700,7 +3700,7 @@
                 "id": 2773,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -3760,19 +3760,19 @@
         ],
         "g": [
             {
-                "name": "Arturs Silovs",
-                "number": null,
+                "name": "Sergei Murashov",
+                "number": 1,
                 "pos": "g1",
-                "id": 31270,
+                "id": 36361,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Sergei Murashov",
-                "number": 1,
+                "name": "Arturs Silovs",
+                "number": null,
                 "pos": "g2",
-                "id": 36361,
+                "id": 31270,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -3804,15 +3804,6 @@
                 "id": 2407,
                 "ppUnit": null,
                 "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Ville Koivunen",
-                "number": 41,
-                "pos": "ir5",
-                "id": 34677,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -3892,9 +3883,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Pittsburgh Penguins",
-        "updated_at": "2026-11-09T00:36:41.786Z",
-        "fetched_at": "2026-11-09T01:01:58Z"
+        "lineup_source": "@PensInsideScoop",
+        "updated_at": "2026-11-11T13:18:56.496Z",
+        "fetched_at": "2026-11-11T13:46:57Z"
     },
     "NYI": {
         "f1": [
@@ -10185,19 +10176,19 @@
         ],
         "g": [
             {
-                "name": "Juuse Saros",
-                "number": 74,
+                "name": "Justus Annunen",
+                "number": 29,
                 "pos": "g1",
-                "id": 2557,
+                "id": 29146,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Justus Annunen",
-                "number": 29,
+                "name": "Juuse Saros",
+                "number": 74,
                 "pos": "g2",
-                "id": 29146,
+                "id": 2557,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -10301,6 +10292,6 @@
         ],
         "lineup_source": "Nick Kieser",
         "updated_at": "2026-11-09T18:34:00.783Z",
-        "fetched_at": "2026-11-09T19:02:10Z"
+        "fetched_at": "2026-11-11T13:46:57Z"
     }
 }
