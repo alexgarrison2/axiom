@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-11T03:06:56.751210+00:00",
+ "generated_at": "2026-11-11T05:20:55.993379+00:00",
  "unit": "Every pick bet to win 1 unit: a -120 favourite risks 1.2u, a +150 underdog risks 0.67u",
  "disclaimer": "For information and entertainment only. Past results do not predict future results.",
  "source": "graded live picks in prediction_history.json at the price shown when the pick was published",
@@ -9456,21 +9456,21 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 261,
-    "n_graded": 261,
+    "n_bets": 262,
+    "n_graded": 262,
     "n_pending": 0,
-    "record": "169-92",
-    "wins": 169,
+    "record": "170-92",
+    "wins": 170,
     "losses": 92,
-    "units_staked": 441.501,
-    "units_profit": 29.252,
-    "roi": 0.0663,
+    "units_staked": 442.921,
+    "units_profit": 30.252,
+    "roi": 0.0683,
     "roi_ci": [
      -0.0223,
-     0.1536
+     0.1554
     ],
     "clv_mean": -0.0329,
-    "clv_n": 261,
+    "clv_n": 262,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
@@ -9482,11 +9482,11 @@
      },
      {
       "bucket": "0-5%",
-      "n": 83,
-      "record": "50-33",
-      "units_staked": 142.1139,
-      "units_profit": 1.1692,
-      "roi": 0.0082
+      "n": 84,
+      "record": "51-33",
+      "units_staked": 143.5339,
+      "units_profit": 2.1692,
+      "roi": 0.0151
      },
      {
       "bucket": "5-10%",
@@ -9530,11 +9530,11 @@
      },
      {
       "bucket": "1.1-2u",
-      "n": 184,
-      "record": "109-75",
-      "units_staked": 269.83,
-      "units_profit": 1.73,
-      "roi": 0.0064
+      "n": 185,
+      "record": "110-75",
+      "units_staked": 271.25,
+      "units_profit": 2.73,
+      "roi": 0.0101
      },
      {
       "bucket": "2u+",
@@ -16045,6 +16045,31 @@
      "decision": "OT",
      "closing_price": -112.0,
      "clv": -0.0448,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020290,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-10",
+     "startUtc": "2026-11-11T01:00:00Z",
+     "snapshotUtc": "2026-11-10T23:03:00Z",
+     "team": "Blues",
+     "opponent": "Red Wings",
+     "side": "home",
+     "stake_units": 1.42,
+     "price": -142.0,
+     "decimal_price": 1.7042,
+     "ev_at_bet": 0.0191,
+     "ev_bucket": "0-5%",
+     "stake_bucket": "1.1-2u",
+     "model_prob": 0.598,
+     "result": "win",
+     "profit_units": 1.0,
+     "final": "2-3",
+     "decision": "REG",
+     "closing_price": -142.0,
+     "clv": -0.033,
      "model_version": "sim-m5-v4_st-20261003"
     },
     {
