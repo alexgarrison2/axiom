@@ -34,12 +34,12 @@
     },
     "dfo_goalies": {
       "pages": 2,
-      "fetched_at": "2026-11-11T13:46:44Z"
+      "fetched_at": "2026-11-11T14:01:38Z"
     },
     "espn_injuries": {
       "entries": 113,
       "matched": 109,
-      "fetched_at": "2026-11-11T13:46:49Z"
+      "fetched_at": "2026-11-11T14:01:41Z"
     },
     "odds": {
       "games": 6,
@@ -49,16 +49,16 @@
         "bovada": 6,
         "espn": 0
       },
-      "fetched_at": "2026-11-11T13:46:51Z"
+      "fetched_at": "2026-11-11T14:01:44Z"
     },
     "bu_bundle": {
       "built_at": "2026-11-10T22:26:28+00:00",
       "max_source_date": "2026-11-09",
       "n_games": 285,
       "season": "20262027",
-      "age_h": 15.3,
+      "age_h": 15.6,
       "flag": "on",
-      "fetched_at": "2026-11-11T13:46:55Z"
+      "fetched_at": "2026-11-11T14:01:49Z"
     },
     "player_ratings": {
       "as_of": "2026-11-09",
@@ -68,8 +68,8 @@
       "fetched_at": "2026-11-11T12:05:24Z"
     },
     "player_props": {
-      "fetched_at": "2026-11-11T13:46:53Z",
-      "games": 2
+      "fetched_at": "2026-11-11T14:01:47Z",
+      "games": 6
     },
     "skater_games": {
       "fetched_at": "2026-11-11T12:04:47Z"
@@ -83,7 +83,7 @@
   "schema_version": 1,
   "season_id": "20262027",
   "season_label": "2026-27",
-  "generated_at": "2026-11-11T13:47:52Z",
+  "generated_at": "2026-11-11T14:02:31Z",
   "mode": "lite",
   "games_played_current_season": 292,
   "phase": {
@@ -107,21 +107,21 @@
       "stage": "upcoming_games",
       "status": "ok",
       "rows_written": 17,
-      "seconds": 5.3,
+      "seconds": 2.6,
       "required": true
     },
     {
       "stage": "injuries",
       "status": "ok",
       "rows_written": 113,
-      "seconds": 0.6,
+      "seconds": 0.5,
       "required": false
     },
     {
       "stage": "clinch_status",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 0.1,
+      "seconds": 0.0,
       "required": false
     },
     {
@@ -135,21 +135,21 @@
       "stage": "odds",
       "status": "ok",
       "rows_written": 6,
-      "seconds": 1.7,
+      "seconds": 3.1,
       "required": false
     },
     {
       "stage": "player_props",
       "status": "ok",
-      "rows_written": 184,
-      "seconds": 1.7,
+      "rows_written": 608,
+      "seconds": 3.1,
       "required": false
     },
     {
       "stage": "goalie_stats",
       "status": "ok",
       "rows_written": 104,
-      "seconds": 0.2,
+      "seconds": 0.5,
       "required": false
     },
     {
@@ -174,27 +174,27 @@
       "rows_written": 0,
       "seconds": 0.0,
       "required": true,
-      "reason": "1.7h old"
+      "reason": "2.0h old"
     },
     {
       "stage": "bu_bundle",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 1.7,
+      "seconds": 1.4,
       "required": false,
-      "reason": "built 15.3h ago, 285 games of 20262027, PONYXG_BU=on"
+      "reason": "built 15.6h ago, 285 games of 20262027, PONYXG_BU=on"
     },
     {
       "stage": "predict",
       "status": "ok",
       "rows_written": 17,
-      "seconds": 47.1,
+      "seconds": 34.7,
       "required": true
     },
     {
       "stage": "snapshot",
       "status": "ok",
-      "rows_written": 6,
+      "rows_written": 2,
       "seconds": 0.0,
       "required": false
     },
@@ -202,7 +202,7 @@
       "stage": "props_board",
       "status": "ok",
       "rows_written": 762,
-      "seconds": 5.1,
+      "seconds": 3.7,
       "required": false
     },
     {
@@ -217,14 +217,14 @@
       "stage": "prediction_history",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 3.9,
+      "seconds": 2.7,
       "required": true
     },
     {
       "stage": "model_report",
       "status": "ok",
       "rows_written": 290,
-      "seconds": 0.5,
+      "seconds": 0.4,
       "required": true
     },
     {
@@ -244,15 +244,15 @@
   ],
   "ok": true,
   "run": {
-    "started_at": "2026-11-11T13:46:43Z",
-    "finished_at": "2026-11-11T13:47:52Z",
-    "seconds": 68.8,
-    "github_run_id": "43032149579"
+    "started_at": "2026-11-11T14:01:37Z",
+    "finished_at": "2026-11-11T14:02:31Z",
+    "seconds": 53.5,
+    "github_run_id": "43034457130"
   },
   "last_full_attempt": "2026-11-11T12:06:37Z",
   "last_full_run": "2026-11-11T12:06:37Z",
   "stale": {},
-  "last_lite_attempt": "2026-11-11T13:47:52Z",
-  "last_lite_run": "2026-11-11T13:47:52Z",
+  "last_lite_attempt": "2026-11-11T14:02:31Z",
+  "last_lite_run": "2026-11-11T14:02:31Z",
   "stale_since": {}
 }
