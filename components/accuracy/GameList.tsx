@@ -534,8 +534,8 @@ const MICRO = 'text-micro uppercase tracking-label text-fg-3';
 
 /**
  * One day of picks: a summary row on the game grid (record and hit rate under Final, goals error under
- * Predicted, log loss vs the market under Pick, average confidence under Confidence) that expands to the
- * day's game rows. Collapsed days keep their rows out of the DOM.
+ * Predicted, log loss vs the market under Pick, average confidence under Confidence, units under Units)
+ * that expands to the day's game rows. Phones keep the date, record and units. Collapsed days keep their rows out of the DOM.
  */
 function DayItem({ day, open, onToggle, children }: { day: DayGroup; open: boolean; onToggle: () => void; children: React.ReactNode }) {
     const s = day.summary;
@@ -602,7 +602,7 @@ function DayItem({ day, open, onToggle, children }: { day: DayGroup; open: boole
                         <span className="sr-only">, </span>
                     </span>
                 </span>
-                <span className="justify-self-end md:justify-self-start">{ll}</span>
+                <span className="hidden md:block md:justify-self-start">{ll}</span>
                 <span className="hidden min-w-0 items-center gap-2 md:flex">
                     <span aria-hidden="true" className={MICRO}>
                         Avg
@@ -621,7 +621,11 @@ function DayItem({ day, open, onToggle, children }: { day: DayGroup; open: boole
                         </>
                     )}
                 </span>
-                <span className="hidden justify-self-end md:block">
+                {/* Phones show the day's units in place of the log loss vs the market. */}
+                <span className="flex flex-col items-end justify-self-end leading-none">
+                    <span aria-hidden="true" className={cn(MICRO, 'md:hidden')}>
+                        Units
+                    </span>
                     <UnitsCell units={s.units} bold />
                 </span>
                 <svg aria-hidden="true" viewBox="0 0 16 16" className={cn('h-3.5 w-3.5 text-fg-2 transition-transform', open && 'rotate-180')}>
