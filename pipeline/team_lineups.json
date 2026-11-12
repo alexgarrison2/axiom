@@ -3885,14 +3885,14 @@
         ],
         "f2": [
             {
-                "name": "Emil Heineman",
-                "number": 51,
+                "name": "Matias Maccelli",
+                "number": 63,
                 "pos": "lw",
-                "id": 33094,
-                "ppUnit": 2,
+                "id": 30063,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Brayden Schenn",
@@ -3917,14 +3917,14 @@
         ],
         "f3": [
             {
-                "name": "Matias Maccelli",
-                "number": 63,
+                "name": "Emil Heineman",
+                "number": 51,
                 "pos": "lw",
-                "id": 30063,
-                "ppUnit": 1,
+                "id": 33094,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "down"
             },
             {
                 "name": "Casey Cizikas",
@@ -3934,7 +3934,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Anthony Duclair",
@@ -3949,20 +3949,20 @@
         ],
         "f4": [
             {
+                "name": "Ondrej Palat",
+                "number": 18,
+                "pos": "lw",
+                "id": 1830,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
                 "name": "Kyle MacLean",
                 "number": 32,
                 "pos": "c",
                 "id": 27755,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Mitchell Chaffee",
-                "number": 41,
-                "pos": "rw",
-                "id": 32923,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4170,8 +4170,8 @@
             }
         ],
         "lineup_source": "Projected",
-        "updated_at": "2026-11-12T19:29:43.357Z",
-        "fetched_at": "2026-11-12T20:04:14Z"
+        "updated_at": "2026-11-12T20:37:09.304Z",
+        "fetched_at": "2026-11-12T21:01:53Z"
     },
     "COL": {
         "f1": [
@@ -9370,19 +9370,9 @@
         ],
         "f3": [
             {
-                "name": "Pavel Buchnevich",
-                "number": 89,
-                "pos": "lw",
-                "id": 2673,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Dalibor Dvorsky",
                 "number": 15,
-                "pos": "c",
+                "pos": "lw",
                 "id": 35010,
                 "ppUnit": 2,
                 "injuryStatus": null,
@@ -9392,8 +9382,18 @@
             {
                 "name": "Connor McMichael",
                 "number": 77,
-                "pos": "rw",
+                "pos": "c",
                 "id": 29203,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Pavel Buchnevich",
+                "number": 89,
+                "pos": "rw",
+                "id": 2673,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -9614,9 +9614,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Lou Korac",
-        "updated_at": "2026-11-12T01:56:16.603Z",
-        "fetched_at": "2026-11-12T02:02:14Z"
+        "lineup_source": "Jeremy Rutherford",
+        "updated_at": "2026-11-12T20:37:50.951Z",
+        "fetched_at": "2026-11-12T21:01:53Z"
     },
     "CGY": {
         "f1": [
