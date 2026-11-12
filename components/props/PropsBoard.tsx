@@ -171,7 +171,8 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
     React.useEffect(() => {
         if (open == null || detailRequested.current) return;
         detailRequested.current = true;
-        fetch(detailSrc)
+        // Stamped with the board's build so a cached detail file never pairs with a newer board.
+        fetch(doc ? `${detailSrc}?v=${encodeURIComponent(doc.generated_at)}` : detailSrc)
             .then(r => (r.ok ? (r.json() as Promise<PropsDetailDoc>) : Promise.reject(new Error(String(r.status)))))
             .then(d => setDetail(d))
             .catch(() => {
@@ -179,7 +180,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
                 detailRequested.current = false;
                 setDetail(null);
             });
-    }, [open, detailSrc]);
+    }, [open, detailSrc, doc]);
 
     const cat = categoryOf(catKey);
     const games = doc?.games ?? serverGames;

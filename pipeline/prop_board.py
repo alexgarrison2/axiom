@@ -25,9 +25,10 @@ by the browser only when a row is opened:
       vs_n: games vs tonight's opp since the archive starts } },
     lineups: { TRI: { f1: [[slot, name, id], ...], d1: ..., pp1: ..., pp2: ... } },  # id null when unmatched
     defence: { stats: [sa, att, xga, ga, ppga, ppo],   # allowed per game, this season, regular season
-               recent: [4, 8], prior: 16,              # windows; prior = the 16 games before the last 8
+               recent: [8], prior: 16,                 # windows; prior = the 16 games before the last 8
                league: [...],                          # mean over every team-game
-               teams: { TRI: { gp, l4, l8, prior, prior_n, rank } } } }   # rank of the L8 value, 1 = allows the most
+               span: [[lo, hi], ...],                  # lowest / highest last-8 or prior value of any team
+               teams: { TRI: { gp, l8, prior, prior_n, rank } } } }   # rank of the L8 value, 1 = allows the most
 
 Shape (keys kept short; the file is fetched by the browser):
   { generated_at, season, prev_season, slate_date, props: [...],
@@ -70,7 +71,7 @@ UNITS = ["f1", "f2", "f3", "f4", "d1", "d2", "d3"]
 # Opponent defence table: page stat -> gamestats column (what the team allowed in a game).
 DEF_STATS = {"sa": "sog_ag", "att": "attempts_ag", "xga": "xG_against", "ga": "goals_ag",
              "ppga": "pp_goals_against", "ppo": "pk_opportunities"}
-DEF_RECENT = (4, 8)
+DEF_RECENT = (8,)
 DEF_PRIOR = 16
 SOG_KEYS = {1.5: "sog15", 2.5: "sog25", 3.5: "sog35"}
 ONE_WAY = ["atg", "a1", "p1", "p2", "ppp1"]
@@ -188,11 +189,11 @@ def _lineup_chart(id_by_name: dict) -> dict:
 
 
 def _defence(gs: pd.DataFrame, tri_by_name: dict) -> dict:
-    """What each team has allowed per game this season: its last 4 and 8 games, the 16 before those 8,
+    """What each team has allowed per game this season: its last 8 games, the 16 before those 8,
     the league mean and the rank of its last-8 value (1 = allows the most). A team short of a window
-    reports the games it has (prior_n; l4/l8 against gp), never last season's."""
+    reports the games it has (prior_n; l8 against gp), never last season's."""
     stats, cols = list(DEF_STATS), list(DEF_STATS.values())
-    out = {"stats": stats, "recent": list(DEF_RECENT), "prior": DEF_PRIOR, "league": None, "teams": {}}
+    out = {"stats": stats, "recent": list(DEF_RECENT), "prior": DEF_PRIOR, "league": None, "span": None, "teams": {}}
     if gs.empty or not set(cols) <= set(gs.columns):
         return out
     gs = gs[(gs["game_id"] // 10000) % 100 == 2].assign(tri=lambda d: d["team"].map(tri_by_name))
@@ -211,6 +212,9 @@ def _defence(gs: pd.DataFrame, tri_by_name: dict) -> dict:
     ranks = l8.rank(ascending=False, method="min").astype(int)
     for tri, d in out["teams"].items():
         d["rank"] = [int(v) for v in ranks.loc[tri]]
+    # The scale the page plots a team on: every team's last-8 and prior values, per stat.
+    seen = [v for d in out["teams"].values() for v in (d[f"l{last}"], d["prior"]) if v]
+    out["span"] = [[min(c), max(c)] for c in zip(*seen)]
     return out
 
 

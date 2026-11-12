@@ -171,10 +171,11 @@ def test_defence_windows_rank_and_thin_samples():
         gs[c] = 1.0
     d = prop_board._defence(gs, {"Aces": "AAA", "Bees": "BBB"})
     a, b = d["teams"]["AAA"], d["teams"]["BBB"]
-    assert (a["gp"], a["l4"][0], a["l8"][0], a["prior"][0], a["prior_n"], a["rank"][0]) == (30, 40.0, 40.0, 20.0, 16, 1)
+    assert (a["gp"], a["l8"][0], a["prior"][0], a["prior_n"], a["rank"][0]) == (30, 40.0, 20.0, 16, 1)
     # Five games: the recent windows hold what exists, there is no prior window, and the rank still shows.
     assert (b["gp"], b["l8"][0], b["prior"], b["prior_n"], b["rank"][0]) == (5, 30.0, None, 0, 2)
     assert d["league"][0] == round((22 * 20 + 8 * 40 + 5 * 30) / 35, 1)
+    assert d["span"][0] == [20.0, 40.0]   # Aces' prior 16 to their last 8; Bees sit between
     assert prop_board._defence(pd.DataFrame(), {})["teams"] == {}
 
 

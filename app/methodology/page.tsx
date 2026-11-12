@@ -866,10 +866,11 @@ export default function MethodologyPage() {
                                 </Key>
                                 <Key sample={<span className="label text-fg-1">Allow</span>}>
                                     What tonight&apos;s opponent gives up per game this season: shots on goal, shot attempts, pony xG, goals, power-play
-                                    goals and power plays. <strong>L4</strong> and <strong>L8</strong> are its last 4 and 8 games, <strong>Prv 16</strong> the
-                                    16 before those 8 (fewer early in a season, and the heading says how many), <strong>Lg</strong> the league average and{' '}
-                                    <strong>Rk</strong> where its last 8 rank, 1 allowing the most. A triangle marks a last-8 figure a tenth or more above
-                                    or below the games before.
+                                    goals and power plays. <strong>L8</strong> is its last 8 games, <strong>Prv 16</strong> the 16 before those (fewer early
+                                    in a season, and the heading says how many), <strong>Lg</strong> the league average and <strong>Rk</strong> where its
+                                    last 8 rank, 1 allowing the most. The strip plots the last 8 (dot) and the games before (ring) between the stingiest
+                                    and most generous teams, with a tick at the league average: a dot right of its ring is a defence getting looser. The
+                                    rows that bear on the open stat are lit; amber is a top-8 soft spot.
                                 </Key>
                             </dl>
                             <p>

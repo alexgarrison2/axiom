@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { attemptsPer, boostFor, buildRows, extFor, seasonLabel, summarize, unitsFor, vsLog, american, categoryOf, fairAmerican, filterRows, lastN, lineFor, sortRows, streak, DEFAULT_FILTER, type LogRow, type PropPlayer, type PropsDoc } from '../model';
+import { attemptsPer, boostFor, buildRows, extFor, seasonLabel, spanPos, summarize, unitsFor, vsLog, american, categoryOf, fairAmerican, filterRows, lastN, lineFor, sortRows, streak, DEFAULT_FILTER, type LogRow, type PropPlayer, type PropsDoc } from '../model';
 
 // [date, opp, home, toi, g, a, sog, ppp, prev]
 const log = (sog: number[], prevFrom = 0): LogRow[] => sog.map((s, i) => [`2026-10-${String(i + 1).padStart(2, '0')}`, 'BOS', 1, 18, s >= 4 ? 1 : 0, 0, s, 0, i < prevFrom ? 1 : 0]);
@@ -88,5 +88,7 @@ describe('props model', () => {
         expect(bare.ev.map(r => r[2])).toEqual([1, 2]);
         expect(bare.pp.map(r => r[2])).toEqual([1, 3]);
         expect(unitsFor(player({ unit: null, pp: null }), chart as never, [a])).toEqual({ ev: [], pp: [] });
+        expect([20, 30, 45, 10].map(v => spanPos(v, [20, 40]))).toEqual([0, 50, 100, 0]);
+        expect(spanPos(3, [3, 3])).toBe(50);
     });
 });

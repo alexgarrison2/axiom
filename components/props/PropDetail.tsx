@@ -4,6 +4,7 @@ import { TeamLogo } from '@/components/views/TeamLogo';
 import { cn } from '@/lib/utils';
 import { GameLog } from './GameLog';
 import {
+    DEFENCE_FOR,
     american,
     attemptsPer,
     edge,
@@ -16,6 +17,7 @@ import {
     seasonLabel,
     seasonRate,
     seasonStart,
+    spanPos,
     shortDate,
     shortName,
     summarize,
@@ -144,16 +146,18 @@ const DEFENCE_ROWS: Record<DefenceStat, { label: string; title: string; digits: 
     ppo: { label: 'PP opp', title: 'Power plays given to the opponent per game', digits: 2 },
 };
 
-/** What tonight's opponent allows per game: its last 4 and 8, the games before those 8, the league, and where its last 8 rank. */
-function DefenceTable({ tri, doc }: { tri: string; doc: DefenceDoc }) {
+/**
+ * What tonight's opponent allows per game. Each row plots its last 8 (dot) against the games before
+ * (ring) on the league's spread, the tick being the league average: right of the tick allows more.
+ * The rows that bear on the open category are lit.
+ */
+function DefenceTable({ tri, doc, cat }: { tri: string; doc: DefenceDoc; cat: Category }) {
     const t = doc.teams[tri];
     if (!t) return <p className="text-caption text-fg-3">No games yet</p>;
-    const [short, long] = doc.recent;
-    // A window the team has not filled yet is headed by the games it holds.
-    const head = (w: number) => (t.gp < w ? `${t.gp} GP` : `L${w}`);
+    const long = doc.recent[doc.recent.length - 1];
     const cell = (v: number | undefined, digits: number) => (v == null ? '—' : v.toFixed(digits));
     const th = 'py-1 pl-2 text-right font-medium';
-    const td = 'py-1.5 pl-2 text-right';
+    const td = 'py-2 pl-2 text-right';
     return (
         <table className="w-full text-caption tabular-nums">
             <thead>
@@ -161,17 +165,21 @@ function DefenceTable({ tri, doc }: { tri: string; doc: DefenceDoc }) {
                     <th scope="col" className="py-1 text-left font-medium">
                         /Game
                     </th>
+                    {/* A window the team has not filled yet is headed by the games it holds. */}
                     <th scope="col" className={th}>
-                        {head(short)}
-                    </th>
-                    <th scope="col" className={th}>
-                        {head(long)}
+                        {t.gp < long ? `${t.gp} GP` : `L${long}`}
                     </th>
                     <th scope="col" className={th} title={`The ${doc.prior} games before the last ${long}${t.prior_n < doc.prior ? ` (${t.prior_n} played)` : ''}`}>
                         Prv {t.prior_n || doc.prior}
                     </th>
                     <th scope="col" className={th} title="League average this season">
                         Lg
+                    </th>
+                    <th scope="col" className="w-[34%] py-1 pl-4 font-medium" title={`Last ${long} (dot) and the games before (ring) on the league's spread; the tick is the league average`}>
+                        <span className="flex justify-between">
+                            <span>Less</span>
+                            <span>More</span>
+                        </span>
                     </th>
                     <th scope="col" className={th} title={`League rank of the last ${long}, 1 = allows the most`}>
                         Rk
@@ -184,25 +192,36 @@ function DefenceTable({ tri, doc }: { tri: string; doc: DefenceDoc }) {
                     if (!row) return null;
                     const now = t.l8?.[i];
                     const was = t.prior?.[i];
-                    // Looser or tighter than its own baseline by a tenth or more.
-                    const move = now != null && was ? (now - was) / was : 0;
+                    const lg = doc.league?.[i];
+                    const span = doc.span?.[i];
+                    const lit = DEFENCE_FOR[cat.key].includes(k);
+                    const soft = t.rank[i] <= 8;
+                    const at = (v: number | undefined) => (v == null || !span ? null : spanPos(v, span));
+                    const [pNow, pWas, pLg] = [at(now), at(was), at(lg)];
                     return (
                         <tr key={k} className="border-t border-line">
-                            <th scope="row" className="py-1.5 text-left font-medium uppercase text-fg-2" title={row.title}>
+                            <th scope="row" className={cn('py-2 text-left font-medium uppercase', lit ? 'text-brand' : 'text-fg-3')} title={row.title}>
                                 {row.label}
                             </th>
-                            <td className={cn(td, 'text-fg-2')}>{cell(t.l4?.[i], row.digits)}</td>
-                            <td className={cn(td, 'font-semibold', k === 'xga' ? 'text-model' : 'text-fg-1')} title={was != null && now != null ? `${signed(now - was, row.digits)} vs the games before` : undefined}>
-                                {Math.abs(move) >= 0.1 ? (
-                                    <svg viewBox="0 0 8 8" className="mr-1 inline-block h-2 w-2 text-fg-3" role="img" aria-label={move > 0 ? 'up' : 'down'}>
-                                        <path d={move > 0 ? 'M4 1.5 7 6H1z' : 'M4 6.5 1 2h6z'} fill="currentColor" />
-                                    </svg>
-                                ) : null}
-                                {cell(now, row.digits)}
+                            <td className={cn(td, 'font-semibold', lit ? 'text-fg-1' : 'text-fg-2')}>{cell(now, row.digits)}</td>
+                            <td className={cn(td, 'text-fg-3')}>{cell(was, row.digits)}</td>
+                            <td className={cn(td, 'text-fg-3')}>{cell(lg, row.digits)}</td>
+                            <td className="py-2 pl-4" aria-hidden="true">
+                                <div className={cn('relative mx-1 h-3', !lit && 'opacity-60')}>
+                                    <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-line-strong" />
+                                    {pLg != null ? <span className="absolute top-0 h-3 w-px bg-fg-3" style={{ left: `${pLg}%` }} /> : null}
+                                    {pNow != null && pWas != null ? (
+                                        <span className="absolute top-1/2 h-0.5 -translate-y-1/2 bg-fg-3" style={{ left: `${Math.min(pNow, pWas)}%`, width: `${Math.abs(pNow - pWas)}%` }} />
+                                    ) : null}
+                                    {pWas != null ? (
+                                        <span className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-fg-2 bg-surface-2" style={{ left: `${pWas}%` }} />
+                                    ) : null}
+                                    {pNow != null ? (
+                                        <span className={cn('absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full', soft ? 'bg-warn' : 'bg-fg-1')} style={{ left: `${pNow}%` }} />
+                                    ) : null}
+                                </div>
                             </td>
-                            <td className={cn(td, t.prior_n < doc.prior ? 'text-fg-3' : 'text-fg-2')}>{cell(was, row.digits)}</td>
-                            <td className={cn(td, 'text-fg-3')}>{cell(doc.league?.[i], row.digits)}</td>
-                            <td className={cn(td, t.rank[i] <= 8 ? 'font-semibold text-warn' : 'text-fg-3')}>{t.rank[i]}</td>
+                            <td className={cn(td, soft ? 'font-semibold text-warn' : 'text-fg-3')}>{t.rank[i]}</td>
                         </tr>
                     );
                 })}
@@ -577,7 +596,7 @@ export function PropDetail({ r, cat, doc, detail, chart, defence, seasons }: Pro
                                 </>
                             }
                         >
-                            {defence ? <DefenceTable tri={p.opp} doc={defence} /> : <div className="h-40 animate-pulse rounded-control bg-surface-3/60" />}
+                            {defence ? <DefenceTable tri={p.opp} doc={defence} cat={cat} /> : <div className="h-40 animate-pulse rounded-control bg-surface-3/60" />}
                         </Section>
                     ) : null}
                     <Section title="Matchup">

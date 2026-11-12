@@ -84,10 +84,15 @@ export type TeamChart = Record<string, ChartRow[]>;
 
 export type DefenceStat = 'sa' | 'att' | 'xga' | 'ga' | 'ppga' | 'ppo';
 
+/** The opponent-defence rows that bear on a prop category. */
+export const DEFENCE_FOR: Record<CategoryKey, DefenceStat[]> = { sog: ['sa', 'att'], g: ['xga', 'ga'], pts: ['xga', 'ga'], a: ['xga', 'ga'], ppp: ['ppga', 'ppo'] };
+
+/** Where a value sits on a [lo, hi] scale, 0-100, clamped. */
+export const spanPos = (v: number, span: [number, number]): number => (span[1] > span[0] ? Math.min(100, Math.max(0, ((v - span[0]) / (span[1] - span[0])) * 100)) : 50);
+
 /** What a team allows per game this season, one value per `DefenceDoc.stats` entry. */
 export interface TeamDefence {
     gp: number;
-    l4: number[] | null;
     l8: number[] | null;
     /** The games before the last 8 (up to `DefenceDoc.prior` of them; prior_n says how many). */
     prior: number[] | null;
@@ -101,6 +106,8 @@ export interface DefenceDoc {
     recent: number[];
     prior: number;
     league: number[] | null;
+    /** Per stat, the lowest and highest last-8 or prior value of any team: the scale a team is plotted on. */
+    span: [number, number][] | null;
     teams: Record<string, TeamDefence>;
 }
 
