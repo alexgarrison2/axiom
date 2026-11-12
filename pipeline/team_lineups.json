@@ -5140,14 +5140,14 @@
                 "movement": null
             },
             {
-                "name": "Anthony Cirelli",
-                "number": 71,
+                "name": "Yanni Gourde",
+                "number": 37,
                 "pos": "c",
-                "id": 3842,
-                "ppUnit": 2,
+                "id": 2566,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Nikita Kucherov",
@@ -5182,14 +5182,14 @@
                 "movement": null
             },
             {
-                "name": "Yanni Gourde",
-                "number": 37,
+                "name": "Gage Goncalves",
+                "number": 93,
                 "pos": "rw",
-                "id": 2566,
-                "ppUnit": null,
+                "id": 32521,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f3": [
@@ -5268,14 +5268,14 @@
                 "movement": null
             },
             {
-                "name": "Erik Cernak",
-                "number": 81,
+                "name": "J.J. Moser",
+                "number": 90,
                 "pos": "rd",
-                "id": 2749,
+                "id": 34680,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -5312,14 +5312,14 @@
                 "movement": null
             },
             {
-                "name": "J.J. Moser",
-                "number": 90,
+                "name": "Maxwell Crozier",
+                "number": 24,
                 "pos": "rd",
-                "id": 34680,
+                "id": 28863,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -5351,15 +5351,33 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Anthony Cirelli",
+                "number": 71,
+                "pos": "ir2",
+                "id": 3842,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Erik Cernak",
+                "number": 81,
+                "pos": "ir3",
+                "id": 2749,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
             {
-                "name": "Anthony Cirelli",
-                "number": 71,
+                "name": "Zemgus Girgensons",
+                "number": 28,
                 "pos": "sk1",
-                "id": 3842,
-                "ppUnit": 2,
+                "id": 1953,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -5382,10 +5400,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Erik Cernak",
-                "number": 81,
+                "name": "J.J. Moser",
+                "number": 90,
                 "pos": "sk4",
-                "id": 2749,
+                "id": 34680,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5393,11 +5411,11 @@
         ],
         "pk2": [
             {
-                "name": "Zemgus Girgensons",
-                "number": 28,
+                "name": "Pontus Holmberg",
+                "number": 29,
                 "pos": "sk1",
-                "id": 1953,
-                "ppUnit": null,
+                "id": 29640,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -5420,18 +5438,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "J.J. Moser",
-                "number": 90,
+                "name": "Maxwell Crozier",
+                "number": 24,
                 "pos": "sk4",
-                "id": 34680,
+                "id": 28863,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-11)",
-        "updated_at": "2026-11-12T14:32:23.389Z",
-        "fetched_at": "2026-11-12T15:01:59Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-12T22:44:05.544Z",
+        "fetched_at": "2026-11-12T23:02:00Z"
     },
     "ANA": {
         "f1": [
