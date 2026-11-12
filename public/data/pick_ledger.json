@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-12T06:25:24.316948+00:00",
+ "generated_at": "2026-11-12T20:05:47.513809+00:00",
  "unit": "Every pick bet to win 1 unit: a -120 favourite risks 1.2u, a +150 underdog risks 0.67u",
  "disclaimer": "For information and entertainment only. Past results do not predict future results.",
  "source": "graded live picks in prediction_history.json at the price shown when the pick was published",
@@ -9456,29 +9456,29 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 269,
-    "n_graded": 269,
+    "n_bets": 270,
+    "n_graded": 270,
     "n_pending": 0,
-    "record": "175-94",
-    "wins": 175,
+    "record": "176-94",
+    "wins": 176,
     "losses": 94,
-    "units_staked": 453.071,
-    "units_profit": 32.522,
-    "roi": 0.0718,
+    "units_staked": 456.121,
+    "units_profit": 33.522,
+    "roi": 0.0735,
     "roi_ci": [
-     -0.0171,
-     0.1574
+     -0.0145,
+     0.1607
     ],
     "clv_mean": -0.0329,
-    "clv_n": 269,
+    "clv_n": 270,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
-      "n": 144,
-      "record": "94-50",
-      "units_staked": 239.41,
-      "units_profit": 14.91,
-      "roi": 0.0623
+      "n": 145,
+      "record": "95-50",
+      "units_staked": 242.46,
+      "units_profit": 15.91,
+      "roi": 0.0656
      },
      {
       "bucket": "0-5%",
@@ -9538,11 +9538,11 @@
      },
      {
       "bucket": "2u+",
-      "n": 62,
-      "record": "50-12",
-      "units_staked": 156.95,
-      "units_profit": 22.38,
-      "roi": 0.1426
+      "n": 63,
+      "record": "51-12",
+      "units_staked": 160.0,
+      "units_profit": 23.38,
+      "roi": 0.1461
      }
     ]
    },
@@ -16270,6 +16270,31 @@
      "decision": "SO",
      "closing_price": -148.0,
      "clv": -0.0336,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020309,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-12",
+     "startUtc": "2026-11-12T17:00:00Z",
+     "snapshotUtc": "2026-11-12T16:02:00Z",
+     "team": "Hurricanes",
+     "opponent": "Kraken",
+     "side": "away",
+     "stake_units": 3.05,
+     "price": -305.0,
+     "decimal_price": 1.3279,
+     "ev_at_bet": -0.036,
+     "ev_bucket": "<0%",
+     "stake_bucket": "2u+",
+     "model_prob": 0.726,
+     "result": "win",
+     "profit_units": 1.0,
+     "final": "4-1",
+     "decision": "REG",
+     "closing_price": -305.0,
+     "clv": -0.0218,
      "model_version": "sim-m5-v4_st-20261003"
     }
    ]

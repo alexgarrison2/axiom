@@ -234,6 +234,19 @@
   "fetched_at": "2026-10-31T15:02:23Z"
  },
  {
+  "playerId": 8475168,
+  "name": "Matt Duchene",
+  "team": "DAL",
+  "position": "C",
+  "status": "Injured Reserve",
+  "type": "Abdomen",
+  "returnDate": "2027-01-12",
+  "comment": "Duchene will be out for approximately three months after undergoing surgery to repair a core injury, the team announced Monday.",
+  "date": "2026-10-12T16:46Z",
+  "espn_id": "595599",
+  "fetched_at": "2026-11-12T20:04:25Z"
+ },
+ {
   "playerId": 8480036,
   "name": "Miro Heiskanen",
   "team": "DAL",
@@ -401,19 +414,6 @@
   "date": "2026-09-17T20:53Z",
   "espn_id": "593266",
   "fetched_at": "2026-11-07T22:01:52Z"
- },
- {
-  "playerId": 8474563,
-  "name": "Drew Doughty",
-  "team": "LAK",
-  "position": "D",
-  "status": "Day-To-Day",
-  "type": "Lower Body",
-  "returnDate": "2026-11-12",
-  "comment": "day-to-day",
-  "date": "2026-11-11T20:40Z",
-  "espn_id": "599339",
-  "fetched_at": "2026-11-11T21:01:59Z"
  },
  {
   "playerId": 8484163,
@@ -598,6 +598,19 @@
   "fetched_at": "2026-10-26T17:53:09Z"
  },
  {
+  "playerId": 8476419,
+  "name": "Jean-Gabriel Pageau",
+  "team": "NYI",
+  "position": "C",
+  "status": "Out",
+  "type": "Lower Body",
+  "returnDate": "2026-11-14",
+  "comment": "Pageau is dealing with a lower-body injury and will be sidelined against the Kings on Thursday.",
+  "date": "2026-11-12T19:30Z",
+  "espn_id": "599455",
+  "fetched_at": "2026-11-12T20:04:25Z"
+ },
+ {
   "playerId": 8478445,
   "name": "Mathew Barzal",
   "team": "NYI",
@@ -609,32 +622,6 @@
   "date": "2026-11-09T18:52Z",
   "espn_id": "599156",
   "fetched_at": "2026-11-09T21:01:54Z"
- },
- {
-  "playerId": 8481711,
-  "name": "Matias Maccelli",
-  "team": "NYI",
-  "position": "LW",
-  "status": "Injured Reserve",
-  "type": "Lower Body",
-  "returnDate": "2026-11-14",
-  "comment": "Maccelli (lower body) is day-to-day, according to Andrew Gross of Newsday on Monday.",
-  "date": "2026-11-09T18:55Z",
-  "espn_id": "599159",
-  "fetched_at": "2026-11-09T20:01:52Z"
- },
- {
-  "playerId": 8477506,
-  "name": "Ryan Pulock",
-  "team": "NYI",
-  "position": "D",
-  "status": "Out",
-  "type": "Upper Body",
-  "returnDate": "2026-11-28",
-  "comment": "out",
-  "date": "2026-11-01T17:56Z",
-  "espn_id": "598141",
-  "fetched_at": "2026-11-01T18:02:26Z"
  },
  {
   "playerId": 8483669,
@@ -1202,24 +1189,24 @@
   "position": "D",
   "status": "Injured Reserve",
   "type": "Upper Body",
-  "returnDate": "2026-11-21",
+  "returnDate": "2026-12-03",
   "comment": "ir",
   "date": "2026-11-01T20:27Z",
   "espn_id": "598158",
-  "fetched_at": "2026-11-09T21:01:54Z"
+  "fetched_at": "2026-11-12T20:04:25Z"
  },
  {
   "playerId": 8483431,
   "name": "Logan Cooley",
   "team": "UTA",
   "position": "C",
-  "status": "Day-To-Day",
+  "status": "Out",
   "type": "Upper Body",
-  "returnDate": "2026-11-12",
-  "comment": "day-to-day",
-  "date": "2026-11-12T14:09Z",
-  "espn_id": "599393",
-  "fetched_at": "2026-11-12T15:01:47Z"
+  "returnDate": "2026-11-14",
+  "comment": "Cooley (upper body) will miss Thursday's game against St. Louis, per Cole Bagley of KSL Sports.",
+  "date": "2026-11-12T19:25Z",
+  "espn_id": "599453",
+  "fetched_at": "2026-11-12T20:04:25Z"
  },
  {
   "playerId": 8483472,
@@ -1241,11 +1228,11 @@
   "position": "D",
   "status": "Injured Reserve",
   "type": "Upper Body",
-  "returnDate": "2026-11-14",
-  "comment": "ir",
-  "date": "2026-11-12T01:24Z",
-  "espn_id": "599349",
-  "fetched_at": "2026-11-12T02:01:58Z"
+  "returnDate": "2026-11-21",
+  "comment": "The Mammoth announced Thursday that Schmidt (upper body) is considered week-to-week, Cole Bagley of KSL Sports reports.",
+  "date": "2026-11-12T19:30Z",
+  "espn_id": "599454",
+  "fetched_at": "2026-11-12T20:04:25Z"
  },
  {
   "playerId": 8477951,
@@ -1255,10 +1242,10 @@
   "status": "Day-To-Day",
   "type": "Lower Body",
   "returnDate": "2026-11-12",
-  "comment": "day-to-day",
-  "date": "2026-11-12T04:45Z",
-  "espn_id": "599365",
-  "fetched_at": "2026-11-12T06:24:04Z"
+  "comment": "Schmaltz (lower body) is considered a game-time decision for Thursday's matchup against St. Louis, Cole Bagley of KSL Sports reports.",
+  "date": "2026-11-12T19:24Z",
+  "espn_id": "599452",
+  "fetched_at": "2026-11-12T20:04:25Z"
  },
  {
   "playerId": 8480078,
