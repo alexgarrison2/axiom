@@ -21,6 +21,8 @@ import { fmtInt } from '@/components/views/format';
 export interface AccuracyViewProps {
     report: AccuracyReport;
     ledger: LedgerData;
+    /** The bets the site suggested (suggested_ledger.json). */
+    suggested?: LedgerData;
     /** Season labels with data, newest first, e.g. ["2026-27", "2025-26"]. */
     seasons: string[];
     currentSeason: string;
@@ -44,7 +46,7 @@ const dec4 = (v: number | null | undefined) => (v == null ? '—' : v.toFixed(4)
 /** Calibration and confidence tiers need at least this many games to show anything but noise. */
 const CHART_N = 30;
 
-export function AccuracyView({ report, ledger, seasons, currentSeason, initialSeason, tallies = {}, shapes }: AccuracyViewProps) {
+export function AccuracyView({ report, ledger, suggested, seasons, currentSeason, initialSeason, tallies = {}, shapes }: AccuracyViewProps) {
     const [season, setSeason] = React.useState<string>(initialSeason ?? currentSeason);
     const [type, setType] = React.useState<GameTypeKey>('all');
 
@@ -149,6 +151,25 @@ export function AccuracyView({ report, ledger, seasons, currentSeason, initialSe
                     <ReportCard block={block!} seasonWord={seasonWord} modelLabel={season === 'all' ? 'Site model' : season < currentSeason ? 'Prev. model' : 'Pony xG'} />
                 )}
             </section>
+
+            {suggested ? (
+                <section id="bets" aria-labelledby="suggested-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-3 max-lg:scroll-mt-0">
+                    <Ledger
+                        ledger={suggested}
+                        file="/data/suggested_ledger.json"
+                        stake="Quarter Kelly"
+                        anchor="bets"
+                        season={season}
+                        seasons={seasons}
+                        currentSeason={currentSeason}
+                        title={
+                            <h2 id="suggested-title" className="heading-section">
+                                Suggested bets
+                            </h2>
+                        }
+                    />
+                </section>
+            ) : null}
 
             <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-3 max-lg:scroll-mt-0">
                 <Ledger

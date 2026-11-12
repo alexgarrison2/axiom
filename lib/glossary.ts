@@ -60,7 +60,7 @@ export const GLOSSARY = {
         label: 'Edge',
         title: 'Edge / expected value (EV)',
         short: 'Expected profit per unit staked at the book’s price. Positive means our forecast rates the team higher than the odds do.',
-        detail: 'EV = forecast probability × decimal odds − 1, using the published (market-blended) forecast, not the model-only number. A bet shows only when one side clears +3% EV with a quarter-Kelly stake of 0.5u or more. Until the model has proven it can beat the market over a meaningful sample of live games (the bet gate), those bets are marked unofficial and stay out of the public ledger. The Accuracy page shows the gate’s status.',
+        detail: 'EV = forecast probability × decimal odds − 1, using the published (market-blended) forecast, not the model-only number. A bet shows only when one side clears +3% EV with a quarter-Kelly stake of 0.5u or more. Until the model has proven it can beat the market over a meaningful sample of live games (the bet gate), those bets are marked unofficial. The Accuracy page shows the gate’s status and grades every suggested bet, unofficial ones included, at the last price before puck drop.',
         anchor: 'edge',
         aliases: ['EV', 'expected value', '+EV'],
     },

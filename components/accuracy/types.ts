@@ -127,6 +127,8 @@ export interface LedgerBet {
     clv: number | null;
     /** Suggested by the previous site model (no model version recorded). */
     legacy?: boolean;
+    /** Shown while the bet gate was closed (suggested_ledger.json `official: false`). */
+    unofficial?: boolean;
 }
 
 export interface LedgerBucket {

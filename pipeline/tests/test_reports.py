@@ -140,3 +140,30 @@ def test_ledger_join_rate(ledger):
     j = ledger['join']
     assert j['bets_on_finished_games'] >= 200
     assert j['join_rate'] >= 0.98
+
+
+def test_unofficial_bet_mirrors_the_site_rule():
+    """lib/matchup/edge.ts recommendedBet: best side, EV >= 3%, quarter Kelly >= 0.5u."""
+    import grade_bets as G
+    snap = {'home_odds': -155.0, 'away_odds': 130.0, 'p_home': 0.55, 'home_ev_pct': -9.5, 'away_ev_pct': 3.5}
+    assert G.unofficial_bet(snap) == ('away', 0.7)
+    assert G.unofficial_bet({**snap, 'away_ev_pct': 2.9}) is None          # under the EV floor
+    assert G.unofficial_bet({**snap, 'p_home': 0.79, 'away_ev_pct': 5.0, 'away_odds': 400.0}) is None  # 0.3u stake
+    assert G.unofficial_bet({**snap, 'home_odds': -110.0, 'away_odds': -110.0}) is None  # placeholder line
+    assert G.unofficial_bet({**snap, 'home_ev_pct': None, 'away_ev_pct': None}) is None
+
+
+def test_suggested_ledger_adds_only_unofficial_bets():
+    import grade_bets as G
+    with open(os.path.join(ROOT, 'public', 'data', 'suggested_ledger.json')) as f:
+        sug = json.load(f)
+    with open(LEDGER) as f:
+        led = json.load(f)
+    for season, v in sug['seasons'].items():
+        official = [b for b in v['bets'] if b['official']]
+        assert len(official) == len(led['seasons'].get(season, {}).get('bets', []))
+        for b in v['bets']:
+            if not b['official']:
+                assert b['stake_units'] >= G.REC_MIN_UNITS and b['ev_at_bet'] >= 0.03
+                assert b['snapshotUtc'] >= '2026-10-01'
+        assert len({b['gameId'] for b in v['bets']}) == len(v['bets'])

@@ -173,7 +173,7 @@ jobs:
               data/last_updated.json public/data/last_updated.json \
               public/data/manifest.json public/data/SiteHistory/*.csv
           # Graded record derived from the history: report card, bet ledger and every-pick ledger
-          add public/data/model_report.json public/data/bet_ledger.json public/data/pick_ledger.json
+          add public/data/model_report.json public/data/bet_ledger.json public/data/pick_ledger.json public/data/suggested_ledger.json
           # Schedule, goalies, lineups, injuries, news
           add pipeline/upcoming_games.json public/data/upcoming_games.json \
               pipeline/dailyfaceoff_goalies.json public/data/dailyfaceoff_goalies.json \

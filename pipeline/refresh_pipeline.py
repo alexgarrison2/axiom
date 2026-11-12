@@ -659,7 +659,8 @@ def stage_bet_ledger():
     importlib.reload(grade_bets)
     led = grade_bets.write_ledger()
     picks = grade_bets.write_pick_ledger()
-    rows = sum(len(v.get("bets") or []) for d in (led, picks) for v in (d.get("seasons") or {}).values())
+    suggested = grade_bets.write_suggested_ledger()
+    rows = sum(len(v.get("bets") or []) for d in (led, picks, suggested) for v in (d.get("seasons") or {}).values())
     return {"status": "ok", "rows_written": rows}
 
 

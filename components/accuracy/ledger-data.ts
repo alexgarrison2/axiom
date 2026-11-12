@@ -36,7 +36,7 @@ function summary(v: unknown): LedgerSummary | null {
     };
 }
 
-/** Summary-only view of pick_ledger.json (the page embeds this; bets load lazily). */
+/** Summary-only view of a ledger file (the page embeds this; bets load lazily). */
 export function parseLedger(raw: unknown): LedgerData {
     const out: LedgerData = { unit: null, disclaimer: null, clvNote: null, source: null, seasons: {}, generatedAt: null };
     if (!isObj(raw)) return out;
@@ -54,7 +54,7 @@ export function parseLedger(raw: unknown): LedgerData {
     return out;
 }
 
-/** Every bet in a ledger file (the browser fetches /data/pick_ledger.json). */
+/** Every bet in a ledger file (the browser fetches it when the ledger scrolls into view). */
 export function parseLedgerBets(raw: unknown): LedgerBet[] {
     if (!isObj(raw) || !isObj(raw.seasons)) return [];
     const out: LedgerBet[] = [];
@@ -82,6 +82,7 @@ export function parseLedgerBets(raw: unknown): LedgerBet[] {
                 decision: s(b.decision),
                 clv: n(b.clv),
                 legacy: !s(b.model_version),
+                unofficial: b.official === false,
             });
         }
     }

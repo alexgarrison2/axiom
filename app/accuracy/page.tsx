@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { SEASON_START_YEAR } from '@/lib/season';
-import { loadExcludedGames, loadGradedGames, loadLedger, loadReport, tallyByType } from '@/components/accuracy/data';
+import { loadExcludedGames, loadGradedGames, loadLedger, loadReport, loadSuggestedLedger, tallyByType } from '@/components/accuracy/data';
 import type { SeasonTally } from '@/components/accuracy/types';
 import type { GameTypeKey } from '@/components/accuracy/report';
 import { dayShape, type DayShape } from '@/components/accuracy/summary';
@@ -22,6 +22,7 @@ export default function AccuracyPage() {
     const report = loadReport();
     const graded = loadGradedGames();
     const ledger = loadLedger();
+    const suggested = loadSuggestedLedger();
     const seasons = [...new Set([CURRENT, ...Object.keys(report.seasons), ...Object.keys(ledger.seasons)])]
         .filter(s => /^\d{4}-\d{2}$/.test(s))
         .sort()
@@ -42,7 +43,7 @@ export default function AccuracyPage() {
     return (
         <main className="pb-tabbar">
             <div className="page py-5 md:py-7">
-                <AccuracyView report={report} ledger={ledger} seasons={seasons} currentSeason={CURRENT} tallies={tallies} shapes={shapes} />
+                <AccuracyView report={report} ledger={ledger} suggested={suggested} seasons={seasons} currentSeason={CURRENT} tallies={tallies} shapes={shapes} />
             </div>
         </main>
     );

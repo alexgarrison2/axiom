@@ -12,6 +12,13 @@ the site recommended.
   probability of the bet side x bet decimal price - 1.
 * Per season: record, units staked, profit, ROI with a 95% bootstrap CI,
   mean CLV, and the record by EV bucket and by stake size.
+
+public/data/suggested_ledger.json is the same record plus the UNOFFICIAL bets:
+while the bet gate is closed the pipeline publishes no stake, but the site still
+shows the best side when it clears the rule (lib/matchup/edge.ts recommendedBet).
+Those are rebuilt here from the same last pregame snapshot and flagged
+``official: false``. bet_ledger.json stays official-only (the pre-registered
+M-4 reads it).
 """
 
 from __future__ import annotations
@@ -40,6 +47,11 @@ ODDS_CLOSING_PATH = os.path.join(ROOT, 'public', 'data', 'odds_closing.json')
 SCHEMA_VERSION = 1
 EV_BUCKETS = [(-1e9, 0.0, '<0%'), (0.0, 0.05, '0-5%'), (0.05, 0.10, '5-10%'),
               (0.10, 0.20, '10-20%'), (0.20, 1e9, '20%+')]
+SUGGESTED_OUT_PATH = os.path.join(ROOT, 'public', 'data', 'suggested_ledger.json')
+# Smallest stake the site shows (lib/matchup/edge.ts REC_MIN_UNITS).
+REC_MIN_UNITS = 0.5
+# The site has shown gate-closed bets since this date (commit e5670a6fb); earlier games had none.
+UNOFFICIAL_FROM = pd.Timestamp('2026-10-01', tz='UTC')
 STAKE_BUCKETS = [(0, 0.55, '<=0.5u'), (0.55, 1.05, '0.6-1u'), (1.05, 2.05, '1.1-2u'), (2.05, 1e9, '2u+')]
 
 
@@ -112,7 +124,35 @@ def summarize(bets):
     return out
 
 
-def build_ledger(allow_fetch=True, now=None):
+def _num(v):
+    return None if v is None or pd.isna(v) else float(v)
+
+
+def unofficial_bet(snap):
+    """(side, units) the site showed with the gate closed, or None.
+
+    Mirrors recommendedBet in lib/matchup/edge.ts: the side with the higher published
+    EV, when that EV is at least market.MIN_EV and its quarter-Kelly stake at the
+    snapshot price is at least REC_MIN_UNITS. A -110/-110 placeholder is not a market.
+    """
+    ho, ao = _num(snap.get('home_odds')), _num(snap.get('away_odds'))
+    p_home = _num(snap.get('p_home'))
+    if ho is None or ao is None or (ho == -110 and ao == -110) or p_home is None:
+        return None
+    evs = {sd: _num(snap.get(f'{sd}_ev_pct')) for sd in ('home', 'away')}
+    if evs['home'] is None and evs['away'] is None:
+        return None
+    side = 'home' if (evs['home'] if evs['home'] is not None else -math.inf) >= \
+                     (evs['away'] if evs['away'] is not None else -math.inf) else 'away'
+    if evs[side] / 100 < market.MIN_EV:
+        return None
+    units = market.kelly_units(p_home if side == 'home' else 1 - p_home, ho if side == 'home' else ao)
+    return (side, units) if units >= REC_MIN_UNITS else None
+
+
+def _snapshot_bets(allow_fetch=True, now=None, unofficial=False):
+    """Graded bets from the last pregame snapshot of every game. ``unofficial`` adds the
+    gate-closed bets for games that have started and carry no published stake."""
     sh, _ = S.load_keyed_site_history(allow_fetch=allow_fetch)
     snaps = S.last_pregame(sh) if len(sh) else pd.DataFrame()
     results = GH.load_results()
@@ -125,10 +165,17 @@ def build_ledger(allow_fetch=True, now=None):
         gid = int(snap['game_id'])
         if gid in excluded or str(gid)[4:6] not in ('02', '03'):
             continue
+        stakes = []
         for side in ('home', 'away'):
             units = snap.get(f'{side}_bet_units')
-            if units is None or pd.isna(units) or units <= 0:
-                continue
+            if units is not None and not pd.isna(units) and units > 0:
+                stakes.append((side, units, True))
+        # Before puck drop the last snapshot is not final, so an unofficial bet is not logged yet.
+        if unofficial and not stakes and UNOFFICIAL_FROM <= snap['snapshot_utc'] and snap['start_ts'] <= pd.Timestamp(now):
+            u = unofficial_bet(snap)
+            if u:
+                stakes.append((u[0], u[1], False))
+        for side, units, official in stakes:
             price = snap.get(f'{side}_odds')
             if price is None or pd.isna(price):
                 continue
@@ -154,7 +201,7 @@ def build_ledger(allow_fetch=True, now=None):
             ev = snap.get(f'{side}_ev_pct')
             ev = float(ev) / 100 if ev is not None and not pd.isna(ev) else None
             sid = int(str(gid)[:4])
-            bets.append({
+            bet = {
                 'gameId': gid, 'season': f"{sid}-{str(sid + 1)[2:]}", 'gameType': str(gid)[4:6],
                 'date': (r.date if r is not None else str(snap['start_ts'].tz_convert('US/Eastern').date())),
                 'startUtc': snap['start_ts'].isoformat().replace('+00:00', 'Z'),
@@ -167,13 +214,44 @@ def build_ledger(allow_fetch=True, now=None):
                 'result': result, 'profit_units': profit, 'final': score, 'decision': decision,
                 'closing_price': close_price, 'clv': clv,
                 'model_version': snap['model_version'] if isinstance(snap.get('model_version'), str) else None,
-            })
+            }
+            if unofficial:
+                bet['official'] = official
+            bets.append(bet)
     bets.sort(key=lambda b: (b['date'], b['gameId']))
+    return bets, closing, now
+
+
+def _by_season(bets):
+    from season import SEASON_LABEL
     seasons = {}
     for b in bets:
         seasons.setdefault(b['season'], []).append(b)
-    from season import SEASON_LABEL
     seasons.setdefault(SEASON_LABEL, [])
+    return {s: {'summary': summarize(v), 'bets': v} for s, v in sorted(seasons.items())}
+
+
+def build_suggested_ledger(allow_fetch=True, now=None):
+    """Every bet the site showed: published stakes plus the gate-closed (unofficial) ones."""
+    bets, closing, now = _snapshot_bets(allow_fetch=allow_fetch, now=now, unofficial=True)
+    return {
+        'schema_version': SCHEMA_VERSION,
+        'generated_at': now.isoformat(),
+        'unit': '1 unit = 1% of bankroll, quarter-Kelly stake',
+        'disclaimer': ('For information and entertainment only. Past results do not predict future results. '
+                       'Unofficial bets were shown while the bet gate was closed: the model had not proven '
+                       'an edge over the market.'),
+        'source': ('last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can '
+                   'differ); results from NHL final scores'),
+        'clv_note': (None if closing else
+                     'Closing prices are recorded from 2026-27 on (odds_closing.json); earlier bets have no CLV.'),
+        'gate': None,
+        'seasons': _by_season(bets),
+    }
+
+
+def build_ledger(allow_fetch=True, now=None):
+    bets, closing, now = _snapshot_bets(allow_fetch=allow_fetch, now=now)
     finished = [b for b in bets if pd.Timestamp(b['startUtc']) < pd.Timestamp(now) - pd.Timedelta(hours=6)]
     joined = [b for b in finished if b['result'] != 'pending']
     ok, reasons = market.site_gate()
@@ -200,7 +278,7 @@ def build_ledger(allow_fetch=True, now=None):
         'join': {'bets_on_finished_games': len(finished), 'graded': len(joined),
                  'join_rate': (len(joined) / len(finished)) if finished else None},
         'gate': {'open': ok, 'reasons': reasons},
-        'seasons': {s: {'summary': summarize(v), 'bets': v} for s, v in sorted(seasons.items())},
+        'seasons': _by_season(bets),
     }
     return ledger
 
@@ -283,6 +361,19 @@ def write_pick_ledger(path=PICK_OUT_PATH, **kw):
     return led
 
 
+def write_suggested_ledger(path=SUGGESTED_OUT_PATH, **kw):
+    from model_report import round_floats, write_if_changed
+    led = round_floats(build_suggested_ledger(**kw))
+    if not write_if_changed(path, led, indent=1):
+        print("[suggested_ledger] unchanged except generated_at - not rewritten")
+    for s, v in led['seasons'].items():
+        sm = v['summary']
+        n_un = sum(1 for b in v['bets'] if not b['official'])
+        print(f"[suggested_ledger] {s}: {sm['n_bets']} bets ({n_un} unofficial), record {sm['record']}, "
+              f"profit {sm['units_profit']}u, ROI {sm['roi']}")
+    return led
+
+
 def write_ledger(path=OUT_PATH, **kw):
     from model_report import round_floats, write_if_changed
     led = round_floats(build_ledger(**kw))
@@ -298,4 +389,5 @@ def write_ledger(path=OUT_PATH, **kw):
 
 if __name__ == '__main__':
     write_ledger()
+    write_suggested_ledger()
     write_pick_ledger()

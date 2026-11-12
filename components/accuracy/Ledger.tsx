@@ -24,25 +24,24 @@ export const LEDGER_ROI_MIN = 20;
 /** Below this many graded bets results stay uncoloured (the report card's rule). */
 export const LEDGER_COLOR_MIN = 100;
 
-let betsPromise: Promise<LedgerBet[]> | null = null;
-let betsEpoch = 0;
-/** Every bet, fetched once per data epoch (a stale tab coming back fetches again). A failure rejects and is not cached. */
-function loadBets(epoch = 0): Promise<LedgerBet[]> {
-    if (!betsPromise || betsEpoch !== epoch) {
-        betsEpoch = epoch;
-        const p: Promise<LedgerBet[]> = fetch('/data/pick_ledger.json', epoch ? { cache: 'no-cache' } : undefined)
-            .then(r => {
-                if (!r.ok) throw new Error(`pick ledger: HTTP ${r.status}`);
-                return r.json();
-            })
-            .then(parseLedgerBets)
-            .catch(e => {
-                if (betsPromise === p) betsPromise = null;
-                throw e;
-            });
-        betsPromise = p;
-    }
-    return betsPromise;
+const PICK_LEDGER = '/data/pick_ledger.json';
+const betsCache = new Map<string, { epoch: number; promise: Promise<LedgerBet[]> }>();
+/** Every bet in a ledger file, fetched once per data epoch (a stale tab coming back fetches again). A failure rejects and is not cached. */
+function loadBets(file: string, epoch = 0): Promise<LedgerBet[]> {
+    const hit = betsCache.get(file);
+    if (hit && hit.epoch === epoch) return hit.promise;
+    const p: Promise<LedgerBet[]> = fetch(file, epoch ? { cache: 'no-cache' } : undefined)
+        .then(r => {
+            if (!r.ok) throw new Error(`${file}: HTTP ${r.status}`);
+            return r.json();
+        })
+        .then(parseLedgerBets)
+        .catch(e => {
+            if (betsCache.get(file)?.promise === p) betsCache.delete(file);
+            throw e;
+        });
+    betsCache.set(file, { epoch, promise: p });
+    return p;
 }
 
 const pctSigned = (v: number | null | undefined, digits = 1) => (v == null ? '—' : `${v > 0 ? '+' : v < 0 ? '−' : '±'}${Math.abs(v * 100).toFixed(digits)}%`);
@@ -90,15 +89,27 @@ function combine(list: LedgerSummary[]): LedgerSummary | null {
     };
 }
 
-/** Every graded pick, bet to win 1u at the price it was published with (pick_ledger.json). */
+/**
+ * A graded ledger: by default every pick, bet to win 1u at the price it was published with
+ * (pick_ledger.json); with `file` and `stake`, the bets the site suggested (suggested_ledger.json).
+ */
 export function Ledger({
     ledger,
     season,
     seasons,
     title,
     currentSeason,
+    file = PICK_LEDGER,
+    stake = 'To win 1u',
+    anchor = 'ledger',
 }: {
     ledger: LedgerData;
+    /** The ledger file the bet rows load from. */
+    file?: string;
+    /** How the bets are staked, next to the heading. */
+    stake?: string;
+    /** Section id: a deep link to it loads the bets at once. */
+    anchor?: string;
     season: string;
     seasons: string[];
     /** Bets from this season on with no model version get a LEGACY tag. */
@@ -114,28 +125,29 @@ export function Ledger({
     const loaded = bets != null;
     React.useEffect(() => {
         // A failed refresh keeps the bets already on screen.
-        if (epoch && loaded) loadBets(epoch).then(setBets, () => {});
-    }, [epoch, loaded]);
+        if (epoch && loaded) loadBets(file, epoch).then(setBets, () => {});
+    }, [epoch, loaded, file]);
     const [failed, setFailed] = React.useState(false);
     const [attempt, setAttempt] = React.useState(0);
     const [query, setQuery] = React.useState('');
     const [shown, setShown] = React.useState(PAGE);
     const ref = React.useRef<HTMLDivElement>(null);
     const searchId = React.useId();
+    const betsTitleId = React.useId();
 
     // The full pick list (~350KB) loads only when the ledger scrolls into view.
     React.useEffect(() => {
         const el = ref.current;
         if (!el || bets) return;
         const go = () =>
-            loadBets().then(
+            loadBets(file).then(
                 b => {
                     setFailed(false);
                     setBets(b);
                 },
                 () => setFailed(true),
             );
-        if (window.location.hash === '#ledger' || typeof IntersectionObserver === 'undefined') {
+        if (window.location.hash === `#${anchor}` || typeof IntersectionObserver === 'undefined') {
             go();
             return;
         }
@@ -150,7 +162,7 @@ export function Ledger({
         );
         io.observe(el);
         return () => io.disconnect();
-    }, [bets, attempt]);
+    }, [bets, attempt, file, anchor]);
 
     React.useEffect(() => setShown(PAGE), [season, query]);
 
@@ -173,7 +185,7 @@ export function Ledger({
         <div ref={ref} className="flex flex-col gap-3">
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 {title}
-                <p className="label">To win 1u</p>
+                <p className="label">{stake}</p>
             </div>
 
             {!summary || summary.nGraded === 0 ? (
@@ -222,9 +234,9 @@ export function Ledger({
             )}
 
             {summary ? (
-                <section aria-labelledby="bets-title" className="flex flex-col gap-2">
+                <section aria-labelledby={betsTitleId} className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <h3 id="bets-title" className="heading-sub">
+                        <h3 id={betsTitleId} className="heading-sub">
                             Bets
                         </h3>
                         <div className="w-full sm:w-56">
@@ -321,6 +333,11 @@ export function Ledger({
                                                             {b.legacy && currentSeason && b.season >= currentSeason ? (
                                                                 <GlossLink term="legacy" desc="Published by the previous site model" className="font-normal max-[374.98px]:-mt-0.5 max-[374.98px]:mb-1 max-[374.98px]:basis-full max-[374.98px]:pl-7">
                                                                     <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">LEGACY</span>
+                                                                </GlossLink>
+                                                            ) : null}
+                                                            {b.unofficial ? (
+                                                                <GlossLink term="gate" desc="Shown while the bet gate was closed" className="font-normal max-[374.98px]:-mt-0.5 max-[374.98px]:mb-1 max-[374.98px]:basis-full max-[374.98px]:pl-7">
+                                                                    <span className="rounded-chip border border-line-strong px-1 text-micro text-fg-2">UNOFF</span>
                                                                 </GlossLink>
                                                             ) : null}
                                                         </span>

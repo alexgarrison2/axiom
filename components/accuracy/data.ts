@@ -24,6 +24,11 @@ export function loadLedger(): LedgerData {
     return parseLedger(readJson(path.join(process.cwd(), 'public', 'data', 'pick_ledger.json')));
 }
 
+/** The bets the site suggested, official and gate-closed (unofficial). */
+export function loadSuggestedLedger(): LedgerData {
+    return parseLedger(readJson(path.join(process.cwd(), 'public', 'data', 'suggested_ledger.json')));
+}
+
 const teamTri = teamTriFromName;
 
 type Obj = Record<string, unknown>;
