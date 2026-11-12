@@ -34,31 +34,31 @@
     },
     "dfo_goalies": {
       "pages": 2,
-      "fetched_at": "2026-11-11T23:01:41Z"
+      "fetched_at": "2026-11-12T00:01:42Z"
     },
     "espn_injuries": {
-      "entries": 111,
-      "matched": 107,
-      "fetched_at": "2026-11-11T23:01:53Z"
+      "entries": 110,
+      "matched": 106,
+      "fetched_at": "2026-11-12T00:01:51Z"
     },
     "odds": {
-      "games": 17,
+      "games": 16,
       "counts": {
-        "nhl_partner": 6,
+        "nhl_partner": 5,
         "nhl_schedule": 0,
-        "bovada": 0,
-        "espn": 11
+        "bovada": 16,
+        "espn": 0
       },
-      "fetched_at": "2026-11-11T23:01:54Z"
+      "fetched_at": "2026-11-12T00:01:55Z"
     },
     "bu_bundle": {
-      "built_at": "2026-11-11T17:18:20+00:00",
+      "built_at": "2026-11-11T23:32:32+00:00",
       "max_source_date": "2026-11-10",
       "n_games": 292,
       "season": "20262027",
-      "age_h": 5.7,
+      "age_h": 0.5,
       "flag": "on",
-      "fetched_at": "2026-11-11T23:02:32Z"
+      "fetched_at": "2026-11-12T00:02:04Z"
     },
     "player_ratings": {
       "as_of": "2026-11-09",
@@ -68,8 +68,8 @@
       "fetched_at": "2026-11-11T12:05:24Z"
     },
     "player_props": {
-      "fetched_at": "2026-11-11T22:01:49Z",
-      "games": 15
+      "fetched_at": "2026-11-12T00:02:02Z",
+      "games": 16
     },
     "skater_games": {
       "fetched_at": "2026-11-11T12:04:47Z"
@@ -83,7 +83,7 @@
   "schema_version": 1,
   "season_id": "20262027",
   "season_label": "2026-27",
-  "generated_at": "2026-11-11T23:03:48Z",
+  "generated_at": "2026-11-12T00:03:24Z",
   "mode": "lite",
   "games_played_current_season": 292,
   "phase": {
@@ -107,21 +107,21 @@
       "stage": "upcoming_games",
       "status": "ok",
       "rows_written": 17,
-      "seconds": 12.0,
+      "seconds": 9.0,
       "required": true
     },
     {
       "stage": "injuries",
       "status": "ok",
-      "rows_written": 111,
-      "seconds": 0.6,
+      "rows_written": 110,
+      "seconds": 0.7,
       "required": false
     },
     {
       "stage": "clinch_status",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 0.0,
+      "seconds": 0.1,
       "required": false
     },
     {
@@ -134,23 +134,22 @@
     {
       "stage": "odds",
       "status": "ok",
-      "rows_written": 17,
-      "seconds": 0.7,
+      "rows_written": 16,
+      "seconds": 4.1,
       "required": false
     },
     {
       "stage": "player_props",
-      "status": "fail",
-      "rows_written": 0,
-      "seconds": 0.3,
-      "required": false,
-      "reason": "event list unavailable"
+      "status": "ok",
+      "rows_written": 1334,
+      "seconds": 6.7,
+      "required": false
     },
     {
       "stage": "goalie_stats",
       "status": "ok",
       "rows_written": 104,
-      "seconds": 35.5,
+      "seconds": 0.4,
       "required": false
     },
     {
@@ -175,7 +174,7 @@
       "rows_written": 0,
       "seconds": 0.0,
       "required": true,
-      "reason": "11.0h old"
+      "reason": "12.0h old"
     },
     {
       "stage": "bu_bundle",
@@ -183,19 +182,19 @@
       "rows_written": 0,
       "seconds": 1.8,
       "required": false,
-      "reason": "built 5.7h ago, 292 games of 20262027, PONYXG_BU=on"
+      "reason": "built 0.5h ago, 292 games of 20262027, PONYXG_BU=on"
     },
     {
       "stage": "predict",
       "status": "ok",
       "rows_written": 17,
-      "seconds": 64.0,
+      "seconds": 64.4,
       "required": true
     },
     {
       "stage": "snapshot",
       "status": "ok",
-      "rows_written": 6,
+      "rows_written": 5,
       "seconds": 0.0,
       "required": false
     },
@@ -203,7 +202,7 @@
       "stage": "props_board",
       "status": "ok",
       "rows_written": 762,
-      "seconds": 6.0,
+      "seconds": 7.2,
       "required": false
     },
     {
@@ -218,14 +217,14 @@
       "stage": "prediction_history",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 4.5,
+      "seconds": 5.7,
       "required": true
     },
     {
       "stage": "model_report",
       "status": "ok",
       "rows_written": 290,
-      "seconds": 0.5,
+      "seconds": 0.7,
       "required": true
     },
     {
@@ -245,19 +244,15 @@
   ],
   "ok": true,
   "run": {
-    "started_at": "2026-11-11T23:01:41Z",
-    "finished_at": "2026-11-11T23:03:48Z",
-    "seconds": 127.3,
-    "github_run_id": "43116515635"
+    "started_at": "2026-11-12T00:01:42Z",
+    "finished_at": "2026-11-12T00:03:24Z",
+    "seconds": 102.1,
+    "github_run_id": "43124169177"
   },
   "last_full_attempt": "2026-11-11T12:06:37Z",
   "last_full_run": "2026-11-11T12:06:37Z",
-  "stale": {
-    "player_props": "Bovada event list unavailable"
-  },
-  "last_lite_attempt": "2026-11-11T23:03:48Z",
-  "last_lite_run": "2026-11-11T23:03:48Z",
-  "stale_since": {
-    "player_props": "2026-11-11T23:01:55Z"
-  }
+  "stale": {},
+  "last_lite_attempt": "2026-11-12T00:03:24Z",
+  "last_lite_run": "2026-11-12T00:03:24Z",
+  "stale_since": {}
 }
