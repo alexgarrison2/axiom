@@ -22,7 +22,12 @@ by the browser only when a row is opened:
       x:  [[date, missed, blocked, ev_toi, pp_toi, ixg], ...],  # same games as log
       ha: { h: {n, key: hits}, a: {...} },                      # home / road, both seasons
       vs: [[date, home, toi, g, a, sog, ppp, att, gameId], ...], # last VS_GAMES vs tonight's opp
-      vs_n: games vs tonight's opp since the archive starts } } }
+      vs_n: games vs tonight's opp since the archive starts } },
+    lineups: { TRI: { f1: [[slot, name, id], ...], d1: ..., pp1: ..., pp2: ... } },  # id null when unmatched
+    defence: { stats: [sa, att, xga, ga, ppga, ppo],   # allowed per game, this season, regular season
+               recent: [4, 8], prior: 16,              # windows; prior = the 16 games before the last 8
+               league: [...],                          # mean over every team-game
+               teams: { TRI: { gp, l4, l8, prior, prior_n, rank } } } }   # rank of the L8 value, 1 = allows the most
 
 Shape (keys kept short; the file is fetched by the browser):
   { generated_at, season, prev_season, slate_date, props: [...],
@@ -47,7 +52,7 @@ import prop_model as pm
 from fetch_skater_games import games_file
 from io_utils import atomic_write_json, keep_if_unchanged, read_json, utc_now_iso
 from paths import pipeline_path, public_path
-from season import START_YEAR, PREV_START_YEAR, SEASON_ID, PREV_SEASON_ID, season_file, today_local
+from season import START_YEAR, PREV_START_YEAR, SEASON_ID, PREV_SEASON_ID, read_season_csv, season_file, today_local
 
 OUT_FILE = public_path("props.json")
 # Page category -> prop_model expected-count column.
@@ -62,6 +67,11 @@ if ARM not in pm.ARMS:
 LOG_GAMES = 20
 VS_GAMES = 10
 UNITS = ["f1", "f2", "f3", "f4", "d1", "d2", "d3"]
+# Opponent defence table: page stat -> gamestats column (what the team allowed in a game).
+DEF_STATS = {"sa": "sog_ag", "att": "attempts_ag", "xga": "xG_against", "ga": "goals_ag",
+             "ppga": "pp_goals_against", "ppo": "pk_opportunities"}
+DEF_RECENT = (4, 8)
+DEF_PRIOR = 16
 SOG_KEYS = {1.5: "sog15", 2.5: "sog25", 3.5: "sog35"}
 ONE_WAY = ["atg", "a1", "p1", "p2", "ppp1"]
 LABELS = {"sog15": "SOG 1.5", "sog25": "SOG 2.5", "sog35": "SOG 3.5", "atg": "ATG", "a1": "1+ AST",
@@ -154,6 +164,59 @@ def _lineups(id_by_name: dict) -> dict:
                 out[pid] = {"unit": unit.upper(), "pp": p.get("ppUnit"), "move": p.get("movement"),
                             "mates": [m for m in ids if m is not None and m != pid], "team": team}
     return out
+
+
+def _lineup_chart(id_by_name: dict) -> dict:
+    """{team: {f1: [[slot, name, id], ...], ..., pp1: [...], pp2: [...]}}: the posted even-strength lines
+    and the power-play units (forwards in line order, then defence). id is None for a skater with no log."""
+    out = {}
+    raw = read_json(pipeline_path("team_lineups.json"), {}) or {}
+    for team, lu in raw.items():
+        if not isinstance(lu, dict):
+            continue
+        chart = {}
+        for unit in UNITS:
+            for p in lu.get(unit) or []:
+                pid = id_by_name.get((norm(p.get("name")), team))
+                row = [(p.get("pos") or "").upper(), p.get("name"), None if pid is None else int(pid)]
+                chart.setdefault(unit, []).append(row)
+                if p.get("ppUnit"):
+                    chart.setdefault(f"pp{int(p['ppUnit'])}", []).append(row)
+        if chart:
+            out[team] = chart
+    return out
+
+
+def _defence(gs: pd.DataFrame, tri_by_name: dict) -> dict:
+    """What each team has allowed per game this season: its last 4 and 8 games, the 16 before those 8,
+    the league mean and the rank of its last-8 value (1 = allows the most). A team short of a window
+    reports the games it has (prior_n; l4/l8 against gp), never last season's."""
+    stats, cols = list(DEF_STATS), list(DEF_STATS.values())
+    out = {"stats": stats, "recent": list(DEF_RECENT), "prior": DEF_PRIOR, "league": None, "teams": {}}
+    if gs.empty or not set(cols) <= set(gs.columns):
+        return out
+    gs = gs[(gs["game_id"] // 10000) % 100 == 2].assign(tri=lambda d: d["team"].map(tri_by_name))
+    gs = gs.dropna(subset=["tri"]).sort_values(["game_date", "game_id"])
+    if gs.empty:
+        return out
+    nd = [1, 1, 2, 2, 2, 2]
+    mean = lambda part: None if part.empty else [round(float(v), n) for v, n in zip(part[cols].mean(), nd)]
+    out["league"] = mean(gs)
+    last = max(DEF_RECENT)
+    for tri, part in gs.groupby("tri"):
+        prior = part.iloc[:-last].tail(DEF_PRIOR)
+        out["teams"][tri] = {"gp": int(len(part)), **{f"l{n}": mean(part.tail(n)) for n in DEF_RECENT},
+                             "prior": mean(prior), "prior_n": int(len(prior))}
+    l8 = pd.DataFrame({t: d[f"l{last}"] for t, d in out["teams"].items()}, index=stats).T
+    ranks = l8.rank(ascending=False, method="min").astype(int)
+    for tri, d in out["teams"].items():
+        d["rank"] = [int(v) for v in ranks.loc[tri]]
+    return out
+
+
+def _tri_by_name() -> dict:
+    teams = pd.read_csv(pipeline_path("nhl_teams.csv"))
+    return dict(zip(teams["Common Name"], teams["Team Tricode"]))
 
 
 def _book(entry: dict | None) -> dict:
@@ -349,7 +412,9 @@ def build(today=None) -> tuple[dict, dict]:
         "book_source": "bovada" if props_raw else None,
         "book_fetched_at": (read_json(pipeline_path("player_props.json"), {}) or {}).get("fetched_at"),
     }
-    return board, {"generated_at": board["generated_at"], "slate_date": today, "players": detail}
+    gamestats = read_season_csv("gamestats", path=pipeline_path(season_file("gamestats")), game_types=None)
+    return board, {"generated_at": board["generated_at"], "slate_date": today, "players": detail,
+                   "lineups": _lineup_chart(id_by_name), "defence": _defence(gamestats, _tri_by_name())}
 
 
 def main():

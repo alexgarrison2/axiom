@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { attemptsPer, boostFor, buildRows, extFor, seasonLabel, summarize, vsLog, american, categoryOf, fairAmerican, filterRows, lastN, lineFor, sortRows, streak, DEFAULT_FILTER, type LogRow, type PropPlayer, type PropsDoc } from '../model';
+import { attemptsPer, boostFor, buildRows, extFor, seasonLabel, summarize, unitsFor, vsLog, american, categoryOf, fairAmerican, filterRows, lastN, lineFor, sortRows, streak, DEFAULT_FILTER, type LogRow, type PropPlayer, type PropsDoc } from '../model';
 
 // [date, opp, home, toi, g, a, sog, ppp, prev]
 const log = (sog: number[], prevFrom = 0): LogRow[] => sog.map((s, i) => [`2026-10-${String(i + 1).padStart(2, '0')}`, 'BOS', 1, 18, s >= 4 ? 1 : 0, 0, s, 0, i < prevFrom ? 1 : 0]);
@@ -74,5 +74,19 @@ describe('props model', () => {
         expect(vs.map(r => [r[1], r[8], r[9]])).toEqual([['SEA', 1, 6], ['SEA', 0, 2]]);
         expect(summarize(vs, sog, sog.lines[0])).toEqual({ hits: 1, n: 2, avg: 2 });
         expect(seasonLabel('2025-01-10')).toBe('24-25');
+    });
+
+    it('lays out his line and power-play unit from the posted chart, or from the board without one', () => {
+        const a = player({ id: 1, name: 'A One', mates: [2] });
+        const b = player({ id: 2, name: 'B Two', pp: 2, mates: [1] });
+        const c = player({ id: 3, name: 'C Three', unit: 'D1', mates: [] });
+        const chart = { f1: [['LW', 'B Two', 2], ['C', 'A One', 1], ['RW', 'No Log', null]], pp1: [['C', 'A One', 1], ['LD', 'C Three', 3]] } as const;
+        const u = unitsFor(a, chart as never, [a, b, c]);
+        expect(u.ev.map(r => r[0])).toEqual(['LW', 'C', 'RW']);
+        expect(u.pp.map(r => r[2])).toEqual([1, 3]);
+        const bare = unitsFor(a, undefined, [a, b, c]);
+        expect(bare.ev.map(r => r[2])).toEqual([1, 2]);
+        expect(bare.pp.map(r => r[2])).toEqual([1, 3]);
+        expect(unitsFor(player({ unit: null, pp: null }), chart as never, [a])).toEqual({ ev: [], pp: [] });
     });
 });

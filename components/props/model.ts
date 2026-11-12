@@ -77,11 +77,53 @@ export interface PlayerDetail {
     vs_n?: number;
 }
 
+/** [slot (LW/C/RW/LD/RD, '' when unknown), name, player id (null without a game log)] */
+export type ChartRow = [string, string, number | null];
+/** A team's posted units: f1-f4, d1-d3 and the power-play units pp1 / pp2. */
+export type TeamChart = Record<string, ChartRow[]>;
+
+export type DefenceStat = 'sa' | 'att' | 'xga' | 'ga' | 'ppga' | 'ppo';
+
+/** What a team allows per game this season, one value per `DefenceDoc.stats` entry. */
+export interface TeamDefence {
+    gp: number;
+    l4: number[] | null;
+    l8: number[] | null;
+    /** The games before the last 8 (up to `DefenceDoc.prior` of them; prior_n says how many). */
+    prior: number[] | null;
+    prior_n: number;
+    /** Rank of the last-8 value, 1 = allows the most. */
+    rank: number[];
+}
+
+export interface DefenceDoc {
+    stats: DefenceStat[];
+    recent: number[];
+    prior: number;
+    league: number[] | null;
+    teams: Record<string, TeamDefence>;
+}
+
 /** public/data/props_detail.json: fetched when a row is first opened. */
 export interface PropsDetailDoc {
     generated_at: string;
     slate_date: string;
     players: Record<string, PlayerDetail>;
+    lineups?: Record<string, TeamChart>;
+    defence?: DefenceDoc;
+}
+
+/**
+ * A skater's even-strength unit and power-play unit as chart rows. Without the
+ * posted chart (detail still loading or failed) the rows come from props.json:
+ * the same players, no slots.
+ */
+export function unitsFor(p: PropPlayer, chart: TeamChart | null | undefined, players: PropPlayer[]): { ev: ChartRow[]; pp: ChartRow[] } {
+    const row = (m: PropPlayer): ChartRow => ['', m.name, m.id];
+    const byId = new Map(players.map(x => [x.id, x]));
+    const ev = (p.unit && chart?.[p.unit.toLowerCase()]) || (p.unit ? [p, ...p.mates.map(id => byId.get(id)).filter((m): m is PropPlayer => !!m)].map(row) : []);
+    const pp = !p.pp ? [] : (chart?.[`pp${p.pp}`] ?? players.filter(m => m.team === p.team && m.pp === p.pp).map(row));
+    return { ev, pp };
 }
 
 export interface PropsDoc {

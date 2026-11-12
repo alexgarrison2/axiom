@@ -433,6 +433,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
                                     open={open === r.p.id}
                                     showAtt={showAtt}
                                     detail={open !== r.p.id || detail === undefined ? undefined : (detail?.players[String(r.p.id)] ?? null)}
+                                    detailDoc={open === r.p.id ? detail : undefined}
                                     onToggle={toggleOpen}
                                     doc={doc}
                                     colCount={colCount}
@@ -466,13 +467,15 @@ interface PropRowProps {
     open: boolean;
     showAtt: boolean;
     detail: PlayerDetail | null | undefined;
+    /** The whole detail file, for the opened row only (team lineups, opponent defence). */
+    detailDoc: PropsDetailDoc | null | undefined;
     onToggle: (id: number) => void;
     doc: PropsDoc;
     colCount: number;
     seasons: { cur: string; prev: string };
 }
 
-const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open, showAtt, detail, onToggle, doc, colCount, seasons }: PropRowProps) {
+const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open, showAtt, detail, detailDoc, onToggle, doc, colCount, seasons }: PropRowProps) {
     const { p, line } = r;
     const book = p.book?.[line.key];
     const detailId = `prop-detail-${p.id}`;
@@ -620,7 +623,7 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
                     <td colSpan={colCount} className="border-b border-line bg-surface-2 p-0">
                         {/* Below lg the detail stays on screen while a wide table scrolls sideways. */}
                         <div className="max-lg:sticky max-lg:left-0 max-lg:w-[var(--props-view-w,100%)]">
-                            <PropDetail r={r} cat={cat} doc={doc} detail={detail} seasons={seasons} />
+                            <PropDetail r={r} cat={cat} doc={doc} detail={detail} chart={detailDoc?.lineups?.[p.team]} defence={detailDoc?.defence} seasons={seasons} />
                         </div>
                     </td>
                 </tr>

@@ -19,14 +19,19 @@ import {
     shortDate,
     shortName,
     summarize,
+    unitsFor,
     vsLog,
     type Category,
+    type ChartRow,
+    type DefenceDoc,
+    type DefenceStat,
     type GoalieInfo,
     type PlayerDetail,
     type PropPlayer,
     type PropsDoc,
     type Rate,
     type Row,
+    type TeamChart,
 } from './model';
 
 const fmt = (r: Rate) => (r.n ? `${Math.round((r.hits / r.n) * 100)}%` : '—');
@@ -83,28 +88,126 @@ function Section({ title, aside, children, className }: { title: React.ReactNode
     );
 }
 
-function Mate({ m, cat, line, tag }: { m: PropPlayer; cat: Category; line: Row['line']; tag: string }) {
-    const p1 = m.book?.p1;
-    const l10 = lastN(m, cat, cat.lines.find(l => l.key === line.key) ?? cat.lines[0], 10);
-    const att = attemptsPer(m, 10).avg;
+/** One skater in a lineup unit: slot, name, then shot attempts per game, his L10 rate on the line and his 1+ point price. */
+function Slot({ row, m, self, cat, line }: { row: ChartRow; m: PropPlayer | undefined; self: boolean; cat: Category; line: Row['line'] }) {
+    const p1 = m?.book?.p1;
+    const att = m ? attemptsPer(m, 10).avg : null;
     return (
-        <li className="flex items-center gap-2 border-t border-line py-1.5 first:border-t-0 max-sm:gap-1.5">
-            <span className="w-9 shrink-0 text-micro uppercase text-fg-3 max-sm:w-7">{tag}</span>
-            <TeamLogo tri={m.team} size={16} />
-            <span className="min-w-0 flex-1 truncate text-fg-1">
-                <span className="sm:hidden">{shortName(m.name)}</span>
-                <span className="hidden sm:inline">{m.name}</span>
-            </span>
-            <span className="w-10 text-right text-micro text-fg-2 max-sm:w-8" title="Shot attempts per game, last 10">
-                {att != null ? att.toFixed(1) : '—'}
-            </span>
-            <span className="w-10 text-right text-micro text-fg-2 max-sm:w-9" title={`${cat.stat} ${line.label}, last 10`}>
-                {fmt(l10)}
-            </span>
-            <span className="w-12 text-right" title="1+ point: book price (pony xG when unposted)">
-                {p1?.over != null ? <span className="text-fg-1">{american(p1.over)}</span> : m.fair?.p1 != null ? <span className="text-model">{fairAmerican(m.fair.p1)}</span> : <span className="text-fg-disabled">—</span>}
-            </span>
+        <li className={cn('min-w-0 rounded-control border px-1 py-1.5 text-center sm:px-1.5', self ? 'border-brand/60 bg-brand/5' : 'border-line')} aria-current={self || undefined}>
+            <div className="text-micro uppercase text-fg-3">{row[0] || '\u00a0'}</div>
+            <div className={cn('truncate', self ? 'font-semibold text-brand' : m ? 'text-fg-1' : 'text-fg-2')} title={row[1]}>
+                {shortName(row[1])}
+            </div>
+            <div className="mt-0.5 flex justify-center gap-x-1.5 whitespace-nowrap text-micro tabular-nums text-fg-2 sm:gap-x-2">
+                {m ? (
+                    <>
+                        <span title="Shot attempts per game, last 10">{att != null ? att.toFixed(1) : '—'}</span>
+                        <span title={`${cat.stat} ${line.label}, last 10`}>{fmt(lastN(m, cat, line, 10))}</span>
+                        <span title="1+ point: book price (pony xG when unposted)">
+                            {p1?.over != null ? <span className="text-fg-1">{american(p1.over)}</span> : m.fair?.p1 != null ? <span className="text-model">{fairAmerican(m.fair.p1)}</span> : '—'}
+                        </span>
+                    </>
+                ) : (
+                    <span className="text-fg-disabled" title="No games logged">
+                        —
+                    </span>
+                )}
+            </div>
         </li>
+    );
+}
+
+/** A unit drawn like a line chart: up to three across the front, the rest (the points) in a row of two behind. */
+function Unit({ tag, rows, p, byId, cat, line }: { tag: string; rows: ChartRow[]; p: PropPlayer; byId: Map<number, PropPlayer>; cat: Category; line: Row['line'] }) {
+    const front = rows.length > 3 ? rows.slice(0, 3) : rows;
+    const back = rows.length > 3 ? rows.slice(3) : [];
+    const slots = (list: ChartRow[]) => list.map(row => <Slot key={row[1]} row={row} m={row[2] != null ? byId.get(row[2]) : undefined} self={row[2] === p.id} cat={cat} line={line} />);
+    return (
+        <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-start gap-x-2">
+            <span className="label pt-2">{tag}</span>
+            <div className="flex flex-col gap-1.5 text-caption">
+                <ul className={cn('grid gap-1.5', front.length === 2 ? 'grid-cols-2' : 'grid-cols-3')} aria-label={tag}>
+                    {slots(front)}
+                </ul>
+                {back.length ? <ul className={cn('grid gap-1.5', back.length === 2 ? 'grid-cols-2 px-[16.67%]' : 'grid-cols-3')}>{slots(back)}</ul> : null}
+            </div>
+        </div>
+    );
+}
+
+const DEFENCE_ROWS: Record<DefenceStat, { label: string; title: string; digits: number }> = {
+    sa: { label: 'SOG', title: 'Shots on goal allowed per game', digits: 1 },
+    att: { label: 'Att', title: 'Shot attempts allowed per game (on net, missed and blocked)', digits: 1 },
+    xga: { label: 'xGA', title: 'pony xG allowed per game', digits: 2 },
+    ga: { label: 'GA', title: 'Goals allowed per game', digits: 2 },
+    ppga: { label: 'PPGA', title: 'Power-play goals allowed per game', digits: 2 },
+    ppo: { label: 'PP opp', title: 'Power plays given to the opponent per game', digits: 2 },
+};
+
+/** What tonight's opponent allows per game: its last 4 and 8, the games before those 8, the league, and where its last 8 rank. */
+function DefenceTable({ tri, doc }: { tri: string; doc: DefenceDoc }) {
+    const t = doc.teams[tri];
+    if (!t) return <p className="text-caption text-fg-3">No games yet</p>;
+    const [short, long] = doc.recent;
+    // A window the team has not filled yet is headed by the games it holds.
+    const head = (w: number) => (t.gp < w ? `${t.gp} GP` : `L${w}`);
+    const cell = (v: number | undefined, digits: number) => (v == null ? '—' : v.toFixed(digits));
+    const th = 'py-1 pl-2 text-right font-medium';
+    const td = 'py-1.5 pl-2 text-right';
+    return (
+        <table className="w-full text-caption tabular-nums">
+            <thead>
+                <tr className="text-micro uppercase text-fg-3">
+                    <th scope="col" className="py-1 text-left font-medium">
+                        /Game
+                    </th>
+                    <th scope="col" className={th}>
+                        {head(short)}
+                    </th>
+                    <th scope="col" className={th}>
+                        {head(long)}
+                    </th>
+                    <th scope="col" className={th} title={`The ${doc.prior} games before the last ${long}${t.prior_n < doc.prior ? ` (${t.prior_n} played)` : ''}`}>
+                        Prv {t.prior_n || doc.prior}
+                    </th>
+                    <th scope="col" className={th} title="League average this season">
+                        Lg
+                    </th>
+                    <th scope="col" className={th} title={`League rank of the last ${long}, 1 = allows the most`}>
+                        Rk
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {doc.stats.map((k, i) => {
+                    const row = DEFENCE_ROWS[k];
+                    if (!row) return null;
+                    const now = t.l8?.[i];
+                    const was = t.prior?.[i];
+                    // Looser or tighter than its own baseline by a tenth or more.
+                    const move = now != null && was ? (now - was) / was : 0;
+                    return (
+                        <tr key={k} className="border-t border-line">
+                            <th scope="row" className="py-1.5 text-left font-medium uppercase text-fg-2" title={row.title}>
+                                {row.label}
+                            </th>
+                            <td className={cn(td, 'text-fg-2')}>{cell(t.l4?.[i], row.digits)}</td>
+                            <td className={cn(td, 'font-semibold', k === 'xga' ? 'text-model' : 'text-fg-1')} title={was != null && now != null ? `${signed(now - was, row.digits)} vs the games before` : undefined}>
+                                {Math.abs(move) >= 0.1 ? (
+                                    <svg viewBox="0 0 8 8" className="mr-1 inline-block h-2 w-2 text-fg-3" role="img" aria-label={move > 0 ? 'up' : 'down'}>
+                                        <path d={move > 0 ? 'M4 1.5 7 6H1z' : 'M4 6.5 1 2h6z'} fill="currentColor" />
+                                    </svg>
+                                ) : null}
+                                {cell(now, row.digits)}
+                            </td>
+                            <td className={cn(td, t.prior_n < doc.prior ? 'text-fg-3' : 'text-fg-2')}>{cell(was, row.digits)}</td>
+                            <td className={cn(td, 'text-fg-3')}>{cell(doc.league?.[i], row.digits)}</td>
+                            <td className={cn(td, t.rank[i] <= 8 ? 'font-semibold text-warn' : 'text-fg-3')}>{t.rank[i]}</td>
+                        </tr>
+                    );
+                })}
+            </tbody>
+        </table>
     );
 }
 
@@ -129,20 +232,23 @@ export interface PropDetailProps {
     doc: PropsDoc;
     /** This player's detail; undefined while props_detail.json loads, null when it failed or has no entry. */
     detail: PlayerDetail | null | undefined;
+    /** His team's posted lines and tonight's opponent-defence table, both from props_detail.json. */
+    chart?: TeamChart | null;
+    defence?: DefenceDoc | null;
     seasons: { cur: string; prev: string };
 }
 
 /**
  * The opened row: deployment and volume facts, the 20-game log with attempts,
- * TOI and xG under every bar, every line in the category, linemates, his record
- * against tonight's opponent and the matchup.
+ * TOI and xG under every bar, every line in the category, his even-strength line
+ * and power-play unit, his record against tonight's opponent, what that opponent
+ * has been allowing and the matchup.
  */
-export function PropDetail({ r, cat, doc, detail, seasons }: PropDetailProps) {
+export function PropDetail({ r, cat, doc, detail, chart, defence, seasons }: PropDetailProps) {
     const { p, line } = r;
     const loading = detail === undefined;
     const byId = new Map(doc.players.map(x => [x.id, x]));
-    const mates = p.mates.map(id => byId.get(id)).filter((m): m is PropPlayer => !!m);
-    const ppMates = p.pp ? doc.players.filter(m => m.team === p.team && m.pp === p.pp && m.id !== p.id && !p.mates.includes(m.id)) : [];
+    const units = unitsFor(p, chart, doc.players);
     const game = p.game != null ? doc.games.find(g => g.id === p.game) : null;
     const side = game ? (game.home === p.team ? 'home' : 'away') : null;
     const oppSide = side === 'home' ? 'away' : 'home';
@@ -367,16 +473,12 @@ export function PropDetail({ r, cat, doc, detail, seasons }: PropDetailProps) {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 xl:gap-8">
-                <Section title={p.unit ? `${p.unit} line` : 'Linemates'} aside={<span className="text-micro uppercase">Att/g · L10 · 1+ pts</span>}>
-                    {mates.length || ppMates.length ? (
-                        <ul className="text-caption tabular-nums">
-                            {mates.map(m => (
-                                <Mate key={m.id} m={m} cat={cat} line={line} tag={p.unit ?? ''} />
-                            ))}
-                            {ppMates.map(m => (
-                                <Mate key={m.id} m={m} cat={cat} line={line} tag={`PP${p.pp}`} />
-                            ))}
-                        </ul>
+                <Section title="Lineup" aside={<span className="text-micro uppercase">Att/g · L10 · 1+ pts</span>}>
+                    {units.ev.length || units.pp.length ? (
+                        <div className="flex flex-col gap-3">
+                            {units.ev.length ? <Unit tag={p.unit ?? ''} rows={units.ev} p={p} byId={byId} cat={cat} line={line} /> : null}
+                            {units.pp.length ? <Unit tag={`PP${p.pp}`} rows={units.pp} p={p} byId={byId} cat={cat} line={line} /> : null}
+                        </div>
                     ) : (
                         <p className="text-caption text-fg-3">Not on a posted line</p>
                     )}
@@ -466,43 +568,60 @@ export function PropDetail({ r, cat, doc, detail, seasons }: PropDetailProps) {
                     )}
                 </Section>
 
-                <Section title="Matchup" className="md:col-span-2 xl:col-span-1">
-                    {game && p.opp ? (
-                        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-caption">
-                            <dt className="label pt-0.5">{p.opp} allow</dt>
-                            <dd className="flex flex-wrap items-baseline gap-x-3 text-fg-1">
-                                {opp ? (
+                <div className="grid gap-6 md:col-span-2 md:grid-cols-2 xl:col-span-1 xl:grid-cols-1">
+                    {p.opp && (loading || defence) ? (
+                        <Section
+                            title={
+                                <>
+                                    <TeamLogo tri={p.opp} size={16} /> {p.opp} allow
+                                </>
+                            }
+                        >
+                            {defence ? <DefenceTable tri={p.opp} doc={defence} /> : <div className="h-40 animate-pulse rounded-control bg-surface-3/60" />}
+                        </Section>
+                    ) : null}
+                    <Section title="Matchup">
+                        {game && p.opp ? (
+                            <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-caption">
+                                {defence ? null : (
                                     <>
-                                        <span>
-                                            {opp.sa.toFixed(1)} SOG <span className={cn('text-micro', opp.sa_rank <= 8 ? 'font-semibold text-warn' : 'text-fg-3')}>#{opp.sa_rank}</span>
-                                        </span>
-                                        <span>
-                                            {opp.ga.toFixed(2)} GA <span className={cn('text-micro', opp.ga_rank <= 8 ? 'font-semibold text-warn' : 'text-fg-3')}>#{opp.ga_rank}</span>
-                                        </span>
+                                        <dt className="label pt-0.5">{p.opp} allow</dt>
+                                        <dd className="flex flex-wrap items-baseline gap-x-3 text-fg-1">
+                                            {opp ? (
+                                                <>
+                                                    <span>
+                                                        {opp.sa.toFixed(1)} SOG <span className={cn('text-micro', opp.sa_rank <= 8 ? 'font-semibold text-warn' : 'text-fg-3')}>#{opp.sa_rank}</span>
+                                                    </span>
+                                                    <span>
+                                                        {opp.ga.toFixed(2)} GA <span className={cn('text-micro', opp.ga_rank <= 8 ? 'font-semibold text-warn' : 'text-fg-3')}>#{opp.ga_rank}</span>
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                '—'
+                                            )}
+                                        </dd>
                                     </>
-                                ) : (
-                                    '—'
                                 )}
-                            </dd>
-                            <dt className="label pt-0.5">Goalie</dt>
-                            <dd className="min-w-0">
-                                <GoalieLine g={game.goalies?.[oppSide]} />
-                            </dd>
-                            <dt className="label pt-0.5">Team xG</dt>
-                            <dd className="flex items-baseline gap-3">
-                                <span className="text-model">{teamXg != null ? teamXg.toFixed(2) : '—'}</span>
-                                {game.total ? <span className="text-micro text-fg-3">Total {game.total}</span> : null}
-                            </dd>
-                            <dt className="label pt-0.5">Rest</dt>
-                            <dd className="flex flex-wrap items-baseline gap-x-3 text-fg-2">
-                                <RestDays team={p.team} days={ownRest} />
-                                <RestDays team={p.opp} days={oppRest} />
-                            </dd>
-                        </dl>
-                    ) : (
-                        <p className="text-caption text-fg-3">No game tonight</p>
-                    )}
-                </Section>
+                                <dt className="label pt-0.5">Goalie</dt>
+                                <dd className="min-w-0">
+                                    <GoalieLine g={game.goalies?.[oppSide]} />
+                                </dd>
+                                <dt className="label pt-0.5">Team xG</dt>
+                                <dd className="flex items-baseline gap-3">
+                                    <span className="text-model">{teamXg != null ? teamXg.toFixed(2) : '—'}</span>
+                                    {game.total ? <span className="text-micro text-fg-3">Total {game.total}</span> : null}
+                                </dd>
+                                <dt className="label pt-0.5">Rest</dt>
+                                <dd className="flex flex-wrap items-baseline gap-x-3 text-fg-2">
+                                    <RestDays team={p.team} days={ownRest} />
+                                    <RestDays team={p.opp} days={oppRest} />
+                                </dd>
+                            </dl>
+                        ) : (
+                            <p className="text-caption text-fg-3">No game tonight</p>
+                        )}
+                    </Section>
+                </div>
             </div>
             {detail === null ? <p className="text-micro text-fg-3">Game detail unavailable. Try again after the next hourly update.</p> : null}
         </div>

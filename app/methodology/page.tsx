@@ -860,6 +860,17 @@ export default function MethodologyPage() {
                                     seasons, his last 10 games against tonight&apos;s opponent (back to 2022-23), the opposing goalie&apos;s pony xG
                                     goals saved above expected per game, and each team&apos;s days of rest.
                                 </Key>
+                                <Key sample={<span className="label text-fg-1">Lineup</span>}>
+                                    His even-strength line or defence pair and his power-play unit as DailyFaceoff posts them, him outlined. Under each
+                                    teammate: shot attempts per game, his last-10 rate on the same line, and his price to record a point.
+                                </Key>
+                                <Key sample={<span className="label text-fg-1">Allow</span>}>
+                                    What tonight&apos;s opponent gives up per game this season: shots on goal, shot attempts, pony xG, goals, power-play
+                                    goals and power plays. <strong>L4</strong> and <strong>L8</strong> are its last 4 and 8 games, <strong>Prv 16</strong> the
+                                    16 before those 8 (fewer early in a season, and the heading says how many), <strong>Lg</strong> the league average and{' '}
+                                    <strong>Rk</strong> where its last 8 rank, 1 allowing the most. A triangle marks a last-8 figure a tenth or more above
+                                    or below the games before.
+                                </Key>
                             </dl>
                             <p>
                                 <strong>Validation.</strong> Replayed over the 2025-26 season from mid-November (35,261 skater games, each priced from

@@ -145,6 +145,39 @@ def test_slate_prices_the_lineup_or_else_the_last_dressed_skaters():
     assert d == {"BBB": {9, 10}, "AAA": {1, 2}}
 
 
+def test_lineup_chart_keeps_slots_and_builds_pp_units(monkeypatch):
+    lu = {"AAA": {"f1": [{"name": "Lw One", "pos": "lw", "ppUnit": 2}, {"name": "Cé Two", "pos": "c", "ppUnit": 1},
+                         {"name": "Rw Three", "pos": "rw", "ppUnit": None}],
+                  "d1": [{"name": "Ld Four", "pos": "ld", "ppUnit": 1}], "g": [{"name": "G", "pos": "g1"}]},
+          "BBB": []}
+    monkeypatch.setattr(prop_board, "read_json", lambda *a, **k: lu)
+    chart = prop_board._lineup_chart({("ce two", "AAA"): 7, ("ld four", "AAA"): 9})
+    # A skater without a log keeps his place on the line (id None); goalies and empty teams are dropped.
+    assert chart == {"AAA": {"f1": [["LW", "Lw One", None], ["C", "Cé Two", 7], ["RW", "Rw Three", None]],
+                             "d1": [["LD", "Ld Four", 9]],
+                             "pp2": [["LW", "Lw One", None]], "pp1": [["C", "Cé Two", 7], ["LD", "Ld Four", 9]]}}
+
+
+def test_defence_windows_rank_and_thin_samples():
+    n = 30
+    rows = []
+    for i in range(n):   # Aces allow 20 shots early, 40 in their last 8; Bees always 30 but have 5 games
+        rows.append({"game_id": 2026020001 + i, "game_date": f"2026-10-{i + 1:02d}", "team": "Aces",
+                     "sog_ag": 40 if i >= n - 8 else 20})
+    rows += [{"game_id": 2026020101 + i, "game_date": f"2026-10-{i + 1:02d}", "team": "Bees", "sog_ag": 30} for i in range(5)]
+    rows.append({"game_id": 2026030111, "game_date": "2026-11-20", "team": "Bees", "sog_ag": 99})   # playoffs: ignored
+    gs = pd.DataFrame(rows)
+    for c in list(prop_board.DEF_STATS.values())[1:]:
+        gs[c] = 1.0
+    d = prop_board._defence(gs, {"Aces": "AAA", "Bees": "BBB"})
+    a, b = d["teams"]["AAA"], d["teams"]["BBB"]
+    assert (a["gp"], a["l4"][0], a["l8"][0], a["prior"][0], a["prior_n"], a["rank"][0]) == (30, 40.0, 40.0, 20.0, 16, 1)
+    # Five games: the recent windows hold what exists, there is no prior window, and the rank still shows.
+    assert (b["gp"], b["l8"][0], b["prior"], b["prior_n"], b["rank"][0]) == (5, 30.0, None, 0, 2)
+    assert d["league"][0] == round((22 * 20 + 8 * 40 + 5 * 30) / 35, 1)
+    assert prop_board._defence(pd.DataFrame(), {})["teams"] == {}
+
+
 def test_goalie_carries_regressed_gsax_when_rated():
     g = prop_board._goalie("X Y", "Confirmed", {"X Y": {"gsax_per_game": 0.2149}})
     assert g == {"name": "X Y", "status": "Confirmed", "gsax": 0.21}
