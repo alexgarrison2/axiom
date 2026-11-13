@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-13T00:48:59.816849+00:00",
+ "generated_at": "2026-11-13T01:02:46.611052+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6995,9 +6995,9 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 89,
+    "n_bets": 90,
     "n_graded": 86,
-    "n_pending": 3,
+    "n_pending": 4,
     "record": "57-29",
     "wins": 57,
     "losses": 29,
@@ -9397,6 +9397,32 @@
      "decision": null,
      "closing_price": -105.0,
      "clv": -0.0465,
+     "model_version": "sim-m5-v4_st-20261003",
+     "official": false
+    },
+    {
+     "gameId": 2026020305,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-12",
+     "startUtc": "2026-11-13T01:00:00Z",
+     "snapshotUtc": "2026-11-13T00:48:00Z",
+     "team": "Sabres",
+     "opponent": "Blackhawks",
+     "side": "away",
+     "stake_units": 1.5,
+     "price": -155.0,
+     "decimal_price": 1.6452,
+     "ev_at_bet": 0.0397,
+     "ev_bucket": "0-5%",
+     "stake_bucket": "1.1-2u",
+     "model_prob": 0.632,
+     "result": "pending",
+     "profit_units": 0.0,
+     "final": null,
+     "decision": null,
+     "closing_price": -155.0,
+     "clv": -0.0321,
      "model_version": "sim-m5-v4_st-20261003",
      "official": false
     }
