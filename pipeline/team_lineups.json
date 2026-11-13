@@ -8325,46 +8325,14 @@
     "UTA": {
         "f1": [
             {
-                "name": "Clayton Keller",
-                "number": 9,
+                "name": "Anders Lee",
+                "number": 72,
                 "pos": "lw",
-                "id": 2642,
+                "id": 2071,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Nick Schmaltz",
-                "number": 8,
-                "pos": "c",
-                "id": 2678,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
-            },
-            {
-                "name": "Daniil But",
-                "number": 50,
-                "pos": "rw",
-                "id": 38459,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
-                "name": "Jack McBain",
-                "number": 22,
-                "pos": "lw",
-                "id": 28796,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Vincent Trocheck",
@@ -8374,29 +8342,29 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Lawson Crouse",
-                "number": 67,
+                "name": "Clayton Keller",
+                "number": 9,
                 "pos": "rw",
-                "id": 2476,
-                "ppUnit": null,
+                "id": 2642,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             }
         ],
-        "f3": [
+        "f2": [
             {
-                "name": "Anders Lee",
-                "number": 72,
+                "name": "Kailer Yamamoto",
+                "number": 56,
                 "pos": "lw",
-                "id": 2071,
+                "id": 2796,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Barrett Hayton",
@@ -8406,29 +8374,61 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
-                "name": "Kailer Yamamoto",
-                "number": 56,
+                "name": "Daniil But",
+                "number": 50,
                 "pos": "rw",
-                "id": 2796,
+                "id": 38459,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Michael Carcone",
+                "number": 53,
+                "pos": "lw",
+                "id": 3864,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Jack McBain",
+                "number": 22,
+                "pos": "c",
+                "id": 28796,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Lawson Crouse",
+                "number": 67,
+                "pos": "rw",
+                "id": 2476,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "f4": [
             {
-                "name": "Liam O'Brien",
-                "number": 38,
+                "name": "Ben McCartney",
+                "number": null,
                 "pos": "lw",
-                "id": 2377,
+                "id": 28455,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Kevin Stenlund",
@@ -8441,11 +8441,11 @@
                 "movement": null
             },
             {
-                "name": "Michael Carcone",
-                "number": 53,
+                "name": "Liam O'Brien",
+                "number": 38,
                 "pos": "rw",
-                "id": 3864,
-                "ppUnit": 2,
+                "id": 2377,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8463,14 +8463,14 @@
                 "movement": null
             },
             {
-                "name": "MacKenzie Weegar",
-                "number": 52,
+                "name": "Andrew Peeke",
+                "number": 20,
                 "pos": "rd",
-                "id": 2777,
-                "ppUnit": 2,
+                "id": 27242,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "d2": [
@@ -8485,32 +8485,32 @@
                 "movement": null
             },
             {
-                "name": "Andrew Peeke",
-                "number": 20,
+                "name": "MacKenzie Weegar",
+                "number": 52,
                 "pos": "rd",
-                "id": 27242,
-                "ppUnit": null,
+                "id": 2777,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d3": [
             {
-                "name": "Artem Duda",
-                "number": null,
+                "name": "Zac Jones",
+                "number": 15,
                 "pos": "ld",
-                "id": 36382,
+                "id": 30457,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Nick DeSimone",
-                "number": 57,
+                "name": "Artem Duda",
+                "number": null,
                 "pos": "rd",
-                "id": 2886,
+                "id": 36382,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8579,20 +8579,20 @@
                 "number": 8,
                 "pos": "ir5",
                 "id": 2678,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
         "pk1": [
             {
-                "name": "Nick Schmaltz",
-                "number": 8,
+                "name": "Kevin Stenlund",
+                "number": 82,
                 "pos": "sk1",
-                "id": 2678,
-                "ppUnit": 1,
+                "id": 4556,
+                "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Lawson Crouse",
@@ -8624,11 +8624,11 @@
         ],
         "pk2": [
             {
-                "name": "Kevin Stenlund",
-                "number": 82,
+                "name": "Vincent Trocheck",
+                "number": 16,
                 "pos": "sk1",
-                "id": 4556,
-                "ppUnit": null,
+                "id": 2006,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -8637,7 +8637,7 @@
                 "number": 22,
                 "pos": "sk2",
                 "id": 28796,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -8660,9 +8660,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-11)",
-        "updated_at": "2026-11-12T19:51:04.960Z",
-        "fetched_at": "2026-11-12T20:04:14Z"
+        "lineup_source": "Utah Mammoth",
+        "updated_at": "2026-11-13T01:50:28.528Z",
+        "fetched_at": "2026-11-13T02:02:15Z"
     },
     "WPG": {
         "f1": [
