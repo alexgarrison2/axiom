@@ -4499,14 +4499,14 @@
     "LAK": {
         "f1": [
             {
-                "name": "Artemi Panarin",
-                "number": 10,
+                "name": "Alex Turcotte",
+                "number": 15,
                 "pos": "lw",
-                "id": 2519,
-                "ppUnit": 1,
+                "id": 30420,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Alex Laferriere",
@@ -4555,7 +4555,7 @@
                 "number": 36,
                 "pos": "rw",
                 "id": 1065,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -4715,8 +4715,17 @@
             {
                 "name": "Erik Gustafsson",
                 "number": 64,
-                "pos": "ir2",
+                "pos": "ir1",
                 "id": 2550,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Artemi Panarin",
+                "number": 10,
+                "pos": "ir2",
+                "id": 2519,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -4798,9 +4807,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-12)",
-        "updated_at": "2026-11-13T14:50:19.700Z",
-        "fetched_at": "2026-11-14T12:03:27Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-14T19:33:26.619Z",
+        "fetched_at": "2026-11-14T20:01:44Z"
     },
     "DAL": {
         "f1": [
@@ -8685,9 +8694,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-12)",
-        "updated_at": "2026-11-13T14:46:48.271Z",
-        "fetched_at": "2026-11-13T15:02:15Z"
+        "lineup_source": "Cole Bagley",
+        "updated_at": "2026-11-14T19:34:43.368Z",
+        "fetched_at": "2026-11-14T20:01:44Z"
     },
     "WPG": {
         "f1": [
@@ -9207,14 +9216,14 @@
                 "movement": null
             },
             {
-                "name": "Louis Crevier",
-                "number": 46,
+                "name": "Zach Metsa",
+                "number": 73,
                 "pos": "rd",
-                "id": 29897,
+                "id": 28387,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "g": [
@@ -9333,9 +9342,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-12)",
-        "updated_at": "2026-11-13T14:36:46.393Z",
-        "fetched_at": "2026-11-13T15:02:15Z"
+        "lineup_source": "Paul Hamilton",
+        "updated_at": "2026-11-14T19:36:36.923Z",
+        "fetched_at": "2026-11-14T20:01:44Z"
     },
     "STL": {
         "f1": [
