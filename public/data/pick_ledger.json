@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-14T05:35:39.422908+00:00",
+ "generated_at": "2026-11-14T12:04:43.602203+00:00",
  "unit": "Every pick bet to win 1 unit: a -120 favourite risks 1.2u, a +150 underdog risks 0.67u",
  "disclaimer": "For information and entertainment only. Past results do not predict future results.",
  "source": "graded live picks in prediction_history.json at the price shown when the pick was published",
@@ -9456,21 +9456,21 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 281,
-    "n_graded": 281,
+    "n_bets": 282,
+    "n_graded": 282,
     "n_pending": 0,
-    "record": "182-99",
+    "record": "182-100",
     "wins": 182,
-    "losses": 99,
-    "units_staked": 472.871,
-    "units_profit": 32.772,
-    "roi": 0.0693,
+    "losses": 100,
+    "units_staked": 474.571,
+    "units_profit": 31.072,
+    "roi": 0.0655,
     "roi_ci": [
-     -0.0166,
-     0.1527
+     -0.0218,
+     0.1505
     ],
     "clv_mean": -0.0329,
-    "clv_n": 281,
+    "clv_n": 282,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
@@ -9482,11 +9482,11 @@
      },
      {
       "bucket": "0-5%",
-      "n": 91,
-      "record": "54-37",
-      "units_staked": 153.9839,
-      "units_profit": -0.5008,
-      "roi": -0.0033
+      "n": 92,
+      "record": "54-38",
+      "units_staked": 155.6839,
+      "units_profit": -2.2008,
+      "roi": -0.0141
      },
      {
       "bucket": "5-10%",
@@ -9530,11 +9530,11 @@
      },
      {
       "bucket": "1.1-2u",
-      "n": 201,
-      "record": "119-82",
-      "units_staked": 293.85,
-      "units_profit": 2.25,
-      "roi": 0.0077
+      "n": 202,
+      "record": "119-83",
+      "units_staked": 295.55,
+      "units_profit": 0.55,
+      "roi": 0.0019
      },
      {
       "bucket": "2u+",
@@ -16570,6 +16570,31 @@
      "decision": "REG",
      "closing_price": -225.0,
      "clv": -0.0259,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020311,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-13",
+     "startUtc": "2026-11-14T03:00:00Z",
+     "snapshotUtc": "2026-11-14T02:02:00Z",
+     "team": "Golden Knights",
+     "opponent": "Predators",
+     "side": "home",
+     "stake_units": 1.7,
+     "price": -170.0,
+     "decimal_price": 1.5882,
+     "ev_at_bet": 0.0149,
+     "ev_bucket": "0-5%",
+     "stake_bucket": "1.1-2u",
+     "model_prob": 0.639,
+     "result": "loss",
+     "profit_units": -1.7,
+     "final": "3-2",
+     "decision": "SO",
+     "closing_price": -170.0,
+     "clv": -0.0304,
      "model_version": "sim-m5-v4_st-20261003"
     }
    ]

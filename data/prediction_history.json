@@ -55794,5 +55794,66 @@
         "market_p": null
       }
     }
+  },
+  {
+    "gameId": 2026020311,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-13",
+    "homeTeam": "Golden Knights",
+    "awayTeam": "Predators",
+    "homeScore": 2,
+    "awayScore": 3,
+    "decision": "SO",
+    "homeXg": 3.42,
+    "awayXg": 2.58,
+    "homeWinProb": 63.9,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Predators",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.4083,
+    "logLoss": 1.0189,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-14T02:02:00Z",
+    "startUtc": "2026-11-14T03:00:00Z",
+    "marketHomeProb": 61.0,
+    "modelHomeProb": 64.6,
+    "homeOdds": -170.0,
+    "awayOdds": 142.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 64.6,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.215,
+        "ll": 1.5371,
+        "naive_ll": 1.8349,
+        "market_p": 0.2117
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.606,
+        "ll": 0.5009,
+        "naive_ll": 0.4846,
+        "market_p": 0.624
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.582,
+        "ll": 0.5413,
+        "naive_ll": 0.5485,
+        "market_p": 0.5547
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.33,
+        "ll": 1.1087,
+        "naive_ll": 1.1776,
+        "market_p": null
+      }
+    }
   }
 ]
