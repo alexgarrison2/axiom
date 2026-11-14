@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-14T16:03:02.092367+00:00",
+ "generated_at": "2026-11-14T17:02:45.363178+00:00",
  "current_season": "2026-27",
  "notes": "Headline numbers use live pregame snapshots only. Retro (back-filled) rows are counted in n_retro_excluded and never mixed in. Market = de-vigged (power method).",
  "seasons": {
@@ -7491,9 +7491,9 @@
   "reasons": [
    "Backtest ROI 95% CI lower bound -9.5% is not above -2%.",
    "Backtest closing-line value -5.20% is not positive.",
-   "Rolling 200-game model log loss 0.6374511525767034 is worse than the market's 0.6367724047894893."
+   "Rolling 200-game model log loss 0.6374511525767034 is worse than the market's 0.6367724047894894."
   ],
-  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Rolling 200-game model log loss 0.6374511525767034 is worse than the market's 0.6367724047894893.",
+  "reason": "Backtest ROI 95% CI lower bound -9.5% is not above -2%. Backtest closing-line value -5.20% is not positive. Rolling 200-game model log loss 0.6374511525767034 is worse than the market's 0.6367724047894894.",
   "backtest": {
    "n": 64,
    "roi": 0.1399,
