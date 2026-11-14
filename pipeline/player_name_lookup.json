@@ -1,5 +1,6 @@
 {
   "by_full_name": {
+    "ilya solovyov": "8482470",
     "cole beaudoin": "8484786",
     "kenny connors": "8483675",
     "jorian donovan": "8483435",
@@ -56,6 +57,7 @@
     "matthew seminoff": "8483514",
     "alexander holtz": "8482125",
     "samuel honzek": "8484180",
+    "mike reilly": "8476422",
     "dominic james": "8483752",
     "jonny brodzinski": "8477380",
     "dylan larkin": "8477946",
@@ -63,6 +65,7 @@
     "vinni lettieri": "8479968",
     "nate danielson": "8484160",
     "sam lafferty": "8478043",
+    "kyle maclean": "8481237",
     "garrett wilson": "8475253",
     "theo lindstein": "8484188",
     "dylan hryckowian": "8486130",
@@ -76,7 +79,6 @@
     "vladislav kolyachonok": "8481609",
     "tyler seguin": "8475794",
     "aliaksei protas": "8481656",
-    "ilya solovyov": "8482470",
     "cole knuble": "8483787",
     "alexandre texier": "8480074",
     "berkly catton": "8484800",
@@ -603,7 +605,6 @@
     "ben meyers": "8483570",
     "colton sissons": "8476925",
     "porter martone": "8485406",
-    "mike reilly": "8476422",
     "dylan strome": "8478440",
     "cole caufield": "8481540",
     "leon draisaitl": "8477934",
@@ -669,7 +670,6 @@
     "erik karlsson": "8474578",
     "noel acciari": "8478569",
     "nick schmaltz": "8477951",
-    "kyle maclean": "8481237",
     "reid schaefer": "8483513",
     "josh morrissey": "8477504",
     "marshall rifai": "8483546",
@@ -769,6 +769,13 @@
     "william eklund": "8482667"
   },
   "by_last_name": {
+    "solovyov": [
+      {
+        "pid": "8482470",
+        "full_name": "ilya solovyov",
+        "team": "PIT"
+      }
+    ],
     "beaudoin": [
       {
         "pid": "8484786",
@@ -1204,6 +1211,13 @@
         "team": "CGY"
       }
     ],
+    "reilly": [
+      {
+        "pid": "8476422",
+        "full_name": "mike reilly",
+        "team": "CAR"
+      }
+    ],
     "james": [
       {
         "pid": "8483752",
@@ -1251,6 +1265,13 @@
         "pid": "8478043",
         "full_name": "sam lafferty",
         "team": "FLA"
+      }
+    ],
+    "maclean": [
+      {
+        "pid": "8481237",
+        "full_name": "kyle maclean",
+        "team": "NYI"
       }
     ],
     "wilson": [
@@ -1357,13 +1378,6 @@
         "pid": "8484999",
         "full_name": "ilya protas",
         "team": "WSH"
-      }
-    ],
-    "solovyov": [
-      {
-        "pid": "8482470",
-        "full_name": "ilya solovyov",
-        "team": "PIT"
       }
     ],
     "knuble": [
@@ -5022,13 +5036,6 @@
         "team": "PHI"
       }
     ],
-    "reilly": [
-      {
-        "pid": "8476422",
-        "full_name": "mike reilly",
-        "team": "CAR"
-      }
-    ],
     "caufield": [
       {
         "pid": "8481540",
@@ -5457,13 +5464,6 @@
         "pid": "8477951",
         "full_name": "nick schmaltz",
         "team": "UTA"
-      }
-    ],
-    "maclean": [
-      {
-        "pid": "8481237",
-        "full_name": "kyle maclean",
-        "team": "NYI"
       }
     ],
     "morrissey": [
