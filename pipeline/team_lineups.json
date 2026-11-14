@@ -82,8 +82,8 @@
                 "id": 1246,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Jordan Martinook",
@@ -93,7 +93,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
@@ -105,7 +105,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Mark Jankowski",
@@ -115,7 +115,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jesperi Kotkaniemi",
@@ -191,7 +191,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -214,17 +214,6 @@
                 "gameTimeDecision": false
             }
         ],
-        "ir": [
-            {
-                "name": "Jordan Staal",
-                "number": 11,
-                "pos": "ir1",
-                "id": 1246,
-                "ppUnit": null,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            }
-        ],
         "pk1": [
             {
                 "name": "Jordan Staal",
@@ -233,7 +222,7 @@
                 "id": 1246,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Jordan Martinook",
@@ -302,8 +291,8 @@
             }
         ],
         "lineup_source": "Tom Gulitti",
-        "updated_at": "2026-11-13T13:02:58.453Z",
-        "fetched_at": "2026-11-13T14:01:57Z"
+        "updated_at": "2026-11-14T14:57:06.310Z",
+        "fetched_at": "2026-11-14T15:01:35Z"
     },
     "FLA": {
         "f1": [
