@@ -155,9 +155,10 @@ class Resolver:
         return None, "unmapped"
 
 
-def dfo_skaters(team_lineups: dict, team: str) -> list[dict]:
+def dfo_skaters(team_lineups: dict, team: str, keep_out: bool = False) -> list[dict]:
     """Projected dressed skaters from DFO ``team_lineups.json`` (forward lines f*, pairs d*),
-    minus players flagged out / IR / suspended (DESIGN §3.7)."""
+    minus players flagged out / IR / suspended (DESIGN §3.7).  ``keep_out``: those players stay
+    in the list with ``out`` True (their slot still dresses someone)."""
     t = team_lineups.get(team) or {}
     out = []
     for key, grp in t.items():
@@ -165,9 +166,9 @@ def dfo_skaters(team_lineups: dict, team: str) -> list[dict]:
             continue
         for p in grp:
             st = str(p.get("injuryStatus") or "").lower()
-            if st in OUT_STATUSES:
+            if st in OUT_STATUSES and not keep_out:
                 continue
-            out.append({"name": p.get("name"), "number": p.get("number"),
+            out.append({"name": p.get("name"), "number": p.get("number"), "out": st in OUT_STATUSES,
                         "group": "D" if key.startswith("d") else "F", "gtd": bool(p.get("gameTimeDecision"))})
     return out
 

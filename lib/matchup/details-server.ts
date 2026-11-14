@@ -203,7 +203,7 @@ export function getMatchupDetails(): MatchupDetailsPayload {
             const tri = str(row[`${s}_abbrev`]) ?? '';
             const lu = json<Record<string, unknown> | null>(row[`${s}_lineup`], null);
             const view = lineupView(ctx, lu as DfoLineup | null, tri);
-            const lineupNames = new Set(Object.values(view?.lines ?? {}).flat().map(p => p.name.toLowerCase()));
+            const lineupNames = new Set(Object.values(view?.lines ?? {}).flat().filter(p => !p.out).map(p => p.name.toLowerCase()));
             const starter = str(row[`${s}_goalie_confirmed`]) ?? str(row[`${s}_starter`])?.replace(/\s*\(.*\)\s*$/, '') ?? null;
             // Tandem from the fresh team_goalies.json; the projected starter leads.
             const tandem = [...new Set([...(starter ? [starter] : []), ...(teamGoalies[tri] ?? [])])].slice(0, 3);

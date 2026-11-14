@@ -405,7 +405,8 @@ def live_teams(srv, term, schedule: list, lineups: dict | None = None) -> tuple[
         cur = None
         if (lineups or {}).get(tri):
             cp, cg, _ = term.resolve(tri, lineups.get(tri))
-            cur = (cp, cg)
+            # tonight's stand-ins for ruled-out skaters (negative ids) are not roster members
+            cur = ([p for p in cp if p >= 0], [g for p, g in zip(cp, cg) if p >= 0])
         pids, groups = roster_guard(pids, groups, cur)
         side = term.side(tri, pids, groups) if len(pids) >= 10 else None
         if side is not None and side.get("rated", 0) < 10:

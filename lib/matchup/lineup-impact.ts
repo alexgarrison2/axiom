@@ -19,6 +19,8 @@ export interface DfoPlayer {
     pos?: string;
     ppUnit?: number | null;
     movement?: string | null;
+    /** DailyFaceoff's flag, or 'out' stamped by the pipeline from the ESPN report / DFO news (predict_games.mark_unavailable). */
+    injuryStatus?: string | null;
 }
 
 export type DfoLineup = Record<string, unknown>;
@@ -63,8 +65,13 @@ function playersIn(lineup: DfoLineup, key: string): DfoPlayer[] {
     return Array.isArray(v) ? (v.filter(p => p && typeof (p as DfoPlayer).name === 'string') as DfoPlayer[]) : [];
 }
 
+/** Ruled out of tonight's game: shown struck through, left out of every total (the same rule the models use). */
+export function isOut(p: DfoPlayer): boolean {
+    return /^(out|ir|ltir|injured reserve|long-term injured reserve|suspended)$/i.test((p.injuryStatus ?? '').trim());
+}
+
 function slotTotal(index: ImpactIndex, lineup: DfoLineup, team: string, key: string, required: number): number | null {
-    const ps = playersIn(lineup, key);
+    const ps = playersIn(lineup, key).filter(p => !isOut(p));
     if (ps.length < required) return null;
     let t = 0;
     for (const p of ps.slice(0, required)) {
@@ -85,6 +92,7 @@ function gradeOf(index: ImpactIndex, lineup: DfoLineup, team: string): { value: 
     const parts: PartTotals = { off: 0, fin: 0, def: 0, net: 0 };
     for (const [key] of SLOTS) {
         for (const p of playersIn(lineup, key)) {
+            if (isOut(p)) continue;
             const e = index.resolve(p.name, team, key.startsWith('d'));
             const v = e?.impact;
             if (e && v != null) {
@@ -163,6 +171,7 @@ export function lineupView(ctx: LeagueContext, lineup: DfoLineup | null | undefi
                 display: display.get(p.name) ?? p.name,
                 pos: (p.pos ?? '').toUpperCase(),
                 ppUnit: p.ppUnit === 1 || p.ppUnit === 2 ? p.ppUnit : null,
+                out: isOut(p),
                 movement: p.movement && MOVES.has(p.movement) ? (p.movement as LineupPlayerView['movement']) : null,
                 impact: e?.impact != null ? Math.round(e.impact * 100) / 100 : null,
                 value82: e?.value82 != null ? Math.round(e.value82 * 10) / 10 : null,

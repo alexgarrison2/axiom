@@ -30,6 +30,7 @@ import csv
 import json
 import math
 import os
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -472,6 +473,78 @@ def lineup_names(lineup):
             if isinstance(p, dict) and p.get("name"):
                 names.append(p["name"])
     return names
+
+
+# ── availability: players ruled out after the DFO lineup page was written ─────
+# Every lineup consumer (simulator / RAPM term, fast-track lineup, lineup_adjust, the site's
+# Lines tab) drops a projected skater whose ``injuryStatus`` is out, so the ESPN injury report
+# and the DFO news feed are folded into that one field before anything reads the lineups.
+
+ESPN_OUT = ("out", "injured reserve", "suspension", "suspended")
+NEWS_OUT = re.compile(
+    r"\b(?:will not|won't|is not expected to|not expected to|isn't expected to|will be unable to) "
+    r"(?:play|dress|suit up|be in the lineup|be available)\b"
+    r"|\b(?:is|will be|has been ruled|was ruled|been ruled) out\b|\bwill miss\b", re.I)
+WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+
+
+def _ts(s):
+    try:
+        t = datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+        return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        return None
+
+
+def news_rules_out(item, game_date) -> bool:
+    """True when a DFO news item says the player misses the game on ``game_date``: it names that
+    weekday (written at most six days ahead), or names no day and is dated the game day."""
+    text = str(item.get("news") or "")
+    if not NEWS_OUT.search(text):
+        return False
+    try:
+        gd, nd = datetime.fromisoformat(game_date).date(), datetime.fromisoformat(str(item.get("date"))[:10]).date()
+    except (TypeError, ValueError):
+        return False
+    named = [d for d in WEEKDAYS if re.search(rf"\b{d}\b", text, re.I)]
+    if named:
+        return WEEKDAYS[gd.weekday()] in named and 0 <= (gd - nd).days <= 6
+    return nd == gd
+
+
+def mark_unavailable(lineups, injuries, news, game_dates):
+    """Set ``injuryStatus = 'out'`` on projected skaters ESPN lists Out / IR / suspended or whose
+    latest DFO news item rules them out of the team's next game (``game_dates``: TRI -> date).
+    A beat-writer projection published after that report wins (the player is back); a
+    'Last Game' lineup never does.  Returns {TRI: [(name, source)]}."""
+    marked = {}
+    for tri, lu in (lineups or {}).items():
+        if not isinstance(lu, dict):
+            continue
+        projected_at = None if str(lu.get("lineup_source") or "").startswith("Last Game") else _ts(lu.get("updated_at"))
+        out = {}                                                   # normalised name -> (source, reported at)
+        latest = {}
+        for n in sorted(news.get(tri) or [], key=lambda x: x.get("timestamp") or x.get("date") or ""):
+            latest[norm_name(n.get("player"))] = n
+        gd = game_dates.get(tri)
+        for name, n in latest.items():
+            if gd and news_rules_out(n, gd):
+                out[name] = ("DFO news", _ts(n.get("timestamp") or n.get("date")))
+        for i in injuries.get(tri) or []:
+            if str(i.get("status") or "").strip().lower() in ESPN_OUT:
+                out[norm_name(i.get("name"))] = ("ESPN " + str(i.get("status")), _ts(i.get("date")))
+        for key, grp in lu.items():
+            if not isinstance(grp, list) or not re.fullmatch(r"[fd]\d", str(key)):
+                continue
+            for p in grp:
+                hit = out.get(norm_name(p.get("name"))) if isinstance(p, dict) else None
+                if not hit or str(p.get("injuryStatus") or "").lower() == "out":
+                    continue
+                if projected_at and hit[1] and projected_at > hit[1]:
+                    continue
+                p["injuryStatus"] = "out"
+                marked.setdefault(tri, []).append((p.get("name"), hit[0]))
+    return marked
 
 
 def lineup_term(game, inp):
@@ -1060,6 +1133,13 @@ def load_inputs(now=None, schedule=None):
     except Exception as e:
         print(f"  [WARN] player news unavailable: {e}")
         inp.news = _read_json(os.path.join(SCRIPT_DIR, "player_news.json"), {}) or {}
+
+    game_dates = {}
+    for g in sorted(schedule, key=game_date_of):
+        for k in ("homeTeamAbbrev", "awayTeamAbbrev"):
+            game_dates.setdefault(g.get(k), game_date_of(g))
+    for tri, names in sorted(mark_unavailable(inp.lineups, inp.injuries, inp.news, game_dates).items()):
+        print(f"  [lineup] {tri}: out of the projected lineup: " + ", ".join(f"{n} ({why})" for n, why in names))
 
     gs = read_season_csv("gamestats")
     inp.starter_lookup = _starter_lookup(gs)

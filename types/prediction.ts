@@ -222,6 +222,8 @@ export interface LineupPlayerView {
     display: string;
     pos: string;
     ppUnit: number | null;
+    /** Ruled out of this game after the lineup was posted: not counted in any line, lineup or model total. */
+    out?: boolean;
     movement: 'up' | 'down' | 'new' | null;
     /** RAPM NET, EV xG/60 above average (player_ratings.json), keyed by NHL id; null = no NHL sample yet. Feeds the line and lineup totals. */
     impact: number | null;

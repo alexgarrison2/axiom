@@ -389,9 +389,15 @@ class LiveLineupTerm:
         return self.fin is not None
 
     def resolve(self, team: str, dfo_team: dict | None) -> tuple[list, list, list]:
-        """DFO projected skaters (minus out / IR / suspended) -> (pids, groups, unmapped names)."""
+        """DFO projected skaters -> (pids, groups, unmapped names).  A skater flagged out / IR /
+        suspended is replaced by an unrated placeholder (negative id) of his position group: the
+        team still dresses 18, as in every training lineup, and the call-up takes the rookie prior
+        and slot TOI instead of the absentee's minutes going to the rest of the lineup."""
         pids, groups, unmapped = [], [], []
-        for p in dfo_skaters({team: dfo_team or {}}, team):
+        for p in dfo_skaters({team: dfo_team or {}}, team, keep_out=True):
+            if p["out"]:
+                pids.append(-1 - len(pids)); groups.append(p["group"])  # noqa: E702
+                continue
             pid = None
             if self.resolver is not None:
                 pid, _how = self.resolver.resolve(team, p["name"], p["number"])
@@ -405,7 +411,7 @@ class LiveLineupTerm:
         tid = self.teams.get(team)
         past = list(self.history.get(tid, ())) if tid is not None else []
         t = side_term(self.state, pids, groups, self._rate, past, fin=self._fin if self.fin_ok else None)
-        out = {"team": team, "n": len(pids), **t}
+        out = {"team": team, "n": sum(1 for p in pids if int(p) >= 0), **t}      # stand-ins not counted
         if self.st_lookup is not None:
             from bu.sim.st_lineup import aggregate
             out["st"] = aggregate(self.st_lookup, pids, groups, self.st_fb)

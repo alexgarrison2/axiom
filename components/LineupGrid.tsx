@@ -53,6 +53,13 @@ const NARROW_SHOW = 'hidden [@container(max-width:24.99rem)]:inline';
 
 function Player({ pl }: { pl: LineupPlayerView | undefined }) {
     if (!pl) return <span className="block text-center text-fg-3">–</span>;
+    if (pl.out)
+        return (
+            <span className="flex min-w-0 flex-col items-center leading-tight" title={`${pl.name}: out`}>
+                <span className="max-w-full truncate text-caption text-fg-3 line-through">{pl.display}</span>
+                <span className="text-micro font-bold uppercase tracking-wide text-neg">Out</span>
+            </span>
+        );
     const below = pl.value82 != null;
     return (
         <span className="flex min-w-0 flex-col items-center leading-tight" title={pl.name}>
