@@ -3259,7 +3259,7 @@
                 "number": 22,
                 "pos": "c",
                 "id": 2682,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3309,21 +3309,21 @@
         ],
         "f4": [
             {
-                "name": "Denver Barkey",
-                "number": 86,
+                "name": "Cole Knuble",
+                "number": 54,
                 "pos": "lw",
-                "id": 35098,
-                "ppUnit": 1,
+                "id": 33787,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Sean Couturier",
                 "number": 14,
                 "pos": "c",
                 "id": 1777,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3367,20 +3367,20 @@
                 "number": 8,
                 "pos": "ld",
                 "id": 30422,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Oliver Bonk",
-                "number": 59,
+                "name": "Simon Benoit",
+                "number": 44,
                 "pos": "rd",
-                "id": 35107,
-                "ppUnit": 2,
+                "id": 26550,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d3": [
@@ -3434,6 +3434,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Denver Barkey",
+                "number": 86,
+                "pos": "ir2",
+                "id": 35098,
+                "ppUnit": null,
+                "injuryStatus": "out",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3442,7 +3451,7 @@
                 "number": 14,
                 "pos": "sk1",
                 "id": 1777,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -3489,7 +3498,7 @@
                 "number": 22,
                 "pos": "sk2",
                 "id": 2682,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -3507,14 +3516,14 @@
                 "number": 8,
                 "pos": "sk4",
                 "id": 30422,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
         "lineup_source": "Last Game (11-14-26)",
         "updated_at": "2026-11-15T13:16:27.583Z",
-        "fetched_at": "2026-11-15T13:39:29Z"
+        "fetched_at": "2026-11-15T23:02:36Z"
     },
     "PIT": {
         "f1": [
