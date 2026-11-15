@@ -55857,6 +55857,74 @@
     }
   },
   {
+    "gameId": 2026020312,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-14",
+    "homeTeam": "Blackhawks",
+    "awayTeam": "Jets",
+    "homeScore": 4,
+    "awayScore": 5,
+    "decision": "SO",
+    "homeXg": 2.76,
+    "awayXg": 3.49,
+    "homeWinProb": 38.3,
+    "predictedWinner": "Jets",
+    "actualWinner": "Jets",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1467,
+    "logLoss": 0.4829,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-14T19:02:00Z",
+    "startUtc": "2026-11-14T20:30:00Z",
+    "marketHomeProb": 40.1,
+    "modelHomeProb": 37.8,
+    "homeOdds": 136.0,
+    "awayOdds": -162.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 37.8,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.214,
+        "ll": 1.5418,
+        "naive_ll": 1.8413,
+        "market_p": 0.2061
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.62,
+        "ll": 0.478,
+        "naive_ll": 0.4597,
+        "market_p": 0.6304
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.456,
+        "ll": 0.7853,
+        "naive_ll": 0.7686,
+        "market_p": 0.4654
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.278,
+        "ll": 1.2801,
+        "naive_ll": 1.2446,
+        "market_p": null
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.411,
+        "ll": 0.8892,
+        "naive_ll": 0.8859,
+        "market_p": null
+      }
+    }
+  },
+  {
     "gameId": 2026020321,
     "season": "2026-27",
     "gameType": "02",
