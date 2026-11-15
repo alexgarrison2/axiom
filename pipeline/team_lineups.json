@@ -3850,7 +3850,7 @@
                 "id": 2141,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -3883,7 +3883,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Victor Eklund",
@@ -3915,7 +3915,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Anthony Duclair",
@@ -3968,7 +3968,7 @@
                 "id": 2652,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -4073,6 +4073,24 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Logan Stanley",
+                "number": 8,
+                "pos": "ir6",
+                "id": 2652,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Bo Horvat",
+                "number": 14,
+                "pos": "ir7",
+                "id": 2141,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -4110,7 +4128,7 @@
                 "id": 2652,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "pk2": [
@@ -4152,8 +4170,8 @@
             }
         ],
         "lineup_source": "Andrew Gross",
-        "updated_at": "2026-11-15T02:38:41.844Z",
-        "fetched_at": "2026-11-15T03:05:54Z"
+        "updated_at": "2026-11-15T06:08:55.353Z",
+        "fetched_at": "2026-11-15T12:04:14Z"
     },
     "COL": {
         "f1": [
