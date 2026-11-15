@@ -1079,14 +1079,14 @@
                 "movement": null
             },
             {
-                "name": "Josh Anderson",
-                "number": 17,
+                "name": "Owen Beck",
+                "number": null,
                 "pos": "rw",
-                "id": 21932,
+                "id": 33212,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1195,12 +1195,12 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Chris Kreider",
-                "number": 22,
+                "name": "Josh Anderson",
+                "number": 17,
                 "pos": "ir3",
-                "id": 1926,
+                "id": 21932,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
             {
@@ -1210,6 +1210,15 @@
                 "id": 2583,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Chris Kreider",
+                "number": 22,
+                "pos": "ir5",
+                "id": 1926,
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -1262,11 +1271,11 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Josh Anderson",
-                "number": 17,
+                "name": "Alexandre Texier",
+                "number": 85,
                 "pos": "sk2",
-                "id": 21932,
-                "ppUnit": null,
+                "id": 4759,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -1291,7 +1300,7 @@
         ],
         "lineup_source": "Last Game (2026-11-14)",
         "updated_at": "2026-11-15T13:54:28.416Z",
-        "fetched_at": "2026-11-15T14:02:57Z"
+        "fetched_at": "2026-11-15T19:02:27Z"
     },
     "BOS": {
         "f1": [
@@ -2313,7 +2322,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
@@ -2345,7 +2354,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -2480,19 +2489,19 @@
         ],
         "g": [
             {
-                "name": "Kevin Lankinen",
-                "number": 32,
+                "name": "Leevi Merilainen",
+                "number": 31,
                 "pos": "g1",
-                "id": 4757,
+                "id": 34600,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Leevi Merilainen",
-                "number": 31,
+                "name": "Kevin Lankinen",
+                "number": 32,
                 "pos": "g2",
-                "id": 34600,
+                "id": 4757,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -2587,7 +2596,7 @@
         ],
         "lineup_source": "Dan Murphy",
         "updated_at": "2026-11-15T18:10:14.215Z",
-        "fetched_at": "2026-11-15T18:11:55Z"
+        "fetched_at": "2026-11-15T19:02:27Z"
     },
     "VGK": {
         "f1": [
