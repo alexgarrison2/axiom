@@ -1957,7 +1957,7 @@
                 "number": 92,
                 "pos": "lw",
                 "id": 30606,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -1989,7 +1989,7 @@
                 "number": 42,
                 "pos": "lw",
                 "id": 2385,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -2147,19 +2147,19 @@
         ],
         "g": [
             {
-                "name": "Tristan Jarry",
-                "number": 35,
+                "name": "Devon Levi",
+                "number": 27,
                 "pos": "g1",
-                "id": 2626,
+                "id": 33010,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Devon Levi",
-                "number": 27,
+                "name": "Tristan Jarry",
+                "number": 35,
                 "pos": "g2",
-                "id": 33010,
+                "id": 2626,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -2223,20 +2223,20 @@
         ],
         "pk1": [
             {
-                "name": "Jason Dickinson",
-                "number": 16,
+                "name": "Alex Formenton",
+                "number": 26,
                 "pos": "sk1",
-                "id": 2160,
+                "id": 2897,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Alex Formenton",
-                "number": 26,
+                "name": "Connor McDavid",
+                "number": 97,
                 "pos": "sk2",
-                "id": 2897,
-                "ppUnit": null,
+                "id": 2471,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -2265,7 +2265,7 @@
                 "number": 42,
                 "pos": "sk1",
                 "id": 2385,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -2297,9 +2297,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Edmonton Oilers",
-        "updated_at": "2026-11-15T23:33:55.964Z",
-        "fetched_at": "2026-11-16T02:02:27Z"
+        "lineup_source": "Last Game (2026-11-15)",
+        "updated_at": "2026-11-16T15:02:15.209Z",
+        "fetched_at": "2026-11-16T15:02:38Z"
     },
     "VAN": {
         "f1": [
@@ -7180,7 +7180,7 @@
                 "id": 4675,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -7320,6 +7320,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Kiefer Sherwood",
+                "number": 44,
+                "pos": "ir4",
+                "id": 4675,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -7399,8 +7408,8 @@
             }
         ],
         "lineup_source": "Sheng Peng",
-        "updated_at": "2026-11-16T01:39:18.875Z",
-        "fetched_at": "2026-11-16T02:02:27Z"
+        "updated_at": "2026-11-16T05:50:39.685Z",
+        "fetched_at": "2026-11-16T15:02:38Z"
     },
     "SEA": {
         "f1": [
