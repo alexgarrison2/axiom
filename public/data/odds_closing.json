@@ -10844,19 +10844,31 @@
   "away_team": "Canadiens",
   "home_abbrev": "NYR",
   "away_abbrev": "MTL",
-  "source": "espn_draftkings",
+  "source": "bovada",
   "sources": [
-   "espn_draftkings"
+   "bovada"
   ],
-  "fetched_at": "2026-11-16T02:02:20Z",
-  "Rangers": -110,
-  "Canadiens": -110,
-  "home_ml": -110,
-  "away_ml": -110,
-  "total_line": "6.5",
-  "total_over": 114,
-  "total_under": -135,
-  "captured_at": "2026-11-16T02:02:20Z"
+  "fetched_at": "2026-11-16T05:30:11Z",
+  "Canadiens_puckline": 220,
+  "Canadiens_puckline_spread": "-1.5",
+  "Rangers_puckline": -270,
+  "Rangers_puckline_spread": "+1.5",
+  "total_over": -112,
+  "total_line": "6.0",
+  "total_under": -108,
+  "Canadiens_1p_ml": -120,
+  "Rangers_1p_ml": -110,
+  "Rangers": 100,
+  "Canadiens": -120,
+  "home_ml": 100,
+  "away_ml": -120,
+  "Canadiens_three_way": 132,
+  "Rangers_three_way": 153,
+  "three_way_tie": 305,
+  "Canadiens_1p_three_way": 178,
+  "Rangers_1p_three_way": 183,
+  "1p_three_way_tie": 175,
+  "captured_at": "2026-11-16T05:30:11Z"
  },
  "2026020332": {
   "game_id": 2026020332,
@@ -10866,18 +10878,22 @@
   "away_team": "Canucks",
   "home_abbrev": "UTA",
   "away_abbrev": "VAN",
-  "source": "espn_draftkings",
+  "source": "bovada",
   "sources": [
-   "espn_draftkings"
+   "bovada"
   ],
-  "fetched_at": "2026-11-16T02:02:20Z",
+  "fetched_at": "2026-11-16T05:30:11Z",
+  "Canucks_puckline": 115,
+  "Canucks_puckline_spread": "+1.5",
+  "Mammoth_puckline": -135,
+  "Mammoth_puckline_spread": "-1.5",
+  "total_over": -108,
+  "total_line": "6.5",
+  "total_under": -112,
   "Mammoth": -340,
   "Canucks": 270,
   "home_ml": -340,
   "away_ml": 270,
-  "total_line": "6.5",
-  "total_over": -105,
-  "total_under": -115,
-  "captured_at": "2026-11-16T02:02:20Z"
+  "captured_at": "2026-11-16T05:30:11Z"
  }
 }
