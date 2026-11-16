@@ -6308,7 +6308,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -6330,19 +6330,19 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Olli Maatta",
-                "number": 3,
+                "name": "Matt Kiersted",
+                "number": 26,
                 "pos": "ld",
-                "id": 1792,
+                "id": 34534,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Zach Bogosian",
@@ -6377,6 +6377,15 @@
         ],
         "ir": [
             {
+                "name": "Olli Maatta",
+                "number": 3,
+                "pos": "ir1",
+                "id": 1792,
+                "ppUnit": null,
+                "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
                 "name": "Filip Gustavsson",
                 "number": 32,
                 "pos": "ir2",
@@ -6406,19 +6415,19 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Olli Maatta",
-                "number": 3,
+                "name": "Jonas Brodin",
+                "number": 25,
                 "pos": "sk3",
-                "id": 1792,
+                "id": 1740,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Jonas Brodin",
-                "number": 25,
+                "name": "Zach Bogosian",
+                "number": 24,
                 "pos": "sk4",
-                "id": 1740,
+                "id": 53,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -6464,7 +6473,7 @@
         ],
         "lineup_source": "Last Game (2026-11-14)",
         "updated_at": "2026-11-15T13:51:19.923Z",
-        "fetched_at": "2026-11-16T05:30:03Z"
+        "fetched_at": "2026-11-16T22:02:06Z"
     },
     "WSH": {
         "f1": [
