@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-15T12:05:10.979482+00:00",
+ "generated_at": "2026-11-16T01:03:17.104180+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6995,9 +6995,9 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 95,
+    "n_bets": 96,
     "n_graded": 95,
-    "n_pending": 0,
+    "n_pending": 1,
     "record": "59-36",
     "wins": 59,
     "losses": 36,
@@ -9553,6 +9553,32 @@
      "decision": "REG",
      "closing_price": -175.0,
      "clv": -0.0311,
+     "model_version": "sim-m5-v4_st-20261003",
+     "official": false
+    },
+    {
+     "gameId": 2026020327,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-15",
+     "startUtc": "2026-11-16T01:00:00Z",
+     "snapshotUtc": "2026-11-15T23:15:00Z",
+     "team": "Stars",
+     "opponent": "Panthers",
+     "side": "home",
+     "stake_units": 1.6,
+     "price": -130.0,
+     "decimal_price": 1.7692,
+     "ev_at_bet": 0.0488,
+     "ev_bucket": "0-5%",
+     "stake_bucket": "1.1-2u",
+     "model_prob": 0.593,
+     "result": "pending",
+     "profit_units": 0.0,
+     "final": null,
+     "decision": null,
+     "closing_price": -130.0,
+     "clv": -0.0351,
      "model_version": "sim-m5-v4_st-20261003",
      "official": false
     }
