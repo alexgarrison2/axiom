@@ -2942,7 +2942,7 @@
                 "id": 2392,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -3018,7 +3018,7 @@
                 "id": 32926,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -3137,6 +3137,24 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Cole Smith",
+                "number": 22,
+                "pos": "ir3",
+                "id": 32926,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Tyler Bertuzzi",
+                "number": 59,
+                "pos": "ir4",
+                "id": 2392,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3216,8 +3234,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-11-14)",
-        "updated_at": "2026-11-15T13:49:56.564Z",
-        "fetched_at": "2026-11-16T05:30:03Z"
+        "updated_at": "2026-11-16T18:45:10.351Z",
+        "fetched_at": "2026-11-16T20:02:33Z"
     },
     "PHI": {
         "f1": [
@@ -8530,7 +8548,7 @@
                 "id": 36382,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -8643,6 +8661,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Artem Duda",
+                "number": null,
+                "pos": "ir6",
+                "id": 36382,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -8722,8 +8749,8 @@
             }
         ],
         "lineup_source": "Brogan Houston",
-        "updated_at": "2026-11-16T18:10:08.468Z",
-        "fetched_at": "2026-11-16T19:02:01Z"
+        "updated_at": "2026-11-16T19:27:38.549Z",
+        "fetched_at": "2026-11-16T20:02:33Z"
     },
     "WPG": {
         "f1": [
