@@ -9,6 +9,7 @@ import { Crest } from '@/components/ui/crest';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { SeasonTag } from '@/components/ui/stat-chip';
 import { clashSafePair } from '@/components/ui/team-color';
+import { fmtRecord, recordOf } from '@/lib/matchup/form';
 import { lastName } from '@/lib/matchup/format';
 import { cn } from '@/lib/utils';
 import {
@@ -151,9 +152,10 @@ function GroupTag({ children, extra, first }: { children: React.ReactNode; extra
  * A side's head over its half of the chart: crest flush at the outer edge, the
  * tri over a stroke of the colour its bars use, and the games counted. Under
  * the sample minimum the count is boxed amber-dashed (a small sample, marked
- * rather than hidden). Games played but not logged yet and filter tags follow.
+ * rather than hidden). With a filter on, the record in those games follows,
+ * then games played but not logged yet and the filter tags.
  */
-function SideHead({ side, tri, color, gp, minGp, pending, tags }: { side: Side; tri: string; color: string; gp: number; minGp: number; pending: number; tags: string[] }) {
+function SideHead({ side, tri, color, gp, minGp, record, pending, tags }: { side: Side; tri: string; color: string; gp: number; minGp: number; record: string | null; pending: number; tags: string[] }) {
     const away = side === 'away';
     const small = gp < minGp;
     return (
@@ -169,6 +171,12 @@ function SideHead({ side, tri, color, gp, minGp, pending, tags }: { side: Side; 
                         GP <b className="font-bold">{gp}</b>
                         {small ? <span className="sr-only">, small sample</span> : null}
                     </span>
+                    {record ? (
+                        <span data-record className="whitespace-nowrap font-bold text-fg-2">
+                            <span className="sr-only">Record </span>
+                            {record}
+                        </span>
+                    ) : null}
                     {pending > 0 ? (
                         <span className="whitespace-nowrap text-amber" title="Played, but not in these numbers yet: the game log updates after the nightly ingest.">
                             +{pending} pending
@@ -230,6 +238,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
         const values = {} as Record<Side, ReturnType<typeof sideValues>>;
         const own = {} as Record<Side, ReturnType<typeof sideValues>>;
         const gp = {} as Record<Side, number>;
+        const record = {} as Record<Side, string>;
         const pending = {} as Record<Side, number>;
         for (const side of SIDES) {
             rest[side] = tonightRest(games[side], p.date, p[side].restDays, p.id);
@@ -241,6 +250,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
             };
             const sel = filterGames(games[side], filters[side], p.id);
             gp[side] = sel.length;
+            record[side] = fmtRecord(recordOf(sel));
             // Games the schedule feed (hourly) says were played that the game log (daily) does not hold yet.
             const logged = games[side].filter(g => g.row.type === 2 && g.row.id !== p.id && g.row.date < p.date).length;
             pending[side] = Math.max(0, (p[side].gp ?? 0) - logged);
@@ -265,7 +275,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
             }
             return { stat, cells, adv: advantage(cells.away, cells.home) };
         });
-        return { rows, gp, pending, rest, filters, seasons: league.seasons };
+        return { rows, gp, record, pending, rest, filters, seasons: league.seasons };
     }, [load, state, useLoc, useRest, useStarter, last, p]);
 
     if (load.status === 'loading') {
@@ -293,6 +303,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
     const lineupRow = model.rows.find(r => r.stat.key === 'lineup')!;
     const name = (s: Side) => tris[s];
     const minGp = last === 'all' ? MIN_GP : last;
+    const sliced = useLoc || useRest || (useStarter && anyStarter) || last !== 'all';
 
     return (
         <div className="flex flex-col gap-3">
@@ -326,7 +337,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
 
             <div className="flex flex-col">
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b border-line pb-2">
-                    <SideHead side="away" tri={tris.away} color={colors.away} gp={model.gp.away} minGp={minGp} pending={model.pending.away} tags={tags('away')} />
+                    <SideHead side="away" tri={tris.away} color={colors.away} gp={model.gp.away} minGp={minGp} record={sliced ? model.record.away : null} pending={model.pending.away} tags={tags('away')} />
                     <span className="flex flex-col items-center gap-1 text-micro uppercase tracking-wide text-fg-3">
                         <SeasonTag>
                             {windowLabel}
@@ -334,7 +345,7 @@ export function MatchupPanel({ p, state }: { p: Prediction; state: DetailsState 
                         </SeasonTag>
                         Rank
                     </span>
-                    <SideHead side="home" tri={tris.home} color={colors.home} gp={model.gp.home} minGp={minGp} pending={model.pending.home} tags={tags('home')} />
+                    <SideHead side="home" tri={tris.home} color={colors.home} gp={model.gp.home} minGp={minGp} record={sliced ? model.record.home : null} pending={model.pending.home} tags={tags('home')} />
                 </div>
 
                 {/* Visual chart; the table below is its text equivalent. */}
