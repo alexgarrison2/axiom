@@ -94,6 +94,8 @@ export const LENS_COLUMNS: Record<string, StatColumn> = {
     xg_shot_against: X({ key: 'xg_shot_against', label: 'xG / shot against', title: 'Expected goals per shot on goal allowed (league rank)', better: 'low', kind: 'ordinal', derive: r => (r.sa_per_game > 0 ? r.xga_per_game / r.sa_per_game : NaN), format: r3 }),
 
     // luck
+    gf_tot: X({ key: 'gf_tot', label: 'GF', title: 'Goals for (no shootout goal, so GF − xGF is the G − xG beside it)', better: 'high', derive: r => r.gf_real, format: int }),
+    ga_tot: X({ key: 'ga_tot', label: 'GA', title: 'Goals against (no shootout goal)', better: 'low', derive: r => r.ga_real, format: int }),
     gmx: X({ key: 'gmx', label: 'G − xG', title: 'Goals minus expected goals: finishing above or below the chances', better: 'none', kind: 'signed', signAt: 0.5, derive: r => r.gf_real - r.xgf_per_game * r.gp, format: s1 }),
     xgf_tot: X({ key: 'xgf_tot', label: 'xGF', title: 'Expected goals for', better: 'high', derive: r => r.xgf_per_game * r.gp, format: d1 }),
     xga_tot: X({ key: 'xga_tot', label: 'xGA', title: 'Expected goals against', better: 'low', derive: r => r.xga_per_game * r.gp, format: d1 }),
@@ -182,8 +184,8 @@ export const LENSES: Lens[] = [
         sort: { key: 'luck', dir: 'desc' },
         groups: [
             g('', ['ranking']),
-            g('Scoring', [as('gf', 'GF', { better: 'high' }), 'xgf_tot', 'gmx']),
-            g('Preventing', [as('ga', 'GA', { better: 'low' }), 'xga_tot', 'xgamg']),
+            g('Scoring', ['gf_tot', 'xgf_tot', 'gmx']),
+            g('Preventing', ['ga_tot', 'xga_tot', 'xgamg']),
             g('Net', ['goal_diff', 'xgd', 'luck']),
             g('Bounces', ['sh_pct', 'sv_pct', 'pdo']),
             g('Goalie', ['gsax_ord']),
