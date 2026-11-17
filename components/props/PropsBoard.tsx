@@ -227,7 +227,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
         </SortHeader>
     );
     const showAtt = cat.key === 'sog';
-    const colCount = 7 + (view === 'tonight' ? 3 : 0) + (showAtt ? 1 : 0) + (priced ? 3 : 0);
+    const colCount = 7 + (view === 'tonight' ? 4 : 0) + (showAtt ? 1 : 0) + (priced ? 3 : 0);
     const toggleOpen = React.useCallback((id: number) => setOpen(o => (o === id ? null : id)), []);
 
     // Phones: the filter chips scroll with the page; only the stat and line stay pinned.
@@ -416,6 +416,7 @@ export default function PropsBoard({ src, detailSrc, games: serverGames, slateDa
                                 {head('l10', 'L10', 'Over in the last 10 games')}
                                 {head('l20', 'L20', 'Over in the last 20 games', 'hidden lg:table-cell')}
                                 {head('szn', seasons.cur, 'Over this season (last season lives in the row detail)', 'hidden md:table-cell')}
+                                {view === 'tonight' ? head('h2h', 'H2H', "Over in his latest games against tonight's opponent (up to 10, since 2022-23)", 'hidden lg:table-cell') : null}
                                 {head('streak', 'Strk', 'Games in a row over the line', 'hidden xl:table-cell')}
                                 {priced ? head('imp', 'Book', 'Posted over price; implied chance (two-way lines de-vigged, one-way prices include the vig)', 'hidden lg:table-cell', 'right') : null}
                                 {priced ? head('fair', 'Fair', 'pony xG fair price for the over, and its chance', 'hidden lg:table-cell', 'right') : null}
@@ -575,6 +576,7 @@ const PropRow = React.memo(function PropRow({ r, cat, choice, view, priced, open
                 <RateCell r={r.l10} title="Last 10" />
                 <RateCell r={r.l20} title="Last 20" className="hidden lg:table-cell" />
                 <RateCell r={r.szn} title={seasons.cur} className="hidden md:table-cell" />
+                {view === 'tonight' ? <RateCell r={r.h2h} title={p.opp ? `vs ${p.opp}` : 'H2H'} className="hidden lg:table-cell" /> : null}
                 <td className={cn(CELL_BG, 'hidden h-11 border-b border-line px-2 text-center text-fg-2 xl:table-cell')}>{r.streak || <span className="text-fg-disabled">0</span>}</td>
                 {priced ? (
                     <td className={cn(CELL_BG, 'hidden h-11 whitespace-nowrap border-b border-line px-2 text-right lg:table-cell')}>

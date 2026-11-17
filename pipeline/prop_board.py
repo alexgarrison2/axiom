@@ -14,7 +14,8 @@ Joins five inputs per skater:
 
 The slate is today's games (America/New_York). Every skater on a current
 DailyFaceoff lineup or with a game this season is listed; slate skaters also
-carry tonight's opponent, fair probabilities and book prices.
+carry tonight's opponent, fair probabilities, book prices and `vs` ({n, key: hits}:
+the board's H2H column, over the same last VS_GAMES games as the detail file's vs).
 
 The opened-row detail is a second file, public/data/props_detail.json, fetched
 by the browser only when a row is opened:
@@ -399,8 +400,10 @@ def build(today=None) -> tuple[dict, dict]:
             if vs is not None:
                 vs = vs[vs["opp"] == f["opp"]]
                 d["vs_n"] = int(len(vs))
+                vs = vs.tail(VS_GAMES)
                 d["vs"] = [[r.date, int(r.home), _num(r.toi, 1), int(r.goals), int(r.assists), int(r.shots),
-                            int(r.pp_points), _int(getattr(r, "attempts", None)), int(r.game_id)] for r in vs.tail(VS_GAMES).itertuples()]
+                            int(r.pp_points), _int(getattr(r, "attempts", None)), int(r.game_id)] for r in vs.itertuples()]
+                p["vs"] = {"n": int(len(vs)), **_hits(vs)}
             p.update({"game": int(f["game_id"]), "opp": f["opp"], "home": int(f["home"]),
                       "toi": round(float(f["toi_exp"]), 1),
                       "fair": {key: round(float(f[f"fair_{key}"]), 4) for key, _, _ in pm.PROPS},

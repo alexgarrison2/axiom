@@ -37,6 +37,8 @@ export interface PropPlayer {
     /** pony xG expected count tonight, by category (the mean behind the fair prices). */
     proj?: Partial<Record<CategoryKey, number>>;
     book?: Record<string, BookPrice>;
+    /** Hits per prop key over his latest games against tonight's opponent (the detail file's vs rows). */
+    vs?: Split;
 }
 
 export interface GoalieInfo {
@@ -234,6 +236,8 @@ export function streak(p: PropPlayer, cat: Category, line: Line): number {
 
 export const seasonRate = (p: PropPlayer, line: Line): Rate => ({ hits: p.cur[line.key] ?? 0, n: p.gp });
 export const prevRate = (p: PropPlayer, line: Line): Rate => ({ hits: p.prev[line.key] ?? 0, n: p.gp_prev });
+/** Against tonight's opponent (no games, or no opponent tonight: n = 0). */
+export const h2hRate = (p: PropPlayer, line: Line): Rate => ({ hits: p.vs?.[line.key] ?? 0, n: p.vs?.n ?? 0 });
 
 /** Fair minus book implied, in probability points (null without both). */
 export function edge(p: PropPlayer, line: Line): number | null {
@@ -329,6 +333,7 @@ export interface Row {
     l20: Rate;
     szn: Rate;
     prev: Rate;
+    h2h: Rate;
     fair: number | null;
     imp: number | null;
     edge: number | null;
@@ -361,6 +366,7 @@ export function buildRows(doc: PropsDoc, view: View, cat: Category, choice: Line
             l20: lastN(p, cat, line, 20),
             szn,
             prev,
+            h2h: h2hRate(p, line),
             fair: p.fair?.[line.key] ?? null,
             imp: p.book?.[line.key]?.imp ?? null,
             edge: edge(p, line),
@@ -390,7 +396,7 @@ export function filterRows(rows: Row[], f: Filter): Row[] {
     });
 }
 
-export type SortKey = 'name' | 'opp' | 'toi' | 'proj' | 'att' | 'l5' | 'l10' | 'l20' | 'szn' | 'imp' | 'fair' | 'edge' | 'streak';
+export type SortKey = 'name' | 'opp' | 'toi' | 'proj' | 'att' | 'l5' | 'l10' | 'l20' | 'szn' | 'h2h' | 'imp' | 'fair' | 'edge' | 'streak';
 
 export const FIRST_DIR: Partial<Record<SortKey, 'asc' | 'desc'>> = { name: 'asc', opp: 'asc' };
 
@@ -414,6 +420,8 @@ function sortValue(r: Row, key: SortKey): number | string | null {
             return pct(r.l20);
         case 'szn':
             return pct(r.szn);
+        case 'h2h':
+            return pct(r.h2h);
         case 'imp':
             return r.imp;
         case 'fair':
