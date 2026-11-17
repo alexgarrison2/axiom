@@ -4890,7 +4890,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Roope Hintz",
@@ -4942,7 +4942,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -4979,14 +4979,36 @@
         ],
         "d1": [
             {
+                "name": "Esa Lindell",
+                "number": 23,
+                "pos": "ld",
+                "id": 2517,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Miro Heiskanen",
+                "number": 4,
+                "pos": "rd",
+                "id": 2803,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            }
+        ],
+        "d2": [
+            {
                 "name": "Thomas Harley",
                 "number": 55,
                 "pos": "ld",
                 "id": 29213,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Nils Lundkvist",
@@ -4996,29 +5018,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d2": [
-            {
-                "name": "Esa Lindell",
-                "number": 23,
-                "pos": "ld",
-                "id": 2517,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Tyler Myers",
-                "number": 57,
-                "pos": "rd",
-                "id": 176,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d3": [
@@ -5092,15 +5092,6 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Miro Heiskanen",
-                "number": 4,
-                "pos": "ir4",
-                "id": 2803,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Lian Bichsel",
                 "number": 6,
                 "pos": "ir5",
@@ -5143,15 +5134,15 @@
                 "number": 23,
                 "pos": "sk3",
                 "id": 2517,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Thomas Harley",
-                "number": 55,
+                "name": "Miro Heiskanen",
+                "number": 4,
                 "pos": "sk4",
-                "id": 29213,
+                "id": 2803,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5177,27 +5168,27 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Nils Lundkvist",
-                "number": 5,
+                "name": "Thomas Harley",
+                "number": 55,
                 "pos": "sk3",
-                "id": 4821,
-                "ppUnit": null,
+                "id": 29213,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Tyler Myers",
-                "number": 57,
+                "name": "Nils Lundkvist",
+                "number": 5,
                 "pos": "sk4",
-                "id": 176,
+                "id": 4821,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-15)",
-        "updated_at": "2026-11-16T15:08:02.460Z",
-        "fetched_at": "2026-11-16T15:11:48Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-17T20:08:12.089Z",
+        "fetched_at": "2026-11-17T20:13:40Z"
     },
     "TBL": {
         "f1": [
