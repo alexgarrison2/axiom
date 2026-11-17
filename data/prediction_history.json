@@ -57173,5 +57173,66 @@
         "market_p": 0.3351
       }
     }
+  },
+  {
+    "gameId": 2026020332,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-16",
+    "homeTeam": "Mammoth",
+    "awayTeam": "Canucks",
+    "homeScore": 2,
+    "awayScore": 3,
+    "decision": "REG",
+    "homeXg": 4.18,
+    "awayXg": 2.47,
+    "homeWinProb": 75.5,
+    "predictedWinner": "Mammoth",
+    "actualWinner": "Canucks",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.57,
+    "logLoss": 1.4065,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-17T02:02:00Z",
+    "startUtc": "2026-11-17T02:30:00Z",
+    "marketHomeProb": 75.7,
+    "modelHomeProb": 75.4,
+    "homeOdds": -340.0,
+    "awayOdds": 270.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 75.4,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.175,
+        "ll": 1.743,
+        "naive_ll": 1.6514,
+        "market_p": 0.1989
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.475,
+        "ll": 0.7444,
+        "naive_ll": 0.7418,
+        "market_p": 0.4654
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.47,
+        "ll": 0.755,
+        "naive_ll": 0.7396,
+        "market_p": 0.4884
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.303,
+        "ll": 1.194,
+        "naive_ll": 1.2832,
+        "market_p": 0.3131
+      }
+    }
   }
 ]
