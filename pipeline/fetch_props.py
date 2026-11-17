@@ -9,9 +9,10 @@ one request per event returns its prop groups:
   Shots on Goal    "Total Shots On Goal - Name (TRI)"     over/under at a line
   Goalscorers      "Anytime Goalscorer"                    one price per player
                    "Who Will Score 2 Or More Goals"
-  Points/Assists   "Player To Record 1|2 Or More Points"
-                   "Player To Record 1 Or More Powerplay Points"
+  Points/Assists   "Points Milestones - Name (TRI)"        1+ / 2+ points (until 2026-10-11 the
+                                                           list market "Player To Record 1|2 Or More Points")
                    "Assists Milestones - Name (TRI)"       1+ / 2+ assists
+                   "Player To Record 1 Or More Powerplay Points"
 
 Team tags in Bovada's labels are sometimes wrong ("Nikolaj Ehlers (CAL)"), so
 players are keyed by name here and matched to NHL ids (restricted to the two
@@ -53,7 +54,11 @@ LIST_MARKETS = {
     "Player To Record 2 Or More Points": "p2",
     "Player To Record 1 Or More Powerplay Points": "ppp1",
 }
-ASSIST_OUTCOMES = {"To Record 1+ Assists": "a1", "To Record 2+ Assists": "a2"}
+# Per-player milestone markets ("Points Milestones - Name (TRI)"): outcomes "To Score 1+ Points",
+# "To Record 2+ Assists", ... The verb has changed before, so only the count and the stat are read.
+MILESTONE_MARKET = re.compile(r"^(?:Points|Assists) Milestones - (.+)$")
+MILESTONE_OUTCOME = re.compile(r"\b([12])\+ (Points|Assists)$")
+MILESTONE_KEY = {"Points": "p", "Assists": "a"}
 NAME_TAG = re.compile(r"^(.*?)\s*\(([A-Z]{2,3})\)\s*$")
 
 
@@ -104,13 +109,13 @@ def parse_event(ev) -> dict:
                     val = _american((o.get("price") or {}).get("american"))
                     if name and val is not None:
                         slot(name, tag)[key] = val
-            elif desc.startswith("Assists Milestones - "):
-                name, tag = _split_name(desc[len("Assists Milestones - "):])
+            elif MILESTONE_MARKET.match(desc):
+                name, tag = _split_name(MILESTONE_MARKET.match(desc).group(1))
                 for o in outs:
-                    key = ASSIST_OUTCOMES.get((o.get("description") or "").strip())
+                    hit = MILESTONE_OUTCOME.search((o.get("description") or "").strip())
                     val = _american((o.get("price") or {}).get("american"))
-                    if key and val is not None:
-                        slot(name, tag)[key] = val
+                    if hit and val is not None:
+                        slot(name, tag)[MILESTONE_KEY[hit.group(2)] + hit.group(1)] = val
     return {n: p for n, p in players.items() if len(p) > 1}
 
 

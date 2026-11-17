@@ -38,6 +38,10 @@ EVENT = {"displayGroups": [
         {"description": "Assists Milestones - Sebastian Aho (CAR)", "period": {"abbreviation": "G"},
          "outcomes": [{"description": "To Record 1+ Assists", "price": _price("+120")},
                       {"description": "To Record 2+ Assists", "price": _price("+900")}]},
+        {"description": "Points Milestones - Jackson Blake (CAR)", "period": {"abbreviation": "G"},
+         "outcomes": [{"description": "To Score 1+ Points", "price": _price("+150")},
+                      {"description": "To Score 2+ Points", "price": _price("+750")},
+                      {"description": "To Score 3+ Points", "price": _price("+3000")}]},
         {"description": "Player To Record 1 Or More Powerplay Points", "period": {"abbreviation": "G"},
          "outcomes": [{"description": "Sebastian Aho (CAR)", "price": _price("+225")}]},
     ]},
@@ -50,6 +54,7 @@ def test_parse_event_reads_player_markets_and_skips_period_and_team_markets():
     blake, aho = players["Jackson Blake"], players["Sebastian Aho"]
     assert blake["sog"] == [{"line": 1.5, "over": -180, "under": 150}]
     assert blake["atg"] == 300 and "first" not in blake
+    assert (blake["p1"], blake["p2"]) == (150, 750) and "p3" not in blake
     assert aho == {"tag": "CAR", "atg": 100, "p1": -160, "a1": 120, "a2": 900, "ppp1": 225}
 
 
