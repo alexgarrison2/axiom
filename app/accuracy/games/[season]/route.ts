@@ -1,4 +1,5 @@
 import { historySeasons, loadGradedGames } from '@/components/accuracy/data';
+import { dataCacheHeaders } from '@/lib/http-cache';
 import { SEASON_START_YEAR } from '@/lib/season';
 
 // Static JSON per season ("/accuracy/games/2025-26"), built from
@@ -17,5 +18,5 @@ export function generateStaticParams() {
 export async function GET(_req: Request, { params }: { params: Promise<{ season: string }> }) {
     const { season } = await params;
     const rows = loadGradedGames().filter(g => g.season === season);
-    return Response.json(rows, { headers: { 'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400' } });
+    return Response.json(rows, { headers: dataCacheHeaders(300, 3600) });
 }

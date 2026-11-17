@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { dataCacheHeaders } from '@/lib/http-cache';
 import { loadPonySeason, playerGames, ponySeasons } from '@/lib/pony/data';
 import type { Form } from '@/lib/players/form';
 
@@ -37,5 +38,5 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             };
         }),
     };
-    return NextResponse.json(form, { headers: { 'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400' } });
+    return NextResponse.json(form, { headers: dataCacheHeaders(300, 3600) });
 }

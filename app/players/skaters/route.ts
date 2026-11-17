@@ -1,4 +1,5 @@
 import { compactSkaters } from '@/components/players/model';
+import { dataCacheHeaders } from '@/lib/http-cache';
 import { readBio, readRatingsDoc } from '@/lib/players/server';
 import { ponyForm, statLines } from '@/lib/players/stats-server';
 
@@ -8,5 +9,5 @@ export const dynamic = 'force-static';
 
 export function GET() {
     const rows = compactSkaters(readRatingsDoc(), statLines(), readBio(), ponyForm());
-    return Response.json(rows, { headers: { 'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400' } });
+    return Response.json(rows, { headers: dataCacheHeaders(300, 3600) });
 }

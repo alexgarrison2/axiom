@@ -1,3 +1,4 @@
+import { dataCacheHeaders } from '@/lib/http-cache';
 import { buildPlayersIndex } from '@/lib/players/switcher-server';
 
 // The player switcher's search index (every player in the newest two Pony
@@ -7,5 +8,5 @@ export const dynamic = 'force-static';
 
 export async function GET() {
     const doc = await buildPlayersIndex();
-    return Response.json(doc, { headers: { 'Cache-Control': 'public, max-age=300, s-maxage=86400, stale-while-revalidate=604800' } });
+    return Response.json(doc, { headers: dataCacheHeaders(300, 86400, 604800) });
 }

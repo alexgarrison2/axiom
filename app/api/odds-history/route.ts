@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'node:fs';
 import path from 'node:path';
 import Papa from 'papaparse';
+import { dataCacheHeaders } from '@/lib/http-cache';
 
 /**
  * Moneyline (and, where snapshotted, game total) movement for one game from the frozen pregame snapshots in
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
     const csvPath = path.resolve(HISTORY_DIR, `${date}.csv`);
     if (path.dirname(csvPath) !== HISTORY_DIR) return bad('invalid date');
 
-    const headers = { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600' };
+    const headers = dataCacheHeaders(60, 300, 3600);
     let csv: string;
     try {
         csv = await fs.promises.readFile(csvPath, 'utf-8');

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { dataCacheHeaders } from '@/lib/http-cache';
 import { getMatchupDetails } from '@/lib/matchup/details-server';
 
 /**
@@ -10,7 +11,5 @@ import { getMatchupDetails } from '@/lib/matchup/details-server';
 export const revalidate = 3600;
 
 export function GET() {
-    return NextResponse.json(getMatchupDetails(), {
-        headers: { 'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400' },
-    });
+    return NextResponse.json(getMatchupDetails(), { headers: dataCacheHeaders(300, 3600) });
 }

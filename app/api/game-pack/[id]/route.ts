@@ -21,6 +21,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const pack = { ...m, events: m.events.map(e => ({ ...e, clip: null })), stars: [], odds: null, outlook: null, official: null };
     const final = m.settled && !m.xgPending;
     return NextResponse.json(pack, {
-        headers: { 'Cache-Control': final ? 'public, s-maxage=31536000, stale-while-revalidate=86400' : 'public, s-maxage=60' },
+        headers: { 'Cache-Control': final ? 'public, s-maxage=31536000' : 'public, s-maxage=60' },
     });
 }
