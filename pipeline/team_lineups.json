@@ -1086,7 +1086,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -1298,9 +1298,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-14)",
-        "updated_at": "2026-11-15T13:54:28.416Z",
-        "fetched_at": "2026-11-15T19:02:27Z"
+        "lineup_source": "Patrick Friolet",
+        "updated_at": "2026-11-17T00:10:50.579Z",
+        "fetched_at": "2026-11-17T01:02:02Z"
     },
     "BOS": {
         "f1": [
@@ -1643,38 +1643,6 @@
         ],
         "f2": [
             {
-                "name": "Tye Kartye",
-                "number": 24,
-                "pos": "lw",
-                "id": 29846,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "J.T. Miller",
-                "number": 10,
-                "pos": "c",
-                "id": 1762,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Pavel Dorofeyev",
-                "number": 16,
-                "pos": "rw",
-                "id": 30622,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f3": [
-            {
                 "name": "Will Cuylle",
                 "number": 50,
                 "pos": "lw",
@@ -1682,7 +1650,39 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "J.T. Miller",
+                "number": 10,
+                "pos": "c",
+                "id": 1762,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Tye Kartye",
+                "number": 24,
+                "pos": "rw",
+                "id": 29846,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            }
+        ],
+        "f3": [
+            {
+                "name": "Eeli Tolvanen",
+                "number": 17,
+                "pos": "lw",
+                "id": 2787,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
             },
             {
                 "name": "Noah Laba",
@@ -1707,10 +1707,10 @@
         ],
         "f4": [
             {
-                "name": "Eeli Tolvanen",
-                "number": 17,
+                "name": "Jaroslav Chmelar",
+                "number": 49,
                 "pos": "lw",
-                "id": 2787,
+                "id": 34742,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -1727,14 +1727,14 @@
                 "movement": null
             },
             {
-                "name": "Jaroslav Chmelar",
-                "number": 49,
+                "name": "Matt Rempe",
+                "number": 73,
                 "pos": "rw",
-                "id": 34742,
+                "id": 32523,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -1868,6 +1868,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Pavel Dorofeyev",
+                "number": 16,
+                "pos": "ir6",
+                "id": 30622,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -1876,7 +1885,7 @@
                 "number": 10,
                 "pos": "sk1",
                 "id": 1762,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -1947,8 +1956,8 @@
             }
         ],
         "lineup_source": "Peter Baugh",
-        "updated_at": "2026-11-15T17:40:33.127Z",
-        "fetched_at": "2026-11-16T12:02:44Z"
+        "updated_at": "2026-11-17T00:09:45.315Z",
+        "fetched_at": "2026-11-17T01:02:02Z"
     },
     "EDM": {
         "f1": [
