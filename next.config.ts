@@ -126,11 +126,16 @@ const securityHeaders = [
  * Logos/images change only when the repo changes. /data files are rewritten by
  * the hourly pipeline and every run redeploys, which purges the Vercel CDN, so
  * the edge can hold them (s-maxage) while browsers revalidate after a minute.
+ *
+ * No stale-while-revalidate on /data: Vercel forwards the directive to the
+ * browser, which then answers the first request after a refresh from its old
+ * copy (for up to the whole window) and only fetches the new file behind it,
+ * so a page showed the previous run's numbers until it was reloaded.
  */
 const WEEK = 60 * 60 * 24 * 7;
 const DAY = 60 * 60 * 24;
 const assetCache = `public, max-age=${WEEK}, stale-while-revalidate=${DAY}`;
-const dataCache = `public, max-age=60, s-maxage=3600, stale-while-revalidate=${DAY}`;
+const dataCache = "public, max-age=60, s-maxage=3600";
 // Home: 5 minutes at the edge, then serve stale for up to 10 while one
 // request re-renders. Browsers always revalidate. Next.js manages
 // Cache-Control on dynamic pages itself, so the CDN directive also goes in

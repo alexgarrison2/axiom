@@ -43,7 +43,8 @@ describe('next.config cache headers', () => {
         const cc = (await headersFor('/data/:path*')).find((x) => x.key === 'Cache-Control')?.value;
         expect(maxAge(cc)).toBe(60);
         expect(cc).toMatch(/s-maxage=\d+/);
-        expect(cc).toContain('stale-while-revalidate');
+        // The browser would serve its old copy first for the whole window: stale data after every pipeline run.
+        expect(cc).not.toContain('stale-while-revalidate');
     });
 });
 
