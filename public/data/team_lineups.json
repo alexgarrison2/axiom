@@ -2610,14 +2610,14 @@
     "VGK": {
         "f1": [
             {
-                "name": "Trevor Connelly",
-                "number": 24,
+                "name": "Brett Howden",
+                "number": 21,
                 "pos": "lw",
-                "id": 36773,
-                "ppUnit": 2,
+                "id": 2660,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Jack Eichel",
@@ -2642,14 +2642,14 @@
         ],
         "f2": [
             {
-                "name": "Braeden Bowman",
-                "number": 42,
+                "name": "Trevor Connelly",
+                "number": 24,
                 "pos": "lw",
-                "id": 30925,
+                "id": 36773,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "William Karlsson",
@@ -2726,14 +2726,14 @@
                 "movement": null
             },
             {
-                "name": "Brett Howden",
-                "number": 21,
+                "name": "Braeden Bowman",
+                "number": 42,
                 "pos": "rw",
-                "id": 2660,
-                "ppUnit": null,
+                "id": 30925,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -2909,9 +2909,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-15)",
-        "updated_at": "2026-11-16T15:13:32.468Z",
-        "fetched_at": "2026-11-17T02:02:16Z"
+        "lineup_source": "@SinBinVegas",
+        "updated_at": "2026-11-17T19:19:55.343Z",
+        "fetched_at": "2026-11-17T20:02:21Z"
     },
     "CHI": {
         "f1": [
@@ -7132,7 +7132,7 @@
                 "number": 2,
                 "pos": "rw",
                 "id": 38126,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7140,19 +7140,9 @@
         ],
         "f2": [
             {
-                "name": "Mason Marchment",
-                "number": 27,
-                "pos": "lw",
-                "id": 2855,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Michael Misa",
                 "number": 77,
-                "pos": "c",
+                "pos": "lw",
                 "id": 37508,
                 "ppUnit": 2,
                 "injuryStatus": null,
@@ -7160,11 +7150,21 @@
                 "movement": null
             },
             {
-                "name": "Collin Graf",
-                "number": 51,
+                "name": "Alexander Wennberg",
+                "number": 21,
+                "pos": "c",
+                "id": 2145,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": true,
+                "movement": "new"
+            },
+            {
+                "name": "Mason Marchment",
+                "number": 27,
                 "pos": "rw",
-                "id": 38105,
-                "ppUnit": null,
+                "id": 2855,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7176,7 +7176,7 @@
                 "number": 73,
                 "pos": "lw",
                 "id": 1656,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7192,14 +7192,14 @@
                 "movement": null
             },
             {
-                "name": "Kiefer Sherwood",
-                "number": 44,
+                "name": "Collin Graf",
+                "number": 51,
                 "pos": "rw",
-                "id": 4675,
+                "id": 38105,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": null
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "f4": [
@@ -7228,7 +7228,7 @@
                 "number": 81,
                 "pos": "rw",
                 "id": 4646,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7272,7 +7272,7 @@
                 "number": 65,
                 "pos": "rd",
                 "id": 2099,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7294,7 +7294,7 @@
                 "number": null,
                 "pos": "rd",
                 "id": 33798,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -7331,21 +7331,12 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Alexander Wennberg",
-                "number": 21,
-                "pos": "ir3",
-                "id": 2145,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Kiefer Sherwood",
                 "number": 44,
                 "pos": "ir4",
                 "id": 4675,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -7382,7 +7373,7 @@
                 "number": 65,
                 "pos": "sk4",
                 "id": 2099,
-                "ppUnit": 1,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -7425,9 +7416,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-15)",
-        "updated_at": "2026-11-16T15:16:02.601Z",
-        "fetched_at": "2026-11-17T02:02:16Z"
+        "lineup_source": "Sheng Peng",
+        "updated_at": "2026-11-17T19:40:48.202Z",
+        "fetched_at": "2026-11-17T20:02:21Z"
     },
     "SEA": {
         "f1": [
@@ -9804,10 +9795,10 @@
         ],
         "f4": [
             {
-                "name": "Brennan Othmann",
-                "number": 78,
+                "name": "Maxim Tsyplakov",
+                "number": 72,
                 "pos": "lw",
-                "id": 30831,
+                "id": 38122,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -9922,15 +9913,6 @@
         ],
         "ir": [
             {
-                "name": "Jonathan Huberdeau",
-                "number": 10,
-                "pos": "ir1",
-                "id": 1798,
-                "ppUnit": null,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Kevin Bahl",
                 "number": 7,
                 "pos": "ir2",
@@ -10016,9 +9998,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-17T01:32:12.002Z",
-        "fetched_at": "2026-11-17T02:02:16Z"
+        "lineup_source": "Derek Wills",
+        "updated_at": "2026-11-17T19:41:46.818Z",
+        "fetched_at": "2026-11-17T20:02:21Z"
     },
     "NSH": {
         "f1": [
