@@ -241,19 +241,20 @@ def p_at_least_nb(mu, k: int, size: float | None = None):
     return 1.0 - cdf
 
 
-def fair_probs(df: pd.DataFrame) -> pd.DataFrame:
-    """One column per prop key with the fair P(over)."""
+def fair_probs(df: pd.DataFrame, props=PROPS) -> pd.DataFrame:
+    """One column per prop key with the fair P(over). ``props`` defaults to the tested markets; the
+    board passes its own list to price a posted line outside them the same way."""
     out = pd.DataFrame(index=df.index)
-    for key, stat, k in PROPS:
+    for key, stat, k in props:
         lam = df[f"lam_{stat}"]
         out[key] = p_at_least_nb(lam, k) if stat == "shots" else p_at_least_poisson(lam, k)
     return out
 
 
-def outcomes(df: pd.DataFrame) -> pd.DataFrame:
+def outcomes(df: pd.DataFrame, props=PROPS) -> pd.DataFrame:
     """One 0/1 column per prop key (NaN where the game has no result yet)."""
     out = pd.DataFrame(index=df.index)
-    for key, stat, k in PROPS:
+    for key, stat, k in props:
         out[key] = np.where(df[stat].isna(), np.nan, (df[stat] >= k).astype(float))
     return out
 
@@ -283,28 +284,28 @@ def fit_logit_shift(p, y, v0: float = CAL_V0, min_rows: int = CAL_MIN_ROWS) -> f
 def apply_shifts(fair: pd.DataFrame, shifts) -> pd.DataFrame:
     """p' = sigmoid(logit p + delta) per market; ``shifts`` maps key -> scalar or array aligned to ``fair``."""
     out = fair.copy()
-    for key, _, _ in PROPS:
-        if key in out and key in shifts:
+    for key in out.columns:
+        if key in shifts:
             d = np.asarray(shifts[key], dtype=float)
             out[key] = 1 / (1 + np.exp(-(_logit(out[key]) + d)))
     return out
 
 
 def calibration_shifts(dates, fair: pd.DataFrame, y: pd.DataFrame, targets, window: int = CAL_WINDOW,
-                       v0: float = CAL_V0, min_rows: int = CAL_MIN_ROWS) -> pd.DataFrame:
+                       v0: float = CAL_V0, min_rows: int = CAL_MIN_ROWS, props=PROPS) -> pd.DataFrame:
     """Walk-forward shifts: for each target date D, fit on the last ``window`` graded rows dated before D.
 
     ``dates``, ``fair`` and ``y`` are aligned (graded rows only); returns one row per target date."""
     d = np.asarray(dates).astype(str)
     order = np.argsort(d, kind="stable")
     dsort = d[order]
-    fv = {k: np.asarray(fair[k], dtype=float)[order] for k, _, _ in PROPS}
-    yv = {k: np.asarray(y[k], dtype=float)[order] for k, _, _ in PROPS}
+    fv = {k: np.asarray(fair[k], dtype=float)[order] for k, _, _ in props}
+    yv = {k: np.asarray(y[k], dtype=float)[order] for k, _, _ in props}
     rows = {}
     for t in sorted({str(t) for t in targets}):
         hi = int(np.searchsorted(dsort, t, side="left"))
         lo = max(0, hi - window)
-        rows[t] = {k: fit_logit_shift(fv[k][lo:hi], yv[k][lo:hi], v0, min_rows) for k, _, _ in PROPS}
+        rows[t] = {k: fit_logit_shift(fv[k][lo:hi], yv[k][lo:hi], v0, min_rows) for k, _, _ in props}
     return pd.DataFrame.from_dict(rows, orient="index")
 
 

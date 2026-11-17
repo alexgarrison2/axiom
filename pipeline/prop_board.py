@@ -74,9 +74,13 @@ DEF_STATS = {"sa": "sog_ag", "att": "attempts_ag", "xga": "xG_against", "ga": "g
              "ppga": "pp_goals_against", "ppo": "pk_opportunities"}
 DEF_RECENT = (8,)
 DEF_PRIOR = 16
-SOG_KEYS = {1.5: "sog15", 2.5: "sog25", 3.5: "sog35"}
+SOG_KEYS = {1.5: "sog15", 2.5: "sog25", 3.5: "sog35", 4.5: "sog45"}
+# What the board prices: the tested markets (pm.PROPS, the set the pre-registered backtests score)
+# plus SOG 4.5, which the book posts for a handful of high-volume shooters. It is priced like the
+# other shot lines (same shot-count tail, same walk-forward shift) but stays out of those tests.
+BOARD_PROPS = pm.PROPS + [("sog45", "shots", 5)]
 ONE_WAY = ["atg", "a1", "p1", "p2", "ppp1"]
-LABELS = {"sog15": "SOG 1.5", "sog25": "SOG 2.5", "sog35": "SOG 3.5", "atg": "ATG", "a1": "1+ AST",
+LABELS = {"sog15": "SOG 1.5", "sog25": "SOG 2.5", "sog35": "SOG 3.5", "sog45": "SOG 4.5", "atg": "ATG", "a1": "1+ AST",
           "p1": "1+ PTS", "p2": "2+ PTS", "ppp1": "1+ PPP"}
 
 
@@ -274,7 +278,7 @@ def _rest(logs: pd.DataFrame, today: str) -> dict:
 
 
 def _hits(part: pd.DataFrame) -> dict:
-    return {key: int((part[stat] >= k).sum()) for key, stat, k in pm.PROPS}
+    return {key: int((part[stat] >= k).sum()) for key, stat, k in BOARD_PROPS}
 
 
 def _dressing(lineups: dict, logs: pd.DataFrame) -> dict:
@@ -295,8 +299,8 @@ def _calibrated(feats: pd.DataFrame, fair: pd.DataFrame, today: str) -> pd.DataF
     """CAL arms: shift tonight's fair probabilities by the per-market logit shift fitted on the
     last pm.CAL_WINDOW graded regular-season player-games before today (prereg_props_calib.json)."""
     graded = feats["shots"].notna() & ((feats["game_id"] // 10000) % 100 == 2)
-    y = pm.outcomes(feats[graded])
-    sh = pm.calibration_shifts(feats.loc[graded, "date"], fair[graded], y, [today]).iloc[0].to_dict()
+    y = pm.outcomes(feats[graded], BOARD_PROPS)
+    sh = pm.calibration_shifts(feats.loc[graded, "date"], fair[graded], y, [today], props=BOARD_PROPS).iloc[0].to_dict()
     out = fair.copy()
     out.loc[~graded] = pm.apply_shifts(fair[~graded], sh)
     return out
@@ -351,7 +355,7 @@ def build(today=None) -> tuple[dict, dict]:
         frame = pd.concat([frame, tn], ignore_index=True)
     prior, shift = pm.ARMS[ARM]
     feats = pm.pregame_features(frame, prior=prior)
-    fair = pm.fair_probs(feats)
+    fair = pm.fair_probs(feats, BOARD_PROPS)
     if shift:
         fair = _calibrated(feats, fair, today)
     feats = pd.concat([feats, fair.add_prefix("fair_")], axis=1)
@@ -406,7 +410,7 @@ def build(today=None) -> tuple[dict, dict]:
                 p["vs"] = {"n": int(len(vs)), **_hits(vs)}
             p.update({"game": int(f["game_id"]), "opp": f["opp"], "home": int(f["home"]),
                       "toi": round(float(f["toi_exp"]), 1),
-                      "fair": {key: round(float(f[f"fair_{key}"]), 4) for key, _, _ in pm.PROPS},
+                      "fair": {key: round(float(f[f"fair_{key}"]), 4) for key, _, _ in BOARD_PROPS},
                       "proj": {cat: round(float(f[col]), 2) for cat, col in PROJ.items()},
                       "book": _book(book_idx.get((int(f["game_id"]), norm(last["name"]))))})
         players.append(p)
@@ -414,7 +418,7 @@ def build(today=None) -> tuple[dict, dict]:
     board = {
         "generated_at": utc_now_iso(), "season": SEASON_ID, "prev_season": PREV_SEASON_ID,
         "slate_date": today, "log_games": LOG_GAMES,
-        "props": [{"key": k, "label": LABELS[k], "stat": s, "k": n} for k, s, n in pm.PROPS],
+        "props": [{"key": k, "label": LABELS[k], "stat": s, "k": n} for k, s, n in BOARD_PROPS],
         "games": game_rows, "teams": _team_ranks(logs), "players": players,
         "book_source": "bovada" if props_raw else None,
         "book_fetched_at": (read_json(pipeline_path("player_props.json"), {}) or {}).get("fetched_at"),

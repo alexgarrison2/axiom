@@ -179,6 +179,7 @@ export const CATEGORIES: Category[] = [
             { key: 'sog15', k: 2, label: 'o1.5' },
             { key: 'sog25', k: 3, label: 'o2.5' },
             { key: 'sog35', k: 4, label: 'o3.5' },
+            { key: 'sog45', k: 5, label: 'o4.5' },
         ],
         value: r => r[6],
         oppRank: 'sa_rank',
