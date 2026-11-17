@@ -4384,14 +4384,14 @@
         ],
         "d3": [
             {
-                "name": "Alex Gagne",
-                "number": null,
+                "name": "Mike Reilly",
+                "number": 6,
                 "pos": "ld",
-                "id": 32036,
+                "id": 2469,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Brent Burns",
@@ -4538,9 +4538,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-14)",
-        "updated_at": "2026-11-15T13:53:38.413Z",
-        "fetched_at": "2026-11-16T05:30:03Z"
+        "lineup_source": "@HockeyMtnHighCO",
+        "updated_at": "2026-11-17T18:49:19.677Z",
+        "fetched_at": "2026-11-17T19:02:06Z"
     },
     "LAK": {
         "f1": [
@@ -4679,8 +4679,8 @@
                 "id": 2550,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Brandt Clarke",
@@ -4690,7 +4690,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d2": [
@@ -4702,7 +4702,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Drew Doughty",
@@ -4712,7 +4712,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d3": [
@@ -4724,7 +4724,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Brian Dumoulin",
@@ -4734,7 +4734,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -4759,18 +4759,9 @@
         ],
         "ir": [
             {
-                "name": "Erik Gustafsson",
-                "number": 64,
-                "pos": "ir1",
-                "id": 2550,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Artemi Panarin",
                 "number": 10,
-                "pos": "ir2",
+                "pos": "ir1",
                 "id": 2519,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
@@ -4854,8 +4845,8 @@
             }
         ],
         "lineup_source": "Zach Dooley",
-        "updated_at": "2026-11-17T14:32:34.960Z",
-        "fetched_at": "2026-11-17T15:02:12Z"
+        "updated_at": "2026-11-17T18:08:59.150Z",
+        "fetched_at": "2026-11-17T19:02:06Z"
     },
     "DAL": {
         "f1": [
@@ -9393,14 +9384,14 @@
     "STL": {
         "f1": [
             {
-                "name": "Jake Neighbours",
-                "number": 63,
+                "name": "Dylan Holloway",
+                "number": 81,
                 "pos": "lw",
-                "id": 29498,
-                "ppUnit": 1,
+                "id": 32948,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Robert Thomas",
@@ -9425,14 +9416,14 @@
         ],
         "f2": [
             {
-                "name": "Dylan Holloway",
-                "number": 81,
+                "name": "Jake Neighbours",
+                "number": 63,
                 "pos": "lw",
-                "id": 32948,
-                "ppUnit": 2,
+                "id": 29498,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Mason McTavish",
@@ -9457,14 +9448,14 @@
         ],
         "f3": [
             {
-                "name": "Aleksanteri Kaskimaki",
-                "number": null,
+                "name": "Dalibor Dvorsky",
+                "number": 15,
                 "pos": "lw",
-                "id": 36379,
-                "ppUnit": null,
+                "id": 35010,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Pavel Buchnevich",
@@ -9509,14 +9500,14 @@
                 "movement": null
             },
             {
-                "name": "Dalibor Dvorsky",
-                "number": 15,
+                "name": "Aleksanteri Kaskimaki",
+                "number": null,
                 "pos": "rw",
-                "id": 35010,
-                "ppUnit": 2,
+                "id": 36379,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "d1": [
@@ -9710,9 +9701,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Jeremy Rutherford",
-        "updated_at": "2026-11-17T16:46:00.644Z",
-        "fetched_at": "2026-11-17T17:01:59Z"
+        "lineup_source": "Lou Korac",
+        "updated_at": "2026-11-17T18:48:03.102Z",
+        "fetched_at": "2026-11-17T19:02:06Z"
     },
     "CGY": {
         "f1": [
@@ -10088,7 +10079,7 @@
                 "number": 21,
                 "pos": "rw",
                 "id": 30614,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -10096,14 +10087,14 @@
         ],
         "f3": [
             {
-                "name": "Vitali Pinchuk",
-                "number": 51,
+                "name": "Reid Schaefer",
+                "number": 49,
                 "pos": "lw",
-                "id": 31775,
-                "ppUnit": 2,
+                "id": 32867,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": "new"
             },
             {
                 "name": "Alex Kerfoot",
@@ -10113,7 +10104,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Jonathan Marchessault",
@@ -10123,7 +10114,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -10135,7 +10126,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Jack Drury",
@@ -10145,7 +10136,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Adam Edstrom",
@@ -10155,7 +10146,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -10211,7 +10202,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jayden Struble",
@@ -10333,6 +10324,6 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-11-17T17:49:16.031Z",
-        "fetched_at": "2026-11-17T18:02:14Z"
+        "fetched_at": "2026-11-17T19:02:06Z"
     }
 }
