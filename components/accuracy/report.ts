@@ -1,4 +1,5 @@
-import { isCorrect, isNoLean, type ExcludedGame, type GradedGame, type SeasonTally } from './types';
+import { isCoinFlip } from '@/lib/matchup/format';
+import { isCorrect, isNoLean, pickOf, pickProb, type ExcludedGame, type GradedGame, type SeasonTally } from './types';
 /**
  * Typed, trimmed view of public/data/model_report.json for /accuracy, plus an
  * n-weighted "All seasons" aggregate. Pure: runs on server, client and tests.
@@ -342,6 +343,108 @@ export function combineBlocks(blocks: ReportBlock[]): ReportBlock | null {
             .flatMap(b => b.worstMisses)
             .sort((a, b) => b.confidence - a.confidence)
             .slice(0, 5),
+    };
+}
+
+/* ── A block from the graded games (the page under a filter) ─────────── */
+
+/** pipeline/model_report.py's rolling window and league-wide home-win default. */
+const ROLLING_WINDOW = 100;
+const HOME_RATE_DEFAULT = 0.535;
+const TIER_EDGES: [number, number, string][] = [
+    [50, 55, '50-55'],
+    [55, 60, '55-60'],
+    [60, 65, '60-65'],
+    [65, 101, '65+'],
+];
+
+/** A forecaster's home-win probabilities (0-100) scored on the games: a coin flip is half a pick for anyone. */
+function score(games: GradedGame[], prob: (g: GradedGame) => number): { accuracy: number | null; brier: number | null; logLoss: number | null } {
+    const won = (g: GradedGame) => g.homeScore > g.awayScore;
+    return {
+        accuracy: mean(games.map(g => (isCoinFlip(prob(g)) ? 0.5 : prob(g) > 50 === won(g) ? 1 : 0))),
+        brier: mean(games.map(g => (prob(g) / 100 - (won(g) ? 1 : 0)) ** 2)),
+        logLoss: mean(games.map(g => ll(prob(g) / 100, won(g)))),
+    };
+}
+
+function versionOf(games: GradedGame[]): VersionStats {
+    const picks = games.filter(g => !isNoLean(g));
+    const correct = picks.filter(isCorrect).length;
+    const sc = score(games, g => g.homeProb);
+    return { n: games.length, nPicks: picks.length, correct, accuracy: picks.length ? correct / picks.length : null, accuracyAll: sc.accuracy, brier: sc.brier, logLoss: sc.logLoss };
+}
+
+const callOf = (g: GradedGame): CallRow => ({
+    gameId: g.id,
+    date: g.date,
+    homeTeam: g.home,
+    awayTeam: g.away,
+    pick: pickOf(g),
+    confidence: Number(pickProb(g).toFixed(1)),
+    homeScore: g.homeScore,
+    awayScore: g.awayScore,
+    decision: g.decision,
+    correct: isCorrect(g),
+    legacy: g.legacy,
+});
+
+/**
+ * The report card for any set of graded games, computed the way pipeline/model_report.py builds a
+ * season block: the page uses it when a team, date or situation filter narrows the games. Back-filled
+ * rows are left out. Two differences from the nightly file: the market is the frozen snapshot price
+ * (not the closing line) with placeholder lines dropped, and there is no bootstrap.
+ * `homeRate` is a season's home-win constant (0-1) from the report.
+ */
+export function blockFromGames(all: GradedGame[], homeRate: (season: string) => number | null = () => null): ReportBlock {
+    const live = all.filter(g => !g.retro).sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
+    const me = versionOf(live);
+    const rate = (g: GradedGame) => (homeRate(g.season) ?? HOME_RATE_DEFAULT) * 100;
+    const priced = live.filter(g => g.marketProb != null);
+    const mine = score(priced, g => g.homeProb);
+    const lean = live.filter(g => !isNoLean(g));
+    const calls = lean.filter(g => pickProb(g) >= CALL_MIN_CONF - 1e-9).sort((a, b) => pickProb(b) - pickProb(a));
+    const rolling: RollingPoint[] = [];
+    for (let i = ROLLING_WINDOW; i <= priced.length; i++) {
+        const w = priced.slice(i - ROLLING_WINDOW, i);
+        rolling.push({ i, date: priced[i - 1].date, model: score(w, g => g.homeProb).logLoss as number, market: score(w, g => g.marketProb as number).logLoss as number });
+    }
+    return {
+        n: me.n,
+        nRetro: all.length - live.length,
+        nLegacy: live.filter(g => g.legacy).length,
+        nPicks: me.nPicks,
+        nNoLean: me.n - me.nPicks,
+        byModel: { current: versionOf(live.filter(g => !g.legacy)), legacy: versionOf(live.filter(g => g.legacy)) },
+        accuracy: me.accuracy,
+        accuracyAll: me.accuracyAll,
+        accuracyCi: wilson(me.correct, me.nPicks),
+        correct: me.correct,
+        brier: me.brier,
+        logLoss: me.logLoss,
+        firstDate: live[0]?.date ?? null,
+        lastDate: live[live.length - 1]?.date ?? null,
+        homeRate: { n: live.length, ...score(live, rate), rate: mean(live.map(g => rate(g) / 100)), source: null },
+        market: {
+            n: priced.length,
+            ...score(priced, g => g.marketProb as number),
+            modelLogLossSame: mine.logLoss,
+            modelAccuracySame: mine.accuracy,
+            modelBrierSame: mine.brier,
+        },
+        // Ten equal-width bins of the home-win probability.
+        reliability: Array.from({ length: 10 }, (_, b) => {
+            const bin = live.filter(g => Math.min(9, Math.max(0, Math.floor(g.homeProb / 10))) === b);
+            return { lo: b / 10, hi: (b + 1) / 10, n: bin.length, meanPred: mean(bin.map(g => g.homeProb / 100)), actual: mean(bin.map(g => (g.homeScore > g.awayScore ? 1 : 0))) };
+        }),
+        tiers: TIER_EDGES.map(([lo, hi, tier]) => {
+            const t = lean.filter(g => pickProb(g) >= lo && pickProb(g) < hi);
+            const c = t.filter(isCorrect).length;
+            return { tier, n: t.length, correct: c, accuracy: t.length ? c / t.length : null, ci: wilson(c, t.length), meanConfidence: mean(t.map(g => pickProb(g) / 100)) };
+        }),
+        rolling,
+        bestCalls: calls.filter(isCorrect).slice(0, 5).map(callOf),
+        worstMisses: calls.filter(g => !isCorrect(g)).slice(0, 5).map(callOf),
     };
 }
 

@@ -46,6 +46,14 @@ export function playedIndex(games: GradedGame[]): Set<string> {
     return out;
 }
 
+/** All / regular season / playoffs. */
+export const ofType = (g: { type: string }, type: 'all' | 'regular' | 'playoffs') => type === 'all' || (type === 'regular' ? g.type !== '03' : g.type === '03');
+
+/** An inclusive game-date window, YYYY-MM-DD; null is every date. */
+export type DateRange = [from: string, to: string] | null;
+
+export const inRange = (g: { date: string }, range: DateRange) => !range || (g.date >= range[0] && g.date <= range[1]);
+
 /** Does the game pass the filter? `played` is playedIndex over the loaded season(s), for back-to-backs. */
 export function matches(g: GradedGame, f: PickFilter, played: Set<string>): boolean {
     if (f.who !== 'all') {

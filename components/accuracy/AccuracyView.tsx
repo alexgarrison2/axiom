@@ -9,7 +9,9 @@ import { GlossLink } from '@/components/ui/gloss-link';
 import { shortDate } from '@/components/views/format';
 import { cn } from '@/lib/utils';
 import { teamTriFromName } from './names';
-import { combineBlocks, reportLags, type AccuracyReport, type CallRow, type GameTypeKey, type ReportBlock } from './report';
+import { blockFromGames, combineBlocks, reportLags, type AccuracyReport, type CallRow, type GameTypeKey, type ReportBlock } from './report';
+import { inRange, isFiltered, matches, NO_FILTER, ofType, playedIndex, type DateRange, type PickFilter } from './filters';
+import { useGradedGames } from './useGradedGames';
 import { ReliabilityChart, RollingChart, TierBars } from './charts';
 import { GameList } from './GameList';
 import { Ledger } from './Ledger';
@@ -48,7 +50,11 @@ const CHART_N = 30;
 
 export function AccuracyView({ report, ledger, suggested, seasons, currentSeason, initialSeason, tallies = {}, shapes }: AccuracyViewProps) {
     const [season, setSeason] = React.useState<string>(initialSeason ?? currentSeason);
-    const [type, setType] = React.useState<GameTypeKey>('all');
+    const [type, setTypeOnly] = React.useState<GameTypeKey>('all');
+    // The filter bar (team, dates, situations) narrows every section: the pick list, the report card and both ledgers.
+    const [filter, setFilter] = React.useState<PickFilter>(NO_FILTER);
+    const [range, setRange] = React.useState<DateRange>(null);
+    const data = useGradedGames(season, seasons);
 
     // Honour /accuracy?season=2025-26 and #ledger deep links.
     React.useEffect(() => {
@@ -60,8 +66,14 @@ export function AccuracyView({ report, ledger, suggested, seasons, currentSeason
         }
     }, [seasons]);
 
+    // Another season or game type has other game days: the date window starts over.
+    const setType = (t: GameTypeKey) => {
+        setTypeOnly(t);
+        setRange(null);
+    };
     const selectSeason = (s: string) => {
         setSeason(s);
+        setRange(null);
         try {
             const url = new URL(window.location.href);
             if (s === currentSeason) url.searchParams.delete('season');
@@ -92,6 +104,19 @@ export function AccuracyView({ report, ledger, suggested, seasons, currentSeason
         return { days: list.reduce((a, x) => a + x.days, 0), teams: Math.max(0, ...list.map(x => x.teams)) };
     }, [shapes, season, seasons, type]);
 
+    const narrowed = isFiltered(filter) || range != null;
+    const played = React.useMemo(() => playedIndex(data.rows), [data.rows]);
+    /** The games the filter bar leaves (back-filled included), or null with no filter: sections then read the pipeline's files. */
+    const matched = React.useMemo(
+        () => (narrowed && !data.loading && !data.failed ? data.rows.filter(g => ofType(g, type) && inRange(g, range) && matches(g, filter, played)) : null),
+        [narrowed, data, type, range, filter, played],
+    );
+    const filteredBlock = React.useMemo(() => (matched ? blockFromGames(matched, s => report.seasons[s]?.all?.homeRate.rate ?? null) : null), [matched, report]);
+    const matchedIds = React.useMemo(() => (matched ? new Set(matched.map(g => g.id)) : null), [matched]);
+    /** A filter is on but its games are still loading: sections wait instead of flashing the unfiltered numbers. */
+    const filterPending = narrowed && data.loading;
+    const shownBlock = filteredBlock ?? block;
+
     const controls = (mobile: boolean) => (
         <>
             <Segmented label="Season" size="sm" block={mobile} options={seasonOptions} value={season} onChange={selectSeason} />
@@ -107,12 +132,18 @@ export function AccuracyView({ report, ledger, suggested, seasons, currentSeason
             </div>
 
             <section aria-labelledby="every-pick" className="flex flex-col gap-3">
-                <h2 id="every-pick" className="heading-section">
-                    Predictions
-                </h2>
                 <GameList
+                    data={data}
+                    filter={filter}
+                    onFilter={setFilter}
+                    range={range}
+                    onRange={setRange}
+                    heading={
+                        <h2 id="every-pick" className="heading-section">
+                            Predictions
+                        </h2>
+                    }
                     season={season}
-                    seasons={seasons}
                     type={type}
                     currentSeason={currentSeason}
                     expected={Math.max(block?.nPicks ?? 0, tally?.picks ?? 0)}
@@ -127,15 +158,15 @@ export function AccuracyView({ report, ledger, suggested, seasons, currentSeason
                     <h2 id="report-card" className="heading-section">
                         Model report
                     </h2>
-                    {!empty && !stale && block ? (
+                    {!filterPending && (filteredBlock ? filteredBlock.n > 0 : !empty && !stale) && shownBlock ? (
                         <p className="label">
-                            Live picks · {shortDate(block.firstDate)}
-                            {block.lastDate && block.lastDate !== block.firstDate ? `–${shortDate(block.lastDate)}` : ''}
-                            {block.nRetro ? (
+                            Live picks · {shortDate(shownBlock.firstDate)}
+                            {shownBlock.lastDate && shownBlock.lastDate !== shownBlock.firstDate ? `–${shortDate(shownBlock.lastDate)}` : ''}
+                            {shownBlock.nRetro ? (
                                 <>
                                     {' · '}
                                     <GlossLink term="back-filled" desc="Regenerated after the game, never counted in the report card">
-                                        {block.nRetro.toLocaleString('en-US')} back-filled out
+                                        {shownBlock.nRetro.toLocaleString('en-US')} back-filled out
                                     </GlossLink>
                                 </>
                             ) : null}
@@ -143,7 +174,15 @@ export function AccuracyView({ report, ledger, suggested, seasons, currentSeason
                     ) : null}
                 </div>
 
-                {stale && tally ? (
+                {filterPending ? (
+                    <div aria-busy="true" className="h-40 rounded-card border border-line bg-surface-1/60" />
+                ) : filteredBlock ? (
+                    filteredBlock.n > 0 ? (
+                        <ReportCard block={filteredBlock} seasonWord={seasonWord} modelLabel={season === 'all' ? 'Site model' : season < currentSeason ? 'Prev. model' : 'Pony xG'} />
+                    ) : (
+                        <p className="label py-2">No matches</p>
+                    )
+                ) : stale && tally ? (
                     <ThroughSummary tally={tally} />
                 ) : empty ? (
                     <EmptyState season={season} currentSeason={currentSeason} type={type} prior={priorSeason} onPrior={() => priorSeason && selectSeason(priorSeason)} />
@@ -159,6 +198,9 @@ export function AccuracyView({ report, ledger, suggested, seasons, currentSeason
                         file="/data/suggested_ledger.json"
                         stake="Quarter Kelly"
                         anchor="bets"
+                        type={type}
+                        games={matchedIds}
+                        pending={filterPending}
                         season={season}
                         seasons={seasons}
                         currentSeason={currentSeason}
@@ -174,6 +216,9 @@ export function AccuracyView({ report, ledger, suggested, seasons, currentSeason
             <section id="ledger" aria-labelledby="ledger-title" className="flex scroll-mt-[calc(var(--appbar-h)+12px)] flex-col gap-3 max-lg:scroll-mt-0">
                 <Ledger
                     ledger={ledger}
+                    type={type}
+                    games={matchedIds}
+                    pending={filterPending}
                     season={season}
                     seasons={seasons}
                     currentSeason={currentSeason}

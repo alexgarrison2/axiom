@@ -9,7 +9,9 @@ import { shortDate } from '@/components/views/format';
 import { GlossLink } from '@/components/ui/gloss-link';
 import { cn } from '@/lib/utils';
 import { UnitsChart } from './charts';
-import { cumulativeUnits, fmtAmerican, fmtUnits, parseLedgerBets, teamFirstScore } from './ledger-data';
+import { cumulativeUnits, fmtAmerican, fmtUnits, parseLedgerBets, summarizeBets, teamFirstScore } from './ledger-data';
+import { ofType } from './filters';
+import type { GameTypeKey } from './report';
 import { teamTriFromName } from './names';
 import type { LedgerBet, LedgerBucket, LedgerData, LedgerSummary } from './types';
 import { useDataEpoch } from '@/lib/fresh';
@@ -102,6 +104,9 @@ export function Ledger({
     file = PICK_LEDGER,
     stake = 'To win 1u',
     anchor = 'ledger',
+    type = 'all',
+    games = null,
+    pending = false,
 }: {
     ledger: LedgerData;
     /** The ledger file the bet rows load from. */
@@ -112,13 +117,20 @@ export function Ledger({
     anchor?: string;
     season: string;
     seasons: string[];
+    /** Regular season or playoffs only. */
+    type?: GameTypeKey;
+    /** The page's filter bar: only bets on these game ids (null: no filter). */
+    games?: ReadonlySet<number> | null;
+    /** The filter's games are still loading. */
+    pending?: boolean;
     /** Bets from this season on with no model version get a LEGACY tag. */
     currentSeason?: string;
     /** Section heading. */
     title?: React.ReactNode;
 }) {
     const labels = React.useMemo(() => (season === 'all' ? seasons : [season]), [season, seasons]);
-    const summary = combine(labels.map(l => ledger.seasons[l]).filter((s): s is LedgerSummary => !!s));
+    /** Narrowed by game type or the filter bar: the season summaries cannot answer, so the bets are summed here. */
+    const narrowed = type !== 'all' || games != null || pending;
     const [bets, setBets] = React.useState<LedgerBet[] | null>(null);
     // A stale tab coming back reloads the bets it already showed.
     const epoch = useDataEpoch();
@@ -147,7 +159,8 @@ export function Ledger({
                 },
                 () => setFailed(true),
             );
-        if (window.location.hash === `#${anchor}` || typeof IntersectionObserver === 'undefined') {
+        // A narrowed ledger is summed from its bets, so it needs them now.
+        if (narrowed || window.location.hash === `#${anchor}` || typeof IntersectionObserver === 'undefined') {
             go();
             return;
         }
@@ -162,11 +175,20 @@ export function Ledger({
         );
         io.observe(el);
         return () => io.disconnect();
-    }, [bets, attempt, file, anchor]);
+    }, [bets, attempt, file, anchor, narrowed]);
 
-    React.useEffect(() => setShown(PAGE), [season, query]);
+    React.useEffect(() => setShown(PAGE), [season, query, type, games]);
 
-    const inSeason = React.useMemo(() => (bets ?? []).filter(b => labels.includes(b.season)), [bets, labels]);
+    const inSeason = React.useMemo(
+        () => (bets ?? []).filter(b => labels.includes(b.season) && ofType(b, type) && (!games || games.has(b.gameId))),
+        [bets, labels, type, games],
+    );
+    /** Narrowed and not summed yet (the bets or the filter's games are on their way). */
+    const waiting = narrowed && (!bets || pending) && !failed;
+    const summary = React.useMemo(
+        () => (narrowed ? (bets && !pending ? summarizeBets(inSeason) : null) : combine(labels.map(l => ledger.seasons[l]).filter((s): s is LedgerSummary => !!s))),
+        [narrowed, bets, pending, inSeason, labels, ledger],
+    );
     const curve = React.useMemo(() => cumulativeUnits(inSeason), [inSeason]);
     const filtered = React.useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -188,9 +210,25 @@ export function Ledger({
                 <p className="label">{stake}</p>
             </div>
 
-            {!summary || summary.nGraded === 0 ? (
+            {waiting ? (
+                <div aria-busy="true" className="h-40 rounded-card border border-line bg-surface-1/60" />
+            ) : narrowed && !bets ? (
+                <div role="alert" className="panel flex items-center gap-3 border-dashed px-3 py-2">
+                    <p className="label text-warn">Unavailable</p>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setFailed(false);
+                            setAttempt(a => a + 1);
+                        }}
+                        className="ml-auto rounded-control border border-line-strong px-4 py-1.5 text-micro font-medium uppercase tracking-[0.14em] text-fg-1 transition-colors hover:border-brand hover:text-brand coarse:min-h-11"
+                    >
+                        Retry
+                    </button>
+                </div>
+            ) : !summary || summary.nGraded === 0 ? (
                 <p className="panel label border-dashed px-3 py-3">
-                    0 graded{season === 'all' ? '' : ` · ${season}`}
+                    {games ? 'No matches' : `0 graded${season === 'all' ? '' : ` · ${season}`}`}
                     {summary?.nPending ? ` · ${summary.nPending} pending` : ''}
                 </p>
             ) : (

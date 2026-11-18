@@ -89,6 +89,41 @@ export function parseLedgerBets(raw: unknown): LedgerBet[] {
     return out.sort((a, b) => a.date.localeCompare(b.date) || a.gameId - b.gameId);
 }
 
+/** pipeline/grade_bets.py's bucket labels, in table order. */
+const EV_BUCKETS = ['<0%', '0-5%', '5-10%', '10-20%', '20%+'];
+const STAKE_BUCKETS = ['<=0.5u', '0.6-1u', '1.1-2u', '2u+'];
+
+/**
+ * A ledger summary straight from the bets (grade_bets.py's summarize), for a filtered set the
+ * precomputed season summaries cannot answer. No ROI interval: that is the pipeline's bootstrap.
+ */
+export function summarizeBets(bets: LedgerBet[]): LedgerSummary {
+    const graded = bets.filter(b => b.result === 'win' || b.result === 'loss');
+    const tally = (list: LedgerBet[]) => {
+        const wins = list.filter(b => b.result === 'win').length;
+        const staked = list.reduce((a, b) => a + b.stake, 0);
+        const profit = list.reduce((a, b) => a + b.profit, 0);
+        return { record: `${wins}-${list.length - wins}`, unitsStaked: staked, unitsProfit: profit, roi: staked ? profit / staked : null };
+    };
+    const buckets = (labels: string[], of: (b: LedgerBet) => string): LedgerBucket[] =>
+        labels.map(bucket => {
+            const list = graded.filter(b => of(b) === bucket);
+            return { bucket, n: list.length, ...tally(list) };
+        });
+    const clv = graded.map(b => b.clv).filter((v): v is number => v != null);
+    return {
+        nBets: bets.length,
+        nGraded: graded.length,
+        nPending: bets.filter(b => b.result === 'pending').length,
+        ...tally(graded),
+        roiCi: null,
+        clvMean: clv.length ? clv.reduce((a, b) => a + b, 0) / clv.length : null,
+        clvN: clv.length,
+        byEv: buckets(EV_BUCKETS, b => b.evBucket),
+        byStake: buckets(STAKE_BUCKETS, b => b.stakeBucket),
+    };
+}
+
 /** Running units total, one point per bet (oldest → newest). */
 export function cumulativeUnits(bets: LedgerBet[]): { date: string; units: number }[] {
     let total = 0;

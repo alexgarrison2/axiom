@@ -16,8 +16,8 @@ import { isCorrect, isNoLean, isWrong, pickOf, pickProb, pickUnits, type Exclude
 import { fmtUnits } from './ledger-data';
 import type { GameTypeKey } from './report';
 import { groupByDay, summarize, vsMarket, type DayGroup, type DayShape, type SpanSummary } from './summary';
-import { DAYS, isFiltered, matches, NO_FILTER, playedIndex, teamSubject, type PickFilter } from './filters';
-import { useDataEpoch } from '@/lib/fresh';
+import { DAYS, inRange, isFiltered, matches, NO_FILTER, ofType, playedIndex, teamSubject, type DateRange, type PickFilter } from './filters';
+import type { GradedGamesState } from './useGradedGames';
 import { Breakdown, BreakdownSkeleton } from './BreakdownTable';
 import { breakdown, type BreakdownView } from './breakdown';
 import { fmtInt } from '@/components/views/format';
@@ -51,27 +51,14 @@ const RESULT_OPTIONS: { value: ResultFilter; label: string; ariaLabel?: string }
 const RESULT_SEG = 'coarse:gap-0.5';
 const RESULT_OPT = 'coarse:min-w-11 coarse:px-2';
 
-const cache = new Map<string, Promise<GradedGame[]>>();
-/** A season's graded rows, fetched once per data epoch (a stale tab coming back fetches again). */
-function loadSeason(label: string, epoch: number): Promise<GradedGame[]> {
-    const k = `${label}@${epoch}`;
-    let p = cache.get(k);
-    if (!p) {
-        for (const old of cache.keys()) if (!old.endsWith(`@${epoch}`)) cache.delete(old);
-        // A failed fetch rejects, so the cache entry is evicted and a retry refetches.
-        p = fetch(`/accuracy/games/${label}`, epoch ? { cache: 'no-cache' } : undefined).then(r => {
-            if (!r.ok) throw new Error(`picks ${label}: HTTP ${r.status}`);
-            return r.json() as Promise<GradedGame[]>;
-        });
-        p.catch(() => cache.delete(k));
-        cache.set(k, p);
-    }
-    return p;
-}
-
 export function GameList({
+    data,
+    filter,
+    onFilter,
+    range,
+    onRange,
+    heading,
     season,
-    seasons,
     type,
     currentSeason,
     expected = 0,
@@ -79,8 +66,16 @@ export function GameList({
     expectedNoLean = 0,
     excluded = [],
 }: {
+    /** The page's graded games (useGradedGames). */
+    data: GradedGamesState;
+    /** The page's game filter and date window: every section follows them, so the page owns them. */
+    filter: PickFilter;
+    onFilter: (f: PickFilter) => void;
+    range: DateRange;
+    onRange: (r: DateRange) => void;
+    /** The section heading, drawn under the filter bar (the bar filters the whole page, not just this list). */
+    heading?: React.ReactNode;
     season: string;
-    seasons: string[];
     type: GameTypeKey;
     currentSeason?: string;
     /** Live graded picks the report counts for this view; sizes the loading placeholder so nothing shifts. */
@@ -92,13 +87,9 @@ export function GameList({
     /** Finals deliberately left out of grading, with a reason. */
     excluded?: ExcludedGame[];
 }) {
-    const [games, setGames] = React.useState<{ key: string; rows: GradedGame[]; failed?: boolean } | null>(null);
-    const [attempt, setAttempt] = React.useState(0);
-    const [filter, setFilter] = React.useState<PickFilter>(NO_FILTER);
     const [result, setResult] = React.useState<ResultFilter>('all');
     const [includeRetro, setIncludeRetro] = React.useState(false);
     const [shown, setShown] = React.useState(PAGE);
-    const [range, setRange] = React.useState<[number, number] | null>(null);
     const [open, setOpen] = React.useState<number | null>(null);
     /** Expanded days. Every day starts collapsed and only the reader opens one. */
     const [openDays, setOpenDays] = React.useState<ReadonlySet<string>>(() => new Set());
@@ -112,44 +103,30 @@ export function GameList({
         setOpenDays(new Set());
     };
 
-    const epoch = useDataEpoch();
-    const key = `${season}#${attempt}#${epoch}`;
-    React.useEffect(() => {
-        let alive = true;
-        const labels = season === 'all' ? seasons : [season];
-        Promise.all(labels.map(l => loadSeason(l, epoch)))
-            .then(lists => {
-                if (alive) setGames({ key, rows: lists.flat().sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id) });
-            })
-            .catch(() => alive && setGames({ key, rows: [], failed: true }));
-        return () => {
-            alive = false;
-        };
-    }, [key, season, seasons, epoch]);
-
-    // Reset paging and the date window when the selection changes.
+    // Back to the first page, all collapsed, when the selection changes.
     React.useEffect(() => {
         setShown(PAGE);
-        setRange(null);
         setOpen(null);
         setOpenDays(new Set());
     }, [season, type, includeRetro]);
 
-    const loading = !games || games.key !== key;
-    const base = React.useMemo(
-        () => (games?.rows ?? []).filter(g => (type === 'all' || (type === 'regular' ? g.type === '02' : g.type === '03')) && (includeRetro || !g.retro)),
-        [games, type, includeRetro],
-    );
+    const { loading } = data;
+    const base = React.useMemo(() => data.rows.filter(g => ofType(g, type) && (includeRetro || !g.retro)), [data.rows, type, includeRetro]);
     const dates = React.useMemo(() => [...new Set(base.map(g => g.date))].sort(), [base]);
-    const win = React.useMemo<[number, number]>(() => range ?? [0, Math.max(0, dates.length - 1)], [range, dates]);
+    // The slider's thumbs: the first and last game dates inside the page's date window.
+    const win = React.useMemo<[number, number]>(() => {
+        const last = Math.max(0, dates.length - 1);
+        if (!range) return [0, last];
+        const lo = dates.findIndex(d => d >= range[0]);
+        const hi = dates.findLastIndex(d => d <= range[1]);
+        const a = lo < 0 ? last : lo;
+        return [a, Math.max(a, hi)];
+    }, [range, dates]);
     // Back-to-backs are read off every loaded game (back-filled included), not just the ones shown.
-    const played = React.useMemo(() => playedIndex(games?.rows ?? []), [games]);
-    const retroCount = React.useMemo(() => (games?.rows ?? []).filter(g => g.retro && (type === 'all' || (type === 'regular' ? g.type === '02' : g.type === '03'))).length, [games, type]);
+    const played = React.useMemo(() => playedIndex(data.rows), [data.rows]);
+    const retroCount = React.useMemo(() => data.rows.filter(g => g.retro && ofType(g, type)).length, [data.rows, type]);
 
-    const inWindow = React.useMemo(() => {
-        const [a, b] = [dates[win[0]] ?? '', dates[win[1]] ?? '9999'];
-        return base.filter(g => g.date >= a && g.date <= b && matches(g, filter, played));
-    }, [base, dates, win, filter, played]);
+    const inWindow = React.useMemo(() => base.filter(g => inRange(g, range) && matches(g, filter, played)), [base, range, filter, played]);
     // The pick list and its record leave out coin flips (isCoinFlip, the slate's rule); they get their own strip.
     const rows = React.useMemo(
         () => inWindow.filter(g => !isNoLean(g) && (result === 'all' || (result === 'hit' ? isCorrect(g) : isWrong(g)))),
@@ -163,7 +140,7 @@ export function GameList({
     const groups = React.useMemo(() => breakdown(result === 'all' ? inWindow : rows, view, played), [inWindow, rows, result, view, played]);
     const allOpen = pageDays.every(d => openDays.has(d.date));
     const refine = (patch: Partial<PickFilter>) => {
-        setFilter(f => ({ ...f, ...patch }));
+        onFilter({ ...filter, ...patch });
         refilter();
     };
     /** The situations are about the chosen team, else about the model's pick. */
@@ -185,11 +162,14 @@ export function GameList({
     const lone = !retroCount && !legacyShown;
     const excludedShown = type === 'playoffs' ? [] : excluded;
     const excludedNote = excludedShown.length ? <ExcludedList games={excludedShown} /> : null;
+    /** Under the filter bar the heading keeps a little air, so the bar reads as the page's, not the section's. */
+    const headingUnderBar = heading ? <div className="mt-2">{heading}</div> : null;
     if (loading) {
         // Without a known shape, assume ~7 picks a day.
         const expectedDays = shape?.days ?? Math.ceil(expected / 7);
         return (
             <ListSkeleton
+                heading={expectedDays ? headingUnderBar : heading}
                 days={Math.min(PAGE, expectedDays)}
                 more={expectedDays > PAGE}
                 after={
@@ -197,18 +177,19 @@ export function GameList({
                         {expectedNoLean ? <StripPlaceholder /> : null}
                         {excludedNote}
                         {/* Another season loading: the table on screen (still the last season's rows) sizes its own placeholder. */}
-                        {expectedDays ? <BreakdownSkeleton rows={games ? (rows.length ? groups.length : 0) : (shape?.teams ?? 0)} /> : null}
+                        {expectedDays ? <BreakdownSkeleton rows={data.rows.length ? (rows.length ? groups.length : 0) : (shape?.teams ?? 0)} /> : null}
                     </>
                 }
             />
         );
     }
-    if (games.failed) {
+    if (data.failed) {
         return (
             <div className="flex flex-col gap-2">
+                {heading}
                 <div role="alert" className="panel flex items-center gap-3 border-dashed px-3 py-2">
                     <p className="label text-warn">Unavailable</p>
-                    <button type="button" onClick={() => setAttempt(a => a + 1)} className={cn(MORE_BTN, 'ml-auto')}>
+                    <button type="button" onClick={data.retry} className={cn(MORE_BTN, 'ml-auto')}>
                         Retry
                     </button>
                 </div>
@@ -219,6 +200,7 @@ export function GameList({
     if (!base.length && !retroCount) {
         return (
             <div className="flex flex-col gap-2">
+                {heading}
                 <p className="label">0 graded</p>
                 {excludedNote}
             </div>
@@ -302,7 +284,8 @@ export function GameList({
                             value={win}
                             minStepsBetweenThumbs={0}
                             onValueChange={v => {
-                                setRange([v[0], v[1]] as [number, number]);
+                                // Both thumbs at the ends is no window at all: new game days then fall inside it.
+                                onRange(v[0] <= 0 && v[1] >= dates.length - 1 ? null : [dates[v[0]], dates[v[1]]]);
                                 refilter();
                             }}
                             className="flex-1"
@@ -417,6 +400,7 @@ export function GameList({
                 </div>
             </div>
 
+            {headingUnderBar}
             <KpiStrip s={summary} />
 
             {rows.length === 0 ? (
@@ -893,10 +877,11 @@ function StripPlaceholder() {
  * row, one phone/desktop-height row per expected pick up to a page, the More button), so the rows
  * replace it without moving anything below.
  */
-function ListSkeleton({ days, more, after }: { days: number; more: boolean; after: React.ReactNode }) {
+function ListSkeleton({ heading, days, more, after }: { heading?: React.ReactNode; days: number; more: boolean; after: React.ReactNode }) {
     if (!days) {
         return (
             <div aria-busy="true" className="flex flex-col gap-2">
+                {heading}
                 <p className="label invisible">0 graded</p>
                 {after}
             </div>
@@ -908,6 +893,7 @@ function ListSkeleton({ days, more, after }: { days: number; more: boolean; afte
                 <span className={cn(SELECT, 'inline-block w-24')} />
                 <Segmented label="Result" size="sm" value="all" onChange={() => {}} options={RESULT_OPTIONS} className={RESULT_SEG} optionClassName={RESULT_OPT} />
             </div>
+            {heading}
             <div aria-hidden="true" className="invisible">
                 <KpiStrip s={summarize([])} />
             </div>
