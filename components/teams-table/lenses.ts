@@ -55,7 +55,7 @@ export const WIN_PCT_COLUMN: StatColumn = X({
 /** Columns that exist only in lenses (derived values and drawn cells). */
 export const LENS_COLUMNS: Record<string, StatColumn> = {
     // ranks
-    rk_power: X({ key: 'rk_power', label: 'Rk', title: 'pony xG power rank (model rating)', better: 'low', kind: 'rank', rankOf: 'rating', model: true }),
+    rk_power: X({ key: 'rk_power', label: 'Rk', title: 'pony xG power rank (game-model strength)', better: 'low', kind: 'rank', rankOf: 'rating', model: true }),
     rk_xg: X({ key: 'rk_xg', label: 'Rk', title: 'League rank by xG share', better: 'low', kind: 'rank', rankOf: 'xg_share' }),
     rk_st: X({ key: 'rk_st', label: 'Rk', title: 'League rank by special-teams index', better: 'low', kind: 'rank', rankOf: 'st_index', model: true }),
     rk_ctrl: X({ key: 'rk_ctrl', label: 'Rk', title: 'League rank by game-control score', better: 'low', kind: 'rank', rankOf: 'control' }),
@@ -72,7 +72,8 @@ export const LENS_COLUMNS: Record<string, StatColumn> = {
     form: X({ key: 'form', label: 'Last games', title: 'Each game, oldest to newest: up = won the xG share; green win, red loss, orange OT/SO loss', better: 'none', kind: 'form', width: 96 }),
 
     // model / projections
-    rating: X({ key: 'rating', label: 'xGΔ / game', title: 'Model rating: expected-goal differential per game (xGF − xGA)', better: 'high', kind: 'modelBar', model: true, bar: { mid: 0, span: 0.9 }, derive: ratingNet, format: s2, width: 168 }),
+    rating: X({ key: 'rating', label: 'vs Avg', title: 'Game-model strength: win % against an average team on neutral ice, with the current lineup and goalies', better: 'high', kind: 'modelBar', model: true, bar: { mid: 50, span: 20 }, derive: (r, c) => fin(pj(r, c)?.strength), format: d1, width: 168 }),
+    xg_net: X({ key: 'xg_net', label: 'xGΔ / game', title: 'Expected-goal differential per game (xGF − xGA): shot quality only, no finishing or goalies', better: 'high', kind: 'signed', signAt: 0.1, model: true, derive: ratingNet, format: s2 }),
     attack: X({ key: 'attack', label: 'Attack', title: 'Model xG for per game (league rank)', better: 'high', kind: 'ordinal', model: true, derive: (r, c) => fin(rt(r, c)?.xgf_rating) }),
     defense: X({ key: 'defense', label: 'Defense', title: 'Model xG against per game (league rank)', better: 'low', kind: 'ordinal', model: true, derive: (r, c) => fin(rt(r, c)?.xga_rating) }),
     trend: X({ key: 'trend', label: 'Trend', title: 'Recent form (rolling rating) minus the season rating, net xG per game', better: 'none', kind: 'signed', signAt: 0.1, model: true, derive: (r, c) => { const x = rt(r, c); return x ? fin(x.xgf_rolling) - fin(x.xga_rolling) - ratingNet(r, c) : NaN; }, format: s2 }),
@@ -84,12 +85,12 @@ export const LENS_COLUMNS: Record<string, StatColumn> = {
     proj: X({ key: 'proj', label: 'Projected points', title: 'Projected points (tick) and likely range, 10th–90th percentile (band)', better: 'high', kind: 'proj', model: true, derive: (r, c) => fin(pj(r, c)?.points), width: 172 }),
 
     // xG and shots
-    xg_share: X({ key: 'xg_share', label: 'xGF%', title: 'Share of expected goals in their games', better: 'high', kind: 'share', bar: { mid: 50, span: 15 }, derive: r => r.xgf_pct, format: d1, width: 120 }),
+    xg_share: X({ key: 'xg_share', label: 'xGF%', title: 'Share of expected goals in their games', better: 'high', kind: 'share', bar: { mid: 50, span: 20 }, derive: r => r.xgf_pct, format: d1, width: 120 }),
     xgf_ord: X({ key: 'xgf_ord', label: 'For / game', title: 'Expected goals for per game (league rank)', better: 'high', kind: 'ordinal', derive: r => r.xgf_per_game }),
     xga_ord: X({ key: 'xga_ord', label: 'Against / game', title: 'Expected goals against per game (league rank)', better: 'low', kind: 'ordinal', derive: r => r.xga_per_game }),
-    sog_share: X({ key: 'sog_share', label: 'Shots', title: 'Share of shots on goal', better: 'high', kind: 'share', bar: { mid: 50, span: 15 }, derive: r => share(r.sf_per_game, r.sa_per_game), format: d1, width: 120 }),
-    cf_share: X({ key: 'cf_share', label: 'Attempts 5v5', title: 'Share of 5-on-5 shot attempts', better: 'high', kind: 'share', bar: { mid: 50, span: 15 }, derive: r => share(r.cf_per_game, r.ca_per_game), format: d1, width: 120 }),
-    hd_share: X({ key: 'hd_share', label: 'High danger', title: 'Share of high-danger chances', better: 'high', kind: 'share', bar: { mid: 50, span: 15 }, derive: r => share(r.hdf_per_game, r.hda_per_game), format: d1, width: 120 }),
+    sog_share: X({ key: 'sog_share', label: 'Shots', title: 'Share of shots on goal', better: 'high', kind: 'share', bar: { mid: 50, span: 20 }, derive: r => share(r.sf_per_game, r.sa_per_game), format: d1, width: 120 }),
+    cf_share: X({ key: 'cf_share', label: 'Attempts 5v5', title: 'Share of 5-on-5 shot attempts', better: 'high', kind: 'share', bar: { mid: 50, span: 20 }, derive: r => share(r.cf_per_game, r.ca_per_game), format: d1, width: 120 }),
+    hd_share: X({ key: 'hd_share', label: 'High danger', title: 'Share of high-danger chances', better: 'high', kind: 'share', bar: { mid: 50, span: 20 }, derive: r => share(r.hdf_per_game, r.hda_per_game), format: d1, width: 120 }),
     xg_shot_for: X({ key: 'xg_shot_for', label: 'xG / shot for', title: 'Expected goals per shot on goal, own shots (league rank)', better: 'high', kind: 'ordinal', derive: r => (r.sf_per_game > 0 ? r.xgf_per_game / r.sf_per_game : NaN), format: r3 }),
     xg_shot_against: X({ key: 'xg_shot_against', label: 'xG / shot against', title: 'Expected goals per shot on goal allowed (league rank)', better: 'low', kind: 'ordinal', derive: r => (r.sa_per_game > 0 ? r.xga_per_game / r.sa_per_game : NaN), format: r3 }),
 
@@ -238,7 +239,8 @@ export const LENSES: Lens[] = [
         sort: { key: 'rating', dir: 'desc' },
         groups: [
             g('', ['rk_power']),
-            g('Model', ['rating', 'attack', 'defense']),
+            g('Model', ['rating']),
+            g('xG', ['xg_net', 'attack', 'defense']),
             g('Form', ['trend', 'net_5v5']),
             g('Roster', ['depth', 'goalie_net', as('lineup_rating', 'Lineup'), as('f_impact', 'F'), as('d_impact', 'D'), as('rapm_f', 'F RAPM'), as('rapm_d', 'D RAPM')]),
         ],

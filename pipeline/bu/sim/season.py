@@ -310,23 +310,9 @@ class SimProbabilities:
         self._by_triple = {(k[0], k[1], k[2]): v for k, v in table.items()}
 
     def _fit_bt(self):
-        keys = list(self.table)
-        teams = sorted({k[0] for k in keys} | {k[1] for k in keys})
-        if not keys or len(teams) < 2:
-            self._bt = ({}, 0.0)
-            return
-        ix = {t: i for i, t in enumerate(teams)}
-        X = np.zeros((len(keys) + 1, len(teams) + 1))
-        y = np.zeros(len(keys) + 1)
-        for r, k in enumerate(keys):
-            p = min(max(self.table[k][4], 1e-4), 1 - 1e-4)
-            X[r, -1] = 1.0
-            X[r, ix[k[0]]] += 1.0
-            X[r, ix[k[1]]] -= 1.0
-            y[r] = math.log(p / (1 - p))
-        X[-1, :-1] = 1.0                  # sum of ratings = 0
-        b = np.linalg.lstsq(X, y, rcond=None)[0]
-        self._bt = ({t: float(b[i]) for t, i in ix.items()}, float(b[-1]))
+        from season_simulator import bradley_terry
+        r, h, _ = bradley_terry((k[0], k[1], v[4]) for k, v in self.table.items())
+        self._bt = (r, h)
 
     def game(self, home, away, date, h_rest=None, a_rest=None):
         k = (home, away, date, h_rest, a_rest)

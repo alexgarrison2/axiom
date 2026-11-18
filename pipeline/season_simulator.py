@@ -42,7 +42,7 @@ Outputs
 -------
 public/data/season_projections.json (+ pipeline/data copy):
   {season_id, generated_at, games_played, total_simulations, model,
-   teams: [{team, make_playoffs_pct, won_division_pct, won_conference_pct,
+   teams: [{team, strength, make_playoffs_pct, won_division_pct, won_conference_pct,
             won_cup_pct, avg_points, point_dist, div_rank_dist,
             round_exit_dist, r1_matchups}]}
 public/data/season_projections_history.json: one snapshot per day
@@ -206,6 +206,30 @@ def rest_days_by_game(schedule):
             last[t] = d
         out[g["id"]] = tuple(rest)
     return out
+
+
+def bradley_terry(games):
+    """Least-squares team strengths behind a set of game probabilities.
+
+    ``games``: (home, away, P(home win)).  Fits logit(p) = home_ice + s[home] - s[away] with the
+    strengths summing to zero.  Returns ({team: s}, home_ice, identified); ``identified`` is False
+    when the games do not tie every team to the others (the last days of a season)."""
+    games = list(games)
+    teams = sorted({g[0] for g in games} | {g[1] for g in games})
+    if not games or len(teams) < 2:
+        return {}, 0.0, False
+    ix = {t: i for i, t in enumerate(teams)}
+    X = np.zeros((len(games) + 1, len(teams) + 1))
+    y = np.zeros(len(games) + 1)
+    for r, (home, away, p) in enumerate(games):
+        p = min(max(float(p), 1e-4), 1 - 1e-4)
+        X[r, -1] = 1.0
+        X[r, ix[home]] += 1.0
+        X[r, ix[away]] -= 1.0
+        y[r] = math.log(p / (1 - p))
+    X[-1, :-1] = 1.0                  # sum of strengths = 0
+    b, _, rank, _ = np.linalg.lstsq(X, y, rcond=None)
+    return {t: float(b[i]) for t, i in ix.items()}, float(b[-1]), int(rank) == len(teams) + 1
 
 
 class Probabilities:
@@ -463,12 +487,37 @@ def make_probabilities(team_map, schedule=None):
     return logit
 
 
-def summarize(engine, res, now_iso):
+def team_strength(engine, previous=None):
+    """{team: win % against an average team on neutral ice}: the strengths behind the game
+    model's probabilities for the remaining schedule (``bradley_terry``).  The Teams page ranks
+    on it.  When the remaining games no longer identify every team (season's end, playoffs) the
+    ``previous`` published values stand."""
+    r, _, ok = bradley_terry((engine.teams[h], engine.teams[a], p)
+                             for h, a, p in zip(engine.h, engine.a, engine.p))
+    if not ok or set(r) != set(engine.teams):
+        return dict(previous or {})
+    return {t: round(100 / (1 + math.exp(-s)), 2) for t, s in r.items()}
+
+
+def previous_strength(path=PROJECTIONS_FILE):
+    """The strengths in the published projections file, this season only."""
+    try:
+        prev = load_json(path)
+    except (OSError, ValueError):
+        return {}
+    if str(prev.get("season_id")) != SEASON_ID:
+        return {}
+    return {t["team"]: t["strength"] for t in prev.get("teams", []) if t.get("strength") is not None}
+
+
+def summarize(engine, res, now_iso, previous=None):
     n = engine.n
+    strength = team_strength(engine, previous)
     teams = []
     for i, t in enumerate(engine.teams):
         teams.append({
             "team": t,
+            "strength": strength.get(t),
             "make_playoffs_pct": round(100 * res["made"][i] / n, 1),
             "won_division_pct": round(100 * res["div"][i] / n, 1),
             "won_conference_pct": round(100 * res["conf"][i] / n, 1),
@@ -534,7 +583,7 @@ def full_simulation_loop(n_sims=SIMULATIONS, now=None, standings=None, schedule=
     print(f"Simulating {n_sims} seasons ({len(schedule)} remaining games, {probs.source})...")
     engine = Engine(standings, schedule, probs, n_sims=n_sims)
     res = engine.run()
-    out = summarize(engine, res, utc_now_iso())
+    out = summarize(engine, res, utc_now_iso(), previous_strength())
     os.makedirs(DATA_DIR, exist_ok=True)
     local = os.path.join(DATA_DIR, "season_projections.json")
     _write_json(local, out, indent=1)

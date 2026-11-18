@@ -138,6 +138,8 @@ export interface Projection {
     won_division_pct?: number;
     won_cup_pct?: number;
     avg_points?: number;
+    /** Game-model strength: win % against an average team on neutral ice. */
+    strength?: number | null;
     /** Simulated final points: {points: count}. */
     point_dist?: Record<string, number>;
     simulations?: number;
@@ -367,6 +369,7 @@ export function projectionSummary(): Record<string, TeamProjection> | null {
             playoff: p.make_playoffs_pct,
             cup: p.won_cup_pct ?? 0,
             points: p.avg_points ?? NaN,
+            strength: p.strength ?? null,
             p10: total ? at(0.1) : NaN,
             p90: total ? at(0.9) : NaN,
         };

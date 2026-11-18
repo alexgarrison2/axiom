@@ -249,6 +249,8 @@ export interface TeamProjection {
     playoff: number;
     cup: number;
     points: number;
+    /** Game-model strength: win % against an average team on neutral ice (null before it is published). */
+    strength: number | null;
     /** Likely range: 10th and 90th percentile of simulated points. */
     p10: number;
     p90: number;
