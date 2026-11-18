@@ -6,7 +6,7 @@ import { isNoLean, pickOf, pickProb, type GradedGame } from './types';
 /*
  * The breakdown table under the pick list: the same filtered games, regrouped.
  * Team, goalie and division rows hold every game that side played in (a game
- * counts once for each club), so those rows overlap. Home/road, fav/dog,
+ * counts once for each club and each starter), so those rows overlap. Home/road, fav/dog,
  * confidence and rest describe the model's pick, so a coin flip is in none of them.
  */
 
@@ -29,11 +29,9 @@ export const BREAKDOWN_VIEWS: { value: BreakdownView; label: string }[] = [
 export interface BreakdownRow {
     key: string;
     label: string;
-    /** Tricode, when the row is a club. */
+    /** Tricode, when the row is a club or one of its goalies (the crest beside the label). */
     tri?: string;
     summary: SpanSummary;
-    /** Goalie view: the club's starters, most starts first. */
-    children?: BreakdownRow[];
 }
 
 interface Spec {
@@ -51,11 +49,15 @@ const pickKey = (f: (g: GradedGame, played: Set<string>) => string | null) => (g
     return k == null ? [] : [k];
 };
 const named = (names: Record<string, string>) => (k: string) => names[k] ?? k;
-const teams: Spec = { keys: g => [g.home, g.away], order: 'asc', label: k => k };
 
 const SPECS: Record<BreakdownView, Spec> = {
-    team: teams,
-    goalie: teams,
+    team: { keys: g => [g.home, g.away], order: 'asc', label: k => k },
+    // "TRI|Name": one row per starter and club, clubs in order and a club's starters together.
+    goalie: {
+        keys: g => [g.homeGoalie ? `${g.home}|${g.homeGoalie}` : null, g.awayGoalie ? `${g.away}|${g.awayGoalie}` : null].filter((k): k is string => !!k),
+        order: 'asc',
+        label: k => k.slice(4),
+    },
     weekday: { keys: g => [String(weekday(g.date))], order: ['1', '2', '3', '4', '5', '6', '0'], label: k => DAYS[Number(k)] },
     venue: {
         keys: pickKey(g => (pickOf(g) === g.home ? 'home' : 'road')),
@@ -122,18 +124,6 @@ function group(games: GradedGame[], keys: (g: GradedGame) => string[]): Map<stri
     return out;
 }
 
-/** A club's starters over its games, most starts first. */
-function goalieRows(tri: string, games: GradedGame[]): BreakdownRow[] {
-    const by = group(games, g => {
-        const name = g.home === tri ? g.homeGoalie : g.awayGoalie;
-        return name ? [name] : [];
-    });
-    return [...by]
-        .map(([name, list]) => ({ key: `${tri}|${name}`, label: name, summary: summarize(list) }))
-        .filter(r => r.summary.picks > 0)
-        .sort((a, b) => b.summary.picks - a.summary.picks || a.label.localeCompare(b.label));
-}
-
 /**
  * Already-filtered graded games regrouped for one view, in the view's own order.
  * A group with no pick (only coin flips) is dropped, as a day is in the pick list.
@@ -145,12 +135,17 @@ export function breakdown(games: GradedGame[], view: BreakdownView, played: Set<
     const keys = typeof spec.order === 'string' ? [...by.keys()].sort() : spec.order.filter(k => by.has(k));
     if (spec.order === 'desc') keys.reverse();
     const club = view === 'team' || view === 'goalie';
+    // Clubs alphabetical; inside a club the starter with the most picks first.
+    if (view === 'goalie') {
+        const picks = new Map(keys.map(k => [k, (by.get(k) as GradedGame[]).filter(g => !isNoLean(g)).length]));
+        keys.sort((a, b) => a.slice(0, 3).localeCompare(b.slice(0, 3)) || (picks.get(b) as number) - (picks.get(a) as number) || a.localeCompare(b));
+    }
     const rows: BreakdownRow[] = [];
     for (const key of keys) {
         const list = by.get(key) as GradedGame[];
         const summary = summarize(list);
         if (!summary.picks) continue;
-        rows.push({ key, label: spec.label(key), summary, ...(club ? { tri: key } : {}), ...(view === 'goalie' ? { children: goalieRows(key, list) } : {}) });
+        rows.push({ key, label: spec.label(key), summary, ...(club ? { tri: key.slice(0, 3) } : {}) });
     }
     return rows;
 }
@@ -169,17 +164,13 @@ const METRIC: Record<BreakdownSort, (s: SpanSummary) => number | null> = {
 /** Lower is better for the goals error and the log loss vs the market: a first click sorts those ascending. */
 export const firstDirection = (key: BreakdownSort): 'asc' | 'desc' => (key === 'goals' || key === 'market' ? 'asc' : 'desc');
 
-/** Rows (and each row's children) by one column; a row with no value goes last either way, ties keep the view's order. */
+/** Rows by one column; a row with no value goes last either way, ties keep the view's order. */
 export function sortBreakdown(rows: BreakdownRow[], key: BreakdownSort, dir: 'asc' | 'desc'): BreakdownRow[] {
     const metric = METRIC[key];
     const sign = dir === 'asc' ? 1 : -1;
-    const sorted = (list: BreakdownRow[]): BreakdownRow[] =>
-        list
-            .map(r => (r.children ? { ...r, children: sorted(r.children) } : r))
-            .sort((a, b) => {
-                const [x, y] = [metric(a.summary), metric(b.summary)];
-                if (x == null || y == null) return x == null ? (y == null ? 0 : 1) : -1;
-                return (x - y) * sign;
-            });
-    return sorted(rows);
+    return [...rows].sort((a, b) => {
+        const [x, y] = [metric(a.summary), metric(b.summary)];
+        if (x == null || y == null) return x == null ? (y == null ? 0 : 1) : -1;
+        return (x - y) * sign;
+    });
 }

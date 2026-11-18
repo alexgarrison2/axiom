@@ -50,14 +50,15 @@ describe('breakdown', () => {
         expect(breakdown(games, 'team', played)[0].summary.n).toBe(2);
     });
 
-    it('by goalie: starters nested under their club, most starts first', () => {
+    it('by goalie: one row per starter with the club for its crest, teammates together', () => {
         const rows = breakdown(games, 'goalie', played);
-        expect(rows.map(r => r.tri)).toEqual(['BOS', 'CGY', 'EDM', 'VAN']);
-        expect(rows[2].children?.map(c => [c.label, c.summary.hits, c.summary.picks])).toEqual([
-            ['Devon Levi', 1, 1],
-            ['Tristan Jarry', 0, 1],
+        expect(rows.map(r => [r.tri, r.label, r.summary.hits, r.summary.picks])).toEqual([
+            ['BOS', 'Jeremy Swayman', 0, 1],
+            ['CGY', 'Dustin Wolf', 1, 1],
+            ['EDM', 'Devon Levi', 1, 1],
+            ['EDM', 'Tristan Jarry', 0, 1],
+            ['VAN', 'Thatcher Demko', 2, 2],
         ]);
-        expect(rows[3].children?.map(c => [c.label, c.summary.picks])).toEqual([['Thatcher Demko', 2]]);
     });
 
     it('by the pick: venue, favourite or underdog, confidence tier and rest leave coin flips out', () => {
@@ -109,14 +110,14 @@ describe('breakdown', () => {
 });
 
 describe('sortBreakdown', () => {
-    it('sorts rows and their children by a column, rows with no value last either way', () => {
-        const rows = breakdown(games, 'goalie', played);
+    it('sorts rows by a column, rows with no value last either way', () => {
+        const rows = breakdown(games, 'team', played);
         expect(sortBreakdown(rows, 'right', 'desc').map(r => r.label)).toEqual(['CGY', 'VAN', 'EDM', 'BOS']);
         expect(sortBreakdown(rows, 'games', 'asc').map(r => r.label)).toEqual(['BOS', 'CGY', 'EDM', 'VAN']);
         // CGY's only game has no price: no units, last in both directions.
         expect(sortBreakdown(rows, 'units', 'desc').at(-1)?.label).toBe('CGY');
         expect(sortBreakdown(rows, 'units', 'asc').at(-1)?.label).toBe('CGY');
-        const edm = sortBreakdown(rows, 'right', 'asc').find(r => r.label === 'EDM');
-        expect(edm?.children?.map(c => c.label)).toEqual(['Tristan Jarry', 'Devon Levi']);
+        // Every goalie in one list: the best starter to back, whatever the club.
+        expect(sortBreakdown(breakdown(games, 'goalie', played), 'units', 'desc')[0].label).toBe('Devon Levi');
     });
 });
