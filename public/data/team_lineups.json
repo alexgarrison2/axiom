@@ -3423,7 +3423,7 @@
                 "number": 8,
                 "pos": "ld",
                 "id": 30422,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3455,7 +3455,7 @@
                 "number": 59,
                 "pos": "rd",
                 "id": 35107,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3463,19 +3463,19 @@
         ],
         "g": [
             {
-                "name": "Dan Vladar",
-                "number": 80,
+                "name": "Joseph Woll",
+                "number": 53,
                 "pos": "g1",
-                "id": 3831,
+                "id": 27288,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Joseph Woll",
-                "number": 53,
+                "name": "Dan Vladar",
+                "number": 80,
                 "pos": "g2",
-                "id": 27288,
+                "id": 3831,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -3525,7 +3525,7 @@
                 "number": 8,
                 "pos": "sk4",
                 "id": 30422,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -3568,9 +3568,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-17)",
-        "updated_at": "2026-11-18T14:54:38.234Z",
-        "fetched_at": "2026-11-18T14:55:44Z"
+        "lineup_source": "Will James",
+        "updated_at": "2026-11-17T23:41:24.456Z",
+        "fetched_at": "2026-11-18T15:02:09Z"
     },
     "PIT": {
         "f1": [
@@ -5570,7 +5570,7 @@
                 "number": 28,
                 "pos": "rw",
                 "id": 30440,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5614,7 +5614,7 @@
                 "number": 17,
                 "pos": "lw",
                 "id": 1877,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5646,7 +5646,7 @@
                 "number": 95,
                 "pos": "c",
                 "id": 37324,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5656,7 +5656,7 @@
                 "number": 12,
                 "pos": "rw",
                 "id": 32857,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5696,28 +5696,6 @@
                 "movement": null
             },
             {
-                "name": "Noah Warren",
-                "number": 47,
-                "pos": "rd",
-                "id": 34076,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Tyson Hinds",
-                "number": 55,
-                "pos": "ld",
-                "id": 31256,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Tristan Luneau",
                 "number": 67,
                 "pos": "rd",
@@ -5725,24 +5703,46 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Drew Helleson",
+                "number": 14,
+                "pos": "ld",
+                "id": 30429,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            },
+            {
+                "name": "Noah Warren",
+                "number": 47,
+                "pos": "rd",
+                "id": 34076,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "g": [
             {
-                "name": "Ville Husso",
-                "number": 33,
+                "name": "Lukas Dostal",
+                "number": 1,
                 "pos": "g1",
-                "id": 3837,
+                "id": 29143,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Lukas Dostal",
-                "number": 1,
+                "name": "Ville Husso",
+                "number": 33,
                 "pos": "g2",
-                "id": 29143,
+                "id": 3837,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5792,7 +5792,7 @@
                 "number": 17,
                 "pos": "sk2",
                 "id": 1877,
-                "ppUnit": 1,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -5830,7 +5830,7 @@
                 "number": 28,
                 "pos": "sk2",
                 "id": 30440,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -5853,9 +5853,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "@AnaheimDucks",
-        "updated_at": "2026-11-18T00:57:50.337Z",
-        "fetched_at": "2026-11-18T14:02:21Z"
+        "lineup_source": "Last Game (2026-11-17)",
+        "updated_at": "2026-11-18T14:57:15.531Z",
+        "fetched_at": "2026-11-18T15:02:09Z"
     },
     "NJD": {
         "f1": [
@@ -9457,7 +9457,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Robert Thomas",
@@ -9489,7 +9489,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Mason McTavish",
@@ -9521,7 +9521,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Pavel Buchnevich",
@@ -9553,7 +9553,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Pius Suter",
@@ -9644,19 +9644,19 @@
         ],
         "g": [
             {
-                "name": "Jordan Binnington",
-                "number": 50,
+                "name": "Joel Hofer",
+                "number": 30,
                 "pos": "g1",
-                "id": 1984,
+                "id": 28910,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Joel Hofer",
-                "number": 30,
+                "name": "Jordan Binnington",
+                "number": 50,
                 "pos": "g2",
-                "id": 28910,
+                "id": 1984,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -9767,9 +9767,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Lou Korac",
-        "updated_at": "2026-11-18T00:38:51.558Z",
-        "fetched_at": "2026-11-18T01:02:28Z"
+        "lineup_source": "Last Game (2026-11-17)",
+        "updated_at": "2026-11-18T14:58:26.036Z",
+        "fetched_at": "2026-11-18T15:02:09Z"
     },
     "CGY": {
         "f1": [
