@@ -18,6 +18,8 @@ import type { GameTypeKey } from './report';
 import { groupByDay, summarize, vsMarket, type DayGroup, type DayShape, type SpanSummary } from './summary';
 import { DAYS, isFiltered, matches, NO_FILTER, playedIndex, teamSubject, type PickFilter } from './filters';
 import { useDataEpoch } from '@/lib/fresh';
+import { Breakdown, BreakdownSkeleton } from './BreakdownTable';
+import { breakdown, type BreakdownView } from './breakdown';
 import { fmtInt } from '@/components/views/format';
 
 /** Days listed before More (about a month of slates). */
@@ -100,6 +102,8 @@ export function GameList({
     const [open, setOpen] = React.useState<number | null>(null);
     /** Expanded days. Every day starts collapsed and only the reader opens one. */
     const [openDays, setOpenDays] = React.useState<ReadonlySet<string>>(() => new Set());
+    /** The breakdown table's grouping: kept here so it survives a season switch. */
+    const [view, setView] = React.useState<BreakdownView>('team');
     const teamId = React.useId();
     const dayId = React.useId();
     /** A filter changed: back to the first page with every day collapsed. */
@@ -155,6 +159,8 @@ export function GameList({
     // Days summarise exactly the filtered games: with All, a day's coin flips count toward its log loss as in the KPIs.
     const days = React.useMemo(() => groupByDay(result === 'all' ? inWindow : rows), [inWindow, rows, result]);
     const pageDays = days.slice(0, shown);
+    // The breakdown regroups exactly the games the days summarise.
+    const groups = React.useMemo(() => breakdown(result === 'all' ? inWindow : rows, view, played), [inWindow, rows, result, view, played]);
     const allOpen = pageDays.every(d => openDays.has(d.date));
     const refine = (patch: Partial<PickFilter>) => {
         setFilter(f => ({ ...f, ...patch }));
@@ -179,20 +185,24 @@ export function GameList({
     const lone = !retroCount && !legacyShown;
     const excludedShown = type === 'playoffs' ? [] : excluded;
     const excludedNote = excludedShown.length ? <ExcludedList games={excludedShown} /> : null;
-    if (loading)
+    if (loading) {
+        // Without a known shape, assume ~7 picks a day.
+        const expectedDays = shape?.days ?? Math.ceil(expected / 7);
         return (
             <ListSkeleton
-                // Without a known shape, assume ~7 picks a day.
-                days={Math.min(PAGE, shape?.days ?? Math.ceil(expected / 7))}
-                more={(shape?.days ?? Math.ceil(expected / 7)) > PAGE}
+                days={Math.min(PAGE, expectedDays)}
+                more={expectedDays > PAGE}
                 after={
                     <>
                         {expectedNoLean ? <StripPlaceholder /> : null}
                         {excludedNote}
+                        {/* Another season loading: the table on screen (still the last season's rows) sizes its own placeholder. */}
+                        {expectedDays ? <BreakdownSkeleton rows={games ? (rows.length ? groups.length : 0) : (shape?.teams ?? 0)} /> : null}
                     </>
                 }
             />
         );
+    }
     if (games.failed) {
         return (
             <div className="flex flex-col gap-2">
@@ -445,6 +455,7 @@ export function GameList({
             ) : null}
             {noLean.length ? <NoLeanList games={noLean} /> : null}
             {excludedNote}
+            {rows.length ? <Breakdown rows={groups} view={view} onView={setView} /> : null}
         </div>
     );
 }

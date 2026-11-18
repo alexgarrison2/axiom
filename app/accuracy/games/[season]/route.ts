@@ -1,4 +1,5 @@
 import { historySeasons, loadGradedGames } from '@/components/accuracy/data';
+import { loadStarters } from '@/components/accuracy/starters';
 import { dataCacheHeaders } from '@/lib/http-cache';
 import { SEASON_START_YEAR } from '@/lib/season';
 
@@ -17,6 +18,12 @@ export function generateStaticParams() {
 
 export async function GET(_req: Request, { params }: { params: Promise<{ season: string }> }) {
     const { season } = await params;
-    const rows = loadGradedGames().filter(g => g.season === season);
+    const starters = loadStarters(season);
+    const rows = loadGradedGames()
+        .filter(g => g.season === season)
+        .map(g => {
+            const s = starters.get(g.id);
+            return s ? { ...g, homeGoalie: s.home, awayGoalie: s.away } : g;
+        });
     return Response.json(rows, { headers: dataCacheHeaders(300, 3600) });
 }

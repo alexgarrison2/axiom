@@ -34,7 +34,7 @@ export const teamSubject = (f: PickFilter) => TRI.test(f.who);
 
 export const weekday = (date: string) => new Date(`${date}T12:00:00Z`).getUTCDay();
 
-const dayBefore = (date: string) => new Date(Date.parse(`${date}T12:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
+export const dayBefore = (date: string) => new Date(Date.parse(`${date}T12:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
 
 /** "TEAM|date" for every game a team played, from the loaded rows (all graded games, back-filled included). */
 export function playedIndex(games: GradedGame[]): Set<string> {

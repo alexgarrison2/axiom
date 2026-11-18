@@ -87,9 +87,9 @@ export function AccuracyView({ report, ledger, suggested, seasons, currentSeason
     const shape = React.useMemo<DayShape | undefined>(() => {
         if (!shapes) return undefined;
         if (season !== 'all') return shapes[season]?.[type];
-        // Seasons never share a date: days add up.
+        // Seasons never share a date: days add up. The clubs are the same ones each season.
         const list = seasons.map(s => shapes[s]?.[type]).filter((x): x is DayShape => !!x);
-        return { days: list.reduce((a, x) => a + x.days, 0) };
+        return { days: list.reduce((a, x) => a + x.days, 0), teams: Math.max(0, ...list.map(x => x.teams)) };
     }, [shapes, season, seasons, type]);
 
     const controls = (mobile: boolean) => (

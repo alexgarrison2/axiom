@@ -101,8 +101,8 @@ describe('groupByDay', () => {
         expect(vsMarket(oct1.summary)).toBeNull();
     });
 
-    it('sizes the day list: days with a pick', () => {
-        expect(dayShape(games)).toEqual({ days: 2 });
-        expect(dayShape([])).toEqual({ days: 0 });
+    it('sizes the day list and the breakdown: days with a pick, clubs in a picked game', () => {
+        expect(dayShape(games)).toEqual({ days: 2, teams: 2 });
+        expect(dayShape([])).toEqual({ days: 0, teams: 0 });
     });
 });

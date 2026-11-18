@@ -31,6 +31,9 @@ export interface GradedGame {
     placeholderOdds?: boolean;
     /** American price of the picked side when the pick was published; null without a real line. */
     pickPrice?: number | null;
+    /** Goalies who started (gamestats), joined in by the per-season games route; absent when unknown. */
+    homeGoalie?: string;
+    awayGoalie?: string;
 }
 
 /** A final game that was deliberately left out of grading. */
