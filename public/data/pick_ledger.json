@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-18T06:33:51.214097+00:00",
+ "generated_at": "2026-11-19T06:36:00.816671+00:00",
  "unit": "Every pick bet to win 1 unit: a -120 favourite risks 1.2u, a +150 underdog risks 0.67u",
  "disclaimer": "For information and entertainment only. Past results do not predict future results.",
  "source": "graded live picks in prediction_history.json at the price shown when the pick was published",
@@ -9456,29 +9456,29 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 314,
-    "n_graded": 314,
+    "n_bets": 315,
+    "n_graded": 315,
     "n_pending": 0,
-    "record": "199-115",
+    "record": "199-116",
     "wins": 199,
-    "losses": 115,
-    "units_staked": 527.3667,
-    "units_profit": 21.432,
-    "roi": 0.0406,
+    "losses": 116,
+    "units_staked": 529.0667,
+    "units_profit": 19.732,
+    "roi": 0.0373,
     "roi_ci": [
-     -0.0439,
-     0.1242
+     -0.0455,
+     0.1215
     ],
     "clv_mean": -0.033,
-    "clv_n": 314,
+    "clv_n": 315,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
-      "n": 170,
-      "record": "110-60",
-      "units_staked": 282.98,
-      "units_profit": 15.46,
-      "roi": 0.0546
+      "n": 171,
+      "record": "110-61",
+      "units_staked": 284.68,
+      "units_profit": 13.76,
+      "roi": 0.0483
      },
      {
       "bucket": "0-5%",
@@ -9530,11 +9530,11 @@
      },
      {
       "bucket": "1.1-2u",
-      "n": 227,
-      "record": "132-95",
-      "units_staked": 330.81,
-      "units_profit": -3.34,
-      "roi": -0.0101
+      "n": 228,
+      "record": "132-96",
+      "units_staked": 332.51,
+      "units_profit": -5.04,
+      "roi": -0.0152
      },
      {
       "bucket": "2u+",
@@ -17395,6 +17395,31 @@
      "decision": "REG",
      "closing_price": -130.0,
      "clv": -0.0351,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020345,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-18",
+     "startUtc": "2026-11-19T00:30:00Z",
+     "snapshotUtc": "2026-11-19T00:03:00Z",
+     "team": "Devils",
+     "opponent": "Canadiens",
+     "side": "home",
+     "stake_units": 1.7,
+     "price": -170.0,
+     "decimal_price": 1.5882,
+     "ev_at_bet": -0.082,
+     "ev_bucket": "<0%",
+     "stake_bucket": "1.1-2u",
+     "model_prob": 0.578,
+     "result": "loss",
+     "profit_units": -1.7,
+     "final": "3-2",
+     "decision": "REG",
+     "closing_price": -170.0,
+     "clv": -0.0304,
      "model_version": "sim-m5-v4_st-20261003"
     }
    ]
