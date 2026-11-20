@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-20T01:02:21.992444+00:00",
+ "generated_at": "2026-11-20T02:02:43.113731+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6995,9 +6995,9 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 101,
+    "n_bets": 102,
     "n_graded": 99,
-    "n_pending": 2,
+    "n_pending": 3,
     "record": "62-37",
     "wins": 62,
     "losses": 37,
@@ -9709,6 +9709,32 @@
      "decision": null,
      "closing_price": -238.0,
      "clv": -0.025,
+     "model_version": "sim-m5-v4_st-20261003",
+     "official": false
+    },
+    {
+     "gameId": 2026020356,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-19",
+     "startUtc": "2026-11-20T02:00:00Z",
+     "snapshotUtc": "2026-11-20T01:31:00Z",
+     "team": "Avalanche",
+     "opponent": "Ducks",
+     "side": "home",
+     "stake_units": 1.2,
+     "price": -130.0,
+     "decimal_price": 1.7692,
+     "ev_at_bet": 0.0376,
+     "ev_bucket": "0-5%",
+     "stake_bucket": "1.1-2u",
+     "model_prob": 0.586,
+     "result": "pending",
+     "profit_units": 0.0,
+     "final": null,
+     "decision": null,
+     "closing_price": -130.0,
+     "clv": -0.0351,
      "model_version": "sim-m5-v4_st-20261003",
      "official": false
     }

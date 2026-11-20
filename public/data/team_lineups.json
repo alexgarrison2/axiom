@@ -4235,14 +4235,14 @@
         ],
         "f2": [
             {
-                "name": "Jaden Schwartz",
-                "number": 71,
+                "name": "Gabriel Landeskog",
+                "number": 92,
                 "pos": "lw",
-                "id": 1864,
+                "id": 1763,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Nazem Kadri",
@@ -4255,6 +4255,38 @@
                 "movement": null
             },
             {
+                "name": "Nicolas Roy",
+                "number": 10,
+                "pos": "rw",
+                "id": 3818,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Jaden Schwartz",
+                "number": 71,
+                "pos": "lw",
+                "id": 1864,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Fedor Svechkov",
+                "number": 9,
+                "pos": "c",
+                "id": 34353,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
                 "name": "T.J. Hughes",
                 "number": 13,
                 "pos": "rw",
@@ -4262,10 +4294,10 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
-        "f3": [
+        "f4": [
             {
                 "name": "Adam Beckman",
                 "number": null,
@@ -4274,45 +4306,13 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "down"
             },
-            {
-                "name": "Nicolas Roy",
-                "number": 10,
-                "pos": "c",
-                "id": 3818,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Gabriel Landeskog",
-                "number": 92,
-                "pos": "rw",
-                "id": 1763,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f4": [
             {
                 "name": "Parker Kelly",
                 "number": 17,
-                "pos": "lw",
-                "id": 4600,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Fedor Svechkov",
-                "number": 9,
                 "pos": "c",
-                "id": 34353,
+                "id": 4600,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -4375,14 +4375,14 @@
         ],
         "d3": [
             {
-                "name": "Alex Gagne",
-                "number": null,
+                "name": "Mike Reilly",
+                "number": 6,
                 "pos": "ld",
-                "id": 32036,
+                "id": 2469,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Brent Burns",
@@ -4538,9 +4538,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-19T21:36:35.130Z",
-        "fetched_at": "2026-11-19T22:02:01Z"
+        "lineup_source": "Corey Masisak",
+        "updated_at": "2026-11-20T01:39:40.726Z",
+        "fetched_at": "2026-11-20T02:01:50Z"
     },
     "LAK": {
         "f1": [
@@ -5585,7 +5585,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f3": [
@@ -5617,7 +5617,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -5649,7 +5649,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d1": [
@@ -5693,15 +5693,15 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Tyson Hinds",
-                "number": 55,
+                "name": "Stian Solberg",
+                "number": null,
                 "pos": "ld",
-                "id": 31256,
+                "id": 38136,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -5715,7 +5715,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -5816,10 +5816,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Tyson Hinds",
-                "number": 55,
+                "name": "Pavel Mintyukov",
+                "number": 34,
                 "pos": "sk3",
-                "id": 31256,
+                "id": 34372,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5835,8 +5835,8 @@
             }
         ],
         "lineup_source": "Zach Cavanagh",
-        "updated_at": "2026-11-19T19:20:49.200Z",
-        "fetched_at": "2026-11-19T19:44:30Z"
+        "updated_at": "2026-11-20T01:41:36.258Z",
+        "fetched_at": "2026-11-20T02:01:50Z"
     },
     "NJD": {
         "f1": [
