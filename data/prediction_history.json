@@ -58158,5 +58158,392 @@
         "market_p": 0.3312
       }
     }
+  },
+  {
+    "gameId": 2026020347,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-19",
+    "homeTeam": "Maple Leafs",
+    "awayTeam": "Kings",
+    "homeScore": 3,
+    "awayScore": 4,
+    "decision": "SO",
+    "homeXg": 3.23,
+    "awayXg": 2.98,
+    "homeWinProb": 54.1,
+    "predictedWinner": "Maple Leafs",
+    "actualWinner": "Kings",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.2927,
+    "logLoss": 0.7787,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-19T21:02:00Z",
+    "startUtc": "2026-11-20T00:00:00Z",
+    "marketHomeProb": 52.3,
+    "modelHomeProb": 54.5,
+    "homeOdds": -120.0,
+    "awayOdds": 100.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 54.5,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.223,
+        "ll": 1.5006,
+        "naive_ll": 1.8046,
+        "market_p": 0.2167
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.686,
+        "ll": 0.3769,
+        "naive_ll": 0.3566,
+        "market_p": 0.7034
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.457,
+        "ll": 0.7831,
+        "naive_ll": 0.7788,
+        "market_p": 0.4654
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.35,
+        "ll": 1.0498,
+        "naive_ll": 0.9979,
+        "market_p": 0.3346
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.519,
+        "ll": 0.6559,
+        "naive_ll": 0.6338,
+        "market_p": 0.5
+      }
+    }
+  },
+  {
+    "gameId": 2026020348,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-19",
+    "homeTeam": "Senators",
+    "awayTeam": "Flyers",
+    "homeScore": 5,
+    "awayScore": 6,
+    "decision": "OT",
+    "homeXg": 3.2,
+    "awayXg": 2.74,
+    "homeWinProb": 57.7,
+    "predictedWinner": "Senators",
+    "actualWinner": "Flyers",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3329,
+    "logLoss": 0.8604,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-19T23:02:00Z",
+    "startUtc": "2026-11-20T00:00:00Z",
+    "marketHomeProb": 60.6,
+    "modelHomeProb": 57.0,
+    "homeOdds": -166.0,
+    "awayOdds": 140.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 57.0,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.228,
+        "ll": 1.4784,
+        "naive_ll": 1.791,
+        "market_p": 0.2137
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.664,
+        "ll": 0.4095,
+        "naive_ll": 0.3934,
+        "market_p": 0.6304
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.406,
+        "ll": 0.9014,
+        "naive_ll": 0.8848,
+        "market_p": 0.4546
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.344,
+        "ll": 1.0671,
+        "naive_ll": 1.1608,
+        "market_p": 0.3362
+      }
+    }
+  },
+  {
+    "gameId": 2026020350,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-19",
+    "homeTeam": "Penguins",
+    "awayTeam": "Blues",
+    "homeScore": 2,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.12,
+    "awayXg": 3.13,
+    "homeWinProb": 49.8,
+    "predictedWinner": "Blues",
+    "actualWinner": "Blues",
+    "isCorrect": true,
+    "isLean": false,
+    "brierScore": 0.248,
+    "logLoss": 0.6892,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-19T21:02:00Z",
+    "startUtc": "2026-11-20T00:00:00Z",
+    "marketHomeProb": 49.5,
+    "modelHomeProb": 49.9,
+    "homeOdds": -108.0,
+    "awayOdds": -112.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 49.9,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.387,
+        "ll": 0.9493,
+        "naive_ll": 0.8688,
+        "market_p": 0.4171
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.719,
+        "ll": 0.3299,
+        "naive_ll": 0.3082,
+        "market_p": 0.7234
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.46,
+        "ll": 0.7765,
+        "naive_ll": 0.7678,
+        "market_p": 0.4722
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.33,
+        "ll": 1.1087,
+        "naive_ll": 1.0595,
+        "market_p": 0.3308
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.494,
+        "ll": 0.7052,
+        "naive_ll": 0.6961,
+        "market_p": 0.5
+      }
+    }
+  },
+  {
+    "gameId": 2026020351,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-19",
+    "homeTeam": "Capitals",
+    "awayTeam": "Sabres",
+    "homeScore": 3,
+    "awayScore": 6,
+    "decision": "REG",
+    "homeXg": 3.54,
+    "awayXg": 2.87,
+    "homeWinProb": 60.8,
+    "predictedWinner": "Capitals",
+    "actualWinner": "Sabres",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3697,
+    "logLoss": 0.9365,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-19T22:02:00Z",
+    "startUtc": "2026-11-20T00:00:00Z",
+    "marketHomeProb": 56.7,
+    "modelHomeProb": 61.8,
+    "homeOdds": -142.0,
+    "awayOdds": 120.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 61.8,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.293,
+        "ll": 1.2276,
+        "naive_ll": 1.1424,
+        "market_p": 0.3647
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.639,
+        "ll": 0.4479,
+        "naive_ll": 0.4515,
+        "market_p": 0.6677
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.489,
+        "ll": 0.7154,
+        "naive_ll": 0.7142,
+        "market_p": 0.5346
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.29,
+        "ll": 1.2379,
+        "naive_ll": 1.2214,
+        "market_p": 0.3193
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.426,
+        "ll": 0.8533,
+        "naive_ll": 0.8688,
+        "market_p": 0.4553
+      }
+    }
+  },
+  {
+    "gameId": 2026020352,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-19",
+    "homeTeam": "Hurricanes",
+    "awayTeam": "Canadiens",
+    "homeScore": 1,
+    "awayScore": 2,
+    "decision": "OT",
+    "homeXg": 3.93,
+    "awayXg": 2.21,
+    "homeWinProb": 76.6,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Canadiens",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.5868,
+    "logLoss": 1.4524,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-19T23:02:00Z",
+    "startUtc": "2026-11-20T00:00:00Z",
+    "marketHomeProb": 76.0,
+    "modelHomeProb": 76.7,
+    "homeOdds": -345.0,
+    "awayOdds": 275.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 76.7,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.186,
+        "ll": 1.682,
+        "naive_ll": 2.0187,
+        "market_p": 0.1805
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.476,
+        "ll": 0.7423,
+        "naive_ll": 0.7452,
+        "market_p": 0.4546
+      },
+      "total": {
+        "outcome": 2,
+        "p": 0.561,
+        "ll": 0.578,
+        "naive_ll": 0.58,
+        "market_p": 0.5116
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.309,
+        "ll": 1.1744,
+        "naive_ll": 1.2371,
+        "market_p": 0.3217
+      }
+    }
+  },
+  {
+    "gameId": 2026020354,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-19",
+    "homeTeam": "Jets",
+    "awayTeam": "Islanders",
+    "homeScore": 4,
+    "awayScore": 3,
+    "decision": "OT",
+    "homeXg": 3.07,
+    "awayXg": 3.09,
+    "homeWinProb": 49.5,
+    "predictedWinner": "Islanders",
+    "actualWinner": "Jets",
+    "isCorrect": false,
+    "isLean": false,
+    "brierScore": 0.255,
+    "logLoss": 0.7032,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-19T23:02:00Z",
+    "startUtc": "2026-11-20T00:00:00Z",
+    "marketHomeProb": 51.9,
+    "modelHomeProb": 48.9,
+    "homeOdds": -118.0,
+    "awayOdds": -102.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 48.9,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.223,
+        "ll": 1.5006,
+        "naive_ll": 1.7958,
+        "market_p": 0.2128
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.729,
+        "ll": 0.3161,
+        "naive_ll": 0.3031,
+        "market_p": 0.6973
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.442,
+        "ll": 0.8164,
+        "naive_ll": 0.796,
+        "market_p": 0.5
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.332,
+        "ll": 1.1026,
+        "naive_ll": 1.1805,
+        "market_p": 0.3337
+      }
+    }
   }
 ]

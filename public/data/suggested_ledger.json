@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-20T02:02:43.113731+00:00",
+ "generated_at": "2026-11-20T03:05:46.803122+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6996,20 +6996,20 @@
   "2026-27": {
    "summary": {
     "n_bets": 102,
-    "n_graded": 99,
-    "n_pending": 3,
-    "record": "62-37",
+    "n_graded": 100,
+    "n_pending": 2,
+    "record": "62-38",
     "wins": 62,
-    "losses": 37,
-    "units_staked": 204.9,
-    "units_profit": 30.1796,
-    "roi": 0.1473,
+    "losses": 38,
+    "units_staked": 206.2,
+    "units_profit": 28.8796,
+    "roi": 0.1401,
     "roi_ci": [
-     -0.02,
-     0.3042
+     -0.0359,
+     0.2979
     ],
-    "clv_mean": -0.0384,
-    "clv_n": 99,
+    "clv_mean": -0.0383,
+    "clv_n": 100,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
@@ -7020,11 +7020,11 @@
      },
      {
       "bucket": "0-5%",
-      "n": 48,
-      "record": "26-22",
-      "units_staked": 69.8,
-      "units_profit": -6.8586,
-      "roi": -0.0983
+      "n": 49,
+      "record": "26-23",
+      "units_staked": 71.1,
+      "units_profit": -8.1586,
+      "roi": -0.1147
      },
      {
       "bucket": "5-10%",
@@ -7069,11 +7069,11 @@
      },
      {
       "bucket": "1.1-2u",
-      "n": 42,
-      "record": "26-16",
-      "units_staked": 66.0,
-      "units_profit": 9.1437,
-      "roi": 0.1385
+      "n": 43,
+      "record": "26-17",
+      "units_staked": 67.3,
+      "units_profit": 7.8437,
+      "roi": 0.1165
      },
      {
       "bucket": "2u+",
@@ -9677,10 +9677,10 @@
      "ev_bucket": "0-5%",
      "stake_bucket": "1.1-2u",
      "model_prob": 0.608,
-     "result": "pending",
-     "profit_units": 0.0,
-     "final": null,
-     "decision": null,
+     "result": "loss",
+     "profit_units": -1.3,
+     "final": "6-3",
+     "decision": "REG",
      "closing_price": -142.0,
      "clv": -0.033,
      "model_version": "sim-m5-v4_st-20261003",
