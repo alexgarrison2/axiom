@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-11-20T19:01:40Z",
+  "fetched_at": "2026-11-20T19:25:48Z",
   "source": "bovada",
   "games": {
     "2026020359": {
@@ -49,7 +49,7 @@
         },
         "Colton Dach": {
           "tag": "EDM",
-          "atg": 475,
+          "atg": 500,
           "g2": 6500
         },
         "Shayne Gostisbehere": {
@@ -109,7 +109,7 @@
         },
         "Zach Hyman": {
           "tag": "EDM",
-          "atg": 240,
+          "atg": 245,
           "g2": 2200,
           "a1": 285,
           "a2": 1100
@@ -220,7 +220,9 @@
         "Matvei Gridin": {
           "tag": "CGY",
           "atg": 200,
-          "g2": 1700
+          "g2": 1700,
+          "a1": 150,
+          "a2": 850
         },
         "Aydar Suniev": {
           "tag": "CGY",
@@ -251,7 +253,7 @@
         },
         "Maxim Tsyplakov": {
           "tag": "CGY",
-          "atg": 650,
+          "atg": 625,
           "g2": 8000
         },
         "Teuvo Teravainen": {
@@ -262,7 +264,9 @@
         "Zayne Parekh": {
           "tag": "CGY",
           "atg": 450,
-          "g2": 6000
+          "g2": 6000,
+          "a1": 112,
+          "a2": 600
         },
         "Oliver Moore": {
           "tag": "CHI",
@@ -286,14 +290,16 @@
         "Matt Coronato": {
           "tag": "CGY",
           "atg": 200,
-          "g2": 1500
+          "g2": 1500,
+          "a1": 122,
+          "a2": 700
         },
         "Sam Rinzel": {
           "tag": "CHI",
           "atg": 675,
           "g2": 10000,
-          "a1": 180,
-          "a2": 1000
+          "a1": 154,
+          "a2": 825
         },
         "Patrick Kane": {
           "tag": "CHI",
@@ -311,7 +317,7 @@
         },
         "Ryan Strome": {
           "tag": "CGY",
-          "atg": 390,
+          "atg": 385,
           "g2": 5000
         },
         "Ryan Greene": {
@@ -323,13 +329,15 @@
           "tag": "CHI",
           "atg": 250,
           "g2": 2200,
-          "a1": 190,
+          "a1": 200,
           "a2": 1100
         },
         "Joel Farabee": {
           "tag": "CGY",
           "atg": 190,
-          "g2": 1400
+          "g2": 1400,
+          "a1": 138,
+          "a2": 800
         },
         "Frank Nazar": {
           "tag": "CHI",
@@ -341,7 +349,9 @@
         "Morgan Frost": {
           "tag": "CGY",
           "atg": 220,
-          "g2": 1800
+          "g2": 1800,
+          "a1": 142,
+          "a2": 800
         },
         "Joel Hanley": {
           "tag": "CGY",
@@ -361,7 +371,7 @@
         },
         "Yan Kuznetsov": {
           "tag": "CGY",
-          "atg": 1500
+          "atg": 1600
         },
         "Zach Whitecloud": {
           "tag": "CGY",
@@ -387,6 +397,179 @@
         "Dillon Boucher": {
           "tag": "CHI",
           "atg": 1000
+        }
+      }
+    },
+    "2026020362": {
+      "game_id": 2026020362,
+      "game_date": "2026-11-21",
+      "start_time_utc": "2026-11-21T23:00:00Z",
+      "home": "NSH",
+      "away": "PIT",
+      "players": {
+        "Roman Josi": {
+          "tag": "NSH",
+          "atg": 375,
+          "g2": 4000
+        },
+        "Hendrix Lapierre": {
+          "tag": "PIT",
+          "atg": 625,
+          "g2": 10000
+        },
+        "Spencer Stastney": {
+          "tag": "PIT",
+          "atg": 1500
+        },
+        "Filip Forsberg": {
+          "tag": "NSH",
+          "atg": 166,
+          "g2": 1200
+        },
+        "Erik Karlsson": {
+          "tag": "PIT",
+          "atg": 430,
+          "g2": 5000
+        },
+        "Ross Colton": {
+          "tag": "NSH",
+          "atg": 430,
+          "g2": 5000
+        },
+        "Alexander Kerfoot": {
+          "tag": "NSH",
+          "atg": 475,
+          "g2": 6000
+        },
+        "Ville Koivunen": {
+          "tag": "PIT",
+          "atg": 475,
+          "g2": 5500
+        },
+        "Adam Edstrom": {
+          "tag": "NSH",
+          "atg": 410,
+          "g2": 4000
+        },
+        "Andrei Kuzmenko": {
+          "tag": "PIT",
+          "atg": 475,
+          "g2": 6000
+        },
+        "Ben Kindel": {
+          "tag": "PIT",
+          "atg": 255,
+          "g2": 2200
+        },
+        "Rickard Rakell": {
+          "tag": "PIT",
+          "atg": 178,
+          "g2": 1300
+        },
+        "Brady Skjei": {
+          "tag": "NSH",
+          "atg": 1000
+        },
+        "Tommy Novak": {
+          "tag": "PIT",
+          "atg": 265,
+          "g2": 2500
+        },
+        "Jack Drury": {
+          "tag": "NSH",
+          "atg": 575,
+          "g2": 10000
+        },
+        "Reid Schaefer": {
+          "tag": "NSH",
+          "atg": 775
+        },
+        "Steven Stamkos": {
+          "tag": "NSH",
+          "atg": 141,
+          "g2": 1000
+        },
+        "Sidney Crosby": {
+          "tag": "PIT",
+          "atg": 205,
+          "g2": 1500
+        },
+        "Nicolas Hague": {
+          "tag": "NSH",
+          "atg": 1500
+        },
+        "Yegor Chinakhov": {
+          "tag": "PIT",
+          "atg": 325,
+          "g2": 3300
+        },
+        "Adam Wilsby": {
+          "tag": "NSH",
+          "atg": 1400
+        },
+        "Blake Lizotte": {
+          "tag": "PIT",
+          "atg": 750
+        },
+        "Mavrik Bourque": {
+          "tag": "NSH",
+          "atg": 305,
+          "g2": 3000
+        },
+        "Kris Letang": {
+          "tag": "PIT",
+          "atg": 800,
+          "g2": 10000
+        },
+        "Ryan O'Reilly": {
+          "tag": "NSH",
+          "atg": 205,
+          "g2": 1700
+        },
+        "Connor Dewar": {
+          "tag": "PIT",
+          "atg": 625,
+          "g2": 8000
+        },
+        "Trevor van Riemsdyk": {
+          "tag": "PIT",
+          "atg": 1600
+        },
+        "Nick Perbix": {
+          "tag": "NSH",
+          "atg": 1300
+        },
+        "Jayden Struble": {
+          "tag": "NSH",
+          "atg": 1600
+        },
+        "Jonathan Marchessault": {
+          "tag": "NSH",
+          "atg": 280,
+          "g2": 2500
+        },
+        "Rutger McGroarty": {
+          "tag": "PIT",
+          "atg": 475,
+          "g2": 6000
+        },
+        "Shane Wright": {
+          "tag": "NSH",
+          "atg": 375,
+          "g2": 5000
+        },
+        "Nils H\u00f6glander": {
+          "tag": "NSH",
+          "atg": 375,
+          "g2": 3500
+        },
+        "Samuel Girard": {
+          "tag": "PIT",
+          "atg": 1300
+        },
+        "Kaedan Korcak": {
+          "tag": "PIT",
+          "atg": 1800
         }
       }
     },
