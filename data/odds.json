@@ -9,9 +9,10 @@
         "away_abbrev": "ANA",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-20T01:01:38Z",
+        "fetched_at": "2026-11-20T01:30:41Z",
         "Avalanche_puckline": 180,
         "Avalanche_puckline_spread": "-1.5",
         "three_way_tie": 320,
@@ -25,7 +26,12 @@
         "Avalanche": -130,
         "Ducks": 110,
         "home_ml": -130,
-        "away_ml": 110
+        "away_ml": 110,
+        "Ducks_1p_ml": 100,
+        "Avalanche_1p_ml": -130,
+        "Ducks_1p_three_way": 200,
+        "Avalanche_1p_three_way": 160,
+        "1p_three_way_tie": 183
     },
     "2026020357": {
         "game_id": 2026020357,
@@ -37,9 +43,10 @@
         "away_abbrev": "VAN",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-20T01:01:38Z",
+        "fetched_at": "2026-11-20T01:30:41Z",
         "three_way_tie": 330,
         "total_over": -112,
         "total_line": "6.5",
@@ -53,7 +60,12 @@
         "Kraken": -170,
         "Canucks": 142,
         "home_ml": -170,
-        "away_ml": 142
+        "away_ml": 142,
+        "Canucks_1p_ml": 115,
+        "Kraken_1p_ml": -150,
+        "Canucks_1p_three_way": 215,
+        "Kraken_1p_three_way": 145,
+        "1p_three_way_tie": 185
     },
     "2026020358": {
         "game_id": 2026020358,
@@ -65,9 +77,10 @@
         "away_abbrev": "DAL",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-20T01:01:38Z",
+        "fetched_at": "2026-11-20T01:30:41Z",
         "three_way_tie": 300,
         "total_over": -115,
         "total_line": "5.5",
@@ -81,6 +94,11 @@
         "Golden Knights": -125,
         "Stars": 105,
         "home_ml": -125,
-        "away_ml": 105
+        "away_ml": 105,
+        "Stars_1p_ml": -105,
+        "Golden Knights_1p_ml": -125,
+        "Stars_1p_three_way": 195,
+        "Golden Knights_1p_three_way": 178,
+        "1p_three_way_tie": 167
     }
 }
