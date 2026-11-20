@@ -9502,14 +9502,14 @@
                 "movement": null
             },
             {
-                "name": "Connor McMichael",
-                "number": 77,
+                "name": "Jonatan Berggren",
+                "number": 29,
                 "pos": "rw",
-                "id": 29203,
+                "id": 29107,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f3": [
@@ -9534,26 +9534,26 @@
                 "movement": null
             },
             {
-                "name": "Jonatan Berggren",
-                "number": 29,
-                "pos": "rw",
-                "id": 29107,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f4": [
-            {
                 "name": "Dalibor Dvorsky",
                 "number": 15,
-                "pos": "lw",
+                "pos": "rw",
                 "id": 35010,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "f4": [
+            {
+                "name": "Nathan Walker",
+                "number": 26,
+                "pos": "lw",
+                "id": 2831,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Pius Suter",
@@ -9689,6 +9689,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Connor McMichael",
+                "number": 77,
+                "pos": "ir4",
+                "id": 29203,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -9767,9 +9776,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-19)",
-        "updated_at": "2026-11-20T17:02:38.010Z",
-        "fetched_at": "2026-11-20T18:01:49Z"
+        "lineup_source": "DFO Projections",
+        "updated_at": "2026-11-20T18:26:10.085Z",
+        "fetched_at": "2026-11-20T19:01:45Z"
     },
     "CGY": {
         "f1": [
