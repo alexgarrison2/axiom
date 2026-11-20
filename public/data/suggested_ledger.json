@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-19T06:36:01.608661+00:00",
+ "generated_at": "2026-11-20T00:02:53.832272+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6995,9 +6995,9 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 99,
+    "n_bets": 100,
     "n_graded": 99,
-    "n_pending": 0,
+    "n_pending": 1,
     "record": "62-37",
     "wins": 62,
     "losses": 37,
@@ -9657,6 +9657,32 @@
      "decision": "REG",
      "closing_price": -135.0,
      "clv": -0.0345,
+     "model_version": "sim-m5-v4_st-20261003",
+     "official": false
+    },
+    {
+     "gameId": 2026020351,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-19",
+     "startUtc": "2026-11-20T00:00:00Z",
+     "snapshotUtc": "2026-11-19T22:02:00Z",
+     "team": "Capitals",
+     "opponent": "Sabres",
+     "side": "home",
+     "stake_units": 1.3,
+     "price": -142.0,
+     "decimal_price": 1.7042,
+     "ev_at_bet": 0.0356,
+     "ev_bucket": "0-5%",
+     "stake_bucket": "1.1-2u",
+     "model_prob": 0.608,
+     "result": "pending",
+     "profit_units": 0.0,
+     "final": null,
+     "decision": null,
+     "closing_price": -142.0,
+     "clv": -0.033,
      "model_version": "sim-m5-v4_st-20261003",
      "official": false
     }
