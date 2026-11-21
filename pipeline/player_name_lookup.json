@@ -40,7 +40,6 @@
     "filip bystedt": "8483428",
     "hunter mcdonald": "8483760",
     "kenny connors": "8483675",
-    "elias salomonsson": "8483510",
     "nick lardis": "8484185",
     "josh samanski": "8484509",
     "danton heinen": "8478046",
@@ -66,12 +65,12 @@
     "jared wright": "8483756",
     "ben jones": "8480259",
     "dominic james": "8483752",
+    "jagger firkus": "8483442",
     "jack ahcan": "8482072",
     "kyle maclean": "8481237",
     "zach dean": "8482784",
     "martin chromiak": "8482160",
     "jacob gaucher": "8481848",
-    "nico myatovic": "8484201",
     "nate danielson": "8484160",
     "tyler pitlick": "8475752",
     "josh norris": "8480064",
@@ -467,6 +466,7 @@
     "carter mazur": "8482802",
     "tim stutzle": "8482116",
     "dylan guenther": "8482699",
+    "elias salomonsson": "8483510",
     "jason dickinson": "8477450",
     "stian solberg": "8484859",
     "collin graf": "8484911",
@@ -726,7 +726,6 @@
     "jacob melanson": "8482874",
     "brayden schenn": "8475170",
     "ville ottavainen": "8482866",
-    "jagger firkus": "8483442",
     "matthew robertson": "8481525",
     "arseny gritsyuk": "8481721",
     "bryan rust": "8475810",
@@ -770,6 +769,7 @@
     "drew o'connor": "8482055",
     "zack macewen": "8479772",
     "ivan provorov": "8478500",
+    "nico myatovic": "8484201",
     "tyler seguin": "8475794",
     "lawson crouse": "8478474",
     "joel kiviranta": "8481641",
@@ -1095,13 +1095,6 @@
         "team": "LAK"
       }
     ],
-    "salomonsson": [
-      {
-        "pid": "8483510",
-        "full_name": "elias salomonsson",
-        "team": "WPG"
-      }
-    ],
     "lardis": [
       {
         "pid": "8484185",
@@ -1302,6 +1295,13 @@
         "team": "TBL"
       }
     ],
+    "firkus": [
+      {
+        "pid": "8483442",
+        "full_name": "jagger firkus",
+        "team": "SEA"
+      }
+    ],
     "ahcan": [
       {
         "pid": "8482072",
@@ -1335,13 +1335,6 @@
         "pid": "8481848",
         "full_name": "jacob gaucher",
         "team": "PHI"
-      }
-    ],
-    "myatovic": [
-      {
-        "pid": "8484201",
-        "full_name": "nico myatovic",
-        "team": "ANA"
       }
     ],
     "danielson": [
@@ -2502,7 +2495,7 @@
       {
         "pid": "8484136",
         "full_name": "max sasson",
-        "team": "VAN"
+        "team": "NYR"
       }
     ],
     "faulk": [
@@ -4179,6 +4172,13 @@
         "team": "UTA"
       }
     ],
+    "salomonsson": [
+      {
+        "pid": "8483510",
+        "full_name": "elias salomonsson",
+        "team": "WPG"
+      }
+    ],
     "solberg": [
       {
         "pid": "8484859",
@@ -5812,13 +5812,6 @@
         "team": "SEA"
       }
     ],
-    "firkus": [
-      {
-        "pid": "8483442",
-        "full_name": "jagger firkus",
-        "team": "SEA"
-      }
-    ],
     "gritsyuk": [
       {
         "pid": "8481721",
@@ -6083,6 +6076,13 @@
         "pid": "8478500",
         "full_name": "ivan provorov",
         "team": "CBJ"
+      }
+    ],
+    "myatovic": [
+      {
+        "pid": "8484201",
+        "full_name": "nico myatovic",
+        "team": "ANA"
       }
     ],
     "seguin": [

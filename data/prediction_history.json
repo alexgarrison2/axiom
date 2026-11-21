@@ -58932,5 +58932,73 @@
         "market_p": 0.4776
       }
     }
+  },
+  {
+    "gameId": 2026020359,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-21",
+    "homeTeam": "Hurricanes",
+    "awayTeam": "Oilers",
+    "homeScore": 7,
+    "awayScore": 4,
+    "decision": "REG",
+    "homeXg": 3.61,
+    "awayXg": 2.54,
+    "homeWinProb": 67.2,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Hurricanes",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1076,
+    "logLoss": 0.3975,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-21T17:03:00Z",
+    "startUtc": "2026-11-21T18:00:00Z",
+    "marketHomeProb": 66.8,
+    "modelHomeProb": 67.4,
+    "homeOdds": -218.0,
+    "awayOdds": 180.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 67.4,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 0,
+        "p": 0.56,
+        "ll": 0.5798,
+        "naive_ll": 0.5337,
+        "market_p": 0.5305
+      },
+      "puckline": {
+        "outcome": 0,
+        "p": 0.432,
+        "ll": 0.8393,
+        "naive_ll": 0.8665,
+        "market_p": 0.4326
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.441,
+        "ll": 0.8187,
+        "naive_ll": 0.8095,
+        "market_p": 0.4546
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.255,
+        "ll": 1.3665,
+        "naive_ll": 1.3526,
+        "market_p": 0.2736
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.375,
+        "ll": 0.9808,
+        "naive_ll": 0.9946,
+        "market_p": 0.4078
+      }
+    }
   }
 ]
