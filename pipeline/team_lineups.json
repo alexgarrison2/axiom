@@ -5588,7 +5588,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f2": [
@@ -5600,7 +5600,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Mikael Granlund",
@@ -5620,7 +5620,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f3": [
@@ -5632,7 +5632,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Tim Washe",
@@ -5715,7 +5715,7 @@
                 "number": 34,
                 "pos": "ld",
                 "id": 34372,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5728,29 +5728,29 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Tyson Hinds",
-                "number": 55,
+                "name": "Stian Solberg",
+                "number": null,
                 "pos": "ld",
-                "id": 31256,
+                "id": 38136,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "new"
             },
             {
-                "name": "Noah Warren",
-                "number": 47,
+                "name": "Tristan Luneau",
+                "number": 67,
                 "pos": "rd",
-                "id": 34076,
-                "ppUnit": null,
+                "id": 34070,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "new"
             }
         ],
         "g": [
@@ -5864,15 +5864,15 @@
                 "number": 34,
                 "pos": "sk3",
                 "id": 34372,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Noah Warren",
-                "number": 47,
+                "name": "Drew Helleson",
+                "number": 14,
                 "pos": "sk4",
-                "id": 34076,
+                "id": 30429,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5880,7 +5880,7 @@
         ],
         "lineup_source": "Zach Cavanagh",
         "updated_at": "2026-11-21T18:50:36.768Z",
-        "fetched_at": "2026-11-21T19:02:34Z"
+        "fetched_at": "2026-11-21T20:02:23Z"
     },
     "NJD": {
         "f1": [
@@ -6273,14 +6273,14 @@
         ],
         "f3": [
             {
-                "name": "Nico Sturm",
-                "number": 78,
+                "name": "Yakov Trenin",
+                "number": 13,
                 "pos": "lw",
-                "id": 27037,
+                "id": 3775,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Danila Yurov",
@@ -6337,14 +6337,14 @@
         ],
         "d1": [
             {
-                "name": "Quinn Hughes",
-                "number": 43,
+                "name": "Jonas Brodin",
+                "number": 25,
                 "pos": "ld",
-                "id": 4794,
-                "ppUnit": 1,
+                "id": 1740,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Jared Spurgeon",
@@ -6359,28 +6359,6 @@
         ],
         "d2": [
             {
-                "name": "Jonas Brodin",
-                "number": 25,
-                "pos": "ld",
-                "id": 1740,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Brock Faber",
-                "number": 7,
-                "pos": "rd",
-                "id": 30792,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
                 "name": "Matt Kiersted",
                 "number": 26,
                 "pos": "ld",
@@ -6388,17 +6366,39 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
+            {
+                "name": "Brock Faber",
+                "number": 7,
+                "pos": "rd",
+                "id": 30792,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            }
+        ],
+        "d3": [
             {
                 "name": "Zach Bogosian",
                 "number": 24,
-                "pos": "rd",
+                "pos": "ld",
                 "id": 53,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "David Spacek",
+                "number": 82,
+                "pos": "rd",
+                "id": 34724,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             }
         ],
         "g": [
@@ -6432,10 +6432,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Yakov Trenin",
-                "number": 13,
-                "pos": "ir3",
-                "id": 3775,
+                "name": "Quinn Hughes",
+                "number": 43,
+                "pos": "ir4",
+                "id": 4794,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -6490,10 +6490,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Nico Sturm",
-                "number": 78,
+                "name": "Yakov Trenin",
+                "number": 13,
                 "pos": "sk2",
-                "id": 27037,
+                "id": 3775,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -6512,14 +6512,14 @@
                 "number": 7,
                 "pos": "sk4",
                 "id": 30792,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-19)",
-        "updated_at": "2026-11-20T17:15:56.680Z",
-        "fetched_at": "2026-11-20T18:01:49Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-21T19:43:08.843Z",
+        "fetched_at": "2026-11-21T20:02:23Z"
     },
     "WSH": {
         "f1": [
@@ -6887,7 +6887,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Adam Fantilli",
@@ -6919,7 +6919,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Cole Sillinger",
@@ -6964,14 +6964,14 @@
                 "movement": null
             },
             {
-                "name": "Ryan Lomberg",
-                "number": 94,
+                "name": "Dmitri Voronkov",
+                "number": 10,
                 "pos": "rw",
-                "id": 3905,
-                "ppUnit": null,
+                "id": 31266,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "new"
             }
         ],
         "d1": [
@@ -7008,14 +7008,14 @@
                 "movement": null
             },
             {
-                "name": "Denton Mateychuk",
-                "number": 5,
+                "name": "Dante Fabbro",
+                "number": 15,
                 "pos": "rd",
-                "id": 31514,
-                "ppUnit": 2,
+                "id": 2651,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d3": [
@@ -7156,9 +7156,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-19)",
-        "updated_at": "2026-11-20T17:11:13.145Z",
-        "fetched_at": "2026-11-20T18:01:49Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-21T19:13:47.344Z",
+        "fetched_at": "2026-11-21T20:02:23Z"
     },
     "SJS": {
         "f1": [
