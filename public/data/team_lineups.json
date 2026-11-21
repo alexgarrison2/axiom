@@ -4888,9 +4888,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-19)",
-        "updated_at": "2026-11-20T16:57:46.799Z",
-        "fetched_at": "2026-11-21T13:02:14Z"
+        "lineup_source": "Zach Dooley",
+        "updated_at": "2026-11-21T18:04:24.397Z",
+        "fetched_at": "2026-11-21T19:02:34Z"
     },
     "DAL": {
         "f1": [
@@ -5581,26 +5581,26 @@
                 "movement": null
             },
             {
-                "name": "Judd Caulfield",
-                "number": 28,
+                "name": "Sam Colangelo",
+                "number": 12,
                 "pos": "rw",
-                "id": 30440,
-                "ppUnit": 2,
+                "id": 32857,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f2": [
             {
-                "name": "Jeff Malott",
-                "number": 39,
+                "name": "Alex Killorn",
+                "number": 17,
                 "pos": "lw",
-                "id": 34555,
-                "ppUnit": null,
+                "id": 1877,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Mikael Granlund",
@@ -5613,26 +5613,26 @@
                 "movement": null
             },
             {
-                "name": "Beckett Sennecke",
-                "number": 45,
+                "name": "Judd Caulfield",
+                "number": 28,
                 "pos": "rw",
-                "id": 36637,
+                "id": 30440,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f3": [
             {
-                "name": "Alex Killorn",
-                "number": 17,
+                "name": "Jeff Malott",
+                "number": 39,
                 "pos": "lw",
-                "id": 1877,
-                "ppUnit": 2,
+                "id": 34555,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Tim Washe",
@@ -5681,7 +5681,7 @@
                 "number": 77,
                 "pos": "rw",
                 "id": 2545,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5715,10 +5715,32 @@
                 "number": 34,
                 "pos": "ld",
                 "id": 34372,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
+            },
+            {
+                "name": "Drew Helleson",
+                "number": 14,
+                "pos": "rd",
+                "id": 30429,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Tyson Hinds",
+                "number": 55,
+                "pos": "ld",
+                "id": 31256,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "new"
             },
             {
                 "name": "Noah Warren",
@@ -5728,46 +5750,24 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d3": [
-            {
-                "name": "Stian Solberg",
-                "number": null,
-                "pos": "ld",
-                "id": 38136,
-                "ppUnit": null,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Tristan Luneau",
-                "number": 67,
-                "pos": "rd",
-                "id": 34070,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "g": [
             {
-                "name": "Lukas Dostal",
-                "number": 1,
+                "name": "Ville Husso",
+                "number": 33,
                 "pos": "g1",
-                "id": 29143,
+                "id": 3837,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Ville Husso",
-                "number": 33,
+                "name": "Lukas Dostal",
+                "number": 1,
                 "pos": "g2",
-                "id": 3837,
+                "id": 29143,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -5788,6 +5788,15 @@
                 "number": 18,
                 "pos": "ir2",
                 "id": 2706,
+                "ppUnit": null,
+                "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Beckett Sennecke",
+                "number": 45,
+                "pos": "ir3",
+                "id": 36637,
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
@@ -5846,7 +5855,7 @@
                 "number": 28,
                 "pos": "sk2",
                 "id": 30440,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -5855,7 +5864,7 @@
                 "number": 34,
                 "pos": "sk3",
                 "id": 34372,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -5869,9 +5878,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-19)",
-        "updated_at": "2026-11-20T17:17:26.139Z",
-        "fetched_at": "2026-11-20T18:01:49Z"
+        "lineup_source": "Zach Cavanagh",
+        "updated_at": "2026-11-21T18:50:36.768Z",
+        "fetched_at": "2026-11-21T19:02:34Z"
     },
     "NJD": {
         "f1": [
