@@ -1728,7 +1728,7 @@
                 "id": 2603,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             }
         ],
@@ -1751,7 +1751,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Matt Rempe",
@@ -1904,6 +1904,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Oliver Bjorkstrand",
+                "number": 28,
+                "pos": "ir7",
+                "id": 2603,
+                "ppUnit": 2,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -1984,7 +1993,7 @@
         ],
         "lineup_source": "Mollie Walker",
         "updated_at": "2026-11-19T18:06:24.919Z",
-        "fetched_at": "2026-11-20T03:04:34Z"
+        "fetched_at": "2026-11-21T03:02:14Z"
     },
     "EDM": {
         "f1": [
@@ -4260,7 +4269,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Nazem Kadri",
@@ -4280,7 +4289,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -4292,7 +4301,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Fedor Svechkov",
@@ -4302,7 +4311,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "T.J. Hughes",
@@ -4312,7 +4321,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -4324,7 +4333,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Parker Kelly",
@@ -4400,7 +4409,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Brent Burns",
@@ -4415,19 +4424,19 @@
         ],
         "g": [
             {
-                "name": "Scott Wedgewood",
-                "number": 41,
+                "name": "Mackenzie Blackwood",
+                "number": 39,
                 "pos": "g1",
-                "id": 1873,
+                "id": 3792,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Mackenzie Blackwood",
-                "number": 39,
+                "name": "Scott Wedgewood",
+                "number": 41,
                 "pos": "g2",
-                "id": 3792,
+                "id": 1873,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -4556,9 +4565,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Corey Masisak",
-        "updated_at": "2026-11-20T01:39:40.726Z",
-        "fetched_at": "2026-11-20T02:01:50Z"
+        "lineup_source": "Last Game (2026-11-19)",
+        "updated_at": "2026-11-20T17:18:11.963Z",
+        "fetched_at": "2026-11-21T03:02:14Z"
     },
     "LAK": {
         "f1": [
@@ -4981,7 +4990,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Radek Faksa",
@@ -5213,9 +5222,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-17)",
-        "updated_at": "2026-11-18T15:04:59.046Z",
-        "fetched_at": "2026-11-19T23:01:53Z"
+        "lineup_source": "Last Game (2026-11-19)",
+        "updated_at": "2026-11-20T17:20:17.226Z",
+        "fetched_at": "2026-11-21T03:02:14Z"
     },
     "TBL": {
         "f1": [
@@ -5259,7 +5268,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Sam O'Reilly",
@@ -5269,7 +5278,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Gage Goncalves",
@@ -5279,7 +5288,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f3": [
@@ -5291,7 +5300,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Anthony Cirelli",
@@ -5301,7 +5310,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Pontus Holmberg",
@@ -5311,7 +5320,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -5333,7 +5342,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Scott Sabourin",
@@ -5537,9 +5546,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Diandra Loux",
-        "updated_at": "2026-11-20T00:11:29.654Z",
-        "fetched_at": "2026-11-20T01:01:46Z"
+        "lineup_source": "Last Game (2026-11-19)",
+        "updated_at": "2026-11-20T17:01:18.173Z",
+        "fetched_at": "2026-11-21T03:02:14Z"
     },
     "ANA": {
         "f1": [
