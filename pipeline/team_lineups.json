@@ -10104,7 +10104,7 @@
                 "id": 362,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -10309,6 +10309,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Ryan O'Reilly",
+                "number": 90,
+                "pos": "ir2",
+                "id": 362,
+                "ppUnit": 1,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -10319,7 +10328,7 @@
                 "id": 362,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Adam Edstrom",
@@ -10388,7 +10397,7 @@
             }
         ],
         "lineup_source": "Alex Daugherty",
-        "updated_at": "2026-11-19T18:09:25.509Z",
-        "fetched_at": "2026-11-20T03:04:34Z"
+        "updated_at": "2026-11-21T21:17:16.703Z",
+        "fetched_at": "2026-11-21T22:02:31Z"
     }
 }
