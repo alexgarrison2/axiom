@@ -59000,5 +59000,73 @@
         "market_p": 0.4078
       }
     }
+  },
+  {
+    "gameId": 2026020360,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-21",
+    "homeTeam": "Flames",
+    "awayTeam": "Blackhawks",
+    "homeScore": 3,
+    "awayScore": 4,
+    "decision": "OT",
+    "homeXg": 3.23,
+    "awayXg": 2.87,
+    "homeWinProb": 55.9,
+    "predictedWinner": "Flames",
+    "actualWinner": "Blackhawks",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.3125,
+    "logLoss": 0.8187,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-21T20:02:00Z",
+    "startUtc": "2026-11-21T20:30:00Z",
+    "marketHomeProb": 59.9,
+    "modelHomeProb": 54.8,
+    "homeOdds": -162.0,
+    "awayOdds": 136.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 54.8,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 1,
+        "p": 0.22,
+        "ll": 1.5141,
+        "naive_ll": 1.7998,
+        "market_p": 0.2117
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.671,
+        "ll": 0.399,
+        "naive_ll": 0.3756,
+        "market_p": 0.6393
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.541,
+        "ll": 0.6143,
+        "naive_ll": 0.5945,
+        "market_p": 0.5346
+      },
+      "p1_3w": {
+        "outcome": 0,
+        "p": 0.365,
+        "ll": 1.0079,
+        "naive_ll": 0.977,
+        "market_p": 0.3644
+      },
+      "p1_2w": {
+        "outcome": 0,
+        "p": 0.543,
+        "ll": 0.6106,
+        "naive_ll": 0.6085,
+        "market_p": 0.5598
+      }
+    }
   }
 ]

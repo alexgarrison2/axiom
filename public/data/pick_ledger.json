@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-21T21:05:52.686227+00:00",
+ "generated_at": "2026-11-21T23:41:02.427796+00:00",
  "unit": "Every pick bet to win 1 unit: a -120 favourite risks 1.2u, a +150 underdog risks 0.67u",
  "disclaimer": "For information and entertainment only. Past results do not predict future results.",
  "source": "graded live picks in prediction_history.json at the price shown when the pick was published",
@@ -9456,29 +9456,29 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 326,
-    "n_graded": 326,
+    "n_bets": 327,
+    "n_graded": 327,
     "n_pending": 0,
-    "record": "205-121",
+    "record": "205-122",
     "wins": 205,
-    "losses": 121,
-    "units_staked": 548.6467,
-    "units_profit": 16.752,
-    "roi": 0.0305,
+    "losses": 122,
+    "units_staked": 550.2667,
+    "units_profit": 15.132,
+    "roi": 0.0275,
     "roi_ci": [
-     -0.0525,
-     0.1097
+     -0.0568,
+     0.1112
     ],
     "clv_mean": -0.0329,
-    "clv_n": 326,
+    "clv_n": 327,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
-      "n": 177,
-      "record": "113-64",
-      "units_staked": 296.21,
-      "units_profit": 10.45,
-      "roi": 0.0353
+      "n": 178,
+      "record": "113-65",
+      "units_staked": 297.83,
+      "units_profit": 8.83,
+      "roi": 0.0296
      },
      {
       "bucket": "0-5%",
@@ -9530,11 +9530,11 @@
      },
      {
       "bucket": "1.1-2u",
-      "n": 236,
-      "record": "136-100",
-      "units_staked": 344.08,
-      "units_profit": -6.57,
-      "roi": -0.0191
+      "n": 237,
+      "record": "136-101",
+      "units_staked": 345.7,
+      "units_profit": -8.19,
+      "roi": -0.0237
      },
      {
       "bucket": "2u+",
@@ -17695,6 +17695,31 @@
      "decision": "REG",
      "closing_price": -218.0,
      "clv": -0.0261,
+     "model_version": "sim-m5-v4_st-20261003"
+    },
+    {
+     "gameId": 2026020360,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-21",
+     "startUtc": "2026-11-21T20:30:00Z",
+     "snapshotUtc": "2026-11-21T20:02:00Z",
+     "team": "Flames",
+     "opponent": "Blackhawks",
+     "side": "home",
+     "stake_units": 1.62,
+     "price": -162.0,
+     "decimal_price": 1.6173,
+     "ev_at_bet": -0.0959,
+     "ev_bucket": "<0%",
+     "stake_bucket": "1.1-2u",
+     "model_prob": 0.559,
+     "result": "loss",
+     "profit_units": -1.62,
+     "final": "4-3",
+     "decision": "OT",
+     "closing_price": -162.0,
+     "clv": -0.0308,
      "model_version": "sim-m5-v4_st-20261003"
     }
    ]
