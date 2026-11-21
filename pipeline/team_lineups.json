@@ -304,13 +304,13 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
-                "name": "Sam Bennett",
-                "number": 9,
+                "name": "Anton Lundell",
+                "number": 15,
                 "pos": "c",
-                "id": 2366,
+                "id": 33026,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -324,42 +324,10 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f2": [
-            {
-                "name": "Eetu Luostarinen",
-                "number": 27,
-                "pos": "lw",
-                "id": 28129,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "up"
-            },
-            {
-                "name": "Anton Lundell",
-                "number": 15,
-                "pos": "c",
-                "id": 33026,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "up"
-            },
-            {
-                "name": "Sam Reinhart",
-                "number": 13,
-                "pos": "rw",
-                "id": 2364,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": "down"
-            }
-        ],
-        "f3": [
             {
                 "name": "Carter Verhaeghe",
                 "number": 23,
@@ -368,17 +336,49 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "up"
+            },
+            {
+                "name": "Sam Reinhart",
+                "number": 13,
+                "pos": "c",
+                "id": 2364,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Lars Eller",
                 "number": 20,
-                "pos": "c",
+                "pos": "rw",
                 "id": 840,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Eetu Luostarinen",
+                "number": 27,
+                "pos": "lw",
+                "id": 28129,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Sam Bennett",
+                "number": 9,
+                "pos": "c",
+                "id": 2366,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             },
             {
                 "name": "Sandis Vilmanis",
@@ -388,7 +388,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f4": [
@@ -410,7 +410,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Garnet Hathaway",
@@ -486,7 +486,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -614,9 +614,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-21T15:47:03.596Z",
-        "fetched_at": "2026-11-21T16:02:16Z"
+        "lineup_source": "Jameson Olive",
+        "updated_at": "2026-11-21T22:38:10.650Z",
+        "fetched_at": "2026-11-21T23:02:25Z"
     },
     "TOR": {
         "f1": [
@@ -3916,9 +3916,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Pens Inside Scoop",
-        "updated_at": "2026-11-21T04:02:00.675Z",
-        "fetched_at": "2026-11-21T13:02:14Z"
+        "lineup_source": "@penguins",
+        "updated_at": "2026-11-21T22:35:56.610Z",
+        "fetched_at": "2026-11-21T23:02:25Z"
     },
     "NYI": {
         "f1": [
@@ -9443,8 +9443,8 @@
             }
         ],
         "lineup_source": "Rachel Lenzi",
-        "updated_at": "2026-11-21T15:57:52.631Z",
-        "fetched_at": "2026-11-21T16:02:16Z"
+        "updated_at": "2026-11-21T22:39:00.410Z",
+        "fetched_at": "2026-11-21T23:02:25Z"
     },
     "STL": {
         "f1": [
@@ -10104,7 +10104,7 @@
                 "id": 362,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             },
             {
@@ -10309,15 +10309,6 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
-            },
-            {
-                "name": "Ryan O'Reilly",
-                "number": 90,
-                "pos": "ir2",
-                "id": 362,
-                "ppUnit": 1,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -10328,7 +10319,7 @@
                 "id": 362,
                 "ppUnit": 1,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             },
             {
                 "name": "Adam Edstrom",
@@ -10396,8 +10387,8 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Alex Daugherty",
-        "updated_at": "2026-11-21T21:17:16.703Z",
-        "fetched_at": "2026-11-21T22:02:31Z"
+        "lineup_source": "Nick Kieser",
+        "updated_at": "2026-11-21T22:36:36.881Z",
+        "fetched_at": "2026-11-21T23:02:25Z"
     }
 }
