@@ -34,14 +34,14 @@
         ],
         "f2": [
             {
-                "name": "Nikolaj Ehlers",
-                "number": 27,
+                "name": "Taylor Hall",
+                "number": 71,
                 "pos": "lw",
-                "id": 2370,
-                "ppUnit": 1,
+                "id": 537,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Logan Stankoven",
@@ -90,7 +90,7 @@
                 "number": 24,
                 "pos": "rw",
                 "id": 29549,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -98,14 +98,14 @@
         ],
         "f4": [
             {
-                "name": "Taylor Hall",
-                "number": 71,
+                "name": "Jesperi Kotkaniemi",
+                "number": 82,
                 "pos": "lw",
-                "id": 537,
-                "ppUnit": 2,
+                "id": 4788,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Mark Jankowski",
@@ -166,7 +166,7 @@
                 "number": 26,
                 "pos": "rd",
                 "id": 4829,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -211,6 +211,17 @@
                 "id": 30486,
                 "ppUnit": null,
                 "injuryStatus": null,
+                "gameTimeDecision": false
+            }
+        ],
+        "ir": [
+            {
+                "name": "Nikolaj Ehlers",
+                "number": 27,
+                "pos": "ir1",
+                "id": 2370,
+                "ppUnit": null,
+                "injuryStatus": "out",
                 "gameTimeDecision": false
             }
         ],
@@ -267,7 +278,7 @@
                 "number": 24,
                 "pos": "sk2",
                 "id": 29549,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -285,14 +296,14 @@
                 "number": 26,
                 "pos": "sk4",
                 "id": 4829,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Walt Ruff",
-        "updated_at": "2026-11-21T17:39:12.041Z",
-        "fetched_at": "2026-11-22T13:02:20Z"
+        "lineup_source": "Projected",
+        "updated_at": "2026-11-22T15:28:29.554Z",
+        "fetched_at": "2026-11-22T16:02:35Z"
     },
     "FLA": {
         "f1": [
