@@ -41,7 +41,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Logan Stankoven",
@@ -98,14 +98,14 @@
         ],
         "f4": [
             {
-                "name": "Jesperi Kotkaniemi",
-                "number": 82,
+                "name": "Eric Robinson",
+                "number": 50,
                 "pos": "lw",
-                "id": 4788,
+                "id": 4650,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Mark Jankowski",
@@ -118,10 +118,10 @@
                 "movement": null
             },
             {
-                "name": "Eric Robinson",
-                "number": 50,
+                "name": "Jesperi Kotkaniemi",
+                "number": 82,
                 "pos": "rw",
-                "id": 4650,
+                "id": 4788,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -301,9 +301,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-22T15:28:29.554Z",
-        "fetched_at": "2026-11-22T16:02:35Z"
+        "lineup_source": "Walt Ruff",
+        "updated_at": "2026-11-22T17:09:24.695Z",
+        "fetched_at": "2026-11-22T18:02:24Z"
     },
     "FLA": {
         "f1": [
@@ -1740,25 +1740,35 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "f4": [
             {
                 "name": "Glenn Gawdin",
                 "number": null,
-                "pos": "c",
+                "pos": "lw",
                 "id": 3934,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": null
+            },
+            {
+                "name": "Max Sasson",
+                "number": null,
+                "pos": "c",
+                "id": 30007,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": "new"
             },
             {
-                "name": "Taylor Raddysh",
-                "number": 14,
+                "name": "Matt Rempe",
+                "number": 73,
                 "pos": "rw",
-                "id": 3922,
+                "id": 32523,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -1805,30 +1815,30 @@
                 "id": 27104,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             }
         ],
         "d3": [
             {
-                "name": "Matthew Robertson",
-                "number": 29,
+                "name": "Braden Schneider",
+                "number": 4,
                 "pos": "ld",
-                "id": 29499,
+                "id": 29483,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
             },
             {
-                "name": "Braden Schneider",
-                "number": 4,
+                "name": "Scott Morrow",
+                "number": 60,
                 "pos": "rd",
-                "id": 29483,
-                "ppUnit": null,
+                "id": 34620,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": "new"
             }
         ],
         "g": [
@@ -1876,15 +1886,6 @@
                 "pos": "ir3",
                 "id": 36392,
                 "ppUnit": null,
-                "injuryStatus": "ir",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Sean Durzi",
-                "number": 5,
-                "pos": "ir4",
-                "id": 27104,
-                "ppUnit": 2,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
             },
@@ -1983,18 +1984,18 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Braden Schneider",
-                "number": 4,
+                "name": "Sean Durzi",
+                "number": 5,
                 "pos": "sk4",
-                "id": 29483,
-                "ppUnit": null,
+                "id": 27104,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Andrew Crane",
-        "updated_at": "2026-11-21T17:24:05.460Z",
-        "fetched_at": "2026-11-21T18:02:18Z"
+        "lineup_source": "Jonny Lazarus",
+        "updated_at": "2026-11-22T17:08:25.569Z",
+        "fetched_at": "2026-11-22T18:02:24Z"
     },
     "EDM": {
         "f1": [
