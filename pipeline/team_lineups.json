@@ -5572,14 +5572,14 @@
                 "movement": null
             },
             {
-                "name": "Sam Colangelo",
-                "number": 12,
+                "name": "Nico Myatovic",
+                "number": 48,
                 "pos": "rw",
-                "id": 32857,
-                "ppUnit": null,
+                "id": 31622,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f2": [
@@ -5672,7 +5672,7 @@
                 "number": 77,
                 "pos": "rw",
                 "id": 2545,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -5731,7 +5731,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Tristan Luneau",
@@ -5741,7 +5741,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -5870,8 +5870,8 @@
             }
         ],
         "lineup_source": "Zach Cavanagh",
-        "updated_at": "2026-11-21T18:50:36.768Z",
-        "fetched_at": "2026-11-21T20:02:23Z"
+        "updated_at": "2026-11-22T01:37:52.058Z",
+        "fetched_at": "2026-11-22T02:04:29Z"
     },
     "NJD": {
         "f1": [
@@ -8461,14 +8461,14 @@
                 "movement": null
             },
             {
-                "name": "Clayton Keller",
-                "number": 9,
+                "name": "Daniil But",
+                "number": 50,
                 "pos": "rw",
-                "id": 2642,
-                "ppUnit": 1,
+                "id": 38459,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -8487,7 +8487,7 @@
                 "number": 27,
                 "pos": "c",
                 "id": 4796,
-                "ppUnit": 2,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8537,14 +8537,14 @@
         ],
         "f4": [
             {
-                "name": "Liam O'Brien",
-                "number": 38,
+                "name": "Ben McCartney",
+                "number": null,
                 "pos": "lw",
-                "id": 2377,
+                "id": 28455,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
                 "name": "Kevin Stenlund",
@@ -8557,10 +8557,10 @@
                 "movement": null
             },
             {
-                "name": "Daniil But",
-                "number": 50,
+                "name": "Liam O'Brien",
+                "number": 38,
                 "pos": "rw",
-                "id": 38459,
+                "id": 2377,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -8698,6 +8698,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Clayton Keller",
+                "number": 9,
+                "pos": "ir7",
+                "id": 2642,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -8776,9 +8785,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Brogan Houston",
-        "updated_at": "2026-11-21T04:05:12.668Z",
-        "fetched_at": "2026-11-21T13:02:14Z"
+        "lineup_source": "Utah Mammoth",
+        "updated_at": "2026-11-22T01:35:12.622Z",
+        "fetched_at": "2026-11-22T02:04:29Z"
     },
     "WPG": {
         "f1": [
