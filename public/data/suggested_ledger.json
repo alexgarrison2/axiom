@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-22T02:05:45.689660+00:00",
+ "generated_at": "2026-11-22T03:07:00.693255+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6995,21 +6995,21 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 106,
-    "n_graded": 105,
+    "n_bets": 107,
+    "n_graded": 106,
     "n_pending": 1,
-    "record": "65-40",
+    "record": "65-41",
     "wins": 65,
-    "losses": 40,
-    "units_staked": 212.2,
-    "units_profit": 30.2051,
-    "roi": 0.1423,
+    "losses": 41,
+    "units_staked": 213.6,
+    "units_profit": 28.8051,
+    "roi": 0.1349,
     "roi_ci": [
-     -0.018,
-     0.2887
+     -0.027,
+     0.2883
     ],
     "clv_mean": -0.0385,
-    "clv_n": 105,
+    "clv_n": 106,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
@@ -7020,11 +7020,11 @@
      },
      {
       "bucket": "0-5%",
-      "n": 54,
-      "record": "29-25",
-      "units_staked": 77.1,
-      "units_profit": -6.8331,
-      "roi": -0.0886
+      "n": 55,
+      "record": "29-26",
+      "units_staked": 78.5,
+      "units_profit": -8.2331,
+      "roi": -0.1049
      },
      {
       "bucket": "5-10%",
@@ -7069,11 +7069,11 @@
      },
      {
       "bucket": "1.1-2u",
-      "n": 44,
-      "record": "27-17",
-      "units_staked": 68.5,
-      "units_profit": 8.7668,
-      "roi": 0.128
+      "n": 45,
+      "record": "27-18",
+      "units_staked": 69.9,
+      "units_profit": 7.3668,
+      "roi": 0.1054
      },
      {
       "bucket": "2u+",
@@ -9833,12 +9833,38 @@
      "ev_bucket": "0-5%",
      "stake_bucket": "1.1-2u",
      "model_prob": 0.567,
+     "result": "loss",
+     "profit_units": -1.4,
+     "final": "4-3",
+     "decision": "REG",
+     "closing_price": -118.0,
+     "clv": -0.042,
+     "model_version": "sim-m5-v4_st-20261003",
+     "official": false
+    },
+    {
+     "gameId": 2026020371,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-21",
+     "startUtc": "2026-11-22T03:00:00Z",
+     "snapshotUtc": "2026-11-22T02:06:00Z",
+     "team": "Wild",
+     "opponent": "Canucks",
+     "side": "away",
+     "stake_units": 4.1,
+     "price": -310.0,
+     "decimal_price": 1.3226,
+     "ev_at_bet": 0.0529,
+     "ev_bucket": "5-10%",
+     "stake_bucket": "2u+",
+     "model_prob": 0.796,
      "result": "pending",
      "profit_units": 0.0,
      "final": null,
      "decision": null,
-     "closing_price": -118.0,
-     "clv": -0.042,
+     "closing_price": -310.0,
+     "clv": -0.021,
      "model_version": "sim-m5-v4_st-20261003",
      "official": false
     }
