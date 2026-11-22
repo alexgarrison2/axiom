@@ -35,10 +35,12 @@
     "jacob gaucher": "8481848",
     "dylan hryckowian": "8486130",
     "bradly nadeau": "8484203",
+    "brett berard": "8482132",
     "rieger lorenz": "8483478",
     "dylan peterson": "8482121",
     "jonas rondbjerg": "8480007",
     "alexander holtz": "8482125",
+    "steven lorentz": "8478904",
     "dylan larkin": "8477946",
     "helge grans": "8482169",
     "ville heinola": "8481572",
@@ -46,6 +48,7 @@
     "alex bump": "8483731",
     "dominic toninato": "8476952",
     "dominic james": "8483752",
+    "david reinbacher": "8484220",
     "kenny connors": "8483675",
     "garrett wilson": "8475253",
     "zach dean": "8482784",
@@ -55,7 +58,6 @@
     "xavier bourgault": "8482673",
     "victor mancini": "8483768",
     "jorian donovan": "8483435",
-    "aatu raty": "8482691",
     "anton silaev": "8484987",
     "ilya solovyov": "8482470",
     "taylor makar": "8482953",
@@ -71,6 +73,7 @@
     "dennis gilbert": "8478502",
     "alex gagne": "8482942",
     "hoyt stanley": "8484409",
+    "dillon boucher": "8485554",
     "isaac howard": "8483455",
     "connor zary": "8482074",
     "matt boldy": "8481557",
@@ -398,7 +401,6 @@
     "ian cole": "8474013",
     "nico hischier": "8480002",
     "oskar back": "8480840",
-    "brett berard": "8482132",
     "lars eller": "8474189",
     "pontus holmberg": "8480995",
     "garnet hathaway": "8477903",
@@ -457,7 +459,6 @@
     "nic dowd": "8475343",
     "sam reinhart": "8477933",
     "miro heiskanen": "8480036",
-    "steven lorentz": "8478904",
     "timothy liljegren": "8480043",
     "emmitt finnie": "8484471",
     "matt roy": "8478911",
@@ -526,7 +527,6 @@
     "filip hronek": "8479425",
     "nikita kucherov": "8476453",
     "jake debrusk": "8478498",
-    "david reinbacher": "8484220",
     "luca del bel belluz": "8483432",
     "denton mateychuk": "8483485",
     "nick suzuki": "8480018",
@@ -605,6 +605,7 @@
     "stephen halliday": "8483676",
     "andre burakovsky": "8477444",
     "jake mccabe": "8476931",
+    "aatu raty": "8482691",
     "marco kasper": "8483464",
     "cole reinhardt": "8481133",
     "tony deangelo": "8477950",
@@ -775,7 +776,6 @@
     "justin hryckowian": "8484829",
     "jayden struble": "8481593",
     "jack eichel": "8478403",
-    "dillon boucher": "8485554",
     "jonatan berggren": "8481013",
     "michael amadio": "8478020",
     "ivar stenberg": "8486103",
@@ -1052,6 +1052,13 @@
         "team": "CAR"
       }
     ],
+    "berard": [
+      {
+        "pid": "8482132",
+        "full_name": "brett berard",
+        "team": "MTL"
+      }
+    ],
     "lorenz": [
       {
         "pid": "8483478",
@@ -1078,6 +1085,13 @@
         "pid": "8482125",
         "full_name": "alexander holtz",
         "team": "VGK"
+      }
+    ],
+    "lorentz": [
+      {
+        "pid": "8478904",
+        "full_name": "steven lorentz",
+        "team": "CBJ"
       }
     ],
     "larkin": [
@@ -1127,6 +1141,13 @@
         "pid": "8483752",
         "full_name": "dominic james",
         "team": "TBL"
+      }
+    ],
+    "reinbacher": [
+      {
+        "pid": "8484220",
+        "full_name": "david reinbacher",
+        "team": "MTL"
       }
     ],
     "connors": [
@@ -1195,13 +1216,6 @@
         "pid": "8483435",
         "full_name": "jorian donovan",
         "team": "OTT"
-      }
-    ],
-    "raty": [
-      {
-        "pid": "8482691",
-        "full_name": "aatu raty",
-        "team": "VAN"
       }
     ],
     "silaev": [
@@ -1337,6 +1351,18 @@
         "pid": "8479378",
         "full_name": "logan stanley",
         "team": "NYI"
+      }
+    ],
+    "boucher": [
+      {
+        "pid": "8485554",
+        "full_name": "dillon boucher",
+        "team": "CHI"
+      },
+      {
+        "pid": "8482674",
+        "full_name": "tyler boucher",
+        "team": "OTT"
       }
     ],
     "howard": [
@@ -3695,13 +3721,6 @@
         "team": "DAL"
       }
     ],
-    "berard": [
-      {
-        "pid": "8482132",
-        "full_name": "brett berard",
-        "team": "MTL"
-      }
-    ],
     "eller": [
       {
         "pid": "8474189",
@@ -4055,13 +4074,6 @@
         "pid": "8480036",
         "full_name": "miro heiskanen",
         "team": "DAL"
-      }
-    ],
-    "lorentz": [
-      {
-        "pid": "8478904",
-        "full_name": "steven lorentz",
-        "team": "CBJ"
       }
     ],
     "liljegren": [
@@ -4537,13 +4549,6 @@
         "pid": "8478498",
         "full_name": "jake debrusk",
         "team": "VAN"
-      }
-    ],
-    "reinbacher": [
-      {
-        "pid": "8484220",
-        "full_name": "david reinbacher",
-        "team": "MTL"
       }
     ],
     "belluz": [
@@ -5024,7 +5029,7 @@
       {
         "pid": "8476822",
         "full_name": "luke glendening",
-        "team": "NYR"
+        "team": "CHI"
       }
     ],
     "halliday": [
@@ -5045,6 +5050,13 @@
       {
         "pid": "8476931",
         "full_name": "jake mccabe",
+        "team": "TOR"
+      }
+    ],
+    "raty": [
+      {
+        "pid": "8482691",
+        "full_name": "aatu raty",
         "team": "TOR"
       }
     ],
@@ -5214,18 +5226,6 @@
         "pid": "8476891",
         "full_name": "matt grzelcyk",
         "team": "BUF"
-      }
-    ],
-    "boucher": [
-      {
-        "pid": "8482674",
-        "full_name": "tyler boucher",
-        "team": "OTT"
-      },
-      {
-        "pid": "8485554",
-        "full_name": "dillon boucher",
-        "team": "CHI"
       }
     ],
     "turcotte": [

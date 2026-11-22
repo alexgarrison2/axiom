@@ -59849,5 +59849,66 @@
         "market_p": 0.5112
       }
     }
+  },
+  {
+    "gameId": 2026020373,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-22",
+    "homeTeam": "Rangers",
+    "awayTeam": "Hurricanes",
+    "homeScore": 2,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 2.79,
+    "awayXg": 3.31,
+    "homeWinProb": 41.5,
+    "predictedWinner": "Hurricanes",
+    "actualWinner": "Hurricanes",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.1722,
+    "logLoss": 0.5361,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-22T17:03:00Z",
+    "startUtc": "2026-11-22T17:30:00Z",
+    "marketHomeProb": 40.1,
+    "modelHomeProb": 41.8,
+    "homeOdds": 136.0,
+    "awayOdds": -162.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 41.8,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.466,
+        "ll": 0.7636,
+        "naive_ll": 0.6964,
+        "market_p": 0.46
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.35,
+        "ll": 1.0498,
+        "naive_ll": 1.0907,
+        "market_p": 0.3696
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.437,
+        "ll": 0.8278,
+        "naive_ll": 0.8202,
+        "market_p": 0.4654
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.326,
+        "ll": 1.1209,
+        "naive_ll": 1.1794,
+        "market_p": 0.3351
+      }
+    }
   }
 ]
