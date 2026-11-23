@@ -99,7 +99,9 @@ jobs:
 
   site:
     name: Build, e2e quality gate, perf budgets
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, which Playwright 1.58 cannot install
+    # browser dependencies on ("does not support chromium on ubuntu26.04-x64").
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       PORT: '3100'
