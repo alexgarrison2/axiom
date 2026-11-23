@@ -353,8 +353,8 @@ def build(today=None) -> tuple[dict, dict]:
         for c in ["toi"] + pm.STATS:
             tn[c] = np.nan
         frame = pd.concat([frame, tn], ignore_index=True)
-    prior, shift = pm.ARMS[ARM]
-    feats = pm.pregame_features(frame, prior=prior)
+    prior, shift, shrink = pm.ARMS[ARM]
+    feats = pm.pregame_features(frame, prior=prior, shrink=shrink)
     fair = pm.fair_probs(feats, BOARD_PROPS)
     if shift:
         fair = _calibrated(feats, fair, today)

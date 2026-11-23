@@ -25,6 +25,9 @@ PONYXG_PROP_ARM overrides it):
   struct      the prior is the rate of the player's position and expected-TOI
               band (toi_band_rates) instead of one pooled position rate
   struct_cal  struct + the same shift
+  struct_cal_k2  struct_cal with the prior weights of tools/prereg_props_shrink.json
+              (SHRINK["k2"]: a stronger pull toward the band rate for goals,
+              assists, points and PP points; shots unchanged)
 
 ``pregame_features`` computes the inputs for each row from the player's
 *previous* games only, so the same code serves the backtest
@@ -46,13 +49,18 @@ TOI_HALF_LIFE = 6       # games, expected TOI
 TEAM_HALF_LIFE = 30     # team games, context rates
 K_MINUTES = {"shots": 100.0, "goals": 450.0, "assists": 250.0, "points": 200.0}
 K_PPP_GAMES = 6.0
+# Prior weights by name: (per-minute K by stat, PPP K in games). "v1" is the pair above, tuned for the
+# position prior; "k2" is declared in tools/prereg_props_shrink.json for the TOI-band prior.
+SHRINK = {"v1": (K_MINUTES, K_PPP_GAMES),
+          "k2": ({"shots": 100.0, "goals": 900.0, "assists": 750.0, "points": 400.0}, 12.0)}
 NB_SIZE = 15.0          # SOG overdispersion: var = mu + mu^2 / NB_SIZE
 CONTEXT_POWER = {"shots": 0.7, "goals": 0.6}
 
 # Arms of tools/prereg_props_calib.json: declared values, not tuned.
 DEFAULT_ARM = "struct_cal"   # promoted 2026-10-14: passed the 2025-26 look (tools/prereg_props_calib_holdout.json)
-ARMS = {"base": ("position", False), "cal": ("position", True),
-        "struct": ("toi_band", False), "struct_cal": ("toi_band", True)}   # arm -> (prior, shift)
+ARMS = {"base": ("position", False, "v1"), "cal": ("position", True, "v1"),
+        "struct": ("toi_band", False, "v1"), "struct_cal": ("toi_band", True, "v1"),
+        "struct_cal_k2": ("toi_band", True, "k2")}   # arm -> (prior, shift, shrink)
 TOI_BANDS = {"F": (12.0, 15.0, 18.0), "D": (17.0, 20.0, 23.0)}
 DEFAULT_TOI = {"F": 15.0, "D": 20.0}
 CAL_WINDOW = 20000      # graded player-games behind each date's shift
@@ -129,17 +137,20 @@ def team_context(logs: pd.DataFrame) -> pd.DataFrame:
     return tg
 
 
-def pregame_features(logs: pd.DataFrame, lg: dict | None = None, prior: str = "position") -> pd.DataFrame:
+def pregame_features(logs: pd.DataFrame, lg: dict | None = None, prior: str = "position",
+                     shrink: str = "v1") -> pd.DataFrame:
     """Expected counts for every row, from that player's previous rows only.
 
     ``prior`` is the regression target: "position" (one league rate per F / D)
     or "toi_band" (the F / D rate of the band of the player's decayed mean
-    previous TOI; DEFAULT_TOI when he has no previous game).
+    previous TOI; DEFAULT_TOI when he has no previous game). ``shrink`` names the
+    prior weights (SHRINK).
 
     ``logs`` must carry game_id, date, player_id, team, opp, pos, toi and the
     STATS columns (NaN outcomes are fine for "tonight" rows). Optional columns
     ``team_xg`` (the game model's expected goals for the player's team) and
     ``opp_sa`` override the history-based context."""
+    k_minutes, k_ppp = SHRINK[shrink]
     df = logs.sort_values(["player_id", "date", "game_id"]).copy()
     lg = lg or position_rates(df.dropna(subset=["shots"]))
     played = df.dropna(subset=["shots"])
@@ -166,11 +177,11 @@ def pregame_features(logs: pd.DataFrame, lg: dict | None = None, prior: str = "p
         raise ValueError(f"unknown prior {prior!r}")
     for s in ["shots", "goals", "assists", "points"]:
         m = _ewm_prev(df[s], g, HALF_LIFE)
-        k = K_MINUTES[s]
+        k = k_minutes[s]
         df[f"rate_{s}"] = ((m * neff).fillna(0) + k * prior_of(s)) / ((toi_m * neff).fillna(0) + k)
     ppp_prior = prior_of("pp_points_pg")
     m = _ewm_prev(df["pp_points"], g, HALF_LIFE)
-    df["rate_ppp_pg"] = ((m * neff).fillna(0) + K_PPP_GAMES * ppp_prior) / (neff + K_PPP_GAMES)
+    df["rate_ppp_pg"] = ((m * neff).fillna(0) + k_ppp * ppp_prior) / (neff + k_ppp)
 
     # Context: opponent shot suppression and the team's goal expectation.
     tc = team_context(played)

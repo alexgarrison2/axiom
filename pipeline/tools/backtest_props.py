@@ -28,6 +28,10 @@ Each season S is priced from the regular-season logs of S-1 and S (the season
 file, else that season's rows of nhl_historical_skater_games.csv), as
 prop_board has them live. Arm differences are paired per player-game with
 standard errors clustered by game date.
+
+``--question props_shrink`` runs dev / holdout for tools/prereg_props_shrink.json
+(STRUCT_CAL vs STRUCT_CAL_K2: stronger prior weights) with its own files and its
+own single look.
 """
 from __future__ import annotations
 
@@ -46,9 +50,6 @@ from fetch_skater_games import games_file  # noqa: E402
 from paths import pipeline_path  # noqa: E402
 import prop_model as pm  # noqa: E402
 
-PREREG = os.path.join(TOOLS, "prereg_props_calib.json")
-DEV_OUT = os.path.join(TOOLS, "prereg_props_calib_dev.json")
-HOLDOUT_OUT = os.path.join(TOOLS, "prereg_props_calib_holdout.json")
 BOOK_OUT = os.path.join(TOOLS, "prereg_props_calib_book.json")
 LOOK_LOG = os.path.join(TOOLS, "out", "props_look_log.jsonl")
 QUESTION = "props_calib"
@@ -57,6 +58,17 @@ DEV_SEASONS = (2023, 2024)
 HOLDOUT_SEASON = 2025
 H2_FROM = "2026-10-15"
 ARM_ORDER = ["cal", "struct", "struct_cal"]          # simplest first (tie rule)
+# question -> prereg file stem, reference arm, candidate arms (simplest first), first H2 date
+QUESTIONS = {
+    QUESTION: {"stem": "prereg_props_calib", "ref": "base", "arms": ARM_ORDER, "h2_from": H2_FROM},
+    "props_shrink": {"stem": "prereg_props_shrink", "ref": "struct_cal", "arms": ["struct_cal_k2"],
+                     "h2_from": "2026-07-01"},
+}
+
+
+def _q_path(question: str, kind: str) -> str:
+    """<stem>_<kind>.json of a question (kind: dev / holdout)."""
+    return os.path.join(TOOLS, f"{QUESTIONS[question]['stem']}_{kind}.json")
 KEYS = [k for k, _, _ in pm.PROPS]
 
 
@@ -81,10 +93,10 @@ def season_logs(season: int, hist: pd.DataFrame | None = None) -> pd.DataFrame:
     return f[(f["game_id"] // 10000) % 100 == 2].copy()
 
 
-def priced(season: int, prior: str, hist: pd.DataFrame | None = None) -> pd.DataFrame:
+def priced(season: int, prior: str, hist: pd.DataFrame | None = None, shrink: str = "v1") -> pd.DataFrame:
     """Season S's player-games priced as prop_board would have (frame = seasons S-1 and S)."""
     frames = [season_logs(y, hist) for y in (season - 1, season) if y >= FIRST_SEASON]
-    df = pm.pregame_features(pd.concat(frames, ignore_index=True), prior=prior)
+    df = pm.pregame_features(pd.concat(frames, ignore_index=True), prior=prior, shrink=shrink)
     df = df[df["game_id"] // 1000000 == season]
     out = df[["game_id", "date", "player_id", "name", "team", "pos", "n_prev", "toi_exp"]].copy()
     out = pd.concat([out, pm.fair_probs(df), pm.outcomes(df).add_prefix("y_")], axis=1)
@@ -93,13 +105,13 @@ def priced(season: int, prior: str, hist: pd.DataFrame | None = None) -> pd.Data
 
 def build_arms(seasons, arms, hist=None) -> dict:
     """{arm: table} over ``seasons`` (sorted list, each a full regular season), same rows in the same order."""
-    by_prior = {}
-    for prior in sorted({pm.ARMS[a][0] for a in arms}):
-        by_prior[prior] = pd.concat([priced(s, prior, hist) for s in seasons], ignore_index=True)
+    by_model = {}
+    for prior, shrink in sorted({(pm.ARMS[a][0], pm.ARMS[a][2]) for a in arms}):
+        by_model[(prior, shrink)] = pd.concat([priced(s, prior, hist, shrink) for s in seasons], ignore_index=True)
     out = {}
     for arm in arms:
-        prior, shift = pm.ARMS[arm]
-        tab = by_prior[prior].copy()
+        prior, shift, shrink = pm.ARMS[arm]
+        tab = by_model[(prior, shrink)].copy()
         if shift:
             graded = tab[tab[[f"y_{k}" for k in KEYS]].notna().all(axis=1)]
             sh = pm.calibration_shifts(graded["date"], graded[KEYS],
@@ -122,7 +134,8 @@ def clustered_mean(d, clusters) -> tuple[float, float]:
 
 
 def compare(arm: pd.DataFrame, base: pd.DataFrame, mask) -> dict:
-    """Primary metric and per-market numbers for one arm vs BASE on the rows in ``mask``."""
+    """Primary metric and per-market numbers for one arm vs the reference arm (``base``: BASE, or the
+    question's reference) on the rows in ``mask``."""
     a, b = arm[mask], base[mask]
     assert (a["player_id"].to_numpy() == b["player_id"].to_numpy()).all()
     dates = a["date"].to_numpy()
@@ -166,12 +179,12 @@ def _shift_path(tab: pd.DataFrame, mask) -> dict | None:
                 "last": round(float(sh[k].iloc[-1]), 4)} for k in KEYS}
 
 
-def evaluate(tables: dict, masks: dict) -> dict:
-    """For each arm != base and each named row mask: compare() plus descriptive breakdowns."""
-    base = tables["base"]
+def evaluate(tables: dict, masks: dict, ref: str = "base") -> dict:
+    """For each arm != ``ref`` and each named row mask: compare() plus descriptive breakdowns."""
+    base = tables[ref]
     out = {}
     for arm, tab in tables.items():
-        if arm == "base":
+        if arm == ref:
             continue
         out[arm] = {}
         for name, mask in masks.items():
@@ -187,14 +200,15 @@ def evaluate(tables: dict, masks: dict) -> dict:
     return out
 
 
-def select(results: dict, period: str = "pooled_dev") -> str | None:
+def select(results: dict, period: str = "pooled_dev", order=None) -> str | None:
     """Prereg selection: lowest pooled dev d among the arms, if d < 0 and |d| >= 1 SE; ties -> simplest."""
-    ok = [(results[a][period]["d"], a) for a in ARM_ORDER if a in results
+    order = order or ARM_ORDER
+    ok = [(results[a][period]["d"], a) for a in order if a in results
           if results[a][period]["d"] < 0 and abs(results[a][period]["d"]) >= results[a][period]["se"]]
     if not ok:
         return None
     best = min(d for d, _ in ok)
-    return next(a for a in ARM_ORDER if any(a == b and d <= best + 0.00005 for d, b in ok))
+    return next(a for a in order if any(a == b and d <= best + 0.00005 for d, b in ok))
 
 
 def _git_head() -> str | None:
@@ -206,25 +220,28 @@ def _git_head() -> str | None:
         return None
 
 
-def run_dev(out_path=DEV_OUT) -> dict:
+def run_dev(out_path=None, question: str = QUESTION) -> dict:
+    q = QUESTIONS[question]
+    ref = q["ref"]
+    out_path = out_path or _q_path(question, "dev")
     hist = pd.read_csv(pipeline_path("nhl_historical_skater_games.csv"))
     seasons = list(range(FIRST_SEASON, max(DEV_SEASONS) + 1))    # 2022 only feeds CAL windows
-    arms = ["base"] + ARM_ORDER
+    arms = [ref] + q["arms"]
     tables = build_arms(seasons, arms, hist)
-    t = tables["base"]
+    t = tables[ref]
     season = t["game_id"] // 1000000
     graded = t[[f"y_{k}" for k in KEYS]].notna().all(axis=1)
     dev = season.isin(DEV_SEASONS) & graded
     legacy = dev & (t["date"].str[5:] >= "11-15") & (t["n_prev"] >= 10)
     masks = {"pooled_dev": dev, **{str(s): dev & (season == s) for s in DEV_SEASONS}, "legacy_subset_dev": legacy}
-    res = evaluate(tables, masks)
-    cand = select(res)
-    report = {"question": QUESTION, "period": "dev", "seasons": [f"{s}{s + 1}" for s in DEV_SEASONS],
+    res = evaluate(tables, masks, ref)
+    cand = select(res, order=q["arms"])
+    report = {"question": question, "period": "dev", "seasons": [f"{s}{s + 1}" for s in DEV_SEASONS],
               "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-              "code": _git_head(), "prereg": os.path.basename(PREREG),
-              "base_M": {name: compare(tables["base"], tables["base"], m)["M_base"] for name, m in masks.items()},
+              "code": _git_head(), "prereg": q["stem"] + ".json", "ref": ref,
+              "base_M": {name: compare(tables[ref], tables[ref], m)["M_base"] for name, m in masks.items()},
               "arms": res, "candidate": cand,
-              "selection_rule": "lowest pooled dev d among cal / struct / struct_cal with d < 0 and |d| >= 1 SE"}
+              "selection_rule": f"lowest pooled dev d among {' / '.join(q['arms'])} with d < 0 and |d| >= 1 SE"}
     with open(out_path, "w") as f:
         json.dump(report, f, indent=1)
     return report
@@ -271,51 +288,59 @@ def run_book() -> dict:
             "note": "SOG two-way de-vigged proportionally; one-way markets scored raw (vig included). Descriptive only."}
 
 
-def holdout_look(confirm: bool, log_path=LOOK_LOG, dev_path=DEV_OUT, out_path=HOLDOUT_OUT, scorer=None) -> dict:
-    """The one logged holdout look (prereg_props_calib.json). Refuses without the dev result or a second time."""
+def holdout_look(confirm: bool, log_path=LOOK_LOG, dev_path=None, out_path=None, scorer=None,
+                 question: str = QUESTION) -> dict:
+    """The one logged holdout look of a question (its prereg file). Refuses without the dev result or a
+    second time; each question has its own look."""
+    dev_path = dev_path or _q_path(question, "dev")
+    out_path = out_path or _q_path(question, "holdout")
     if not confirm:
-        raise SystemExit("holdout look needs --owner-look (one look, the owner's call; see prereg_props_calib.json)")
+        raise SystemExit(f"holdout look needs --owner-look (one look, the owner's call; see "
+                         f"{QUESTIONS[question]['stem']}.json)")
     if not os.path.exists(dev_path):
         raise SystemExit(f"no dev result at {dev_path}: score dev first")
     if os.path.exists(log_path):
         with open(log_path) as f:
-            if any(json.loads(line).get("question") == QUESTION for line in f if line.strip()):
-                raise SystemExit(f"holdout look for {QUESTION!r} already taken ({log_path}); refusing a second look")
+            if any(json.loads(line).get("question") == question for line in f if line.strip()):
+                raise SystemExit(f"holdout look for {question!r} already taken ({log_path}); refusing a second look")
     with open(dev_path) as f:
         cand = json.load(f).get("candidate")
     if cand is None:
-        raise SystemExit("dev selected no candidate: BASE stays, no holdout look needed")
+        raise SystemExit("dev selected no candidate: the reference arm stays, no holdout look needed")
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     now = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     with open(log_path, "a") as f:
-        f.write(json.dumps({"question": QUESTION, "stage": "started", "candidate": cand, "at": now}) + "\n")
-    report = (scorer or _score_holdout)(cand)
+        f.write(json.dumps({"question": question, "stage": "started", "candidate": cand, "at": now}) + "\n")
+    report = scorer(cand) if scorer else _score_holdout(cand, question)
     with open(out_path, "w") as f:
         json.dump(report, f, indent=1)
     with open(log_path, "a") as f:
-        f.write(json.dumps({"question": QUESTION, "at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        f.write(json.dumps({"question": question, "at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
                             "candidate": cand, "n_h1": report["H1"]["n"],
                             "d_h1": report["H1"]["d"], "se_h1": report["H1"]["se"], "pass": report["pass"]}) + "\n")
     return report
 
 
-def _score_holdout(cand: str) -> dict:
+def _score_holdout(cand: str, question: str = QUESTION) -> dict:
+    q = QUESTIONS[question]
+    ref = q["ref"]
     hist = pd.read_csv(pipeline_path("nhl_historical_skater_games.csv"))
     seasons = list(range(HOLDOUT_SEASON - 1, HOLDOUT_SEASON + 2))     # 2024 only feeds CAL windows
-    tables = build_arms(seasons, ["base", cand], hist)
-    t = tables["base"]
+    tables = build_arms(seasons, [ref, cand], hist)
+    t = tables[ref]
     season = t["game_id"] // 1000000
     graded = t[[f"y_{k}" for k in KEYS]].notna().all(axis=1)
+    today = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
     h1 = graded & (season == HOLDOUT_SEASON)
-    h2 = graded & (season == HOLDOUT_SEASON + 1) & (t["date"] >= H2_FROM)
+    h2 = graded & (season == HOLDOUT_SEASON + 1) & (t["date"] >= q["h2_from"]) & (t["date"] < today)
     masks = {"H1": h1}
     if h2.any():
         masks["H2"] = h2
-    res = evaluate(tables, masks)[cand]
+    res = evaluate(tables, masks, ref)[cand]
     r1 = res["H1"]
     worst = max(m["diff"] - 2 * m["se"] for m in r1["markets"].values())
     passed = bool(r1["d"] < 0 and worst <= 0)
-    return {"question": QUESTION, "candidate": cand, "code": _git_head(), "H1": r1, "H2": res.get("H2"),
+    return {"question": question, "ref": ref, "candidate": cand, "code": _git_head(), "H1": r1, "H2": res.get("H2"),
             "pass": passed, "rule": "H1 d < 0 and no market's H1 diff > +2 SE"}
 
 
@@ -323,13 +348,16 @@ def arms_main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("mode", choices=["dev", "book", "holdout"])
     ap.add_argument("--owner-look", action="store_true")
+    ap.add_argument("--question", choices=sorted(QUESTIONS), default=QUESTION)
     a = ap.parse_args(argv)
+    if a.mode == "book" and a.question != QUESTION:
+        ap.error("book mode covers props_calib only")
     if a.mode == "dev":
-        r = run_dev()
-        for arm in ARM_ORDER:
+        r = run_dev(question=a.question)
+        for arm in QUESTIONS[a.question]["arms"]:
             p = r["arms"][arm]["pooled_dev"]
-            print(f"{arm:10} pooled dev d={p['d']:+.6f} (SE {p['se']:.6f}) n={p['n']}")
-        print(f"candidate: {r['candidate']}  -> {DEV_OUT}")
+            print(f"{arm:13} pooled dev d={p['d']:+.6f} (SE {p['se']:.6f}) n={p['n']} vs {r['ref']}")
+        print(f"candidate: {r['candidate']}  -> {_q_path(a.question, 'dev')}")
     elif a.mode == "book":
         r = {"question": QUESTION, "code": _git_head(),
              "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), **run_book()}
@@ -337,8 +365,8 @@ def arms_main(argv=None):
             json.dump(r, f, indent=1)
         print(json.dumps(r["markets"], indent=1), "->", BOOK_OUT)
     else:
-        r = holdout_look(a.owner_look)
-        print(json.dumps({k: r[k] for k in ("candidate", "pass")}), "->", HOLDOUT_OUT)
+        r = holdout_look(a.owner_look, question=a.question)
+        print(json.dumps({k: r[k] for k in ("candidate", "pass")}), "->", _q_path(a.question, "holdout"))
 
 
 def main(argv=None):
