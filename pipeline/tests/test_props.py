@@ -1,4 +1,6 @@
 """Player props: Bovada parsing, probability helpers, book de-vig and the board."""
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -225,6 +227,22 @@ def test_struct_prior_pulls_a_depth_player_toward_depth_rates():
         pm.pregame_features(logs, prior="nope")
 
 
+def test_k2_shrink_pulls_harder_toward_the_prior_and_leaves_shots_alone():
+    logs = _two_tier_logs()
+    v1 = pm.pregame_features(logs)
+    assert pm.pregame_features(logs, shrink="v1")["rate_goals"].equals(v1["rate_goals"])
+    k2 = pm.pregame_features(logs, shrink="k2")
+
+    def last(df):
+        return df[df.game_id == df.game_id.max()].set_index("player_id")
+    # Player 1 scores, player 2 never does: the heavier prior moves both toward the pooled rate.
+    assert last(k2).at[1, "rate_goals"] < last(v1).at[1, "rate_goals"]
+    assert last(k2).at[2, "rate_goals"] > last(v1).at[2, "rate_goals"]
+    assert last(k2).at[1, "rate_points"] < last(v1).at[1, "rate_points"]
+    assert k2["rate_shots"].equals(v1["rate_shots"])
+    assert pm.ARMS["struct_cal_k2"] == ("toi_band", True, "k2") and pm.ARMS["struct_cal"] == ("toi_band", True, "v1")
+
+
 def test_logit_shift_matches_the_hit_rate_and_shrinks():
     rng = np.random.default_rng(0)
     p = np.full(20000, 0.30)
@@ -278,6 +296,13 @@ def test_holdout_look_is_owner_only_and_single(tmp_path):
     with pytest.raises(SystemExit):
         bt.holdout_look(True, **kw)                          # second look refused
     assert len(log.read_text().splitlines()) == 2            # 'started' + result
+    # Each question has its own look: props_calib's does not block props_shrink's.
+    dev.write_text('{"candidate": "struct_cal_k2"}')
+    assert bt.holdout_look(True, question="props_shrink", **kw)["pass"] is True
+    with pytest.raises(SystemExit):
+        bt.holdout_look(True, question="props_shrink", **kw)
+    assert [json.loads(x)["question"] for x in log.read_text().splitlines()] == ["props_calib"] * 2 + ["props_shrink"] * 2
+    assert bt.QUESTIONS["props_shrink"]["ref"] == "struct_cal"
 
 
 def test_calibrated_board_leaves_graded_rows_and_needs_a_full_window():
