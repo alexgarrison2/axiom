@@ -34,12 +34,12 @@
     },
     "dfo_goalies": {
       "pages": 2,
-      "fetched_at": "2026-11-23T19:02:04Z"
+      "fetched_at": "2026-11-23T20:02:05Z"
     },
     "espn_injuries": {
       "entries": 116,
       "matched": 114,
-      "fetched_at": "2026-11-23T19:02:12Z"
+      "fetched_at": "2026-11-23T20:02:07Z"
     },
     "odds": {
       "games": 8,
@@ -49,16 +49,16 @@
         "bovada": 7,
         "espn": 1
       },
-      "fetched_at": "2026-11-23T19:02:16Z"
+      "fetched_at": "2026-11-23T20:02:10Z"
     },
     "bu_bundle": {
       "built_at": "2026-11-22T22:36:25+00:00",
       "max_source_date": "2026-11-22",
       "n_games": 373,
       "season": "20262027",
-      "age_h": 20.4,
+      "age_h": 21.4,
       "flag": "on",
-      "fetched_at": "2026-11-23T19:02:24Z"
+      "fetched_at": "2026-11-23T20:02:17Z"
     },
     "player_ratings": {
       "as_of": "2026-11-22",
@@ -68,7 +68,7 @@
       "fetched_at": "2026-11-23T06:32:28Z"
     },
     "player_props": {
-      "fetched_at": "2026-11-23T19:02:21Z",
+      "fetched_at": "2026-11-23T20:02:14Z",
       "games": 7
     },
     "skater_games": {
@@ -83,7 +83,7 @@
   "schema_version": 1,
   "season_id": "20262027",
   "season_label": "2026-27",
-  "generated_at": "2026-11-23T19:04:39Z",
+  "generated_at": "2026-11-23T20:04:23Z",
   "mode": "lite",
   "games_played_current_season": 377,
   "phase": {
@@ -107,14 +107,14 @@
       "stage": "upcoming_games",
       "status": "ok",
       "rows_written": 8,
-      "seconds": 7.5,
+      "seconds": 2.3,
       "required": true
     },
     {
       "stage": "injuries",
       "status": "ok",
       "rows_written": 116,
-      "seconds": 0.5,
+      "seconds": 0.4,
       "required": false
     },
     {
@@ -135,21 +135,21 @@
       "stage": "odds",
       "status": "ok",
       "rows_written": 8,
-      "seconds": 3.6,
+      "seconds": 1.9,
       "required": false
     },
     {
       "stage": "player_props",
       "status": "ok",
-      "rows_written": 1035,
-      "seconds": 5.8,
+      "rows_written": 1034,
+      "seconds": 5.0,
       "required": false
     },
     {
       "stage": "goalie_stats",
       "status": "ok",
       "rows_written": 104,
-      "seconds": 0.7,
+      "seconds": 0.8,
       "required": false
     },
     {
@@ -174,42 +174,42 @@
       "rows_written": 0,
       "seconds": 0.0,
       "required": true,
-      "reason": "12.5h old"
+      "reason": "13.5h old"
     },
     {
       "stage": "bu_bundle",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 1.9,
+      "seconds": 1.7,
       "required": false,
-      "reason": "built 20.4h ago, 373 games of 20262027, PONYXG_BU=on"
+      "reason": "built 21.4h ago, 373 games of 20262027, PONYXG_BU=on"
     },
     {
       "stage": "predict",
       "status": "ok",
       "rows_written": 8,
-      "seconds": 56.1,
+      "seconds": 51.2,
       "required": true
     },
     {
       "stage": "snapshot",
       "status": "ok",
-      "rows_written": 6,
+      "rows_written": 7,
       "seconds": 0.0,
       "required": false
     },
     {
       "stage": "props_board",
       "status": "ok",
-      "rows_written": 785,
-      "seconds": 8.5,
+      "rows_written": 786,
+      "seconds": 8.6,
       "required": false
     },
     {
       "stage": "implications",
       "status": "ok",
       "rows_written": 0,
-      "seconds": 59.4,
+      "seconds": 55.4,
       "required": false
     },
     {
@@ -230,7 +230,7 @@
       "stage": "bet_ledger",
       "status": "ok",
       "rows_written": 1356,
-      "seconds": 2.6,
+      "seconds": 2.4,
       "required": true
     },
     {
@@ -243,10 +243,10 @@
   ],
   "ok": true,
   "run": {
-    "started_at": "2026-11-23T19:02:04Z",
-    "finished_at": "2026-11-23T19:04:39Z",
-    "seconds": 155.0,
-    "github_run_id": "45244552352"
+    "started_at": "2026-11-23T20:02:05Z",
+    "finished_at": "2026-11-23T20:04:23Z",
+    "seconds": 138.1,
+    "github_run_id": "45255019352"
   },
   "last_full_attempt": "2026-11-23T06:34:51Z",
   "last_full_run": "2026-11-23T06:34:51Z",
@@ -254,8 +254,8 @@
     "special_teams": "616 team-games missing from the NHL PP/PK report",
     "skater_games": "stats API fetch failed for 2026"
   },
-  "last_lite_attempt": "2026-11-23T19:04:39Z",
-  "last_lite_run": "2026-11-23T19:04:39Z",
+  "last_lite_attempt": "2026-11-23T20:04:23Z",
+  "last_lite_run": "2026-11-23T20:04:23Z",
   "stale_since": {
     "special_teams": "2026-11-20T03:01:43Z",
     "skater_games": "2026-11-20T03:04:18Z"
