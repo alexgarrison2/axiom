@@ -1,10 +1,10 @@
 {
   "season_id": "20262027",
-  "generated_at": "2026-11-23T21:15:40Z",
+  "generated_at": "2026-11-23T22:03:03Z",
   "baseline_generated_at": "2026-11-23T21:15:34Z",
   "n_sims": 2000,
   "min_swing_pts": 3.0,
-  "max_swing_pts": 10.8,
+  "max_swing_pts": 11.2,
   "reason": "",
   "games": [
     {
@@ -12,72 +12,35 @@
       "date": "2026-11-23",
       "home_abbrev": "WPG",
       "away_abbrev": "UTA",
-      "home_current_playoff_pct": 35.0,
-      "away_current_playoff_pct": 42.0,
-      "home_current_avg_pts": 92.5,
-      "away_current_avg_pts": 93.9,
-      "swing_pts": 10.8,
+      "home_current_playoff_pct": 34.4,
+      "away_current_playoff_pct": 44.7,
+      "home_current_avg_pts": 92.6,
+      "away_current_avg_pts": 94.4,
+      "swing_pts": 11.2,
       "scenarios": {
         "home_reg_win": {
-          "home_playoff_pct": 39.4,
-          "away_playoff_pct": 37.3,
-          "home_avg_pts": 93.3,
-          "away_avg_pts": 92.9
+          "home_playoff_pct": 38.8,
+          "away_playoff_pct": 39.0,
+          "home_avg_pts": 93.4,
+          "away_avg_pts": 93.3
         },
         "home_otw": {
-          "home_playoff_pct": 37.8,
-          "away_playoff_pct": 41.8,
-          "home_avg_pts": 93.3,
-          "away_avg_pts": 93.9
+          "home_playoff_pct": 37.4,
+          "away_playoff_pct": 43.4,
+          "home_avg_pts": 93.4,
+          "away_avg_pts": 94.3
         },
         "away_otw": {
-          "home_playoff_pct": 32.8,
-          "away_playoff_pct": 46.2,
-          "home_avg_pts": 92.3,
-          "away_avg_pts": 94.9
+          "home_playoff_pct": 32.6,
+          "away_playoff_pct": 48.9,
+          "home_avg_pts": 92.4,
+          "away_avg_pts": 95.3
         },
         "away_reg_win": {
-          "home_playoff_pct": 28.6,
-          "away_playoff_pct": 48.1,
-          "home_avg_pts": 91.3,
-          "away_avg_pts": 94.9
-        }
-      }
-    },
-    {
-      "game_id": 2026020381,
-      "date": "2026-11-23",
-      "home_abbrev": "NYI",
-      "away_abbrev": "TOR",
-      "home_current_playoff_pct": 55.6,
-      "away_current_playoff_pct": 0.4,
-      "home_current_avg_pts": 97.1,
-      "away_current_avg_pts": 74.3,
-      "swing_pts": 9.2,
-      "scenarios": {
-        "home_reg_win": {
-          "home_playoff_pct": 59.4,
-          "away_playoff_pct": 0.4,
-          "home_avg_pts": 97.8,
-          "away_avg_pts": 73.5
-        },
-        "home_otw": {
-          "home_playoff_pct": 58.6,
-          "away_playoff_pct": 0.6,
-          "home_avg_pts": 97.8,
-          "away_avg_pts": 74.5
-        },
-        "away_otw": {
-          "home_playoff_pct": 54.2,
-          "away_playoff_pct": 0.6,
-          "home_avg_pts": 96.8,
-          "away_avg_pts": 75.5
-        },
-        "away_reg_win": {
-          "home_playoff_pct": 50.2,
-          "away_playoff_pct": 0.7,
-          "home_avg_pts": 95.8,
-          "away_avg_pts": 75.5
+          "home_playoff_pct": 29.0,
+          "away_playoff_pct": 50.2,
+          "home_avg_pts": 91.4,
+          "away_avg_pts": 95.3
         }
       }
     },
@@ -86,35 +49,35 @@
       "date": "2026-11-23",
       "home_abbrev": "SEA",
       "away_abbrev": "ANA",
-      "home_current_playoff_pct": 13.2,
-      "away_current_playoff_pct": 30.6,
-      "home_current_avg_pts": 78.3,
-      "away_current_avg_pts": 83.5,
-      "swing_pts": 9.0,
+      "home_current_playoff_pct": 13.8,
+      "away_current_playoff_pct": 28.4,
+      "home_current_avg_pts": 78.2,
+      "away_current_avg_pts": 83.0,
+      "swing_pts": 8.3,
       "scenarios": {
         "home_reg_win": {
-          "home_playoff_pct": 15.8,
-          "away_playoff_pct": 25.4,
-          "home_avg_pts": 79.3,
-          "away_avg_pts": 82.3
+          "home_playoff_pct": 16.2,
+          "away_playoff_pct": 23.7,
+          "home_avg_pts": 79.1,
+          "away_avg_pts": 81.8
         },
         "home_otw": {
-          "home_playoff_pct": 15.2,
-          "away_playoff_pct": 28.2,
-          "home_avg_pts": 79.3,
-          "away_avg_pts": 83.3
+          "home_playoff_pct": 15.4,
+          "away_playoff_pct": 26.6,
+          "home_avg_pts": 79.1,
+          "away_avg_pts": 82.8
         },
         "away_otw": {
-          "home_playoff_pct": 12.0,
-          "away_playoff_pct": 33.6,
-          "home_avg_pts": 78.3,
-          "away_avg_pts": 84.3
+          "home_playoff_pct": 12.3,
+          "away_playoff_pct": 30.8,
+          "home_avg_pts": 78.1,
+          "away_avg_pts": 83.8
         },
         "away_reg_win": {
-          "home_playoff_pct": 10.4,
-          "away_playoff_pct": 34.4,
-          "home_avg_pts": 77.3,
-          "away_avg_pts": 84.3
+          "home_playoff_pct": 11.0,
+          "away_playoff_pct": 32.0,
+          "home_avg_pts": 77.1,
+          "away_avg_pts": 83.8
         }
       }
     },
@@ -123,35 +86,72 @@
       "date": "2026-11-23",
       "home_abbrev": "MTL",
       "away_abbrev": "LAK",
-      "home_current_playoff_pct": 80.4,
-      "away_current_playoff_pct": 51.8,
-      "home_current_avg_pts": 103.6,
+      "home_current_playoff_pct": 84.3,
+      "away_current_playoff_pct": 52.8,
+      "home_current_avg_pts": 105.0,
       "away_current_avg_pts": 87.6,
-      "swing_pts": 7.6,
+      "swing_pts": 7.9,
       "scenarios": {
         "home_reg_win": {
-          "home_playoff_pct": 82.8,
-          "away_playoff_pct": 48.6,
-          "home_avg_pts": 104.3,
-          "away_avg_pts": 86.6
+          "home_playoff_pct": 86.5,
+          "away_playoff_pct": 49.1,
+          "home_avg_pts": 105.7,
+          "away_avg_pts": 86.7
         },
         "home_otw": {
-          "home_playoff_pct": 82.6,
-          "away_playoff_pct": 52.4,
-          "home_avg_pts": 104.3,
-          "away_avg_pts": 87.6
+          "home_playoff_pct": 86.4,
+          "away_playoff_pct": 53.1,
+          "home_avg_pts": 105.7,
+          "away_avg_pts": 87.7
         },
         "away_otw": {
-          "home_playoff_pct": 79.7,
-          "away_playoff_pct": 55.8,
-          "home_avg_pts": 103.3,
-          "away_avg_pts": 88.6
+          "home_playoff_pct": 84.2,
+          "away_playoff_pct": 56.6,
+          "home_avg_pts": 104.7,
+          "away_avg_pts": 88.7
         },
         "away_reg_win": {
-          "home_playoff_pct": 76.8,
-          "away_playoff_pct": 56.2,
-          "home_avg_pts": 102.3,
-          "away_avg_pts": 88.6
+          "home_playoff_pct": 81.6,
+          "away_playoff_pct": 57.0,
+          "home_avg_pts": 103.7,
+          "away_avg_pts": 88.7
+        }
+      }
+    },
+    {
+      "game_id": 2026020381,
+      "date": "2026-11-23",
+      "home_abbrev": "NYI",
+      "away_abbrev": "TOR",
+      "home_current_playoff_pct": 54.8,
+      "away_current_playoff_pct": 0.4,
+      "home_current_avg_pts": 97.0,
+      "away_current_avg_pts": 74.5,
+      "swing_pts": 7.9,
+      "scenarios": {
+        "home_reg_win": {
+          "home_playoff_pct": 57.7,
+          "away_playoff_pct": 0.3,
+          "home_avg_pts": 97.7,
+          "away_avg_pts": 73.6
+        },
+        "home_otw": {
+          "home_playoff_pct": 57.4,
+          "away_playoff_pct": 0.4,
+          "home_avg_pts": 97.7,
+          "away_avg_pts": 74.6
+        },
+        "away_otw": {
+          "home_playoff_pct": 53.6,
+          "away_playoff_pct": 0.6,
+          "home_avg_pts": 96.7,
+          "away_avg_pts": 75.6
+        },
+        "away_reg_win": {
+          "home_playoff_pct": 49.8,
+          "away_playoff_pct": 0.6,
+          "home_avg_pts": 95.7,
+          "away_avg_pts": 75.6
         }
       }
     },
@@ -160,35 +160,35 @@
       "date": "2026-11-23",
       "home_abbrev": "NJD",
       "away_abbrev": "CBJ",
-      "home_current_playoff_pct": 90.8,
-      "away_current_playoff_pct": 4.6,
-      "home_current_avg_pts": 106.7,
-      "away_current_avg_pts": 81.7,
-      "swing_pts": 3.9,
+      "home_current_playoff_pct": 91.4,
+      "away_current_playoff_pct": 4.2,
+      "home_current_avg_pts": 106.8,
+      "away_current_avg_pts": 81.1,
+      "swing_pts": 3.7,
       "scenarios": {
         "home_reg_win": {
-          "home_playoff_pct": 91.9,
-          "away_playoff_pct": 3.6,
+          "home_playoff_pct": 92.3,
+          "away_playoff_pct": 3.2,
           "home_avg_pts": 107.3,
-          "away_avg_pts": 80.9
+          "away_avg_pts": 80.4
         },
         "home_otw": {
-          "home_playoff_pct": 91.7,
-          "away_playoff_pct": 4.3,
+          "home_playoff_pct": 92.1,
+          "away_playoff_pct": 4.2,
           "home_avg_pts": 107.3,
-          "away_avg_pts": 81.9
+          "away_avg_pts": 81.4
         },
         "away_otw": {
-          "home_playoff_pct": 90.2,
-          "away_playoff_pct": 5.7,
+          "home_playoff_pct": 90.4,
+          "away_playoff_pct": 4.8,
           "home_avg_pts": 106.3,
-          "away_avg_pts": 82.9
+          "away_avg_pts": 82.4
         },
         "away_reg_win": {
-          "home_playoff_pct": 88.0,
-          "away_playoff_pct": 6.0,
+          "home_playoff_pct": 88.6,
+          "away_playoff_pct": 5.0,
           "home_avg_pts": 105.3,
-          "away_avg_pts": 82.9
+          "away_avg_pts": 82.4
         }
       }
     },
@@ -197,35 +197,35 @@
       "date": "2026-11-23",
       "home_abbrev": "OTT",
       "away_abbrev": "CGY",
-      "home_current_playoff_pct": 88.3,
-      "away_current_playoff_pct": 2.8,
-      "home_current_avg_pts": 106.1,
-      "away_current_avg_pts": 71.7,
-      "swing_pts": 3.6,
+      "home_current_playoff_pct": 88.8,
+      "away_current_playoff_pct": 3.2,
+      "home_current_avg_pts": 106.2,
+      "away_current_avg_pts": 72.4,
+      "swing_pts": 3.7,
       "scenarios": {
         "home_reg_win": {
-          "home_playoff_pct": 89.4,
-          "away_playoff_pct": 2.4,
-          "home_avg_pts": 106.5,
-          "away_avg_pts": 71.1
+          "home_playoff_pct": 89.6,
+          "away_playoff_pct": 2.7,
+          "home_avg_pts": 106.6,
+          "away_avg_pts": 71.8
         },
         "home_otw": {
-          "home_playoff_pct": 89.4,
-          "away_playoff_pct": 3.2,
-          "home_avg_pts": 106.5,
-          "away_avg_pts": 72.1
+          "home_playoff_pct": 89.6,
+          "away_playoff_pct": 3.4,
+          "home_avg_pts": 106.6,
+          "away_avg_pts": 72.8
         },
         "away_otw": {
-          "home_playoff_pct": 87.6,
-          "away_playoff_pct": 3.6,
-          "home_avg_pts": 105.5,
-          "away_avg_pts": 73.1
+          "home_playoff_pct": 87.8,
+          "away_playoff_pct": 4.0,
+          "home_avg_pts": 105.6,
+          "away_avg_pts": 73.8
         },
         "away_reg_win": {
-          "home_playoff_pct": 85.8,
-          "away_playoff_pct": 3.8,
-          "home_avg_pts": 104.5,
-          "away_avg_pts": 73.1
+          "home_playoff_pct": 85.9,
+          "away_playoff_pct": 4.1,
+          "home_avg_pts": 104.6,
+          "away_avg_pts": 73.8
         }
       }
     },
@@ -234,35 +234,35 @@
       "date": "2026-11-23",
       "home_abbrev": "SJS",
       "away_abbrev": "MIN",
-      "home_current_playoff_pct": 6.4,
+      "home_current_playoff_pct": 5.9,
       "away_current_playoff_pct": 99.2,
-      "home_current_avg_pts": 75.4,
-      "away_current_avg_pts": 115.9,
-      "swing_pts": 2.8,
+      "home_current_avg_pts": 75.0,
+      "away_current_avg_pts": 115.7,
+      "swing_pts": 3.1,
       "scenarios": {
         "home_reg_win": {
           "home_playoff_pct": 8.0,
-          "away_playoff_pct": 99.0,
-          "home_avg_pts": 76.6,
-          "away_avg_pts": 114.5
+          "away_playoff_pct": 98.9,
+          "home_avg_pts": 76.2,
+          "away_avg_pts": 114.3
         },
         "home_otw": {
           "home_playoff_pct": 8.0,
           "away_playoff_pct": 99.2,
-          "home_avg_pts": 76.6,
-          "away_avg_pts": 115.5
+          "home_avg_pts": 76.2,
+          "away_avg_pts": 115.3
         },
         "away_otw": {
-          "home_playoff_pct": 6.0,
+          "home_playoff_pct": 6.7,
           "away_playoff_pct": 99.4,
-          "home_avg_pts": 75.6,
-          "away_avg_pts": 116.5
+          "home_avg_pts": 75.2,
+          "away_avg_pts": 116.3
         },
         "away_reg_win": {
-          "home_playoff_pct": 5.2,
+          "home_playoff_pct": 4.9,
           "away_playoff_pct": 99.4,
-          "home_avg_pts": 74.6,
-          "away_avg_pts": 116.5
+          "home_avg_pts": 74.2,
+          "away_avg_pts": 116.3
         }
       }
     }
