@@ -31,6 +31,7 @@ import socket
 import ssl
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 try:  # certifi ships with requests/pip; fall back to the system store.
@@ -167,6 +168,42 @@ def try_get_json(url: str, default=None, **kw):
     except HttpError as e:
         print(f"  [WARN] {e}")
         return default
+
+
+NHL_STATS_PAGE = 100
+
+
+def get_nhl_stats_rows(url: str, *, sort, page: int = NHL_STATS_PAGE, max_pages: int = 2000, **kw) -> list:
+    """Every row of an NHL stats REST report (api.nhle.com/stats/rest/...).
+
+    The API returns at most 100 rows per request whatever ``limit`` says (since
+    2026-11-19; ``limit=-1`` used to return up to 10,000), so the report is read
+    in pages ordered by ``sort``: property names that together identify a row
+    (a leading "-" sorts descending), so pages neither overlap nor skip. ``url``
+    carries the report and its ``cayenneExp``; any ``start`` / ``limit`` /
+    ``sort`` already in it is replaced. ``kw`` goes to ``get_json``.
+
+    Raises HttpError when a page fails, is not a report, or the pages do not add
+    up to the report's ``total``: a caller never gets a silently short report."""
+    parts = urllib.parse.urlsplit(url)
+    query = [(k, v) for k, v in urllib.parse.parse_qsl(parts.query, keep_blank_values=True)
+             if k not in ("start", "limit", "sort")]
+    order = json.dumps([{"property": s.lstrip("-"), "direction": "DESC" if s.startswith("-") else "ASC"}
+                        for s in sort], separators=(",", ":"))
+    rows, total = [], None
+    for _ in range(max_pages):
+        q = urllib.parse.urlencode(query + [("sort", order), ("start", len(rows)), ("limit", page)])
+        data = get_json(urllib.parse.urlunsplit(parts._replace(query=q)), **kw)
+        got = data.get("data") if isinstance(data, dict) else None
+        if not isinstance(got, list):
+            raise HttpError(url, "badshape", "no 'data' list in the report")
+        rows.extend(got)
+        total = int(data.get("total") or 0)
+        if not got or len(rows) >= total:
+            break
+    if total is None or len(rows) < total:
+        raise HttpError(url, "short", f"{len(rows)} of {total} rows")
+    return rows
 
 
 def try_get_text(url: str, default=None, **kw):

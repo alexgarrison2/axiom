@@ -26,15 +26,13 @@ LEGACY_FILE = os.path.join(PIPELINE_DIR, "nhl_goalie_stats.json")
 
 
 def _summary(season_id, game_type=2):
-    from http_utils import get_json
+    from http_utils import get_nhl_stats_rows
     params = {
         "isAggregate": "false", "isGame": "false",
-        "sort": '[{"property":"wins","direction":"DESC"},{"property":"playerId","direction":"ASC"}]',
-        "start": "0", "limit": "-1",
         "cayenneExp": f"gameTypeId={game_type} and seasonId={season_id}",
     }
     url = "https://api.nhle.com/stats/rest/en/goalie/summary?" + urllib.parse.urlencode(params)
-    return get_json(url, ua="plain").get("data", []) or []
+    return get_nhl_stats_rows(url, sort=("-wins", "playerId"), ua="plain")
 
 
 def to_line(row):

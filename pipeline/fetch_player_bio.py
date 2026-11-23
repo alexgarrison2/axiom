@@ -23,7 +23,7 @@ import os
 import time
 from datetime import date
 
-from http_utils import try_get_json, get_json, HttpError
+from http_utils import get_json, get_nhl_stats_rows, HttpError
 from io_utils import atomic_write_json
 from paths import public_path
 
@@ -84,13 +84,21 @@ def roster_index(rosters: dict) -> dict:
     return idx
 
 
+def _stats_rows(url: str) -> list:
+    """Every row of a per-player stats report, [] (logged) when it cannot be read whole."""
+    try:
+        return get_nhl_stats_rows(url, sort=("playerId",), ua="plain")
+    except HttpError as e:
+        print(f"  [WARN] {e}")
+        return []
+
+
 def _goalie_gp(season_id: str) -> dict:
-    """{playerId: regular-season games played} for one season (1 request)."""
-    url = (f"{STATS_URL}/goalie/summary?isAggregate=false&isGame=false&limit=-1"
+    """{playerId: regular-season games played} for one season ({} when the report is unavailable)."""
+    url = (f"{STATS_URL}/goalie/summary?isAggregate=false&isGame=false"
            f"&cayenneExp=seasonId={season_id}%20and%20gameTypeId=2")
-    data = try_get_json(url, ua="plain") or {}
     out = {}
-    for row in data.get("data", []) or []:
+    for row in _stats_rows(url):
         pid = row.get("playerId")
         if pid:
             out[int(pid)] = out.get(int(pid), 0) + int(row.get("gamesPlayed") or 0)
@@ -170,10 +178,9 @@ def main():
     print("  Fetching rookies...", end="", flush=True)
     rookie_ids = set()
     for kind in ("skater", "goalie"):
-        url = (f"{STATS_URL}/{kind}/summary?isAggregate=false&isGame=false&limit=-1"
+        url = (f"{STATS_URL}/{kind}/summary?isAggregate=false&isGame=false"
                f"&cayenneExp=seasonId={SEASON}%20and%20isRookie=1%20and%20gameTypeId=2")
-        data = try_get_json(url, ua="plain") or {}
-        for p in data.get("data", []) or []:
+        for p in _stats_rows(url):
             rookie_ids.add(str(p.get("playerId", "")))
         time.sleep(0.1)
 

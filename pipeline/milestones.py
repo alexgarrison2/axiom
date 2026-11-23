@@ -57,7 +57,7 @@ from urllib.parse import quote
 import pandas as pd
 
 from fetch_player_bio import fetch_rosters
-from http_utils import get_json
+from http_utils import get_json, get_nhl_stats_rows
 from io_utils import atomic_write_json, keep_if_unchanged, read_json, utc_now_iso, VOLATILE_KEYS
 from paths import PIPELINE_DIR, PUBLIC_DATA_DIR
 from season import PREV_SEASON_ID, PREV_START_YEAR, SEASON_ID, START_YEAR, season_file, season_games, today_local
@@ -137,8 +137,8 @@ NEAR_GAMES = 30
 
 def _stats(kind: str, report: str, exp: str, game: bool = False) -> list[dict]:
     url = (f"{STATS}/{kind}/{report}?isAggregate={'false' if game else 'true'}&isGame={'true' if game else 'false'}"
-           f"&limit=-1&cayenneExp={quote(exp)}")
-    rows = (get_json(url, ua="plain") or {}).get("data") or []
+           f"&cayenneExp={quote(exp)}")
+    rows = get_nhl_stats_rows(url, sort=("gameId", "playerId") if game else ("playerId",), ua="plain")
     if len(rows) >= 10000:
         raise RuntimeError(f"{kind}/{report} hit the 10k row cap ({exp})")
     return rows

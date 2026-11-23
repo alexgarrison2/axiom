@@ -15,8 +15,8 @@ import os
 
 import pandas as pd
 
-BIOS_URL = ("https://api.nhle.com/stats/rest/en/skater/bios?limit=-1"
-            "&cayenneExp=seasonId={season}%20and%20gameTypeId={gt}")
+BIOS_URL = ("https://api.nhle.com/stats/rest/en/skater/bios"
+            "?cayenneExp=seasonId={season}%20and%20gameTypeId={gt}")
 
 
 def fetch_season(paths, season: str, *, refresh: bool = False) -> list[dict]:
@@ -24,11 +24,11 @@ def fetch_season(paths, season: str, *, refresh: bool = False) -> list[dict]:
     if os.path.exists(p) and not refresh:
         with gzip.open(p, "rt") as f:
             return json.load(f)
-    from http_utils import get_json
+    from http_utils import get_nhl_stats_rows
     rows = []
     for gt in (2, 3):
-        d = get_json(BIOS_URL.format(season=season, gt=gt), ua="plain")
-        rows.extend({**r, "gameTypeId": gt} for r in d.get("data") or [])
+        got = get_nhl_stats_rows(BIOS_URL.format(season=season, gt=gt), sort=("playerId",), ua="plain")
+        rows.extend({**r, "gameTypeId": gt} for r in got)
     tmp = p + ".tmp"
     with gzip.open(tmp, "wt") as f:
         json.dump(rows, f)

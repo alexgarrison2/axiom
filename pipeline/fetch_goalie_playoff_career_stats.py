@@ -18,25 +18,6 @@ PUBLIC_DATA  = PIPELINE_DIR / '..' / 'public' / 'data'
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
 
 
-def fetch_all_pages(url_base: str) -> list[dict]:
-    """Paginate through all results from an NHL stats API endpoint."""
-    rows = []
-    start = 0
-    batch = 100
-    while True:
-        url = f"{url_base}&limit={batch}&start={start}"
-        from http_utils import get_json
-        d = get_json(url, timeout=20, ua=HEADERS['User-Agent'])
-        page = d.get('data', [])
-        if not page:
-            break
-        rows.extend(page)
-        start += len(page)
-        if start >= d.get('total', 0):
-            break
-    return rows
-
-
 def main(force: bool = False):
     print("=== Fetching goalie career playoff stats ===")
     # The career playoff line is only shown for playoff games, and it only
@@ -46,8 +27,9 @@ def main(force: bool = False):
         if not postseason_games_exist():
             print("  No postseason games on the schedule — skipping.")
             return {"status": "skip", "reason": "no postseason games"}
-    url_base = "https://api.nhle.com/stats/rest/en/goalie/summary?cayenneExp=gameTypeId=3&sort=playerId"
-    rows = fetch_all_pages(url_base)
+    from http_utils import get_nhl_stats_rows
+    rows = get_nhl_stats_rows("https://api.nhle.com/stats/rest/en/goalie/summary?cayenneExp=gameTypeId=3",
+                              sort=("playerId", "seasonId"), timeout=20, ua=HEADERS['User-Agent'])
     print(f"  Fetched {len(rows)} season rows")
 
     career: dict = defaultdict(lambda: {'gp': 0, 'w': 0, 'l': 0, 'ga': 0, 'sv': 0, 'sa': 0, 'so': 0, 'toi': 0})
