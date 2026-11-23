@@ -4681,7 +4681,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": true,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Erik Haula",
@@ -4713,7 +4713,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Scott Laughton",
@@ -4744,7 +4744,7 @@
                 "id": 2532,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -4840,6 +4840,15 @@
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Joel Edmundson",
+                "number": 6,
+                "pos": "ir4",
+                "id": 2532,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -4906,7 +4915,7 @@
                 "id": 2532,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Brian Dumoulin",
@@ -4920,7 +4929,7 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-11-23T17:42:45.791Z",
-        "fetched_at": "2026-11-23T18:02:36Z"
+        "fetched_at": "2026-11-23T19:02:27Z"
     },
     "DAL": {
         "f1": [
@@ -7321,39 +7330,17 @@
                 "movement": null
             },
             {
-                "name": "Eric Pohlkamp",
-                "number": null,
+                "name": "Michael Kesselring",
+                "number": 7,
                 "pos": "rd",
-                "id": 33798,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "d2": [
-            {
-                "name": "Dmitry Orlov",
-                "number": 9,
-                "pos": "ld",
-                "id": 1572,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Jacob Trouba",
-                "number": 65,
-                "pos": "rd",
-                "id": 2099,
+                "id": 29644,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
-        "d3": [
+        "d2": [
             {
                 "name": "Nolan Allan",
                 "number": 5,
@@ -7362,7 +7349,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Sam Dickinson",
@@ -7372,7 +7359,29 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            }
+        ],
+        "d3": [
+            {
+                "name": "Dmitry Orlov",
+                "number": 9,
+                "pos": "ld",
+                "id": 1572,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Eric Pohlkamp",
+                "number": null,
+                "pos": "rd",
+                "id": 33798,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             }
         ],
         "g": [
@@ -7422,6 +7431,15 @@
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Jacob Trouba",
+                "number": 65,
+                "pos": "ir4",
+                "id": 2099,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -7453,10 +7471,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Jacob Trouba",
-                "number": 65,
+                "name": "Michael Kesselring",
+                "number": 7,
                 "pos": "sk4",
-                "id": 2099,
+                "id": 29644,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -7482,27 +7500,27 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Sam Dickinson",
-                "number": null,
+                "name": "Nolan Allan",
+                "number": 5,
                 "pos": "sk3",
-                "id": 37090,
+                "id": 32541,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Nolan Allan",
-                "number": 5,
+                "name": "Sam Dickinson",
+                "number": null,
                 "pos": "sk4",
-                "id": 32541,
+                "id": 37090,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Last Game (2026-11-21)",
-        "updated_at": "2026-11-23T15:19:44.447Z",
-        "fetched_at": "2026-11-23T18:02:36Z"
+        "lineup_source": "Curtis Pashelka",
+        "updated_at": "2026-11-23T18:38:43.218Z",
+        "fetched_at": "2026-11-23T19:02:27Z"
     },
     "SEA": {
         "f1": [
