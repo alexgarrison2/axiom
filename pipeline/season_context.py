@@ -410,10 +410,10 @@ def rank_season_table(summary_rows, id_to_tri):
 
 
 def _stats_rows(report, season_id):
-    from http_utils import get_json
-    url = (f"https://api.nhle.com/stats/rest/en/team/{report}?isAggregate=false&isGame=false&limit=-1"
+    from http_utils import get_nhl_stats_rows
+    url = (f"https://api.nhle.com/stats/rest/en/team/{report}?isAggregate=false&isGame=false"
            f"&cayenneExp=gameTypeId=2%20and%20seasonId={season_id}")
-    return get_json(url, ua="plain").get("data", []) or []
+    return get_nhl_stats_rows(url, sort=("teamId",), ua="plain")
 
 
 def fetch_special_teams(gp_by_tri, id_to_tri, all_tris, season_id=SEASON_ID):

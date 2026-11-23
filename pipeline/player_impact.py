@@ -859,14 +859,19 @@ def completeness_problem(player_impact: dict):
 
 def nhl_skater_names(season_ids=None) -> dict:
     """{playerId(str): official NHL full name} from the stats API skater summary
-    (one request per season).  Covers players who are on no current roster."""
-    from http_utils import try_get_json
+    (read in pages of 100).  Covers players who are on no current roster."""
+    from http_utils import HttpError, get_nhl_stats_rows
     from season import SEASON_ID, PREV_SEASON_ID
     names = {}
     for sid in season_ids or (PREV_SEASON_ID, SEASON_ID):
         url = ("https://api.nhle.com/stats/rest/en/skater/summary?isAggregate=false&isGame=false"
-               f"&limit=-1&cayenneExp=seasonId={sid}%20and%20gameTypeId=2")
-        for row in (try_get_json(url, ua="plain") or {}).get("data", []) or []:
+               f"&cayenneExp=seasonId={sid}%20and%20gameTypeId=2")
+        try:
+            rows = get_nhl_stats_rows(url, sort=("playerId",), ua="plain")
+        except HttpError as e:
+            print(f"  [WARN] {e}")
+            continue
+        for row in rows:
             if row.get("playerId") and row.get("skaterFullName"):
                 names[str(row["playerId"])] = row["skaterFullName"]
     return names

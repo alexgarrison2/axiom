@@ -5,9 +5,10 @@ Source: NHL stats REST ``skater/summary`` with ``isGame=true``, joined with
 the ``skater/realtime`` (shot attempts, missed and blocked) and
 ``skater/timeonice`` (even-strength, power-play and shorthanded minutes) and
 ``skater/penalties`` (penalties drawn and taken) reports for the
-same player-games. A query returns at most 10,000 rows (``limit=-1``; paging
-past that returns nothing), so seasons are fetched in weekly ``gameDate``
-windows (~2,000 rows each). Unlike the boxscore scrape it carries power-play
+same player-games. The API serves 100 rows per request, so each report is read
+in pages (``http_utils.get_nhl_stats_rows``), and paging past 10,000 rows
+returns nothing, so seasons are fetched in weekly ``gameDate`` windows
+(~2,000 rows each). Unlike the boxscore scrape it carries power-play
 points, so PPP props can be graded. The current season is refreshed
 incrementally from a few days before its last stored game; a file written
 before a column existed is refetched whole.
@@ -29,7 +30,7 @@ from datetime import date, timedelta
 
 import pandas as pd
 
-from http_utils import try_get_json
+from http_utils import HttpError, get_nhl_stats_rows
 from io_utils import atomic_write_csv, mark_stale, record_source, clear_stale, utc_now_iso
 from paths import pipeline_path
 from season import START_YEAR, PREV_START_YEAR, season_file
@@ -55,7 +56,7 @@ def games_file(start_year=START_YEAR):
 
 def _window_url(season_id: str, lo: date, hi: date, report: str = "summary") -> str:
     q = {
-        "isAggregate": "false", "isGame": "true", "start": "0", "limit": "-1",
+        "isAggregate": "false", "isGame": "true",
         "cayenneExp": f'seasonId={season_id} and gameTypeId=2 and gameDate>="{lo}" and gameDate<="{hi}"',
     }
     return f"{REPORT_URL.format(report)}?{urllib.parse.urlencode(q)}"
@@ -95,13 +96,12 @@ def _frame(rows: list, extra: dict | None = None) -> pd.DataFrame:
 
 
 def _report(url: str, label: str) -> list | None:
-    data = try_get_json(url, retries=3, timeout=60)
-    if not isinstance(data, dict) or "data" not in data:
+    """Every row of one report window, or None when it cannot be read whole."""
+    try:
+        return get_nhl_stats_rows(url, sort=("gameId", "playerId"), retries=3, timeout=60)
+    except HttpError as e:
+        print(f"  [WARN] skater games {label}: {e}")
         return None
-    if int(data.get("total") or 0) > len(data["data"]):
-        print(f"  [WARN] skater games {label}: {data['total']} rows, got {len(data['data'])}")
-        return None
-    return data["data"]
 
 
 def fetch_range(start_year: int, lo: date, hi: date) -> pd.DataFrame | None:

@@ -34,7 +34,7 @@ import numpy as np
 from datetime import datetime, timedelta, date
 from collections import defaultdict
 
-from http_utils import try_get_json, get_json, HttpError
+from http_utils import try_get_json, get_nhl_stats_rows, HttpError
 from io_utils import atomic_write_csv, atomic_write_json, read_json, mark_stale, clear_stale, utc_now_iso
 
 
@@ -1863,14 +1863,14 @@ REPORT_LAG_DAYS = 2    # games this recent may not be in the stats report yet
 
 def fetch_special_teams(season_id=SEASON_ID):
     """{(gameId, teamId): {pp_goals, pp_opportunities, pp_time, pp_goals_against,
-    pk_opportunities, pk_time}} from the NHL per-game team reports (2 requests).
-    Returns None if either report cannot be fetched."""
-    q = (f"isAggregate=false&isGame=true&limit=-1"
+    pk_opportunities, pk_time}} from the NHL per-game team reports (read in
+    pages of 100 team-games).  Returns None if either report cannot be fetched whole."""
+    q = (f"isAggregate=false&isGame=true"
          f"&cayenneExp=seasonId={season_id}%20and%20gameTypeId%3E=2")
     try:
-        pp = get_json(f"{STATS_URL}/team/powerplay?{q}", ua="plain", timeout=30).get("data", [])
-        pk = get_json(f"{STATS_URL}/team/penaltykill?{q}", ua="plain", timeout=30).get("data", [])
-    except (HttpError, AttributeError) as e:
+        pp = get_nhl_stats_rows(f"{STATS_URL}/team/powerplay?{q}", sort=("gameId", "teamId"), ua="plain", timeout=30)
+        pk = get_nhl_stats_rows(f"{STATS_URL}/team/penaltykill?{q}", sort=("gameId", "teamId"), ua="plain", timeout=30)
+    except HttpError as e:
         print(f"  [WARN] special-teams report unavailable: {e}")
         return None
     out = {}
