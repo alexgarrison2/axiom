@@ -4824,19 +4824,19 @@
         ],
         "ir": [
             {
+                "name": "Erik Gustafsson",
+                "number": 64,
+                "pos": "ir1",
+                "id": 2550,
+                "ppUnit": null,
+                "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
                 "name": "Trevor Moore",
                 "number": 12,
                 "pos": "ir2",
                 "id": 2878,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
-                "name": "Erik Gustafsson",
-                "number": 64,
-                "pos": "ir3",
-                "id": 2550,
                 "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
@@ -4929,7 +4929,7 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-11-23T17:42:45.791Z",
-        "fetched_at": "2026-11-23T19:02:27Z"
+        "fetched_at": "2026-11-23T23:02:09Z"
     },
     "DAL": {
         "f1": [
@@ -8543,7 +8543,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "f2": [
@@ -8607,7 +8607,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -8748,10 +8748,10 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Dylan Guenther",
-                "number": 11,
+                "name": "Artem Duda",
+                "number": null,
                 "pos": "ir3",
-                "id": 34613,
+                "id": 36382,
                 "ppUnit": null,
                 "injuryStatus": "ir",
                 "gameTimeDecision": false
@@ -8766,18 +8766,9 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Artem Duda",
-                "number": null,
-                "pos": "ir5",
-                "id": 36382,
-                "ppUnit": null,
-                "injuryStatus": "dtd",
-                "gameTimeDecision": false
-            },
-            {
                 "name": "Michael Carcone",
                 "number": 53,
-                "pos": "ir6",
+                "pos": "ir5",
                 "id": 3864,
                 "ppUnit": null,
                 "injuryStatus": "out",
@@ -8862,7 +8853,7 @@
         ],
         "lineup_source": "Projected",
         "updated_at": "2026-11-23T17:53:32.614Z",
-        "fetched_at": "2026-11-23T18:02:36Z"
+        "fetched_at": "2026-11-23T23:02:09Z"
     },
     "WPG": {
         "f1": [
