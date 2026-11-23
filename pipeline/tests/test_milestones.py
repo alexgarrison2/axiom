@@ -158,3 +158,15 @@ def test_ironman_streaks_joins_this_season_to_the_cached_tail():
     out = M.ironman_streaks(sg, {1: "EDM", 2: "TOR", 3: "TOR", 4: "CGY"}, tails)
     # 1 played both EDM games; 2 missed TOR's opener; 3 played TOR's only game; 4 has neither.
     assert out == {1: 502, 3: 41}
+
+
+def test_hall_of_fame_joins_the_skater_and_goalie_bios_flags(monkeypatch):
+    asked = []
+
+    def stats(kind, report, exp, game=False):
+        asked.append((kind, report, exp))
+        return {"skater": [{"playerId": 8447400}, {"playerId": 8446490}],
+                "goalie": [{"playerId": 8451033}, {"playerId": 8446490}, {"playerId": None}]}[kind]
+    monkeypatch.setattr(M, "_stats", stats)
+    assert M.hall_of_fame() == {8447400, 8446490, 8451033}
+    assert asked == [(k, "bios", 'gameTypeId=2 and isInHallOfFameYn="Y"') for k in ("skater", "goalie")]

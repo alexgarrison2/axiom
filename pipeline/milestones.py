@@ -28,8 +28,9 @@ goalies by their share of starts) and the team's next game. Only
 milestones he reaches this season at his pace are kept. Milestones crossed
 in the last 10 days are listed under ``recent``.
 
-Sources: NHL stats API (career, franchise and season aggregates, one query
-each, regular season only), records.nhl.com (franchises, Hall of Fame), the
+Sources: NHL stats API (career, franchise and season aggregates and the Hall
+of Fame flag of its bios reports, read in pages, regular season only),
+records.nhl.com (franchises), the
 current rosters (fetch_player_bio), the season schedule
 (data/schedule_detail_<season>.json, fetch_schedule_detail.py), per-game
 skater logs (nhl_season_*_skater_games.csv), the shot archive for ixG,
@@ -167,8 +168,10 @@ def all_time_names() -> dict[int, str]:
 
 
 def hall_of_fame() -> set[int]:
-    url = f"{RECORDS}/player?cayenneExp={quote('inHockeyHof=true')}&include=id&limit=-1"
-    return {int(r["id"]) for r in (get_json(url, ua="plain") or {}).get("data") or [] if r.get("id")}
+    """Player ids of Hockey Hall of Fame members who played in the NHL, from the stats API bios
+    reports (records.nhl.com removed ``Player.inHockeyHof`` in November 2026)."""
+    exp = 'gameTypeId=2 and isInHallOfFameYn="Y"'
+    return {int(r["playerId"]) for kind in ("skater", "goalie") for r in _stats(kind, "bios", exp) if r.get("playerId")}
 
 
 def franchises() -> dict[str, int]:
