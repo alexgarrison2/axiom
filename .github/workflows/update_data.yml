@@ -97,12 +97,15 @@ jobs:
           #   PONYXG_SEASON_SIM=sim  season projections / implications from the game simulator
           #                        (opt-in, not promoted: bu/sim/prereg_season_sim.json,
           #                        prereg_season_calib.json); =logit forces the default
+          #   PONYXG_PROP_ARM=struct_cal|base  publish an earlier prop model arm (prop_model.ARMS;
+          #                        pipeline/tools/prereg_props_shrink.json, prereg_props_calib.json)
           PONYXG_XG: ${{ vars.PONYXG_XG }}
           PONYXG_BU: ${{ vars.PONYXG_BU }}
           PONYXG_WINPCT: ${{ vars.PONYXG_WINPCT }}
           PONYXG_SIM_INPUTS: ${{ vars.PONYXG_SIM_INPUTS }}
           PONYXG_MODEL_WEIGHT: ${{ vars.PONYXG_MODEL_WEIGHT }}
           PONYXG_SEASON_SIM: ${{ vars.PONYXG_SEASON_SIM }}
+          PONYXG_PROP_ARM: ${{ vars.PONYXG_PROP_ARM }}
         run: python pipeline/refresh_pipeline.py --mode "$MODE"
 
       - name: Validate outputs (data contract gate)

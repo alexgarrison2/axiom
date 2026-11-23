@@ -57,7 +57,9 @@ NB_SIZE = 15.0          # SOG overdispersion: var = mu + mu^2 / NB_SIZE
 CONTEXT_POWER = {"shots": 0.7, "goals": 0.6}
 
 # Arms of tools/prereg_props_calib.json: declared values, not tuned.
-DEFAULT_ARM = "struct_cal"   # promoted 2026-10-14: passed the 2025-26 look (tools/prereg_props_calib_holdout.json)
+# struct_cal promoted 2026-10-14 (tools/prereg_props_calib_holdout.json); struct_cal_k2 promoted 2026-11-23:
+# passed the 2025-26 look of tools/prereg_props_shrink.json (prereg_props_shrink_holdout.json).
+DEFAULT_ARM = "struct_cal_k2"
 ARMS = {"base": ("position", False, "v1"), "cal": ("position", True, "v1"),
         "struct": ("toi_band", False, "v1"), "struct_cal": ("toi_band", True, "v1"),
         "struct_cal_k2": ("toi_band", True, "k2")}   # arm -> (prior, shift, shrink)

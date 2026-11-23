@@ -61,7 +61,8 @@ OUT_FILE = public_path("props.json")
 PROJ = {"sog": "lam_shots", "g": "lam_goals", "a": "lam_assists", "pts": "lam_points", "ppp": "lam_pp_points"}
 DETAIL_FILE = public_path("props_detail.json")
 HIST_FILE = pipeline_path("nhl_historical_skater_games.csv")
-# Prop model arm (tools/prereg_props_calib.json); PONYXG_PROP_ARM=base rolls back.
+# Prop model arm (tools/prereg_props_calib.json, prereg_props_shrink.json); PONYXG_PROP_ARM=struct_cal rolls
+# back the 2026-11-23 prior weights, =base the whole recalibration.
 ARM = os.environ.get("PONYXG_PROP_ARM") or pm.DEFAULT_ARM
 if ARM not in pm.ARMS:
     print(f"  props: unknown PONYXG_PROP_ARM={ARM!r}, using {pm.DEFAULT_ARM!r}")
