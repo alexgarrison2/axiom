@@ -1,0 +1,50 @@
+{
+ "title": "Prop model shrinkage under the TOI-band prior: stronger pull toward the prior for goals, assists, points and PP points (one pre-declared candidate, holdout rule)",
+ "declared_at": "2026-11-23T20:45:00Z",
+ "declared_before": "any scoring of the candidate on 2025-26 or 2026-27. The code that builds the candidate arm and scores it (prop_model.SHRINK, the struct_cal_k2 arm, tools/backtest_props.py --arms ... --question props_shrink) is written after this file is committed. Done before this file: the exploratory dev sweep listed under prior_knowledge (2023-24 and 2024-25 only).",
+ "question": "props_shrink: the live arm (struct_cal) regresses each player's per-minute rate toward the rate of his position and expected-TOI band with weights (K_MINUTES, K_PPP_GAMES) that were tuned on 2025-26 for the old pooled position prior. With the band prior the model over-weights a player's own history in goals, assists, points and PP points. Should the published fair prices use larger weights for those four stats?",
+ "prior_knowledge": {
+  "statement": "K re-tuning was out of scope of prereg_props_calib.json. On 2026-11-23 an exploratory session looked at the dev seasons only (2023-24, 2024-25; frames [S-1, S], history from 2022-23). 2025-26 and 2026-27 rows were not loaded by any of it. The candidate's constants were chosen from that sweep, so the dev numbers below are in-sample for the choice; the holdout is the test.",
+  "how_found": "A Poisson regression of assists on log(shrunk own assist rate / band prior), offset log(lam_assists), fitted on one dev season and scored on the other, gave a coefficient of -0.24 in both directions (1+ assist log loss -0.00046, SE 0.00011): deviations from the band prior are overstated.",
+  "sweep": "Every K multiplied by one factor in {0.5, 1, 1.5, 2, 3, 4, 6} (each market depends on one stat's K, so these are independent per-stat sweeps); arm struct_cal; 94,445 graded regular-season player-games; log loss difference vs factor 1, SE clustered by game date.",
+  "sweep_result_struct_cal": {
+   "a1": {"best_factor_2023_24": 3.0, "best_factor_2024_25": 3.0, "diff_at_x3": -0.00066, "se": 0.00013},
+   "atg": {"best_factor_2023_24": 2.0, "best_factor_2024_25": 2.0, "diff_at_x2": -0.00031, "se": 0.00008},
+   "p1": {"best_factor_2023_24": 3.0, "best_factor_2024_25": 2.0, "diff_at_x2": -0.00040, "se": 0.00008},
+   "p2": {"best_factor_2023_24": 3.0, "best_factor_2024_25": 2.0, "diff_at_x2": -0.00022, "se": 0.00006},
+   "ppp1": {"best_factor_2023_24": 2.0, "best_factor_2024_25": 2.0, "diff_at_x2": -0.00029, "se": 0.00011},
+   "sog15_sog25_sog35": "best factor 1 to 2, differences within 0.00012 of zero: shots K left alone",
+   "all_factors_M": {"x0.5": 0.00056, "x1.5": -0.00019, "x2": -0.00022, "x3": -0.00006, "x4": 0.00022, "x6": 0.00089}
+  },
+  "candidate_on_dev_in_sample": "M difference vs struct_cal -0.000234 (SE 0.000036); with each market's factor picked on one dev season and scored on the other -0.000233 (SE 0.000042; 2023-24 -0.000261, 2024-25 -0.000206).",
+  "scale": "struct_cal vs base on the same dev rows was -0.00061 (prereg_props_calib_dev.json)."
+ },
+ "arms": {
+  "REF": "struct_cal as published since 2026-10-14 (prop_model at 625c9e95d): prior='toi_band', walk-forward logit shift, K_MINUTES shots 100 / goals 450 / assists 250 / points 200, K_PPP_GAMES 6.",
+  "CAND": "struct_cal_k2: REF with K_MINUTES goals 900, assists 750, points 400 and K_PPP_GAMES 12; shots 100 unchanged. Same prior, same shift procedure fitted on the candidate's own predictions (window, V0 and minimum unchanged). Nothing else changes (HALF_LIFE, TOI_HALF_LIFE, TEAM_HALF_LIFE, NB_SIZE, CONTEXT_POWER, bands)."
+ },
+ "data": {
+  "frames": "as prereg_props_calib.json: for target season S, pregame_features on the regular-season logs of S-1 and S (season file when it exists, else that season's rows of nhl_historical_skater_games.csv). Shift windows at the start of S reach into S-1 rows priced from the [S-2, S-1] frame.",
+  "lookahead": "league priors (toi_band_rates) and the league goal / shot means of the context term use the whole frame, identical for both arms (accepted as negligible in prereg_props_calib.json).",
+  "rows": "primary: every regular-season player-game with a result in the period, from opening night, whatever the number of previous games. The legacy subset (from Nov 15, >= 10 previous games) is a secondary on dev.",
+  "markets": "the 8 prop_model.PROPS: sog15, sog25, sog35, atg, a1, p1, p2, ppp1; outcome y = 1 if the count >= threshold"
+ },
+ "split": {
+  "dev": "2023-24 and 2024-25 regular seasons. In-sample for the candidate's constants (see prior_knowledge); scored again by the tool and written to prereg_props_shrink_dev.json for the record.",
+  "holdout": "H1 = 2025-26 regular season (the rule). H2 = every graded 2026-27 regular-season player-game through the day before the look (reported next to H1, not part of the rule: about five weeks).",
+  "caveat": "2025-26 is the season REF's constants were tuned on (under the position prior), which favours REF. REF's own 2025-26 numbers are public (prereg_props_calib_holdout.json); the candidate has never been scored there. 2026-27 has never been scored for this question."
+ },
+ "metrics": {
+  "primary": "M = (1/8) sum over markets of mean per-row log loss (p clipped to [1e-4, 1 - 1e-4]); d_i = (1/8) sum_m (LL_CAND,m,i - LL_REF,m,i); mean d with a standard error clustered by game date. Negative favours the candidate.",
+  "secondary": "per-market log loss difference with date-clustered SEs; per-market calibration ratio (mean p / observed hit rate); Brier; ratios by previous-games bucket and expected-TOI band; the shift path."
+ },
+ "selection_and_promotion": {
+  "selection": "one candidate, fixed above. It goes to the holdout only if the tool's pooled dev d (CAND - REF) is < 0 with |d| >= 1 date-clustered SE; otherwise REF stays and no look is taken.",
+  "pass": "CAND replaces REF iff (1) H1 mean d(CAND - REF) < 0 (strictly), AND (2) no market's H1 log loss difference CAND - REF exceeds +2 of its date-clustered SEs. H2 and every secondary are reported whatever they are.",
+  "holdout_look": "one look, the owner's call (given 2026-11-23), only after prereg_props_shrink_dev.json is written; logged in pipeline/tools/out/props_look_log.jsonl with question = 'props_shrink' (a 'started' line before scoring); the code refuses a second look. Only REF and CAND are scored.",
+  "if_pass": "prop_model.DEFAULT_ARM = 'struct_cal_k2'; repository variable PONYXG_PROP_ARM=struct_cal rolls back.",
+  "if_fail": "nothing changes in the published path; the arm stays available behind PONYXG_PROP_ARM."
+ },
+ "not_in_scope": "shots K, HALF_LIFE / TOI_HALF_LIFE / NB_SIZE / CONTEXT_POWER re-tuning, finer K values than the declared ones, an on-ice goals-for term (exploratory dev: 1+ assist -0.00013, SE 0.00006, before this change), goal-replay tracking data.",
+ "amendments": []
+}
