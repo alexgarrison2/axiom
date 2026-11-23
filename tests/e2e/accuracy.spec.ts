@@ -120,7 +120,7 @@ test.describe('/accuracy', () => {
         expect(axe, formatAxe(axe)).toEqual([]);
     });
 
-    test('picks group by day: newest open, the rest expand by click or keyboard', async ({ page }) => {
+    test('picks group by day: every day starts collapsed and expands by click or keyboard', async ({ page }) => {
         await page.goto('/accuracy?season=2025-26');
         const picks = page.locator('section[aria-labelledby="every-pick"]');
         const days = picks.locator('[data-day]');
@@ -131,9 +131,9 @@ test.describe('/accuracy', () => {
 
         const head = (i: number) => days.nth(i).locator(':scope > button');
         const rowsOf = (i: number) => days.nth(i).locator(':scope > ul > li');
-        await expect(head(0)).toHaveAttribute('aria-expanded', 'true');
-        expect(await rowsOf(0).count()).toBeGreaterThan(0);
-        // Collapsed days keep their game rows out of the DOM.
+        // No day opens by itself, the newest included; collapsed days keep their game rows out of the DOM.
+        await expect(head(0)).toHaveAttribute('aria-expanded', 'false');
+        await expect(rowsOf(0)).toHaveCount(0);
         await expect(head(1)).toHaveAttribute('aria-expanded', 'false');
         await expect(rowsOf(1)).toHaveCount(0);
         const controls = await head(1).getAttribute('aria-controls');
@@ -174,11 +174,13 @@ test.describe('/accuracy', () => {
         // Unfiltered, some day has more than one game.
         expect((await days.locator(':scope > button').allTextContents()).some(t => /\b([2-9]|\d\d) games\b/.test(t))).toBe(true);
 
-        // Team: every listed game involves the team, and the newest open day is that team's.
+        // Team: every listed game involves the team, and filtering opens no day by itself.
         await picks.getByLabel('Team').selectOption('EDM');
         await expect(days.locator(':scope > button').filter({ hasText: /\b([2-9]|\d\d) games\b/ })).toHaveCount(0);
-        await expect(days.first().locator(':scope > button')).toHaveAttribute('aria-expanded', 'true');
+        await expect(days.first().locator(':scope > button')).toHaveAttribute('aria-expanded', 'false');
+        await days.first().locator(':scope > button').click();
         const rows = days.first().locator(':scope > ul > li');
+        await expect(rows.first()).toBeVisible();
         for (const t of await rows.allTextContents()) expect(t).toContain('EDM');
         for (const t of await days.locator(':scope > button').allTextContents()) expect(t).toMatch(/\b1 game\b/i);
 
