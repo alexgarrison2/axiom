@@ -1,38 +1,4 @@
 {
-    "2026020377": {
-        "game_id": 2026020377,
-        "game_date": "2026-11-22",
-        "start_time_utc": "2026-11-23T01:00:00Z",
-        "home_team": "Canucks",
-        "away_team": "Blackhawks",
-        "home_abbrev": "VAN",
-        "away_abbrev": "CHI",
-        "source": "nhl_partner_draftkings",
-        "sources": [
-            "nhl_partner_draftkings",
-            "bovada"
-        ],
-        "fetched_at": "2026-11-23T00:02:13Z",
-        "three_way_tie": 310,
-        "Canucks_puckline": -265,
-        "Canucks_puckline_spread": "+1.5",
-        "Canucks_three_way": 140,
-        "total_over": -108,
-        "total_line": "6.5",
-        "Blackhawks_puckline": 215,
-        "Blackhawks_puckline_spread": "-1.5",
-        "Blackhawks_three_way": 135,
-        "total_under": -112,
-        "Canucks": -105,
-        "Blackhawks": -115,
-        "home_ml": -105,
-        "away_ml": -115,
-        "Blackhawks_1p_ml": -120,
-        "Canucks_1p_ml": -110,
-        "Blackhawks_1p_three_way": 176,
-        "Canucks_1p_three_way": 180,
-        "1p_three_way_tie": 180
-    },
     "2026020378": {
         "game_id": 2026020378,
         "game_date": "2026-11-23",
@@ -45,7 +11,7 @@
         "sources": [
             "bovada"
         ],
-        "fetched_at": "2026-11-22T23:56:45Z",
+        "fetched_at": "2026-11-23T01:04:15Z",
         "Blue Jackets_puckline": -155,
         "Blue Jackets_puckline_spread": "+1.5",
         "Devils_puckline": 133,
@@ -61,7 +27,10 @@
         "away_ml": 170,
         "Blue Jackets_three_way": 245,
         "Devils_three_way": -122,
-        "three_way_tie": 330
+        "three_way_tie": 330,
+        "Blue Jackets_1p_three_way": 240,
+        "Devils_1p_three_way": 140,
+        "1p_three_way_tie": 175
     },
     "2026020379": {
         "game_id": 2026020379,
@@ -108,7 +77,7 @@
         "sources": [
             "bovada"
         ],
-        "fetched_at": "2026-11-22T23:56:45Z",
+        "fetched_at": "2026-11-23T01:04:15Z",
         "Flames_puckline": -145,
         "Flames_puckline_spread": "+1.5",
         "Senators_puckline": 125,
@@ -124,7 +93,10 @@
         "away_ml": 180,
         "Flames_three_way": 265,
         "Senators_three_way": -131,
-        "three_way_tie": 330
+        "three_way_tie": 330,
+        "Flames_1p_three_way": 255,
+        "Senators_1p_three_way": 130,
+        "1p_three_way_tie": 175
     },
     "2026020381": {
         "game_id": 2026020381,
@@ -138,14 +110,14 @@
         "sources": [
             "bovada"
         ],
-        "fetched_at": "2026-11-22T23:56:45Z",
+        "fetched_at": "2026-11-23T01:04:15Z",
         "Maple Leafs_puckline": -177,
         "Maple Leafs_puckline_spread": "+1.5",
         "Islanders_puckline": 153,
         "Islanders_puckline_spread": "-1.5",
-        "total_over": -103,
+        "total_over": -105,
         "total_line": "6.5",
-        "total_under": -117,
+        "total_under": -115,
         "Maple Leafs_1p_ml": 115,
         "Islanders_1p_ml": -150,
         "Islanders": -165,
@@ -237,7 +209,7 @@
         "sources": [
             "bovada"
         ],
-        "fetched_at": "2026-11-22T23:56:45Z",
+        "fetched_at": "2026-11-23T01:04:15Z",
         "Wild_puckline": 125,
         "Wild_puckline_spread": "-1.5",
         "Sharks_puckline": -145,
@@ -255,7 +227,7 @@
         "Sharks_three_way": 255,
         "three_way_tie": 335,
         "Wild_1p_three_way": 140,
-        "Sharks_1p_three_way": 230,
-        "1p_three_way_tie": 180
+        "Sharks_1p_three_way": 225,
+        "1p_three_way_tie": 185
     }
 }

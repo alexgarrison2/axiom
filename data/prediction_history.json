@@ -59910,5 +59910,66 @@
         "market_p": 0.3351
       }
     }
+  },
+  {
+    "gameId": 2026020374,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-22",
+    "homeTeam": "Lightning",
+    "awayTeam": "Sabres",
+    "homeScore": 2,
+    "awayScore": 6,
+    "decision": "REG",
+    "homeXg": 3.7,
+    "awayXg": 2.6,
+    "homeWinProb": 67.4,
+    "predictedWinner": "Lightning",
+    "actualWinner": "Sabres",
+    "isCorrect": false,
+    "isLean": true,
+    "brierScore": 0.4543,
+    "logLoss": 1.1209,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-22T21:07:00Z",
+    "startUtc": "2026-11-22T22:00:00Z",
+    "marketHomeProb": 65.4,
+    "modelHomeProb": 67.9,
+    "homeOdds": -205.0,
+    "awayOdds": 170.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 67.9,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.237,
+        "ll": 1.4397,
+        "naive_ll": 1.3474,
+        "market_p": 0.27
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.573,
+        "ll": 0.5569,
+        "naive_ll": 0.5552,
+        "market_p": 0.5674
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.473,
+        "ll": 0.7487,
+        "naive_ll": 0.7532,
+        "market_p": 0.5046
+      },
+      "p1_3w": {
+        "outcome": 1,
+        "p": 0.319,
+        "ll": 1.1426,
+        "naive_ll": 1.2177,
+        "market_p": 0.3254
+      }
+    }
   }
 ]
