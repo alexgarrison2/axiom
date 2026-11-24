@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-11-24T13:02:10Z",
+  "fetched_at": "2026-11-24T14:02:06Z",
   "source": "bovada",
   "games": {
     "2026020385": {
@@ -9,13 +9,9 @@
       "home": "EDM",
       "away": "VGK",
       "players": {
-        "Max Jones": {
-          "tag": "EDM",
-          "atg": 550
-        },
         "Jake Walman": {
           "tag": "EDM",
-          "atg": 1100
+          "atg": 1200
         },
         "Trent Frederic": {
           "tag": "EDM",
@@ -23,23 +19,37 @@
         },
         "Brayden McNabb": {
           "tag": "VGK",
-          "atg": 1600,
+          "atg": 2000,
           "p1": 275
         },
         "Tomas Hertl": {
           "tag": "VGK",
-          "atg": 235,
-          "g2": 1900,
-          "p1": -110,
-          "p2": 440,
-          "a1": 146,
-          "a2": 850,
+          "atg": 230,
+          "g2": 1700,
+          "sog": [
+            {
+              "line": 2.5,
+              "over": 145,
+              "under": -190
+            }
+          ],
+          "p1": -108,
+          "p2": 430,
+          "a1": 162,
+          "a2": 900,
           "ppp1": 200
         },
         "Ivan Barbashev": {
           "tag": "VGK",
           "atg": 450,
-          "g2": 5000,
+          "g2": 6000,
+          "sog": [
+            {
+              "line": 0.5,
+              "over": -225,
+              "under": 170
+            }
+          ],
           "p1": 140,
           "p2": 650
         },
@@ -47,128 +57,177 @@
           "tag": "VGK",
           "atg": 330,
           "g2": 3500,
+          "sog": [
+            {
+              "line": 1.5,
+              "over": -150,
+              "under": 115
+            }
+          ],
           "p1": 135,
           "p2": 650
         },
         "Victor Olofsson": {
           "tag": "VGK",
-          "atg": 225,
+          "atg": 230,
           "g2": 2000,
-          "p1": -106,
-          "p2": 460,
-          "a1": 210,
+          "sog": [
+            {
+              "line": 1.5,
+              "over": -170,
+              "under": 130
+            }
+          ],
+          "p1": 100,
+          "p2": 475,
+          "a1": 200,
           "a2": 1200,
           "ppp1": 200
         },
         "Alex Formenton": {
           "tag": "EDM",
-          "atg": 800
+          "atg": 825
         },
         "Connor McDavid": {
           "tag": "EDM",
-          "atg": 129,
-          "g2": 800,
+          "atg": 130,
+          "g2": 750,
+          "sog": [
+            {
+              "line": 2.5,
+              "over": -135,
+              "under": 105
+            }
+          ],
           "p1": -500,
           "p2": -111,
-          "a1": -265,
-          "a2": 195,
+          "a1": -280,
+          "a2": 190,
           "ppp1": 105
         },
         "Rasmus Andersson": {
           "tag": "VGK",
           "atg": 725,
           "g2": 10000,
-          "p1": 200
+          "p1": 195
         },
         "Ryan Shea": {
           "tag": "EDM",
           "atg": 1200,
-          "p1": 240
+          "p1": 230
         },
         "Nic Dowd": {
           "tag": "VGK",
-          "atg": 1200
+          "atg": 1100
         },
         "Jack Eichel": {
           "tag": "VGK",
-          "atg": 183,
-          "g2": 1300,
+          "atg": 176,
+          "g2": 1400,
+          "sog": [
+            {
+              "line": 2.5,
+              "over": -120,
+              "under": -110
+            }
+          ],
           "p1": -235,
-          "p2": 195,
+          "p2": 200,
           "a1": -130,
           "a2": 400,
           "ppp1": 130
         },
         "Brett Howden": {
           "tag": "VGK",
-          "atg": 345,
-          "g2": 3500,
+          "atg": 340,
+          "g2": 4000,
           "p1": 170,
           "p2": 900
         },
         "Owen Michaels": {
           "tag": "EDM",
-          "atg": 850
+          "atg": 875
         },
         "Jeremy Lauzon": {
           "tag": "VGK",
-          "atg": 1600
+          "atg": 2000
         },
         "Colton Dach": {
           "tag": "EDM",
-          "atg": 575,
-          "g2": 7000,
+          "atg": 600,
+          "g2": 7500,
           "p1": 255
         },
         "Kasperi Kapanen": {
           "tag": "EDM",
           "atg": 360,
-          "g2": 4000,
-          "p1": 123,
+          "g2": 3500,
+          "sog": [
+            {
+              "line": 1.5,
+              "over": -115,
+              "under": -115
+            }
+          ],
+          "p1": 120,
           "p2": 575,
           "ppp1": 400
         },
         "Parker Wotherspoon": {
           "tag": "VGK",
-          "atg": 2400
+          "atg": 2300
         },
         "Mathieu Joseph": {
           "tag": "EDM",
-          "atg": 625,
+          "atg": 650,
           "g2": 10000
         },
         "Mark Stone": {
           "tag": "VGK",
-          "atg": 180,
-          "g2": 1300,
+          "atg": 178,
+          "g2": 1400,
+          "sog": [
+            {
+              "line": 1.5,
+              "over": -150,
+              "under": 115
+            }
+          ],
           "p1": -168,
           "p2": 280,
           "a1": 118,
-          "a2": 675,
+          "a2": 625,
           "ppp1": 175
         },
         "Dylan Coghlan": {
           "tag": "VGK",
-          "atg": 1900
+          "atg": 1600
         },
         "Braeden Bowman": {
           "tag": "VGK",
           "atg": 550,
-          "g2": 8000,
+          "g2": 10000,
           "p1": 235
         },
         "Leon Draisaitl": {
           "tag": "EDM",
           "atg": 106,
           "g2": 600,
-          "p1": -385,
-          "p2": 123,
+          "sog": [
+            {
+              "line": 3.5,
+              "over": 105,
+              "under": -135
+            }
+          ],
+          "p1": -360,
+          "p2": 120,
           "a1": -213,
           "a2": 240
         },
         "Marc Gatcomb": {
           "tag": "VGK",
-          "atg": 875
+          "atg": 850
         },
         "Jason Dickinson": {
           "tag": "EDM",
@@ -176,13 +235,20 @@
         },
         "Mattias Ekholm": {
           "tag": "EDM",
-          "atg": 900,
-          "p1": 180
+          "atg": 875,
+          "p1": 185
         },
         "Evan Bouchard": {
           "tag": "EDM",
-          "atg": 270,
+          "atg": 275,
           "g2": 2500,
+          "sog": [
+            {
+              "line": 2.5,
+              "over": 115,
+              "under": -150
+            }
+          ],
           "p1": -235,
           "p2": 200,
           "a1": -179,
@@ -191,8 +257,15 @@
         },
         "Trevor Connelly": {
           "tag": "VGK",
-          "atg": 320,
-          "g2": 3300,
+          "atg": 315,
+          "g2": 3000,
+          "sog": [
+            {
+              "line": 2.5,
+              "over": 145,
+              "under": -190
+            }
+          ],
           "p1": 128,
           "p2": 600,
           "a1": 220,
@@ -201,49 +274,71 @@
         },
         "Ryan Nugent-Hopkins": {
           "tag": "EDM",
-          "atg": 305,
+          "atg": 315,
           "g2": 3000,
           "p1": 106,
           "p2": 500
         },
         "Shakir Mukhamadullin": {
           "tag": "EDM",
-          "atg": 2100
+          "atg": 1900
         },
         "Mitch Marner": {
           "tag": "VGK",
-          "atg": 255,
-          "g2": 2200,
+          "atg": 250,
+          "g2": 2000,
+          "sog": [
+            {
+              "line": 2.5,
+              "over": 100,
+              "under": -130
+            }
+          ],
           "p1": -218,
           "p2": 210,
-          "a1": -113,
-          "a2": 440
+          "a1": -118,
+          "a2": 430
         },
         "Connor Murphy": {
           "tag": "EDM",
-          "atg": 1900
+          "atg": 2000
         },
         "Vasily Podkolzin": {
           "tag": "EDM",
-          "atg": 235,
+          "atg": 230,
           "g2": 2000,
+          "sog": [
+            {
+              "line": 1.5,
+              "over": -145,
+              "under": 110
+            }
+          ],
           "p1": 100,
           "p2": 475,
           "ppp1": 350
         },
         "Filip H\u00e5llander": {
           "tag": "EDM",
-          "atg": 435,
+          "atg": 400,
           "g2": 4000,
-          "p1": 270
+          "p1": 265
         },
         "Shea Theodore": {
           "tag": "VGK",
-          "atg": 700,
+          "atg": 650,
+          "g2": 10000,
+          "sog": [
+            {
+              "line": 1.5,
+              "over": 105,
+              "under": -135
+            }
+          ],
           "p1": 160,
           "p2": 800,
           "a1": 200,
-          "a2": 1100
+          "a2": 1200
         },
         "Leon Draisait!": {
           "tag": "EDM",
