@@ -632,14 +632,14 @@
     "TOR": {
         "f1": [
             {
-                "name": "Easton Cowan",
-                "number": 53,
+                "name": "Nick Paul",
+                "number": 20,
                 "pos": "lw",
-                "id": 35106,
+                "id": 2357,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Auston Matthews",
@@ -652,13 +652,13 @@
                 "movement": null
             },
             {
-                "name": "Jack Roslovic",
-                "number": 96,
+                "name": "Easton Cowan",
+                "number": 53,
                 "pos": "rw",
-                "id": 2499,
+                "id": 35106,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
+                "gameTimeDecision": false,
                 "movement": null
             }
         ],
@@ -684,14 +684,14 @@
                 "movement": null
             },
             {
-                "name": "Nick Paul",
-                "number": 20,
+                "name": "Ryan Tverberg",
+                "number": null,
                 "pos": "rw",
-                "id": 2357,
-                "ppUnit": 2,
+                "id": 32967,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "f3": [
@@ -706,10 +706,10 @@
                 "movement": null
             },
             {
-                "name": "Teddy Blueger",
-                "number": 73,
+                "name": "Aatu Raty",
+                "number": 54,
                 "pos": "c",
-                "id": 3798,
+                "id": 34668,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -738,14 +738,14 @@
                 "movement": null
             },
             {
-                "name": "Aatu Raty",
-                "number": 54,
+                "name": "Teddy Blueger",
+                "number": 73,
                 "pos": "c",
-                "id": 34668,
+                "id": 3798,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "down"
             },
             {
                 "name": "Zack MacEwen",
@@ -786,10 +786,10 @@
                 "number": 95,
                 "pos": "ld",
                 "id": 1172,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Chris Tanev",
@@ -811,7 +811,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Troy Stecher",
@@ -913,7 +913,7 @@
                 "number": 96,
                 "pos": "ir8",
                 "id": 2499,
-                "ppUnit": 2,
+                "ppUnit": null,
                 "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
@@ -994,9 +994,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Terry Koshan",
-        "updated_at": "2026-11-22T19:16:47.352Z",
-        "fetched_at": "2026-11-22T20:02:22Z"
+        "lineup_source": "Mark Masters",
+        "updated_at": "2026-11-24T00:16:38.410Z",
+        "fetched_at": "2026-11-24T01:02:10Z"
     },
     "MTL": {
         "f1": [
@@ -1021,14 +1021,14 @@
                 "movement": null
             },
             {
-                "name": "Alexandre Texier",
-                "number": 85,
+                "name": "Juraj Slafkovsky",
+                "number": 20,
                 "pos": "rw",
-                "id": 4759,
-                "ppUnit": 2,
+                "id": 35721,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -1053,14 +1053,14 @@
                 "movement": null
             },
             {
-                "name": "Juraj Slafkovsky",
-                "number": 20,
+                "name": "Alexandre Texier",
+                "number": 85,
                 "pos": "rw",
-                "id": 35721,
-                "ppUnit": 1,
+                "id": 4759,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             }
         ],
         "f3": [
@@ -1085,14 +1085,14 @@
                 "movement": null
             },
             {
-                "name": "Oliver Kapanen",
-                "number": null,
+                "name": "Jake Evans",
+                "number": 71,
                 "pos": "rw",
-                "id": 34678,
-                "ppUnit": 2,
+                "id": 4708,
+                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f4": [
@@ -1107,14 +1107,14 @@
                 "movement": null
             },
             {
-                "name": "Jake Evans",
-                "number": 71,
+                "name": "Oliver Kapanen",
+                "number": null,
                 "pos": "c",
-                "id": 4708,
-                "ppUnit": null,
+                "id": 34678,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "down"
             },
             {
                 "name": "Owen Beck",
@@ -1327,9 +1327,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-23T02:21:19.723Z",
-        "fetched_at": "2026-11-23T18:02:36Z"
+        "lineup_source": "Marco D'Amico",
+        "updated_at": "2026-11-24T00:12:51.549Z",
+        "fetched_at": "2026-11-24T01:02:10Z"
     },
     "BOS": {
         "f1": [
@@ -8516,75 +8516,11 @@
     "UTA": {
         "f1": [
             {
-                "name": "Logan Cooley",
-                "number": 92,
-                "pos": "lw",
-                "id": 33387,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Vincent Trocheck",
-                "number": 16,
-                "pos": "c",
-                "id": 2006,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
                 "name": "Clayton Keller",
                 "number": 9,
-                "pos": "rw",
+                "pos": "lw",
                 "id": 2642,
                 "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            }
-        ],
-        "f2": [
-            {
-                "name": "Anders Lee",
-                "number": 72,
-                "pos": "lw",
-                "id": 2071,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Barrett Hayton",
-                "number": 27,
-                "pos": "c",
-                "id": 4796,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Dylan Guenther",
-                "number": 11,
-                "pos": "rw",
-                "id": 34613,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
-            }
-        ],
-        "f3": [
-            {
-                "name": "Lawson Crouse",
-                "number": 67,
-                "pos": "lw",
-                "id": 2476,
-                "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -8597,7 +8533,71 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
+            },
+            {
+                "name": "Dylan Guenther",
+                "number": 11,
+                "pos": "rw",
+                "id": 34613,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "f2": [
+            {
+                "name": "Logan Cooley",
+                "number": 92,
+                "pos": "lw",
+                "id": 33387,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Vincent Trocheck",
+                "number": 16,
+                "pos": "c",
+                "id": 2006,
+                "ppUnit": 1,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Lawson Crouse",
+                "number": 67,
+                "pos": "rw",
+                "id": 2476,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            }
+        ],
+        "f3": [
+            {
+                "name": "Anders Lee",
+                "number": 72,
+                "pos": "lw",
+                "id": 2071,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
+                "name": "Barrett Hayton",
+                "number": 27,
+                "pos": "c",
+                "id": 4796,
+                "ppUnit": 2,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
             },
             {
                 "name": "Kailer Yamamoto",
@@ -8607,7 +8607,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -8639,7 +8639,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "d1": [
@@ -8851,9 +8851,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-23T17:53:32.614Z",
-        "fetched_at": "2026-11-24T00:02:20Z"
+        "lineup_source": "Utah Mammoth",
+        "updated_at": "2026-11-24T00:09:49.751Z",
+        "fetched_at": "2026-11-24T01:02:10Z"
     },
     "WPG": {
         "f1": [
@@ -9840,14 +9840,14 @@
                 "movement": null
             },
             {
-                "name": "Mikael Backlund",
-                "number": 11,
+                "name": "Morgan Frost",
+                "number": 48,
                 "pos": "c",
-                "id": 193,
-                "ppUnit": null,
+                "id": 2814,
+                "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             },
             {
                 "name": "Matt Coronato",
@@ -9882,10 +9882,10 @@
                 "movement": null
             },
             {
-                "name": "Aydar Suniev",
-                "number": 61,
+                "name": "Adam Klapka",
+                "number": 43,
                 "pos": "rw",
-                "id": 34016,
+                "id": 34398,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -9894,30 +9894,30 @@
         ],
         "f3": [
             {
+                "name": "Sam Morton",
+                "number": 45,
+                "pos": "lw",
+                "id": 38092,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "up"
+            },
+            {
+                "name": "Mikael Backlund",
+                "number": 11,
+                "pos": "c",
+                "id": 193,
+                "ppUnit": null,
+                "injuryStatus": null,
+                "gameTimeDecision": false,
+                "movement": "down"
+            },
+            {
                 "name": "Yegor Sharangovich",
                 "number": 17,
-                "pos": "lw",
-                "id": 29637,
-                "ppUnit": 2,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Morgan Frost",
-                "number": 48,
-                "pos": "c",
-                "id": 2814,
-                "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Adam Klapka",
-                "number": 43,
                 "pos": "rw",
-                "id": 34398,
+                "id": 29637,
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -9946,14 +9946,14 @@
                 "movement": null
             },
             {
-                "name": "Sam Morton",
-                "number": 45,
+                "name": "Aydar Suniev",
+                "number": 61,
                 "pos": "rw",
-                "id": 38092,
-                "ppUnit": null,
+                "id": 34016,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": "down"
             }
         ],
         "d1": [
@@ -10147,9 +10147,9 @@
                 "gameTimeDecision": false
             }
         ],
-        "lineup_source": "Projected",
-        "updated_at": "2026-11-23T17:37:22.351Z",
-        "fetched_at": "2026-11-23T18:02:36Z"
+        "lineup_source": "Derek Wills",
+        "updated_at": "2026-11-24T00:15:59.636Z",
+        "fetched_at": "2026-11-24T01:02:10Z"
     },
     "NSH": {
         "f1": [

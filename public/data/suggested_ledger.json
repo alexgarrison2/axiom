@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-23T06:33:27.896690+00:00",
+ "generated_at": "2026-11-24T01:04:01.219496+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6995,9 +6995,9 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 107,
+    "n_bets": 108,
     "n_graded": 107,
-    "n_pending": 0,
+    "n_pending": 1,
     "record": "65-42",
     "wins": 65,
     "losses": 42,
@@ -9865,6 +9865,32 @@
      "decision": "SO",
      "closing_price": -310.0,
      "clv": -0.021,
+     "model_version": "sim-m5-v4_st-20261003",
+     "official": false
+    },
+    {
+     "gameId": 2026020380,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-23",
+     "startUtc": "2026-11-24T00:30:00Z",
+     "snapshotUtc": "2026-11-24T00:02:00Z",
+     "team": "Senators",
+     "opponent": "Flames",
+     "side": "home",
+     "stake_units": 2.9,
+     "price": -258.0,
+     "decimal_price": 1.3876,
+     "ev_at_bet": 0.0448,
+     "ev_bucket": "0-5%",
+     "stake_bucket": "2u+",
+     "model_prob": 0.753,
+     "result": "pending",
+     "profit_units": 0.0,
+     "final": null,
+     "decision": null,
+     "closing_price": -258.0,
+     "clv": -0.024,
      "model_version": "sim-m5-v4_st-20261003",
      "official": false
     }
