@@ -158,7 +158,7 @@
                 "id": 4812,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false,
+                "gameTimeDecision": true,
                 "movement": null
             },
             {
@@ -196,19 +196,19 @@
         ],
         "g": [
             {
-                "name": "Pyotr Kochetkov",
-                "number": 52,
+                "name": "Brandon Bussi",
+                "number": 32,
                 "pos": "g1",
-                "id": 30486,
+                "id": 30153,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
             {
-                "name": "Brandon Bussi",
-                "number": 32,
+                "name": "Pyotr Kochetkov",
+                "number": 52,
                 "pos": "g2",
-                "id": 30153,
+                "id": 30486,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false
@@ -222,6 +222,15 @@
                 "id": 2370,
                 "ppUnit": null,
                 "injuryStatus": "out",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "K'Andre Miller",
+                "number": 79,
+                "pos": "ir2",
+                "id": 4812,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -289,7 +298,7 @@
                 "id": 4812,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             },
             {
                 "name": "Sean Walker",
@@ -302,8 +311,8 @@
             }
         ],
         "lineup_source": "Walt Ruff",
-        "updated_at": "2026-11-25T16:55:17.732Z",
-        "fetched_at": "2026-11-25T17:01:53Z"
+        "updated_at": "2026-11-25T17:28:04.150Z",
+        "fetched_at": "2026-11-25T18:01:57Z"
     },
     "FLA": {
         "f1": [
