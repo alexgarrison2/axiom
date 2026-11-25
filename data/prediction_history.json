@@ -60630,5 +60630,73 @@
         "market_p": 0.3298
       }
     }
+  },
+  {
+    "gameId": 2026020385,
+    "season": "2026-27",
+    "gameType": "02",
+    "date": "2026-11-24",
+    "homeTeam": "Oilers",
+    "awayTeam": "Golden Knights",
+    "homeScore": 3,
+    "awayScore": 5,
+    "decision": "REG",
+    "homeXg": 3.11,
+    "awayXg": 3.21,
+    "homeWinProb": 48.3,
+    "predictedWinner": "Golden Knights",
+    "actualWinner": "Golden Knights",
+    "isCorrect": true,
+    "isLean": true,
+    "brierScore": 0.2333,
+    "logLoss": 0.6597,
+    "retro": false,
+    "source": "live_snapshot",
+    "snapshotUtc": "2026-11-25T00:03:00Z",
+    "startUtc": "2026-11-25T01:00:00Z",
+    "marketHomeProb": 47.7,
+    "modelHomeProb": 48.4,
+    "homeOdds": 100.0,
+    "awayOdds": -120.0,
+    "modelVersion": "sim-m5-v4_st-20261003",
+    "simStatus": "sim",
+    "simHomeProb": 48.4,
+    "simMarkets": {
+      "reg3": {
+        "outcome": 2,
+        "p": 0.406,
+        "ll": 0.9014,
+        "naive_ll": 0.8341,
+        "market_p": 0.3968
+      },
+      "puckline": {
+        "outcome": 2,
+        "p": 0.298,
+        "ll": 1.2107,
+        "naive_ll": 1.2658,
+        "market_p": 0.2966
+      },
+      "total": {
+        "outcome": 0,
+        "p": 0.47,
+        "ll": 0.755,
+        "naive_ll": 0.7406,
+        "market_p": 0.5278
+      },
+      "p1_3w": {
+        "outcome": 2,
+        "p": 0.349,
+        "ll": 1.0527,
+        "naive_ll": 1.028,
+        "market_p": 0.3372
+      },
+      "p1_2w": {
+        "outcome": 1,
+        "p": 0.514,
+        "ll": 0.6655,
+        "naive_ll": 0.6682,
+        "market_p": 0.5224
+      }
+    }
   }
 ]
