@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-26T00:03:49.429243+00:00",
+ "generated_at": "2026-11-26T01:03:40.204622+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6995,9 +6995,9 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 110,
+    "n_bets": 111,
     "n_graded": 108,
-    "n_pending": 2,
+    "n_pending": 3,
     "record": "66-42",
     "wins": 66,
     "losses": 42,
@@ -9943,6 +9943,32 @@
      "decision": null,
      "closing_price": -175.0,
      "clv": -0.0311,
+     "model_version": "sim-m5-v4_st-20261003",
+     "official": false
+    },
+    {
+     "gameId": 2026020394,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-25",
+     "startUtc": "2026-11-26T00:30:00Z",
+     "snapshotUtc": "2026-11-26T00:02:00Z",
+     "team": "Red Wings",
+     "opponent": "Canucks",
+     "side": "home",
+     "stake_units": 3.3,
+     "price": -230.0,
+     "decimal_price": 1.4348,
+     "ev_at_bet": 0.0574,
+     "ev_bucket": "5-10%",
+     "stake_bucket": "2u+",
+     "model_prob": 0.737,
+     "result": "pending",
+     "profit_units": 0.0,
+     "final": null,
+     "decision": null,
+     "closing_price": -230.0,
+     "clv": -0.0247,
      "model_version": "sim-m5-v4_st-20261003",
      "official": false
     }
