@@ -2965,14 +2965,14 @@
                 "movement": null
             },
             {
-                "name": "Tyler Bertuzzi",
-                "number": 59,
+                "name": "Anton Frondell",
+                "number": 16,
                 "pos": "rw",
-                "id": 2392,
+                "id": 38471,
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "up"
             }
         ],
         "f2": [
@@ -3009,24 +3009,24 @@
         ],
         "f3": [
             {
-                "name": "Ryan Greene",
-                "number": 20,
+                "name": "Andrew Mangiapane",
+                "number": 88,
                 "pos": "lw",
-                "id": 31310,
+                "id": 4622,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             },
             {
-                "name": "Anton Frondell",
-                "number": 16,
+                "name": "Ryan Greene",
+                "number": 20,
                 "pos": "c",
-                "id": 38471,
+                "id": 31310,
                 "ppUnit": 2,
                 "injuryStatus": null,
-                "gameTimeDecision": true,
-                "movement": "new"
+                "gameTimeDecision": false,
+                "movement": null
             },
             {
                 "name": "Teuvo Teravainen",
@@ -3058,7 +3058,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             },
             {
                 "name": "Jordan Greenway",
@@ -3184,6 +3184,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Tyler Bertuzzi",
+                "number": 59,
+                "pos": "ir4",
+                "id": 2392,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3230,7 +3239,7 @@
                 "number": 20,
                 "pos": "sk1",
                 "id": 31310,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             },
@@ -3264,7 +3273,7 @@
         ],
         "lineup_source": "Mark Lazerus",
         "updated_at": "2026-11-25T00:42:28.256Z",
-        "fetched_at": "2026-11-25T01:02:38Z"
+        "fetched_at": "2026-11-26T03:03:48Z"
     },
     "PHI": {
         "f1": [
