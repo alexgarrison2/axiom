@@ -13078,9 +13078,10 @@
   "away_abbrev": "MTL",
   "source": "nhl_partner_draftkings",
   "sources": [
-   "nhl_partner_draftkings"
+   "nhl_partner_draftkings",
+   "bovada"
   ],
-  "fetched_at": "2026-11-26T00:01:35Z",
+  "fetched_at": "2026-11-26T02:01:33Z",
   "three_way_tie": 275,
   "Avalanche_puckline": 185,
   "Avalanche_puckline_spread": "-1.5",
@@ -13095,7 +13096,12 @@
   "Canadiens": 100,
   "home_ml": -120,
   "away_ml": 100,
-  "captured_at": "2026-11-26T00:01:35Z"
+  "Canadiens_1p_ml": -105,
+  "Avalanche_1p_ml": -125,
+  "Canadiens_1p_three_way": 188,
+  "Avalanche_1p_three_way": 166,
+  "1p_three_way_tie": 180,
+  "captured_at": "2026-11-26T02:01:33Z"
  },
  "2026020398": {
   "game_id": 2026020398,
@@ -13107,9 +13113,10 @@
   "away_abbrev": "SJS",
   "source": "nhl_partner_draftkings",
   "sources": [
-   "nhl_partner_draftkings"
+   "nhl_partner_draftkings",
+   "bovada"
   ],
-  "fetched_at": "2026-11-26T00:01:35Z",
+  "fetched_at": "2026-11-26T02:01:33Z",
   "total_over": -122,
   "total_line": "6.5",
   "Ducks_three_way": 130,
@@ -13124,7 +13131,12 @@
   "Sharks": 114,
   "home_ml": -135,
   "away_ml": 114,
-  "captured_at": "2026-11-26T00:01:35Z"
+  "Sharks_1p_ml": 105,
+  "Ducks_1p_ml": -135,
+  "Sharks_1p_three_way": 188,
+  "Ducks_1p_three_way": 161,
+  "1p_three_way_tie": 185,
+  "captured_at": "2026-11-26T02:01:33Z"
  },
  "2026020399": {
   "game_id": 2026020399,
@@ -13136,16 +13148,17 @@
   "away_abbrev": "CHI",
   "source": "nhl_partner_draftkings",
   "sources": [
-   "nhl_partner_draftkings"
+   "nhl_partner_draftkings",
+   "bovada"
   ],
-  "fetched_at": "2026-11-25T23:01:32Z",
+  "fetched_at": "2026-11-26T02:01:33Z",
   "Kraken_three_way": 110,
   "total_over": -102,
   "total_line": "6.5",
   "Kraken_puckline": 160,
   "Kraken_puckline_spread": "-1.5",
-  "three_way_tie": 285,
-  "Blackhawks_three_way": 185,
+  "three_way_tie": 275,
+  "Blackhawks_three_way": 195,
   "total_under": -118,
   "Blackhawks_puckline": -192,
   "Blackhawks_puckline_spread": "+1.5",
@@ -13153,6 +13166,11 @@
   "Blackhawks": 130,
   "home_ml": -155,
   "away_ml": 130,
-  "captured_at": "2026-11-25T23:01:32Z"
+  "Blackhawks_1p_ml": 110,
+  "Kraken_1p_ml": -145,
+  "Blackhawks_1p_three_way": 200,
+  "Kraken_1p_three_way": 152,
+  "1p_three_way_tie": 183,
+  "captured_at": "2026-11-26T02:01:33Z"
  }
 }
