@@ -3335,7 +3335,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Denver Barkey",
@@ -3343,16 +3343,6 @@
                 "pos": "c",
                 "id": 35098,
                 "ppUnit": 1,
-                "injuryStatus": null,
-                "gameTimeDecision": false,
-                "movement": null
-            },
-            {
-                "name": "Owen Tippett",
-                "number": 74,
-                "pos": "rw",
-                "id": 2786,
-                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3367,7 +3357,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             },
             {
                 "name": "Noah Cates",
@@ -3387,7 +3377,7 @@
                 "ppUnit": 1,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "f4": [
@@ -3399,7 +3389,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             },
             {
                 "name": "Sean Couturier",
@@ -3450,7 +3440,7 @@
                 "number": 8,
                 "pos": "ld",
                 "id": 30422,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
                 "movement": null
@@ -3485,7 +3475,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "new"
+                "movement": null
             }
         ],
         "g": [
@@ -3526,6 +3516,15 @@
                 "ppUnit": null,
                 "injuryStatus": "out",
                 "gameTimeDecision": false
+            },
+            {
+                "name": "Owen Tippett",
+                "number": 74,
+                "pos": "ir3",
+                "id": 2786,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
+                "gameTimeDecision": false
             }
         ],
         "pk1": [
@@ -3561,7 +3560,7 @@
                 "number": 8,
                 "pos": "sk4",
                 "id": 30422,
-                "ppUnit": null,
+                "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false
             }
@@ -3606,7 +3605,7 @@
         ],
         "lineup_source": "Jackie Spiegel",
         "updated_at": "2026-11-27T19:44:15.257Z",
-        "fetched_at": "2026-11-27T20:01:49Z"
+        "fetched_at": "2026-11-27T20:28:08Z"
     },
     "PIT": {
         "f1": [
@@ -6307,10 +6306,10 @@
         ],
         "f4": [
             {
-                "name": "Nick Foligno",
+                "name": "Marcus Foligno",
                 "number": 17,
                 "pos": "lw",
-                "id": 1081,
+                "id": 1689,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -6327,10 +6326,10 @@
                 "movement": null
             },
             {
-                "name": "Marcus Foligno",
+                "name": "Nick Foligno",
                 "number": 17,
                 "pos": "rw",
-                "id": 1689,
+                "id": 1081,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
@@ -6521,7 +6520,7 @@
         ],
         "lineup_source": "Last Game (2026-11-25)",
         "updated_at": "2026-11-26T15:00:12.400Z",
-        "fetched_at": "2026-11-26T15:02:08Z"
+        "fetched_at": "2026-11-27T20:28:08Z"
     },
     "WSH": {
         "f1": [
