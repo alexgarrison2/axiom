@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-27T21:07:23.549741+00:00",
+ "generated_at": "2026-11-27T23:08:53.721182+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6996,20 +6996,20 @@
   "2026-27": {
    "summary": {
     "n_bets": 119,
-    "n_graded": 114,
-    "n_pending": 5,
-    "record": "70-44",
-    "wins": 70,
-    "losses": 44,
-    "units_staked": 235.8,
-    "units_profit": 27.3165,
-    "roi": 0.1158,
+    "n_graded": 117,
+    "n_pending": 2,
+    "record": "72-45",
+    "wins": 72,
+    "losses": 45,
+    "units_staked": 245.0,
+    "units_profit": 29.6513,
+    "roi": 0.121,
     "roi_ci": [
-     -0.042,
-     0.2623
+     -0.0297,
+     0.268
     ],
     "clv_mean": -0.038,
-    "clv_n": 114,
+    "clv_n": 117,
     "by_ev_bucket": [
      {
       "bucket": "<0%",
@@ -7028,11 +7028,11 @@
      },
      {
       "bucket": "5-10%",
-      "n": 48,
-      "record": "33-15",
-      "units_staked": 128.9,
-      "units_profit": 20.4791,
-      "roi": 0.1589
+      "n": 51,
+      "record": "35-16",
+      "units_staked": 138.1,
+      "units_profit": 22.8139,
+      "roi": 0.1652
      },
      {
       "bucket": "10-20%",
@@ -7077,11 +7077,11 @@
      },
      {
       "bucket": "2u+",
-      "n": 44,
-      "record": "33-11",
-      "units_staked": 144.8,
-      "units_profit": 23.68,
-      "roi": 0.1635
+      "n": 47,
+      "record": "35-12",
+      "units_staked": 154.0,
+      "units_profit": 26.0148,
+      "roi": 0.1689
      }
     ]
    },
@@ -10067,10 +10067,10 @@
      "ev_bucket": "5-10%",
      "stake_bucket": "2u+",
      "model_prob": 0.513,
-     "result": "pending",
-     "profit_units": 0.0,
-     "final": null,
-     "decision": null,
+     "result": "win",
+     "profit_units": 2.394,
+     "final": "3-5",
+     "decision": "REG",
      "closing_price": 114.0,
      "clv": -0.047,
      "model_version": "sim-m5-v4_st-20261003",
@@ -10093,10 +10093,10 @@
      "ev_bucket": "5-10%",
      "stake_bucket": "2u+",
      "model_prob": 0.768,
-     "result": "pending",
-     "profit_units": 0.0,
-     "final": null,
-     "decision": null,
+     "result": "win",
+     "profit_units": 2.0408,
+     "final": "2-5",
+     "decision": "REG",
      "closing_price": -245.0,
      "clv": -0.0248,
      "model_version": "sim-m5-v4_st-20261003",
@@ -10119,10 +10119,10 @@
      "ev_bucket": "5-10%",
      "stake_bucket": "2u+",
      "model_prob": 0.541,
-     "result": "pending",
-     "profit_units": 0.0,
-     "final": null,
-     "decision": null,
+     "result": "loss",
+     "profit_units": -2.1,
+     "final": "3-2",
+     "decision": "REG",
      "closing_price": 100.0,
      "clv": -0.0465,
      "model_version": "sim-m5-v4_st-20261003",
