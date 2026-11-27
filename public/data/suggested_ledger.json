@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-26T07:33:56.217199+00:00",
+ "generated_at": "2026-11-27T18:04:41.354715+00:00",
  "unit": "1 unit = 1% of bankroll, quarter-Kelly stake",
  "disclaimer": "For information and entertainment only. Past results do not predict future results. Unofficial bets were shown while the bet gate was closed: the model had not proven an edge over the market.",
  "source": "last pregame SiteHistory snapshot per NHL gameId (the bet shown earlier in the day can differ); results from NHL final scores",
@@ -6995,9 +6995,9 @@
   },
   "2026-27": {
    "summary": {
-    "n_bets": 113,
+    "n_bets": 114,
     "n_graded": 113,
-    "n_pending": 0,
+    "n_pending": 1,
     "record": "69-44",
     "wins": 69,
     "losses": 44,
@@ -10021,6 +10021,32 @@
      "decision": "REG",
      "closing_price": -135.0,
      "clv": -0.0345,
+     "model_version": "sim-m5-v4_st-20261003",
+     "official": false
+    },
+    {
+     "gameId": 2026020401,
+     "season": "2026-27",
+     "gameType": "02",
+     "date": "2026-11-27",
+     "startUtc": "2026-11-27T18:00:00Z",
+     "snapshotUtc": "2026-11-27T17:02:00Z",
+     "team": "Devils",
+     "opponent": "Flames",
+     "side": "home",
+     "stake_units": 3.7,
+     "price": -258.0,
+     "decimal_price": 1.3876,
+     "ev_at_bet": 0.0575,
+     "ev_bucket": "5-10%",
+     "stake_bucket": "2u+",
+     "model_prob": 0.762,
+     "result": "pending",
+     "profit_units": 0.0,
+     "final": null,
+     "decision": null,
+     "closing_price": -258.0,
+     "clv": -0.024,
      "model_version": "sim-m5-v4_st-20261003",
      "official": false
     }
