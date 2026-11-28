@@ -3157,7 +3157,7 @@
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "up"
+                "movement": null
             }
         ],
         "d3": [
@@ -3179,7 +3179,7 @@
                 "ppUnit": 2,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": "down"
+                "movement": null
             }
         ],
         "g": [
@@ -3246,6 +3246,15 @@
                 "id": 305,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Jordan Greenway",
+                "number": 12,
+                "pos": "ir6",
+                "id": 4644,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -3327,7 +3336,7 @@
         ],
         "lineup_source": "Last Game (2026-11-27)",
         "updated_at": "2026-11-28T16:44:09.970Z",
-        "fetched_at": "2026-11-28T17:01:49Z"
+        "fetched_at": "2026-11-28T18:01:48Z"
     },
     "PHI": {
         "f1": [
@@ -7744,13 +7753,13 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Philipp Grubauer",
-                "number": 31,
+                "name": "Nikke Kokko",
+                "number": null,
                 "pos": "g2",
-                "id": 2065,
+                "id": 36358,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": true
+                "gameTimeDecision": false
             }
         ],
         "ir": [
@@ -7778,7 +7787,7 @@
                 "pos": "ir4",
                 "id": 2065,
                 "ppUnit": null,
-                "injuryStatus": "dtd",
+                "injuryStatus": "ir",
                 "gameTimeDecision": false
             }
         ],
@@ -7859,8 +7868,8 @@
             }
         ],
         "lineup_source": "Last Game (2026-11-27)",
-        "updated_at": "2026-11-28T16:49:07.360Z",
-        "fetched_at": "2026-11-28T17:01:49Z"
+        "updated_at": "2026-11-28T17:04:02.286Z",
+        "fetched_at": "2026-11-28T18:01:48Z"
     },
     "OTT": {
         "f1": [
@@ -9961,14 +9970,14 @@
                 "movement": null
             },
             {
-                "name": "Brennan Othmann",
-                "number": 78,
+                "name": "Martin Pospisil",
+                "number": 76,
                 "pos": "rw",
-                "id": 30831,
+                "id": 28414,
                 "ppUnit": null,
                 "injuryStatus": null,
                 "gameTimeDecision": false,
-                "movement": null
+                "movement": "new"
             }
         ],
         "d1": [
@@ -10077,12 +10086,12 @@
                 "gameTimeDecision": false
             },
             {
-                "name": "Martin Pospisil",
-                "number": 76,
+                "name": "Brennan Othmann",
+                "number": 78,
                 "pos": "ir3",
-                "id": 28414,
+                "id": 30831,
                 "ppUnit": null,
-                "injuryStatus": "out",
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -10164,7 +10173,7 @@
         ],
         "lineup_source": "Last Game (2026-11-27)",
         "updated_at": "2026-11-28T16:18:25.180Z",
-        "fetched_at": "2026-11-28T17:01:49Z"
+        "fetched_at": "2026-11-28T18:01:48Z"
     },
     "NSH": {
         "f1": [
