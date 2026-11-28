@@ -7742,7 +7742,7 @@
                 "id": 2065,
                 "ppUnit": null,
                 "injuryStatus": null,
-                "gameTimeDecision": false
+                "gameTimeDecision": true
             }
         ],
         "ir": [
@@ -7762,6 +7762,15 @@
                 "id": 27811,
                 "ppUnit": null,
                 "injuryStatus": "ir",
+                "gameTimeDecision": false
+            },
+            {
+                "name": "Philipp Grubauer",
+                "number": 31,
+                "pos": "ir4",
+                "id": 2065,
+                "ppUnit": null,
+                "injuryStatus": "dtd",
                 "gameTimeDecision": false
             }
         ],
@@ -7842,8 +7851,8 @@
             }
         ],
         "lineup_source": "Seattle Kraken",
-        "updated_at": "2026-11-28T00:54:13.432Z",
-        "fetched_at": "2026-11-28T01:04:38Z"
+        "updated_at": "2026-11-28T03:13:39.733Z",
+        "fetched_at": "2026-11-28T06:57:01Z"
     },
     "OTT": {
         "f1": [
