@@ -9,9 +9,10 @@
         "away_abbrev": "MTL",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "three_way_tie": 280,
         "Golden Knights_three_way": 160,
         "Golden Knights_puckline": 210,
@@ -25,7 +26,12 @@
         "Golden Knights": -112,
         "Canadiens": -108,
         "home_ml": -112,
-        "away_ml": -108
+        "away_ml": -108,
+        "Canadiens_1p_ml": -110,
+        "Golden Knights_1p_ml": -120,
+        "Canadiens_1p_three_way": 172,
+        "Golden Knights_1p_three_way": 185,
+        "1p_three_way_tie": 180
     },
     "2026020416": {
         "game_id": 2026020416,
@@ -37,9 +43,10 @@
         "away_abbrev": "TBL",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "total_over": 110,
         "total_line": "6.5",
         "Panthers_three_way": 145,
@@ -53,7 +60,12 @@
         "Panthers": -105,
         "Lightning": -115,
         "home_ml": -105,
-        "away_ml": -115
+        "away_ml": -115,
+        "Lightning_1p_ml": -115,
+        "Panthers_1p_ml": -115,
+        "Lightning_1p_three_way": 178,
+        "Panthers_1p_three_way": 185,
+        "1p_three_way_tie": 173
     },
     "2026020417": {
         "game_id": 2026020417,
@@ -65,9 +77,10 @@
         "away_abbrev": "NSH",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "total_over": -130,
         "total_line": "5.5",
         "Red Wings_three_way": 145,
@@ -81,7 +94,12 @@
         "Red Wings": -112,
         "Predators": -108,
         "home_ml": -112,
-        "away_ml": -108
+        "away_ml": -108,
+        "Predators_1p_ml": -110,
+        "Red Wings_1p_ml": -120,
+        "Predators_1p_three_way": 180,
+        "Red Wings_1p_three_way": 185,
+        "1p_three_way_tie": 168
     },
     "2026020418": {
         "game_id": 2026020418,
@@ -93,9 +111,10 @@
         "away_abbrev": "WPG",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "total_over": 105,
         "total_line": "6.5",
         "Devils_three_way": -105,
@@ -109,7 +128,12 @@
         "Devils": -185,
         "Jets": 154,
         "home_ml": -185,
-        "away_ml": 154
+        "away_ml": 154,
+        "Jets_1p_ml": 125,
+        "Devils_1p_ml": -165,
+        "Jets_1p_three_way": 230,
+        "Devils_1p_three_way": 142,
+        "1p_three_way_tie": 180
     },
     "2026020419": {
         "game_id": 2026020419,
@@ -121,9 +145,10 @@
         "away_abbrev": "CGY",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "Rangers_three_way": 100,
         "Rangers_puckline": 142,
         "Rangers_puckline_spread": "-1.5",
@@ -137,7 +162,12 @@
         "Rangers": -185,
         "Flames": 154,
         "home_ml": -185,
-        "away_ml": 154
+        "away_ml": 154,
+        "Flames_1p_ml": 120,
+        "Rangers_1p_ml": -160,
+        "Flames_1p_three_way": 230,
+        "Rangers_1p_three_way": 150,
+        "1p_three_way_tie": 170
     },
     "2026020420": {
         "game_id": 2026020420,
@@ -149,9 +179,10 @@
         "away_abbrev": "TOR",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "three_way_tie": 295,
         "Penguins_puckline": 185,
         "Penguins_puckline_spread": "-1.5",
@@ -165,7 +196,12 @@
         "Penguins": -135,
         "Maple Leafs": 114,
         "home_ml": -135,
-        "away_ml": 114
+        "away_ml": 114,
+        "Maple Leafs_1p_ml": -105,
+        "Penguins_1p_ml": -125,
+        "Maple Leafs_1p_three_way": 188,
+        "Penguins_1p_three_way": 158,
+        "1p_three_way_tie": 190
     },
     "2026020421": {
         "game_id": 2026020421,
@@ -177,9 +213,10 @@
         "away_abbrev": "OTT",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "Hurricanes_three_way": -145,
         "Hurricanes_puckline": -105,
         "Hurricanes_puckline_spread": "-1.5",
@@ -193,7 +230,12 @@
         "Hurricanes": -265,
         "Senators": 215,
         "home_ml": -265,
-        "away_ml": 215
+        "away_ml": 215,
+        "Senators_1p_ml": 155,
+        "Hurricanes_1p_ml": -210,
+        "Senators_1p_three_way": 265,
+        "Hurricanes_1p_three_way": 116,
+        "1p_three_way_tie": 185
     },
     "2026020422": {
         "game_id": 2026020422,
@@ -205,9 +247,10 @@
         "away_abbrev": "WSH",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T18:01:41Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "Blues_puckline": -258,
         "Blues_puckline_spread": "+1.5",
         "total_over": -148,
@@ -221,7 +264,12 @@
         "Blues": -102,
         "Capitals": -118,
         "home_ml": -102,
-        "away_ml": -118
+        "away_ml": -118,
+        "Capitals_1p_ml": -125,
+        "Blues_1p_ml": -105,
+        "Capitals_1p_three_way": 175,
+        "Blues_1p_three_way": 172,
+        "1p_three_way_tie": 193
     },
     "2026020423": {
         "game_id": 2026020423,
@@ -233,9 +281,10 @@
         "away_abbrev": "NYI",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T17:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "Flyers_three_way": 150,
         "total_over": -130,
         "total_line": "5.5",
@@ -249,7 +298,12 @@
         "Flyers": -102,
         "Islanders": -118,
         "home_ml": -102,
-        "away_ml": -118
+        "away_ml": -118,
+        "Islanders_1p_ml": -125,
+        "Flyers_1p_ml": -105,
+        "Islanders_1p_three_way": 178,
+        "Flyers_1p_three_way": 185,
+        "1p_three_way_tie": 170
     },
     "2026020424": {
         "game_id": 2026020424,
@@ -261,9 +315,10 @@
         "away_abbrev": "UTA",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "Stars_puckline": 170,
         "Stars_puckline_spread": "-1.5",
         "total_over": -130,
@@ -277,7 +332,12 @@
         "Stars": -155,
         "Mammoth": 130,
         "home_ml": -155,
-        "away_ml": 130
+        "away_ml": 130,
+        "Mammoth_1p_ml": 110,
+        "Stars_1p_ml": -145,
+        "Mammoth_1p_three_way": 205,
+        "Stars_1p_three_way": 160,
+        "1p_three_way_tie": 172
     },
     "2026020425": {
         "game_id": 2026020425,
@@ -289,9 +349,10 @@
         "away_abbrev": "SJS",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T18:01:41Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "Avalanche_three_way": -135,
         "three_way_tie": 300,
         "total_over": -108,
@@ -305,7 +366,12 @@
         "Avalanche": -245,
         "Sharks": 200,
         "home_ml": -245,
-        "away_ml": 200
+        "away_ml": 200,
+        "Sharks_1p_ml": 145,
+        "Avalanche_1p_ml": -190,
+        "Sharks_1p_three_way": 255,
+        "Avalanche_1p_three_way": 125,
+        "1p_three_way_tie": 185
     },
     "2026020426": {
         "game_id": 2026020426,
@@ -317,9 +383,10 @@
         "away_abbrev": "ANA",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "three_way_tie": 285,
         "Kings_puckline": 170,
         "Kings_puckline_spread": "-1.5",
@@ -333,7 +400,12 @@
         "Kings": -142,
         "Ducks": 120,
         "home_ml": -142,
-        "away_ml": 120
+        "away_ml": 120,
+        "Ducks_1p_ml": 105,
+        "Kings_1p_ml": -135,
+        "Ducks_1p_three_way": 200,
+        "Kings_1p_three_way": 167,
+        "1p_three_way_tie": 176
     },
     "2026020427": {
         "game_id": 2026020427,
@@ -345,9 +417,10 @@
         "away_abbrev": "EDM",
         "source": "nhl_partner_draftkings",
         "sources": [
-            "nhl_partner_draftkings"
+            "nhl_partner_draftkings",
+            "bovada"
         ],
-        "fetched_at": "2026-11-28T19:01:43Z",
+        "fetched_at": "2026-11-28T19:17:43Z",
         "Kraken_three_way": 195,
         "total_over": -108,
         "total_line": "6.5",
@@ -361,7 +434,12 @@
         "Kraken": 142,
         "Oilers": -170,
         "home_ml": 142,
-        "away_ml": -170
+        "away_ml": -170,
+        "Oilers_1p_ml": -150,
+        "Kraken_1p_ml": 115,
+        "Oilers_1p_three_way": 147,
+        "Kraken_1p_three_way": 212,
+        "1p_three_way_tie": 185
     },
     "2026020428": {
         "game_id": 2026020428,
